@@ -1,0 +1,98 @@
+.toc-container {
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 2rem 0;
+}
+
+.toc-sticky {
+    position: sticky;
+    top: 20px;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+}
+
+.toc-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #cbd5e1;
+}
+
+.toc-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0;
+}
+
+.toc-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem;
+    color: #64748b;
+    transition: color 0.2s;
+}
+
+.toc-toggle:hover {
+    color: #1e293b;
+}
+
+.toc-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.toc-nav.hidden {
+    display: none;
+}
+
+.toc-link {
+    display: block;
+    padding: 0.5rem 0.75rem;
+    color: #475569;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: all 0.2s;
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+.toc-link:hover {
+    background: #e2e8f0;
+    color: #1e293b;
+}
+
+.toc-link.active {
+    background: #3b82f6;
+    color: white;
+    font-weight: 500;
+}
+
+.toc-level-3 {
+    font-size: 0.8125rem;
+}
+
+.toc-level-4,
+.toc-level-5,
+.toc-level-6 {
+    font-size: 0.75rem;
+    color: #64748b;
+}
+
+@media (max-width: 768px) {
+    .toc-container {
+        padding: 1rem;
+    }
+    
+    .toc-sticky {
+        position: relative;
+        top: 0;
+        max-height: none;
+    }
+}

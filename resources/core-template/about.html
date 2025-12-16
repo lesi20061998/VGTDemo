@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home page | Vite Template</title>
+    <meta name="description" content="Home page" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css" />
+    <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://cdn.jsdelivr.net/npm/paper-css@0.4.1/paper.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="./assets/css/style.css">
+  </head>
+
+  <body>
+    <header class="c-header js-header">
+      <div class="c-header__top">
+        <div class="details l-container">
+          <div class="c-header__mail">
+            <h1>
+              <a href="mailto:info.thuananphat@gmail.com">
+                <img src="./assets/img/icon/ic-mail.svg" alt="" class="c-header__mailic" /> info.thuananphat@gmail.com </a>
+            </h1>
+          </div>
+          <div class="c-header__social">
+            <ul class="c-header__social--list">
+              <li class="c-header__social--item">
+                <a href=""><img src="./assets/img/social/fb.svg" alt="" /></a>
+              </li>
+              <li class="c-header__social--item">
+                <a href=""><img src="./assets/img/social/yt.svg" alt="" /></a>
+              </li>
+              <li class="c-header__social--item">
+                <a href=""><img src="./assets/img/social/zalo.svg" alt="" /></a>
+              </li>
+              <li class="c-header__social--item">
+                <a href=""><img src="./assets/img/social/tiktok.svg" alt="" /></a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="c-header__main">
+        <div class="details l-container">
+          <div class="c-header__hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <ul class="c-header__main--left c-gnav">
+            <li><a href="#">Giới thiệu</a></li>
+            <li><a href="#">Sản Phẩm</a></li>
+            <li><a href="#">Dịch Vụ</a></li>
+            <li><a href="#">Tin Tức</a></li>
+            <li><a href="#">Liên Hệ</a></li>
+          </ul>
+          <a href="/" class="c-header__logo"><img src="./assets/img/common/logo.png" alt=".... Doanh nghiệp ..." /></a>
+          <div class="c-header__main--right">
+            <form class="c-header__form" role="search" action="/search" method="get">
+              <input id="search-input" name="q" class="c-header__form--input" />
+              <img src="./assets/img/icon/ic-search.svg" alt="Tìm kiếm" />
+              <div class="search-tag" id="search-tag">
+                <p class="search-tag__ttl">Từ khóa phổ biến</p>
+                <ul class="search-tag__list js-search-tag">
+                  <li><a href="#" class="c-tag">Tag</a></li>
+                  <li><a href="#" class="c-tag">Tag</a></li>
+                  <li><a href="#" class="c-tag">Tag</a></li>
+                </ul>
+              </div>
+            </form>
+            <a href="tel:+0989181701" class="c-btn01"><img src="./assets/img/icon/ic-phone.svg" alt="" />0989181701</a>
+          </div>
+        </div>
+      </div>
+    </header>
+    <main class="p-subpage p-about">
+      <!-- Banner chính -->
+      <section class="c-mainvisual about-hero">
+        <div class="c-mainvisual__bg about-hero__image-wrapper">
+          <img class="about-hero__image" src="./assets/img/about/banner-hero-about.png" alt="Giải pháp cơ khí toàn diện" />
+        </div>
+        <div class="l-container about-hero__container">
+          <div class="about-hero__content-wrapper">
+            <div class="about-hero__content">
+              <div class="c-mainvisual__inner about-hero__content-inner">
+                <h2 class="about-hero__title" data-aos="fade-up" data-aos-easing="ease-in-out" data-aos-delay="50"> .... Doanh nghiệp ... <br />
+                  <span class="about-hero__title-highlight">GIẢI PHÁP CƠ KHÍ TOÀN DIỆN</span>
+                </h2>
+                <p class="about-hero__description" data-aos="fade-up" data-aos-easing="ease-in-out" data-aos-delay="100">Hơn 10 năm kinh nghiệm trong ngành cơ khí, mang đến sản phẩm chất lượng ổn định bền vững cho doanh nghiệp.</p>
+              </div>
+              <a href="#" class="c-btn01 c-btn01--fw400">Xem thêm</a>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- End banner chính -->
+      <!-- Sản phẩm -->
+      <section class="about-products">
+        <div class="about-products__inner l-container">
+          <!-- Tiêu đề -->
+          <h2 class="about-products__title"> CUNG CẤP GIẢI PHÁP CƠ KHÍ TOÀN DIỆN<br class="about-products__br" /> CHO DÂY CHUYỀN SẢN XUẤT <strong class="about-products__highlight">CÔNG NGHIỆP – XÂY DỰNG</strong>
+          </h2>
+          <!-- Tabs danh mục -->
+          <div class="about-products__tabs">
+            <button class="about-products__tab about-products__tab--active">
+              <span class="about-products__text">Máy gia công kim loại</span>
+              <img src="./assets/img/icon/ic-arrow-forward-outline.svg" alt="arrow" class="about-products__icon" />
+            </button>
+            <button class="about-products__tab">
+              <span class="about-products__text">Máy cơ khí chế tạo</span>
+              <img src="./assets/img/icon/ic-arrow-forward-outline.svg" alt="arrow" class="about-products__icon" />
+            </button>
+            <button class="about-products__tab">
+              <span class="about-products__text">Dụng cụ và phụ kiện cơ khí</span>
+              <img src="./assets/img/icon/ic-arrow-forward-outline.svg" alt="arrow" class="about-products__icon" />
+            </button>
+          </div>
+          <!-- Slider sản phẩm -->
+          <div class="about-products__slider-wrapper swiper">
+            <div class="about-products__slider swiper-wrapper">
+              <div class="about-products__item swiper-slide">
+                <div class="about-products__image-wrapper">
+                  <img src="./assets/img/about/product.jpg" alt="Máy gia công kim loại" class="about-products__image" />
+                </div>
+                <p class="about-products__name">Máy gia công kim loại</p>
+              </div>
+              <div class="about-products__item swiper-slide">
+                <div class="about-products__image-wrapper">
+                  <img src="./assets/img/about/product.jpg" alt="Máy gia công kim loại" class="about-products__image" />
+                </div>
+                <p class="about-products__name">Máy gia công kim loại</p>
+              </div>
+              <div class="about-products__item swiper-slide">
+                <div class="about-products__image-wrapper">
+                  <img src="./assets/img/about/product.jpg" alt="Máy gia công kim loại" class="about-products__image" />
+                </div>
+                <p class="about-products__name">Máy gia công kim loại</p>
+              </div>
+            </div>
+            <!-- Navigation + Pagination -->
+            <div class="about-products__controls">
+              <div class="swiper-button-prev"></div>
+              <div class="about-products__pagination swiper-pagination"></div>
+              <div class="swiper-button-next"></div>
+            </div>
+            <!-- Nút CTA -->
+            <!-- <a href="#" class="about-products__button">Xem tất cả</a> -->
+            <a href="#" class="c-btn01 c-btn01--fw400">Xem tất cả</a>
+          </div>
+        </div>
+      </section>
+      <!-- End Sản phẩm -->
+      <!-- Về chúng tôi -->
+      <section class="about-us__wrapper">
+        <div class="about-us__image-wrapper">
+          <img class="about-us__image-bg" src="./assets/img/about/about-us-bg.png" alt="Đội ngũ kỹ sư" />
+        </div>
+        <div class="about-us__inner">
+          <div class="about-us__content">
+            <h2 class="about-us__title c-ttl03" data-aos="fade-left" data-aos-easing="ease-in-out">VỀ CHÚNG TÔI</h2>
+            <h3 class="about-us__subtitle" data-aos="fade-left" data-aos-easing="ease-in-out" data-aos-delay="200">Đối tác cơ khí tin cậy – Vững bền cùng năm tháng</h3>
+            <p class="about-us__description" data-aos="fade-left" data-aos-easing="ease-in-out" data-aos-delay="300">.... Doanh nghiệp ... là doanh nghiệp hoạt động trong lĩnh vực cơ khí và cung cấp thiết bị công nghiệp, mang đến giải pháp toàn diện, chất lượng và tối ưu cho khách hàng.Trải qua nhiều năm hình thành và phát triển, chúng tôi đã trở thành đối tác chiến lược của hàng trăm công trình, nhà máy và doanh nghiệp trên toàn quốc. Với đội ngũ kỹ sư giàu kinh nghiệm cùng hệ thống sản phẩm đa dạng, .... Doanh nghiệp ... luôn cam kết đem lại uy tín – chất lượng – hiệu quả, đồng hành cùng sự phát triển bền vững của khách hàng và ngành công nghiệp Việt Nam.</p>
+            <a href="#" class="c-btn01 c-btn01--fw400">Xem thêm</a>
+          </div>
+          <div class="about-us__images">
+            <img data-aos="fade-right" data-aos-easing="ease-in-out" src="./assets/img/about/banner-mini-1.png" alt="Đội ngũ kỹ sư" class="about-us__image" />
+            <img data-aos="fade-right" data-aos-easing="ease-in-out" data-aos-delay="100" src="./assets/img/about/banner-mini-1.png" alt="Đội ngũ kỹ sư" class="about-us__image" />
+          </div>
+        </div>
+      </section>
+      <!-- End -->
+      <!-- Giá trị cốt lõi -->
+      <section class="about-core-values__wrapper">
+        <div class="about-core-values__image-wrapper">
+          <img class="about-core-values__image-bg" src="./assets/img/about/about-core-bg.png" alt="Giá trị cốt lõi" />
+        </div>
+        <div class="about-core-values__inner l-container">
+          <div class="about-core-values__content">
+            <h2 class="about-core-values__title c-ttl03">GIÁ TRỊ CỐT LÕI</h2>
+            <div class="about-core-values__list">
+              <div class="about-core-values__item">
+                <div class="about-core-values__icon">
+                  <img src="./assets/img/icon/Ellipse1.svg" alt="Bền vững" />
+                </div>
+                <h3 class="about-core-values__item-title">BỀN VỮNG</h3>
+                <p class="about-core-values__desc">Chúng tôi đặt mục tiêu phát triển dài hạn, bảo vệ môi trường và tạo ra giá trị bền vững cho khách hàng, đối tác và cộng đồng.</p>
+              </div>
+              <div class="about-core-values__item">
+                <div class="about-core-values__icon">
+                  <img src="./assets/img/icon/Ellipse2.svg" alt="Đổi mới" />
+                </div>
+                <h3 class="about-core-values__item-title">ĐỔI MỚI</h3>
+                <p class="about-core-values__desc">Liên tục cải tiến và ứng dụng công nghệ hiện đại để mang đến giải pháp cơ khí tiên tiến, tối ưu chi phí và nâng cao hiệu quả sản xuất.</p>
+              </div>
+              <div class="about-core-values__item">
+                <div class="about-core-values__icon">
+                  <img src="./assets/img/icon/Ellipse3.svg" alt="Khách hàng" />
+                </div>
+                <h3 class="about-core-values__item-title">KHÁCH HÀNG</h3>
+                <p class="about-core-values__desc">Mọi hoạt động của .... Doanh nghiệp ... đều hướng đến sự hài lòng. Chúng tôi luôn lắng nghe và đáp ứng tốt nhất nhu cầu của đối tác.</p>
+              </div>
+              <div class="about-core-values__item">
+                <div class="about-core-values__icon">
+                  <img src="./assets/img/icon/Ellipse4.svg" alt="Hợp tác" />
+                </div>
+                <h3 class="about-core-values__item-title">HỢP TÁC</h3>
+                <p class="about-core-values__desc">Xây dựng mối quan hệ bền chặt dựa trên niềm tin và sự đồng hành, cùng phát triển với khách hàng, nhân sự và cộng đồng.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- End -->
+      <!-- Tầm nhìn sứ mệnh -->
+      <section class="about-vision-mission">
+        <div class="about-vision-mission__inner">
+          <!-- Tầm nhìn -->
+          <div class="about-vision-mission__item about-vision-mission__item--vision">
+            <div class="about-vision-mission__bg">
+              <img class="about-vision-mission__bg-left" src="./assets/img/about/bg-tam-nhin.jpg" alt="Tầm nhìn" />
+            </div>
+            <div class="about-vision-mission__content">
+              <h3 class="about-vision-mission__title">TẦM NHÌN</h3>
+              <p class="about-vision-mission__description">Trở thành doanh nghiệp cơ khí hàng đầu Việt Nam, tiên phong trong việc ứng dụng công nghệ và đổi mới sáng tạo, góp phần nâng tầm ngành cơ khí trong nước vươn ra quốc tế.</p>
+            </div>
+          </div>
+          <!-- Sứ mệnh -->
+          <div class="about-vision-mission__item about-vision-mission__item--mission">
+            <div class="about-vision-mission__bg">
+              <img class="about-vision-mission__bg-right" src="./assets/img/about/bg-tam-nhin.jpg" alt="Sứ mệnh" />
+            </div>
+            <div class="about-vision-mission__content">
+              <h3 class="about-vision-mission__title">SỨ MỆNH</h3>
+              <ul class="about-vision-mission__list">
+                <li class="about-vision-mission__list-item">Cung cấp các sản phẩm chất lượng cao</li>
+                <li class="about-vision-mission__list-item">Xây dựng niềm tin bằng uy tín và sự tận tâm</li>
+                <li class="about-vision-mission__list-item">Tạo dựng môi trường làm việc chuyên nghiệp</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- End -->
+      <!-- Lịch sử hình thành -->
+      <section class="about-history">
+        <!-- Background -->
+        <div class="about-history__bg">
+          <img class="about-history__bg-image" src="./assets/img/about/bg-lich-su-hinh-thanh.png" alt="Lịch sử hình thành" />
+        </div>
+        <div class="about-history__inner l-container">
+          <!-- Tiêu đề -->
+          <h2 class="about-history__title c-ttl03">LỊCH SỬ HÌNH THÀNH</h2>
+          <div class="about-history__subtitle-wr">
+            <p class="about-history__subtitle">Trải qua chặng đường phát triển, .... Doanh nghiệp ... không ngừng mở rộng quy mô, khẳng định năng lực, trở thành đối tác tin cậy trong lĩnh vực cơ khí tại Việt Nam. </p>
+          </div>
+          <!-- Timeline (swiper) -->
+          <div class="timeline l-container">
+            <div class="swiper timeline__slider">
+              <div class="swiper-wrapper timeline__list">
+                <div class="swiper-slide timeline__item">
+                  <div class="timeline__box timeline__box--top">
+                    <div class="timeline__img">
+                      <img src="./assets/img/about/banner-mini-1.png" alt="2017" />
+                    </div>
+                    <div class="time"></div>
+                    <div class="timeline__desc-wr">
+                      <p class="timeline__year">2015</p>
+                      <p class="timeline__desc">Thành lập Công ty TNHH .... Doanh nghiệp ..., định hướng phát triển trong lĩnh vực cơ khí và cung cấp thiết bị công nghiệp.</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="swiper-slide timeline__item">
+                  <div class="timeline__box timeline__box--bottom">
+                    <div class="timeline__desc-wr">
+                      <p class="timeline__year">2021</p>
+                      <p class="timeline__desc">Xây dựng hệ thống kho bãi và xưởng gia công cơ khí, nâng cao năng lực sản xuất.</p>
+                    </div>
+                    <div class="time"></div>
+                    <div class="timeline__img">
+                      <img src="./assets/img/about/banner-mini-1.png" alt="2018" />
+                    </div>
+                  </div>
+                </div>
+                <div class="swiper-slide timeline__item">
+                  <div class="timeline__box timeline__box--bottom">
+                    <div class="timeline__img">
+                      <img src="./assets/img/about/banner-mini-1.png" alt="2018" />
+                    </div>
+                    <div class="time"></div>
+                    <div class="timeline__desc-wr">
+                      <p class="timeline__year">2024</p>
+                      <p class="timeline__desc">Tiếp tục mở rộng mạng lưới phân phối, đầu tư công nghệ hiện đại, hướng đến mục tiêu trở thành doanh nghiệp cơ khí hàng đầu tại Việt Nam.</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="swiper-slide timeline__item">
+                  <div class="timeline__box timeline__box--bottom">
+                    <div class="timeline__desc-wr">
+                      <p class="timeline__year">20</p>
+                      <p class="timeline__desc">TOP FLOW thành lập, đối tác van <strong>TiS (Italy)</strong></p>
+                    </div>
+                    <div class="time"></div>
+                    <div class="timeline__img">
+                      <img src="./assets/img/about/banner-mini-1.png" alt="2018" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Navigation -->
+            <div class="timeline__controls-wrap">
+              <div class="timeline__controls">
+                <div class="swiper-button-prev"></div>
+                <div class="swiper-pagination-timeline"></div>
+                <div class="swiper-button-next"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- End Lịch sử hình thành -->
+      <!-- Thành tựu -->
+      <section class="about-achievements l-container">
+        <h2 class="about-achievements__title c-ttl03">THÀNH TỰU CỦA CHÚNG TÔI</h2>
+        <div class="swiper about-achievements__slider">
+          <div class="swiper-wrapper">
+            <div class="swiper-slide about-achievements__card">
+              <img src="./assets/img/about/certificate.jpg" alt="Chứng chỉ 1" class="about-achievements__image" />
+            </div>
+            <div class="swiper-slide about-achievements__card">
+              <img src="./assets/img/about/certificate.jpg" alt="Chứng chỉ 1" class="about-achievements__image" />
+            </div>
+            <div class="swiper-slide about-achievements__card">
+              <img src="./assets/img/about/certificate.jpg" alt="Chứng chỉ 1" class="about-achievements__image" />
+            </div>
+          </div>
+          <!-- <div class="swiper-button-prev"></div>
+                <div class="swiper-button-next"></div> -->
+        </div>
+      </section>
+      <!-- End thành tựu -->
+      <!-- Văn hóa doanh nghiệp -->
+      <section class="about-culture">
+        <div class="about-culture__image-wrapper">
+          <img class="about-culture__image-bg" src="./assets/img/about/about-culture-banner.png" alt="Giá trị cốt lõi" />
+        </div>
+        <div class="about-culture__inner l-container">
+          <div class="about-culture__images-group">
+            <div class="about-culture__image-left">
+              <img src="./assets/img/about/banner-about.jpg" alt="Nhân viên công trường" class="about-culture__image" />
+            </div>
+            <div class="about-culture__image-right">
+              <img src="./assets/img/about/banner-about-2.jpg" alt="Trao đổi công việc" class="about-culture__image" />
+            </div>
+          </div>
+          <div class="about-culture__content">
+            <h2 class="about-culture__title c-ttl03">VĂN HÓA DOANH NGHIỆP</h2>
+            <div class="about-culture__description-wrapper">
+              <p class="about-culture__description"> Tại .... Doanh nghiệp ... được xây dựng trên nền tảng chính trực, <span class="about-culture__highlight">sáng tạo</span> và <span class="about-culture__highlight">trách nhiệm</span>. <br /> Chúng tôi đề cao tinh thần gắn kết, lấy con người làm trung tâm và lấy chất lượng làm danh dự. <br /> Mỗi sản phẩm cơ khí không chỉ là kết quả của công nghệ, mà còn là tâm huyết và niềm tự hào của tập thể .... Doanh nghiệp .... Chúng tôi tin rằng văn hóa bền vững chính là chìa khóa để doanh nghiệp phát triển lâu dài và đồng hành cùng khách hàng. </p>
+            </div>
+            <div class="about-culture__button">
+              <a href="#" class="c-btn01 c-btn01--fw400">Xem thêm</a>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- End -->
+      <!-- THUONG HIEU  -->
+      <section class="brand">
+        <div class="details" data-aos="fade-up" data-aos-duration="1000">
+          <h2 class="c-ttl03" data-aos="fade-up" data-aos-duration="1000">ĐỐI TÁC KHÁCH HÀNG</h2>
+          <div class="brand-slider swiper">
+            <div class="swiper-wrapper">
+              <div class="brand-item swiper-slide">
+                <a href="#"><img src="./assets/img/about/partners-1.png" alt="" loading="lazy" /></a>
+              </div>
+              <div class="brand-item swiper-slide">
+                <a href="#"><img src="./assets/img/about/partners-2.png" alt="" loading="lazy" /></a>
+              </div>
+              <div class="brand-item swiper-slide">
+                <a href="#"><img src="./assets/img/about/partners-3.png" alt="" loading="lazy" /></a>
+              </div>
+              <div class="brand-item swiper-slide">
+                <a href="#"><img src="./assets/img/about/partners-4.png" alt="" loading="lazy" /></a>
+              </div>
+              <div class="brand-item swiper-slide">
+                <a href="#"><img src="./assets/img/about/partners-1.png" alt="" loading="lazy" /></a>
+              </div>
+              <div class="brand-item swiper-slide">
+                <a href="#"><img src="./assets/img/about/partners-2.png" alt="" loading="lazy" /></a>
+              </div>
+              <div class="brand-item swiper-slide">
+                <a href="#"><img src="./assets/img/about/partners-3.png" alt="" loading="lazy" /></a>
+              </div>
+              <div class="brand-item swiper-slide">
+                <a href="#"><img src="./assets/img/about/partners-4.png" alt="" loading="lazy" /></a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- End -->
+    </main>
+    <footer class="c-footer">
+      <div class="details">
+        <div class="c-footer__top">
+          <div class="l-container">
+            <h2 class="c-footer__ttl" data-aos="fade-up" data-aos-duration="1000">ĐĂNG KÝ TƯ VẤN</h2>
+            <div class="c-footer__contact" data-aos="fade-up" data-aos-duration="1000">
+              <div class="c-footer__txt">Sit amet tellus cras adipiscing enim eu turpis egestas. Interdum velit laoreet id donec ultrices tincidunt. Cursus vitae congue mauris rhoncus aenean vel. Nisi quis eleifend quam adipiscing vitae proin sagittis.</div>
+              <div class="c-footer__input">
+                <input type="text" placeholder="Nhập số điện thoại của bạn" />
+                <button class="c-btn01 c-btn01--fw400">Đăng ký</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="c-footer__middle">
+          <div class="c-footer__middle-wrapper l-container">
+            <div data-aos="fade-up" data-aos-duration="1000">
+              <a href="#" class="c-footer__logo">
+                <img src="../assets/img/common/logo.png" alt=".... Doanh nghiệp ..." />
+                <h3 class="c-footer__brand">.... Doanh nghiệp ...</h3>
+              </a>
+            </div>
+            <div class="c-footer__menu">
+              <div class="c-footer__item" data-aos="fade-up" data-aos-duration="1000">
+                <p class="c-footer__item-ttl">Thông tin</p>
+                <div class="c-footer__info">
+                  <strong>Công Ty TNHH VNext Globla Tech</strong>
+                  <p>Địa chỉ: 108/02 Khu đô thị Vạn Phúc, Tp-HCM</p>
+                  <p><a href="tel:+0969699879">Hotline: 0969 699 879</a></p>
+                  <p><a href="mailto:info@vnextglobaltech.com">Mail: info@vnextglobaltech.com</a></p>
+                </div>
+              </div>
+              <div class="c-footer__item" data-aos="fade-up" data-aos-duration="1000">
+                <p class="c-footer__item-ttl">Thông tin</p>
+                <ul>
+                  <li><a href="#">Nhớt Công Nghiệp</a></li>
+                  <li><a href="#">Nhớt Ngành Điện</a></li>
+                  <li><a href="#">Nhớt Hàng Hải</a></li>
+                  <li><a href="#">Nhớt Xe Hơi</a></li>
+                  <li><a href="#">Nhớt Xe Tải - Buýt</a></li>
+                </ul>
+              </div>
+              <div class="c-footer__item" data-aos="fade-up" data-aos-duration="1000">
+                <p class="c-footer__item-ttl">Dịch vụ</p>
+                <ul>
+                  <li><a href="#">Chính sách bán hàng</a></li>
+                  <li><a href="#">Chính sách vận chuyển</a></li>
+                  <li><a href="#">Hẫu mãi sau khi mua</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="c-footer__map">
+          <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3918.5802516987155!2d106.71017677570377!3d10.843399457953455!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3175290020f6d751%3A0x9fb3806425931799!2sC%C3%94NG%20TY%20TNHH%20VNEXT%20GLOBAL%20TECH!5e0!3m2!1sen!2s!4v1758006281055!5m2!1sen!2s" width="100%" height="100%" style="border: 0" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>
+      </div>
+    </footer>
+    <script>
+      console.log("home page")
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.matchHeight/0.7.2/jquery.matchHeight-min.js" integrity="sha512-/bOVV1DV1AQXcypckRwsR9ThoCj7FqTV2/0Bm79bL3YSyLkVideFLE3MIZkq1u5t28ke1c0n31WYCOrO01dsUg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="./assets/js/main.js"></script>
+    <script src="./assets/js/animation.js"></script>
+    <script src="./assets/js/slider.js"></script>
+    <script src="./assets/js/slider_subpage.js"></script>
+  </body>
+
+</html>

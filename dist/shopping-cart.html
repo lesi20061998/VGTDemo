@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home page | Vite Template</title>
+    <meta name="description" content="Home page" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css" />
+    <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://cdn.jsdelivr.net/npm/paper-css@0.4.1/paper.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="./assets/css/style.css">
+  </head>
+
+  <body>
+    <header class="c-header js-header">
+      <div class="c-header__top" id="topHeader">
+        <div class="c-header__left">
+          <div class="c-header__logo">
+            <a href=""> <img src="./assets/img/common/logo.png" alt="Hung Thinh Sport Logo" /></a>
+          </div>
+          <div class="c-header__search">
+            <img src="./assets/img/icon/ic_search.svg" alt="Tìm kiếm" class="c-header__search-icon" />
+            <input type="text" class="c-header__search-input" placeholder="Nhập sản phẩm tìm kiếm" />
+          </div>
+        </div>
+        <div class="c-header__right">
+          <div class="c-header__auth-group">
+            <a href="#" class="c-header__auth c-header__auth--register">
+              <img src="./assets/img/icon/ic_profile.svg" alt="Đăng ký" /> Đăng ký </a>
+            <span class="c-header__auth-separator">/</span>
+            <a href="#" class="c-header__auth c-header__auth--login"> Đăng nhập </a>
+          </div>
+          <a href="#" class="c-header__cart">
+            <img src="./assets/img/icon/ic_cart.svg" alt="Giỏ hàng" /> Giỏ hàng <span>(0)</span>
+          </a>
+        </div>
+        <!-- Hamburger + cart icon cho SP -->
+        <a href="#" class="c-header__cart-icon-sp" id="cartIconSp" aria-label="Giỏ hàng">
+          <img src="./assets/img/icon/ic_cart.svg" alt="Giỏ hàng" />
+          <span class="cart-count">(0)</span>
+        </a>
+        <button class="c-header__hamburger" id="hamburger" aria-label="Mở menu">
+          <span class="c-header__hamburger-line"></span>
+          <span class="c-header__hamburger-line"></span>
+          <span class="c-header__hamburger-line"></span>
+        </button>
+      </div>
+      <nav class="c-header__nav-container" id="navContainer">
+        <!-- Phần đăng ký đăng nhập trong menu SP -->
+        <div class="c-header__auth-group-sp">
+          <a href="#" class="c-header__auth c-header__auth--register">Đăng ký</a>
+          <span class="c-header__auth-separator">/</span>
+          <a href="#" class="c-header__auth c-header__auth--login">Đăng nhập</a>
+        </div>
+        <div class="c-header__nav" id="navMenu">
+          <a href="#" class="c-header__nav-item">GIÀY ĐÁ BANH</a>
+          <a href="#" class="c-header__nav-item">PHỤ KIỆN ĐÁ BANH</a>
+          <a href="#" class="c-header__nav-item"><img src="./assets/img/icon/ic_fire.svg" class="c-header__nav-item--hot" />KHUYẾN MÃI</a>
+          <a href="#" class="c-header__nav-item">CHÍNH SÁCH</a>
+          <a href="#" class="c-header__nav-item">GIỚI THIỆU</a>
+          <a href="#" class="c-header__nav-item">TIN TỨC</a>
+          <a href="#" class="c-header__nav-item">LIÊN HỆ</a>
+        </div>
+      </nav>
+    </header>
+    <main class="p-top">
+      <div class="l-container">
+        <section class="c-breadcrumb l-pd-0-54px" aria-label="breadcrumb">
+          <ol class="c-breadcrumb__list">
+            <li class="c-breadcrumb__item">
+              <a href="#" class="c-breadcrumb__link">Trang chủ</a>
+            </li>
+            <li class="c-breadcrumb__separator">/</li>
+            <li class="c-breadcrumb__item c-breadcrumb__item--active">
+              <span class="c-breadcrumb__link">Giỏ hàng</span>
+            </li>
+          </ol>
+        </section>
+        <section class="cart l-pd-0-54px">
+          <div class="l-sidebar">
+            <div class="l-sidebar__left">
+              <h2 class="cart__title">Giỏ hàng của bạn</h2>
+              <div class="cart-item">
+                <div class="cart-item__media">
+                  <div class="cart-item__thump">
+                    <img src="./assets/img/products/sanpham5.png" alt="" class="cart-item__image" />
+                  </div>
+                  <div class="cart-item__quantity-box">
+                    <button class="cart-item__qty-minus">-</button>
+                    <input type="text" class="cart-item__qty-input" value="1" />
+                    <button class="cart-item__qty-plus">+</button>
+                  </div>
+                </div>
+                <div class="cart-item__details">
+                  <h3 class="cart-item__name ug-line-break-2">Nike Mercurial Vapor 16</h3>
+                  <p class="cart-item__meta">Giày đá banh</p>
+                  <p class="cart-item__attribute">Màu xanh dương / trắng</p>
+                  <p class="cart-item__attribute">Size 43</p>
+                </div>
+                <div class="cart-item__price">550,000₫</div>
+              </div>
+              <div class="cart-item">
+                <div class="cart-item__media">
+                  <div class="cart-item__thump">
+                    <img src="./assets/img/products/sanpham5.png" alt="" class="cart-item__image" />
+                  </div>
+                  <div class="cart-item__quantity-box">
+                    <button class="cart-item__qty-minus">-</button>
+                    <input type="text" class="cart-item__qty-input" value="1" />
+                    <button class="cart-item__qty-plus">+</button>
+                  </div>
+                </div>
+                <div class="cart-item__details">
+                  <h3 class="cart-item__name">Nike Mercurial Vapor 16</h3>
+                  <p class="cart-item__meta">Giày đá banh</p>
+                  <p class="cart-item__attribute">Màu xanh dương / trắng</p>
+                  <p class="cart-item__attribute">Size 43</p>
+                </div>
+                <div class="cart-item__price">550,000₫</div>
+              </div>
+            </div>
+            <div class="l-sidebar__right">
+              <div class="order-summary">
+                <h2 class="order-summary__title">Đơn hàng tạm tính</h2>
+                <div class="order-summary__lines">
+                  <div class="order-summary__line">
+                    <span class="order-summary__label">Thành tiền</span>
+                    <span class="order-summary__value">1,100,000₫</span>
+                  </div>
+                  <div class="order-summary__line">
+                    <span class="order-summary__label">Phí ship</span>
+                    <span class="order-summary__value">100,000₫</span>
+                  </div>
+                  <div class="order-summary__line">
+                    <span class="order-summary__label">Khuyến mãi</span>
+                    <span class="order-summary__value">-100,000₫</span>
+                  </div>
+                  <div class="order-summary__line order-summary__line--total">
+                    <span class="order-summary__label">Tổng cộng</span>
+                    <span class="order-summary__value">1,100,000₫</span>
+                  </div>
+                  <a href="/checkout.html" class="order-summary__checkout-btn">Thanh toán</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section class="c-viewed-products">
+          <div class="l-container l-pd-0-54px">
+            <div class="c-viewed-products__header">
+              <h2 class="c-viewed-products__title">Sản phẩm đã xem</h2>
+              <button class="c-viewed-products__clear js-viewed-products__clear">Xoá lịch sử</button>
+            </div>
+            <div class="c-viewed-products__list">
+              <article class="c-viewed-products__item">
+                <a href="#" class="c-viewed-products__link">
+                  <div class="c-viewed-products__thumb">
+                    <img src="./assets/img/products/sanpham2.png" alt="Giày thể thao xanh" />
+                  </div>
+                  <div class="c-viewed-products__content">
+                    <h3 class="c-viewed-products__name ug-line-break-2">Tiêu đề sản phẩm đã xem</h3>
+                    <p class="c-viewed-products__price">550.000đ</p>
+                  </div>
+                </a>
+                <button class="c-viewed-products__remove js-viewed-products__remove" aria-label="Xoá sản phẩm">×</button>
+              </article>
+              <article class="c-viewed-products__item">
+                <a href="#" class="c-viewed-products__link">
+                  <div class="c-viewed-products__thumb">
+                    <img src="./assets/img/products/sanpham2.png" alt="Giày thể thao xanh" />
+                  </div>
+                  <div class="c-viewed-products__content">
+                    <h3 class="c-viewed-products__name ug-line-break-2">Tiêu đề sản phẩm đã xem</h3>
+                    <p class="c-viewed-products__price">550.000đ</p>
+                  </div>
+                </a>
+                <button class="c-viewed-products__remove js-viewed-products__remove" aria-label="Xoá sản phẩm">×</button>
+              </article>
+              <article class="c-viewed-products__item">
+                <a href="#" class="c-viewed-products__link">
+                  <div class="c-viewed-products__thumb">
+                    <img src="./assets/img/products/sanpham2.png" alt="Giày thể thao xanh" />
+                  </div>
+                  <div class="c-viewed-products__content">
+                    <h3 class="c-viewed-products__name ug-line-break-2">Tiêu đề sản phẩm đã xem</h3>
+                    <p class="c-viewed-products__price">550.000đ</p>
+                  </div>
+                </a>
+                <button class="c-viewed-products__remove js-viewed-products__remove" aria-label="Xoá sản phẩm">×</button>
+              </article>
+              <article class="c-viewed-products__item">
+                <a href="#" class="c-viewed-products__link">
+                  <div class="c-viewed-products__thumb">
+                    <img src="./assets/img/products/sanpham2.png" alt="Giày thể thao xanh" />
+                  </div>
+                  <div class="c-viewed-products__content">
+                    <h3 class="c-viewed-products__name ug-line-break-2">Tiêu đề sản phẩm đã xem</h3>
+                    <p class="c-viewed-products__price">550.000đ</p>
+                  </div>
+                </a>
+                <button class="c-viewed-products__remove js-viewed-products__remove" aria-label="Xoá sản phẩm">×</button>
+              </article>
+            </div>
+          </div>
+        </section>
+        <section class="c-related-products">
+          <div class="l-container">
+            <div class="c-related-products__header">
+              <h2 class="c-related-products__title">CÓ THỂ BẠN CŨNG THÍCH</h2>
+              <div class="c-nav">
+                <div class="swiper-button-prev"></div>
+                <div class="swiper-button-next"></div>
+              </div>
+            </div>
+            <div class="swiper c-related-products__slider">
+              <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                  <article class="c-related-products__item">
+                    <div class="c-related-products__link">
+                      <a href="#" class="c-related-products__thumb">
+                        <img src="./assets/img/products/related-product.svg" alt="Giày đá banh nam" />
+                        <div class="c-related-products__action">
+                          <button class="c-related-products__action-btn" aria-label="Thêm vào giỏ hàng">
+                            <img src="./assets/img/icon/add-cart.svg" alt="Cart icon" />
+                          </button>
+                          <button class="c-related-products__action-btn" aria-label="Xem nhanh">
+                            <img src="./assets/img/icon/payment.svg" alt="Eye icon" />
+                          </button>
+                        </div>
+                      </a>
+                      <a href="#" class="c-related-products__content">
+                        <h3 class="c-related-products__name ug-line-break-2">Tiêu đề sản phẩm</h3>
+                        <p class="c-related-products__price">550.000₫</p>
+                      </a>
+                      <ul class="c-related-products__sizes js-related-products__sizes-list">
+                        <li class="js-related-products__size-item">35.5</li>
+                        <li class="js-related-products__size-item is-active">36</li>
+                        <li class="js-related-products__size-item">36.5</li>
+                        <li class="js-related-products__size-item">37</li>
+                        <li class="js-related-products__size-item">38</li>
+                        <li class="js-related-products__size-item">39</li>
+                        <li class="js-related-products__size-item">40</li>
+                        <li class="js-related-products__size-item">41</li>
+                      </ul>
+                    </div>
+                  </article>
+                </div>
+                <div class="swiper-slide">
+                  <article class="c-related-products__item">
+                    <div class="c-related-products__link">
+                      <a href="#" class="c-related-products__thumb">
+                        <img src="./assets/img/products/related-product.svg" alt="Giày đá banh nam" />
+                        <div class="c-related-products__action">
+                          <button class="c-related-products__action-btn" aria-label="Thêm vào giỏ hàng">
+                            <img src="./assets/img/icon/add-cart.svg" alt="Cart icon" />
+                          </button>
+                          <button class="c-related-products__action-btn" aria-label="Xem nhanh">
+                            <img src="./assets/img/icon/payment.svg" alt="Eye icon" />
+                          </button>
+                        </div>
+                      </a>
+                      <a href="#" class="c-related-products__content">
+                        <h3 class="c-related-products__name ug-line-break-2">Tiêu đề sản phẩm</h3>
+                        <p class="c-related-products__price">550.000₫</p>
+                      </a>
+                      <ul class="c-related-products__sizes js-related-products__sizes-list">
+                        <li class="js-related-products__size-item">35.5</li>
+                        <li class="js-related-products__size-item is-active">36</li>
+                        <li class="js-related-products__size-item">36.5</li>
+                        <li class="js-related-products__size-item">37</li>
+                        <li class="js-related-products__size-item">38</li>
+                        <li class="js-related-products__size-item">39</li>
+                        <li class="js-related-products__size-item">40</li>
+                        <li class="js-related-products__size-item">41</li>
+                      </ul>
+                    </div>
+                  </article>
+                </div>
+                <div class="swiper-slide">
+                  <article class="c-related-products__item">
+                    <div class="c-related-products__link">
+                      <a href="#" class="c-related-products__thumb">
+                        <img src="./assets/img/products/related-product.svg" alt="Giày đá banh nam" />
+                        <div class="c-related-products__action">
+                          <button class="c-related-products__action-btn" aria-label="Thêm vào giỏ hàng">
+                            <img src="./assets/img/icon/add-cart.svg" alt="Cart icon" />
+                          </button>
+                          <button class="c-related-products__action-btn" aria-label="Xem nhanh">
+                            <img src="./assets/img/icon/payment.svg" alt="Eye icon" />
+                          </button>
+                        </div>
+                      </a>
+                      <a href="#" class="c-related-products__content">
+                        <h3 class="c-related-products__name ug-line-break-2">Tiêu đề sản phẩm</h3>
+                        <p class="c-related-products__price">550.000₫</p>
+                      </a>
+                      <ul class="c-related-products__sizes js-related-products__sizes-list">
+                        <li class="js-related-products__size-item">35.5</li>
+                        <li class="js-related-products__size-item is-active">36</li>
+                        <li class="js-related-products__size-item">36.5</li>
+                        <li class="js-related-products__size-item">37</li>
+                        <li class="js-related-products__size-item">38</li>
+                        <li class="js-related-products__size-item">39</li>
+                        <li class="js-related-products__size-item">40</li>
+                        <li class="js-related-products__size-item">41</li>
+                      </ul>
+                    </div>
+                  </article>
+                </div>
+                <div class="swiper-slide">
+                  <article class="c-related-products__item">
+                    <div class="c-related-products__link">
+                      <a href="#" class="c-related-products__thumb">
+                        <img src="./assets/img/products/related-product.svg" alt="Giày đá banh nam" />
+                        <div class="c-related-products__action">
+                          <button class="c-related-products__action-btn" aria-label="Thêm vào giỏ hàng">
+                            <img src="./assets/img/icon/add-cart.svg" alt="Cart icon" />
+                          </button>
+                          <button class="c-related-products__action-btn" aria-label="Xem nhanh">
+                            <img src="./assets/img/icon/payment.svg" alt="Eye icon" />
+                          </button>
+                        </div>
+                      </a>
+                      <a href="#" class="c-related-products__content">
+                        <h3 class="c-related-products__name ug-line-break-2">Tiêu đề sản phẩm</h3>
+                        <p class="c-related-products__price">550.000₫</p>
+                      </a>
+                      <ul class="c-related-products__sizes js-related-products__sizes-list">
+                        <li class="js-related-products__size-item">35.5</li>
+                        <li class="js-related-products__size-item is-active">36</li>
+                        <li class="js-related-products__size-item">36.5</li>
+                        <li class="js-related-products__size-item">37</li>
+                        <li class="js-related-products__size-item">38</li>
+                        <li class="js-related-products__size-item">39</li>
+                        <li class="js-related-products__size-item">40</li>
+                        <li class="js-related-products__size-item">41</li>
+                      </ul>
+                    </div>
+                  </article>
+                </div>
+                <div class="swiper-slide">
+                  <article class="c-related-products__item">
+                    <div class="c-related-products__link">
+                      <a href="#" class="c-related-products__thumb">
+                        <img src="./assets/img/products/related-product.svg" alt="Giày đá banh nam" />
+                        <div class="c-related-products__action">
+                          <button class="c-related-products__action-btn" aria-label="Thêm vào giỏ hàng">
+                            <img src="./assets/img/icon/add-cart.svg" alt="Cart icon" />
+                          </button>
+                          <button class="c-related-products__action-btn" aria-label="Xem nhanh">
+                            <img src="./assets/img/icon/payment.svg" alt="Eye icon" />
+                          </button>
+                        </div>
+                      </a>
+                      <a href="#" class="c-related-products__content">
+                        <h3 class="c-related-products__name ug-line-break-2">Tiêu đề sản phẩm</h3>
+                        <p class="c-related-products__price">550.000₫</p>
+                      </a>
+                      <ul class="c-related-products__sizes js-related-products__sizes-list">
+                        <li class="js-related-products__size-item">35.5</li>
+                        <li class="js-related-products__size-item is-active">36</li>
+                        <li class="js-related-products__size-item">36.5</li>
+                        <li class="js-related-products__size-item">37</li>
+                        <li class="js-related-products__size-item">38</li>
+                        <li class="js-related-products__size-item">39</li>
+                        <li class="js-related-products__size-item">40</li>
+                        <li class="js-related-products__size-item">41</li>
+                      </ul>
+                    </div>
+                  </article>
+                </div>
+                <div class="swiper-slide">
+                  <article class="c-related-products__item">
+                    <div class="c-related-products__link">
+                      <a href="#" class="c-related-products__thumb">
+                        <img src="./assets/img/products/related-product.svg" alt="Giày đá banh nam" />
+                        <div class="c-related-products__action">
+                          <button class="c-related-products__action-btn" aria-label="Thêm vào giỏ hàng">
+                            <img src="./assets/img/icon/add-cart.svg" alt="Cart icon" />
+                          </button>
+                          <button class="c-related-products__action-btn" aria-label="Xem nhanh">
+                            <img src="./assets/img/icon/payment.svg" alt="Eye icon" />
+                          </button>
+                        </div>
+                      </a>
+                      <a href="#" class="c-related-products__content">
+                        <h3 class="c-related-products__name ug-line-break-2">Tiêu đề sản phẩm</h3>
+                        <p class="c-related-products__price">550.000₫</p>
+                      </a>
+                      <ul class="c-related-products__sizes js-related-products__sizes-list">
+                        <li class="js-related-products__size-item">35.5</li>
+                        <li class="js-related-products__size-item is-active">36</li>
+                        <li class="js-related-products__size-item">36.5</li>
+                        <li class="js-related-products__size-item">37</li>
+                        <li class="js-related-products__size-item">38</li>
+                        <li class="js-related-products__size-item">39</li>
+                        <li class="js-related-products__size-item">40</li>
+                        <li class="js-related-products__size-item">41</li>
+                      </ul>
+                    </div>
+                  </article>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section class="c-feature">
+          <div class="l-container">
+            <h2 class="c-feature__title">TẠI SAO CHỌN CHÚNG TÔI</h2>
+            <ul class="c-feature__list">
+              <li class="c-feature__item">
+                <div class="c-feature__box">
+                  <div class="c-feature__icon">
+                    <img src="./assets/img/icon/delivery-man.svg" alt="Shipping icon" />
+                  </div>
+                  <h3 class="c-feature__heading">SHIP TOÀN QUỐC</h3>
+                  <p class="c-feature__description">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor</p>
+                </div>
+              </li>
+              <li class="c-feature__item">
+                <div class="c-feature__box">
+                  <div class="c-feature__icon">
+                    <img src="./assets/img/icon/award.svg" alt="Shipping icon" />
+                  </div>
+                  <h3 class="c-feature__heading">CAM KẾT CHẤT LƯỢNG</h3>
+                  <p class="c-feature__description">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor</p>
+                </div>
+              </li>
+              <li class="c-feature__item">
+                <div class="c-feature__box">
+                  <div class="c-feature__icon">
+                    <img src="./assets/img/icon/best-price.svg" alt="Shipping icon" />
+                  </div>
+                  <h3 class="c-feature__heading">GIÁ CẢ CẠNH TRANH</h3>
+                  <p class="c-feature__description">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor</p>
+                </div>
+              </li>
+              <li class="c-feature__item">
+                <div class="c-feature__box">
+                  <div class="c-feature__icon">
+                    <img src="./assets/img/icon/handshake.svg" alt="Shipping icon" />
+                  </div>
+                  <h3 class="c-feature__heading">TUYỂN ĐẠI LÝ - CTV</h3>
+                  <p class="c-feature__description">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor</p>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </section>
+      </div>
+    </main>
+    <footer class="c-footer">
+      <div class="details">
+        <div class="c-footer__middle">
+          <div class="c-footer__middle-wrapper l-container">
+            <div class="c-footer__menu l-pd-0-54px">
+              <div class="c-footer__item" data-aos-duration="1000">
+                <p class="c-footer__item-ttl">THÔNG TIN CỬA HÀNG</p>
+                <div class="c-footer__info">
+                  <p class="c-footer__links c-footer__links--flex">
+                    <img src="./assets/img/icon/geo-alt 1.svg" alt="" />
+                    <span>Địa chỉ: 442 Nguyễn Oanh, Phường 6, Gò Vấp, TP. HCM.</span>
+                  </p>
+                  <p class="c-footer__links c-footer__links--flex">
+                    <img src="./assets/img/icon/telephone 1.svg" alt="" />
+                    <a href="tel:+0969699879">
+                      <span>Hotline: 0789 81 81 84</span>
+                    </a>
+                  </p>
+                  <p class="c-footer__links c-footer__links--flex">
+                    <img src="./assets/img/icon/envelope 1.svg" alt="" />
+                    <a href="mailto:info@vnextglobaltech.com">
+                      <span>Email: hungthinhsportvn@gmail.com</span>
+                    </a>
+                  </p>
+                  <p class="c-footer__links c-footer__links--flex c-footer__links--social">
+                    <img src="./assets/img/social/facebook.svg" alt="">
+                    <img src="./assets/img/social/youtube.svg" alt="">
+                    <img src="./assets/img/social/tiktok.svg" alt="">
+                    <img src="./assets/img/social/google.svg" alt="">
+                    <img src="./assets/img/social/instagram.svg" alt="">
+                  </p>
+                  <p class="c-footer__img-ft">
+                    <img src="./assets/img/common/img-ft.png" alt="" class="" />
+                  </p>
+                </div>
+              </div>
+              <div class="c-footer__item" data-aos-duration="1000">
+                <p class="c-footer__item-ttl">LIÊN KẾT NHANH</p>
+                <ul>
+                  <li><a class="c-footer__links" href="#">Giày đá banh</a></li>
+                  <li><a class="c-footer__links" href="#">Phụ kiện đá banh</a></li>
+                  <li><a class="c-footer__links" href="#">Khuyến mãi</a></li>
+                  <li><a class="c-footer__links" href="#">Sản phẩm mới</a></li>
+                  <li><a class="c-footer__links" href="#">Sản phẩm giảm giá</a></li>
+                  <li><a class="c-footer__links" href="#">Tin tức</a></li>
+                </ul>
+              </div>
+              <div class="c-footer__item" data-aos-duration="1000">
+                <p class="c-footer__item-ttl">CHÍNH SÁCH</p>
+                <ul>
+                  <li><a class="c-footer__links" href="#">Chính sách bán hàng</a></li>
+                  <li><a class="c-footer__links" href="#">Chính sách khuyến mãi</a></li>
+                  <li><a class="c-footer__links" href="#">Chính sách đổi trả</a></li>
+                  <li><a class="c-footer__links" href="#">Chính sách giao hàng</a></li>
+                </ul>
+              </div>
+              <div class="c-footer__item c-footer__item-sightseeing" data-aos-duration="1000">
+                <p class="c-footer__item-ttl">THAM QUAN CỬA HÀNG</p>
+                <ul>
+                  <li>
+                    <div class="c-footer__map">
+                      <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3918.569569404249!2d106.67499687317054!3d10.844214857943477!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752852a32a4985%3A0xc354776aa83316e7!2zNDQyIE5ndXnhu4VuIE9hbmgsIFBoxrDhu51uZyA2LCBHw7IgVuG6pXAsIEjhu5MgQ2jDrSBNaW5oIDcwMDAwLCBWaeG7h3QgTmFt!5e0!3m2!1svi!2s!4v1760008382035!5m2!1svi!2s" width="100%" height="" style="border: 0; border-radius: 4px" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                    </div>
+                  </li>
+                  <li>
+                    <div class="pre-form-contact">
+                      <p class="pre-form-contact__title">ĐĂNG KÝ NHẬN TIN</p>
+                      <div class="pre-form-contact__box">
+                        <form method="post" class="form email-register-form">
+                          <div class="form-group">
+                            <div class="input">
+                              <input name="data" type="text" class="form-control input-lg" required="" placeholder="Email của bạn" fdprocessedid="dmol4g" />
+                            </div>
+                            <button type="submit" class="btn"><i class="fa-regular fa-paper-plane c-footer__icon-plane"></i></button>
+                          </div>
+                        </form>
+                      </div>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.matchHeight/0.7.2/jquery.matchHeight-min.js" integrity="sha512-/bOVV1DV1AQXcypckRwsR9ThoCj7FqTV2/0Bm79bL3YSyLkVideFLE3MIZkq1u5t28ke1c0n31WYCOrO01dsUg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="./assets/js/main.js"></script>
+    <script src="./assets/js/animation.js"></script>
+    <script src="./assets/js/slider.js"></script>
+    <script src="./assets/js/slider_subpage.js"></script>
+    <script src="./assets/js/details.js"></script>
+    <script src="./assets/js/cart.js"></script>
+  </body>
+
+</html>

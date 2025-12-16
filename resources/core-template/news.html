@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="vi">
+    <head>
+        <meta charset="UTF-8" />
+        <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>new page | Vite Template</title>
+        <meta name="description" content="new page" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet" />
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css" />
+        <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+        <link href="https://cdn.jsdelivr.net/npm/paper-css@0.4.1/paper.min.css" rel="stylesheet" />
+        <link rel="stylesheet" href="./assets/css/style.css" />
+    </head>
+
+    <body>
+        <header class="c-header js-header">
+            <div class="c-header__top">
+                <div class="details l-container">
+                    <div class="c-header__mail">
+                        <h1>
+                            <a href="mailto:info.thuananphat@gmail.com"> <img src="./assets/img/icon/ic-mail.svg" alt="" class="c-header__mailic" /> info.thuananphat@gmail.com </a>
+                        </h1>
+                    </div>
+                    <div class="c-header__social">
+                        <ul class="c-header__social--list">
+                            <li class="c-header__social--item">
+                                <a href=""><img src="./assets/img/social/fb.svg" alt="" /></a>
+                            </li>
+                            <li class="c-header__social--item">
+                                <a href=""><img src="./assets/img/social/yt.svg" alt="" /></a>
+                            </li>
+                            <li class="c-header__social--item">
+                                <a href=""><img src="./assets/img/social/zalo.svg" alt="" /></a>
+                            </li>
+                            <li class="c-header__social--item">
+                                <a href=""><img src="./assets/img/social/tiktok.svg" alt="" /></a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="c-header__main">
+                <div class="details l-container">
+                    <div class="c-header__hamburger">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    <ul class="c-header__main--left c-gnav">
+                        <li><a href="#">Giới thiệu</a></li>
+                        <li><a href="#">Sản Phẩm</a></li>
+                        <li><a href="#">Dịch Vụ</a></li>
+                        <li><a href="#">Tin Tức</a></li>
+                        <li><a href="#">Liên Hệ</a></li>
+                    </ul>
+                    <a href="/" class="c-header__logo"><img src="./assets/img/common/logo.png" alt=".... Doanh nghiệp ..." /></a>
+                    <div class="c-header__main--right">
+                        <form class="c-header__form" role="search" action="/search" method="get">
+                            <input id="search-input" name="q" class="c-header__form--input" />
+                            <img src="./assets/img/icon/ic-search.svg" alt="Tìm kiếm" />
+                            <div class="search-tag" id="search-tag">
+                                <p class="search-tag__ttl">Từ khóa phổ biến</p>
+                                <ul class="search-tag__list js-search-tag">
+                                    <li><a href="#" class="c-tag">Tag</a></li>
+                                    <li><a href="#" class="c-tag">Tag</a></li>
+                                    <li><a href="#" class="c-tag">Tag</a></li>
+                                </ul>
+                            </div>
+                        </form>
+                        <a href="tel:+0989181701" class="c-btn01"><img src="./assets/img/icon/ic-phone.svg" alt="" />0989181701</a>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <main class="p-subpage p-news">
+            <!-- 1. Hero -->
+            <section class="c-mainvisual">
+                <div class="c-mainvisual__bg">
+                    <img class="c-mainvisual__bg-img" src="./assets/img/news/banner-hero-news.png" alt="Tin tức" />
+                </div>
+                <div class="c-mainvisual__content">
+                    <p class="c-mainvisual__breadcrumb">Trang chủ / Tin tức</p>
+                </div>
+            </section>
+            <!-- End Hero -->
+            <!-- 2. News-categories -->
+            <section class="news-categories">
+                <div class="l-container">
+                    <div class="news-categories__layout">
+                        <h2 class="news-categories__heading">KHÁM PHÁ CÁC DANH MỤC NỔI BẬT</h2>
+                        <div class="news-categories__list">
+                            <a href="#" class="news-categories__item">
+                                <span class="news-categories__item-text">Kiến thức & Công dụng</span>
+                            </a>
+                            <a href="#" class="news-categories__item">
+                                <span class="news-categories__item-text">Hướng dẫn & Bảo dưỡng</span>
+                            </a>
+                            <a href="#" class="news-categories__item">
+                                <span class="news-categories__item-text">Trải nghiệm khách hàng</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <!-- End News-categories -->
+            <!-- 3. News -->
+            <section class="news">
+                <div class="details">
+                    <div class="l-container">
+                        <div class="l-sidebar">
+                            <!-- Left column: Featured -->
+                            <div class="news__featured l-sidebar__left l-sidebar__left-news">
+                                <!-- <div class="news__featured"> -->
+                                <h2 class="l-sidebar__ttl">Bài viết nổi bật</h2>
+                                <div class="news__featured-list">
+                                    <article class="news__featured-item news__featured-item--large">
+                                        <div class="news__featured-image--large">
+                                            <img class="news__featured-image--item" src="./assets/img/news/banner-news-large.jpg" alt="Hiểu đúng về dầu nhớt .... Doanh nghiệp ..." />
+                                            <a href="#" class="news__featured-read-more">
+                                                <span class="news__featured-read-more__text">Xem thêm</span>
+                                            </a>
+                                        </div>
+                                        <div class="news__featured-content">
+                                            <h3 class="news__featured-title">Hiểu đúng về dầu nhớt .... Doanh nghiệp ...</h3>
+                                            <div class="news__featured-meta-group">
+                                                <div class="news__featured-date-wrapper">
+                                                    <div class="news__featured-date-icon">
+                                                        <i class="fa-regular fa-clock"></i>
+                                                    </div>
+                                                    <span class="news__featured-date">12/04/2029</span>
+                                                </div>
+                                                <div class="news__featured-views-wrapper">
+                                                    <i class="fa-regular fa-eye"></i>
+                                                    <span class="news__featured-views">1234 lượt xem</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </article>
+                                    <div class="news__featured-small">
+                                        <article class="news__featured-small-item">
+                                            <div class="news__featured-small-image">
+                                                <img class="news__featured-small-image-item" src="./assets/img/news/banner-news-large1.jpg" alt="" />
+                                                <a href="#" class="news__featured-read-more">
+                                                    <span class="news__featured-read-more__text">Xem thêm</span>
+                                                </a>
+                                            </div>
+                                            <div class="news__featured-small-content">
+                                                <div class="c-meta">
+                                                    <div class="c-meta__date-wrapper">
+                                                        <div class="c-meta__date-icon-small">
+                                                            <i class="fa-regular fa-clock"></i>
+                                                        </div>
+                                                        <span class="c-meta__date-small">12/04/2029</span>
+                                                    </div>
+                                                    <div class="c-meta__views-wrapper">
+                                                        <div class="c-meta__views-icon-small">
+                                                            <i class="fa-regular fa-eye"></i>
+                                                        </div>
+                                                        <span class="c-meta__views-small">1234 lượt xem</span>
+                                                    </div>
+                                                </div>
+                                                <h3 class="news__featured-small-title">Tính năng vượt trội của dầu nhớt .... Doanh nghiệp ...</h3>
+                                                <p class="news__featured-small-subtitle">Dầu nhớt .... Doanh nghiệp ... giúp bảo vệ động cơ, kéo dài tuổi thọ máy và tiết kiệm nhiên liệu.</p>
+                                            </div>
+                                        </article>
+                                        <article class="news__featured-small-item">
+                                            <div class="news__featured-small-image">
+                                                <img class="news__featured-small-image-item" src="./assets/img/news/banner-news-large2.png" alt="" />
+                                                <a href="#" class="news__featured-read-more">
+                                                    <span class="news__featured-read-more__text">Xem thêm</span>
+                                                </a>
+                                            </div>
+                                            <div class="news__featured-small-content">
+                                                <div class="c-meta">
+                                                    <div class="c-meta__date-wrapper">
+                                                        <div class="c-meta__date-icon-small">
+                                                            <i class="fa-regular fa-clock"></i>
+                                                        </div>
+                                                        <span class="c-meta__date-small">12/04/2029</span>
+                                                    </div>
+                                                    <div class="c-meta__views-wrapper">
+                                                        <div class="c-meta__views-icon-small">
+                                                            <i class="fa-regular fa-eye"></i>
+                                                        </div>
+                                                        <span class="c-meta__views-small">1234 lượt xem</span>
+                                                    </div>
+                                                </div>
+                                                <h3 class="news__featured-small-title">Tính năng vượt trội của dầu nhớt .... Doanh nghiệp ...</h3>
+                                                <p class="news__featured-small-subtitle">Dầu nhớt .... Doanh nghiệp ... giúp bảo vệ động cơ, kéo dài tuổi thọ máy và tiết kiệm nhiên liệu.</p>
+                                            </div>
+                                        </article>
+                                    </div>
+                                </div>
+                                <!-- </div> -->
+                            </div>
+                            <div class="news__popular l-sidebar__right">
+                                <!-- Row column: Popular -->
+                                <!-- <div class="news__popular"> -->
+                                <h2 class="l-sidebar__ttl">Xem nhiều nhất</h2>
+                                <div class="swiper swiper-news__popular-list">
+                                    <div class="swiper-wrapper news__popular-list">
+                                        <article class="swiper-slide news__popular-item">
+                                            <div class="news__popular-thumb">
+                                                <img class="news__popular-thumb-img" src="./assets/img/news/news-popular-1.png" alt="" />
+                                            </div>
+                                            <div class="news__popular-content">
+                                                <div class="c-meta">
+                                                    <div class="c-meta__date-wrapper">
+                                                        <div class="c-meta__date-icon-small">
+                                                            <i class="fa-regular fa-clock"></i>
+                                                        </div>
+                                                        <span class="c-meta__date-small">12/04/2029</span>
+                                                    </div>
+                                                    <div class="c-meta__views-wrapper">
+                                                        <div class="c-meta__views-icon-small">
+                                                            <i class="fa-regular fa-eye"></i>
+                                                        </div>
+                                                        <span class="c-meta__views-small">1234 lượt xem</span>
+                                                    </div>
+                                                </div>
+                                                <h3 class="news__popular-title">What Lorem Ipsum?</h3>
+                                                <p class="news__popular-excerpt">"Lorem ipsum dolor sit amet..."</p>
+                                            </div>
+                                        </article>
+                                        <article class="swiper-slide news__popular-item">
+                                            <div class="news__popular-thumb">
+                                                <img class="news__popular-thumb-img" src="./assets/img/news/news-popular-2.png" alt="" />
+                                            </div>
+                                            <div class="news__popular-content">
+                                                <div class="c-meta">
+                                                    <div class="c-meta__date-wrapper">
+                                                        <div class="c-meta__date-icon-small">
+                                                            <i class="fa-regular fa-clock"></i>
+                                                        </div>
+                                                        <span class="c-meta__date-small">12/04/2029</span>
+                                                    </div>
+                                                    <div class="c-meta__views-wrapper">
+                                                        <div class="c-meta__views-icon-small">
+                                                            <i class="fa-regular fa-eye"></i>
+                                                        </div>
+                                                        <span class="c-meta__views-small">1234 lượt xem</span>
+                                                    </div>
+                                                </div>
+                                                <h3 class="news__popular-title">What Lorem Ipsum?</h3>
+                                                <p class="news__popular-excerpt">"Lorem ipsum dolor sit amet..."</p>
+                                            </div>
+                                        </article>
+                                        <article class="swiper-slide news__popular-item">
+                                            <div class="news__popular-thumb">
+                                                <img class="news__popular-thumb-img" src="./assets/img/news/news-popular-3.jpg" alt="" />
+                                            </div>
+                                            <div class="news__popular-content">
+                                                <div class="c-meta">
+                                                    <div class="c-meta__date-wrapper">
+                                                        <div class="c-meta__date-icon-small">
+                                                            <i class="fa-regular fa-clock"></i>
+                                                        </div>
+                                                        <span class="c-meta__date-small">12/04/2029</span>
+                                                    </div>
+                                                    <div class="c-meta__views-wrapper">
+                                                        <div class="c-meta__views-icon-small">
+                                                            <i class="fa-regular fa-eye"></i>
+                                                        </div>
+                                                        <span class="c-meta__views-small">1234 lượt xem</span>
+                                                    </div>
+                                                </div>
+                                                <h3 class="news__popular-title">What Lorem Ipsum?</h3>
+                                                <p class="news__popular-excerpt">"Lorem ipsum dolor sit amet..."</p>
+                                            </div>
+                                        </article>
+                                    </div>
+                                </div>
+                                <!-- Navigation -->
+                                <div class="swiper-button-prev"></div>
+                                <div class="swiper-button-next"></div>
+                                <!-- </div> -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <!-- End News -->
+            <!-- 4. Article -->
+            <section class="news">
+                <!-- Tất cả bài viết -->
+                <div class="details">
+                    <div class="news-article l-container">
+                        <div class="l-sidebar">
+                            <div class="news-article__main l-sidebar__left l-sidebar__left-news">
+                                <div class="news-article__header">
+                                    <h2 class="l-sidebar__ttl">TẤT CẢ CÁC BÀI VIẾT</h2>
+                                    <a href="/news" class="news-article__view-all">Xem tất cả &gt;</a>
+                                </div>
+                                <div class="swiper" id="swiper-news-article-list">
+                                    <div class="swiper-wrapper news-article-list">
+                                        <article class="swiper-slide news-article__item">
+                                            <div class="news-article__thumb">
+                                                <img class="news-article__thumb-img" src="./assets/img/news/news-article-1.jpg" alt="" />
+                                            </div>
+                                            <div class="news-article__content">
+                                                <div class="c-meta">
+                                                    <div class="c-meta__date-wrapper">
+                                                        <div class="c-meta__date-icon-large">
+                                                            <i class="fa-regular fa-clock"></i>
+                                                        </div>
+                                                        <span class="c-meta__date-large">12/04/2029</span>
+                                                    </div>
+                                                    <div class="c-meta__views-wrapper">
+                                                        <div class="c-meta__views-icon-large">
+                                                            <i class="fa-regular fa-eye"></i>
+                                                        </div>
+                                                        <span class="c-meta__views-large">1234 lượt xem</span>
+                                                    </div>
+                                                </div>
+                                                <h3 class="news-article__title">Công dụng & tính năng vượt trội của dầu nhớt .... Doanh nghiệp ...</h3>
+                                                <p class="news-article__excerpt">Dầu nhớt .... Doanh nghiệp ... giúp bảo vệ động cơ, kéo dài tuổi thọ máy và tiết kiệm nhiên liệu.</p>
+                                            </div>
+                                        </article>
+                                        <article class="swiper-slide news-article__item">
+                                            <div class="news-article__thumb">
+                                                <img class="news-article__thumb-img" src="./assets/img/news/news-article-1.jpg" alt="" />
+                                            </div>
+                                            <div class="news-article__content">
+                                                <div class="c-meta">
+                                                    <div class="c-meta__date-wrapper">
+                                                        <div class="c-meta__date-icon-large">
+                                                            <i class="fa-regular fa-clock"></i>
+                                                        </div>
+                                                        <span class="c-meta__date-large">12/04/2029</span>
+                                                    </div>
+                                                    <div class="c-meta__views-wrapper">
+                                                        <div class="c-meta__views-icon-large">
+                                                            <i class="fa-regular fa-eye"></i>
+                                                        </div>
+                                                        <span class="c-meta__views-large">1234 lượt xem</span>
+                                                    </div>
+                                                </div>
+                                                <h3 class="news-article__title">Công dụng & tính năng vượt trội của dầu nhớt .... Doanh nghiệp ...</h3>
+                                                <p class="news-article__excerpt">Dầu nhớt .... Doanh nghiệp ... giúp bảo vệ động cơ, kéo dài tuổi thọ máy và tiết kiệm nhiên liệu.</p>
+                                            </div>
+                                        </article>
+                                        <article class="swiper-slide news-article__item">
+                                            <div class="news-article__thumb">
+                                                <img class="news-article__thumb-img" src="./assets/img/news/news-article-1.jpg" alt="" />
+                                            </div>
+                                            <div class="news-article__content">
+                                                <div class="c-meta">
+                                                    <div class="c-meta__date-wrapper">
+                                                        <div class="c-meta__date-icon-large">
+                                                            <i class="fa-regular fa-clock"></i>
+                                                        </div>
+                                                        <span class="c-meta__date-large">12/04/2029</span>
+                                                    </div>
+                                                    <div class="c-meta__views-wrapper">
+                                                        <div class="c-meta__views-icon-large">
+                                                            <i class="fa-regular fa-eye"></i>
+                                                        </div>
+                                                        <span class="c-meta__views-large">1234 lượt xem</span>
+                                                    </div>
+                                                </div>
+                                                <h3 class="news-article__title">Công dụng & tính năng vượt trội của dầu nhớt .... Doanh nghiệp ...</h3>
+                                                <p class="news-article__excerpt">Dầu nhớt .... Doanh nghiệp ... giúp bảo vệ động cơ, kéo dài tuổi thọ máy và tiết kiệm nhiên liệu.</p>
+                                            </div>
+                                        </article>
+                                        <article class="swiper-slide news-article__item">
+                                            <div class="news-article__thumb">
+                                                <img class="news-article__thumb-img" src="./assets/img/news/news-article-1.jpg" alt="" />
+                                            </div>
+                                            <div class="news-article__content">
+                                                <div class="c-meta">
+                                                    <div class="c-meta__date-wrapper">
+                                                        <div class="c-meta__date-icon-large">
+                                                            <i class="fa-regular fa-clock"></i>
+                                                        </div>
+                                                        <span class="c-meta__date-large">12/04/2029</span>
+                                                    </div>
+                                                    <div class="c-meta__views-wrapper">
+                                                        <div class="c-meta__views-icon-large">
+                                                            <i class="fa-regular fa-eye"></i>
+                                                        </div>
+                                                        <span class="c-meta__views-large">1234 lượt xem</span>
+                                                    </div>
+                                                </div>
+                                                <h3 class="news-article__title">Công dụng & tính năng vượt trội của dầu nhớt .... Doanh nghiệp ...</h3>
+                                                <p class="news-article__excerpt">Dầu nhớt .... Doanh nghiệp ... giúp bảo vệ động cơ, kéo dài tuổi thọ máy và tiết kiệm nhiên liệu.</p>
+                                            </div>
+                                        </article>
+                                    </div>
+                                </div>
+                                <!-- Navigation -->
+                                <div class="swiper-button-prev"></div>
+                                <div class="swiper-button-next"></div>
+                            </div>
+                            <!-- Trải nghiệm -->
+                            <aside class="news-article__sidebar l-sidebar__right">
+                                <h2 class="l-sidebar__ttl">Trải nghiệm</h2>
+                                <div class="swiper swiper-news__sidebar-list">
+                                    <div class="swiper-wrapper news-article__sidebar-list">
+                                        <div class="swiper-slide news-article__sidebar-item">
+                                            <div class="news-article__sidebar-thumb">
+                                                <img class="news-article__sidebar-thumb-img" src="./assets/img/news/img-experience-2.png" alt="Review dầu nhớt .... Doanh nghiệp ... 10W–40" />
+                                            </div>
+                                            <div class="news-article__sidebar-content">
+                                                <div class="c-meta">
+                                                    <div class="c-meta__date-wrapper">
+                                                        <div class="c-meta__date-icon-small">
+                                                            <i class="fa-regular fa-clock"></i>
+                                                        </div>
+                                                        <span class="c-meta__date-small">12/04/2029</span>
+                                                    </div>
+                                                    <div class="c-meta__views-wrapper">
+                                                        <div class="c-meta__views-icon-small">
+                                                            <i class="fa-regular fa-eye"></i>
+                                                        </div>
+                                                        <span class="c-meta__views-small">1234 lượt xem</span>
+                                                    </div>
+                                                </div>
+                                                <h3 class="news-article__sidebar-title">Review dầu nhớt .... Doanh nghiệp ... 10W–40</h3>
+                                            </div>
+                                        </div>
+                                        <div class="swiper-slide news-article__sidebar-item">
+                                            <div class="news-article__sidebar-thumb">
+                                                <img class="news-article__sidebar-thumb-img" src="./assets/img/news/img-experience-2.png" alt="Review dầu nhớt .... Doanh nghiệp ... 10W–40" />
+                                            </div>
+                                            <div class="news-article__sidebar-content">
+                                                <div class="c-meta">
+                                                    <div class="c-meta__date-wrapper">
+                                                        <div class="c-meta__date-icon-small">
+                                                            <i class="fa-regular fa-clock"></i>
+                                                        </div>
+                                                        <span class="c-meta__date-small">12/04/2029</span>
+                                                    </div>
+                                                    <div class="c-meta__views-wrapper">
+                                                        <div class="c-meta__views-icon-small">
+                                                            <i class="fa-regular fa-eye"></i>
+                                                        </div>
+                                                        <span class="c-meta__views-small">1234 lượt xem</span>
+                                                    </div>
+                                                </div>
+                                                <h3 class="news-article__sidebar-title">Review dầu nhớt .... Doanh nghiệp ... 10W–40</h3>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Navigation -->
+                                <div class="swiper-button-prev"></div>
+                                <div class="swiper-button-next"></div>
+                            </aside>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <!-- End Article -->
+            <!-- 5. Product cart component-->
+            <!-- SẢN PHẨM  -->
+            <section class="products">
+                <div class="details">
+                    <div class="products-wr l-container">
+                        <h2 class="c-ttl01">SẢN PHẨM LIÊN QUAN</h2>
+                        <div class="products-slider swiper js-products-slider">
+                            <ul class="c-list01 products-list swiper-wrapper">
+                                <li class="swiper-slide c-item" data-aos="fade-up" data-aos-duration="1000">
+                                    <a href="#">
+                                        <div class="c-product">
+                                            <div class="c-product__top">
+                                                <img loading="lazy" src="../assets/img/top/product/daunhot2.png" alt="Shell HELIX - HX7" />
+                                            </div>
+                                            <div class="c-product__body">
+                                                <p class="c-product__ttl">Shell HELIX - HX7</p>
+                                                <p class="c-product__desc">Shell Helix HX3 20W-50 là nhớt động cơ Shell Helix HX3 20W-50 là nhớt động cơ được sản x..</p>
+                                                <div class="c-product__rate" id="js-rating" style="--rating: 1">
+                                                    <i class="fa-solid fa-star"></i>
+                                                    <i class="fa-solid fa-star"></i>
+                                                    <i class="fa-solid fa-star"></i>
+                                                    <i class="fa-solid fa-star"></i>
+                                                    <i class="fa-solid fa-star"></i>
+                                                </div>
+                                                <div class="c-product__btn">Xem báo giá</div>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </li>
+                                <li class="swiper-slide c-item" data-aos="fade-up" data-aos-duration="1000">
+                                    <a href="#">
+                                        <div class="c-product">
+                                            <div class="c-product__top">
+                                                <img loading="lazy" src="../assets/img/top/product/daunhot2.png" alt="Shell HELIX - HX7" />
+                                            </div>
+                                            <div class="c-product__body">
+                                                <p class="c-product__ttl">Shell HELIX - HX7</p>
+                                                <p class="c-product__desc">Shell Helix HX3 20W-50 là nhớt động cơ Shell Helix HX3 20W-50 là nhớt động cơ được sản x..</p>
+                                                <div class="c-product__rate" id="js-rating" style="--rating: 2">
+                                                    <i class="fa-solid fa-star"></i>
+                                                    <i class="fa-solid fa-star"></i>
+                                                    <i class="fa-solid fa-star"></i>
+                                                    <i class="fa-solid fa-star"></i>
+                                                    <i class="fa-solid fa-star"></i>
+                                                </div>
+                                                <div class="c-product__btn">Xem báo giá</div>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </li>
+                                <li class="swiper-slide c-item" data-aos="fade-up" data-aos-duration="1000">
+                                    <a href="#">
+                                        <div class="c-product">
+                                            <div class="c-product__top">
+                                                <img loading="lazy" src="../assets/img/top/product/daunhot2.png" alt="Shell HELIX - HX7" />
+                                            </div>
+                                            <div class="c-product__body">
+                                                <p class="c-product__ttl">Shell HELIX - HX7</p>
+                                                <p class="c-product__desc">Shell Helix HX3 20W-50 là nhớt động cơ Shell Helix HX3 20W-50 là nhớt động cơ được sản x..</p>
+                                                <div class="c-product__rate" id="js-rating" style="--rating: 4">
+                                                    <i class="fa-solid fa-star"></i>
+                                                    <i class="fa-solid fa-star"></i>
+                                                    <i class="fa-solid fa-star"></i>
+                                                    <i class="fa-solid fa-star"></i>
+                                                    <i class="fa-solid fa-star"></i>
+                                                </div>
+                                                <div class="c-product__btn">Xem báo giá</div>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </li>
+                                <li class="swiper-slide c-item" data-aos="fade-up" data-aos-duration="1000">
+                                    <a href="#">
+                                        <div class="c-product">
+                                            <div class="c-product__top">
+                                                <img loading="lazy" src="../assets/img/top/product/daunhot2.png" alt="Shell HELIX - HX7" />
+                                            </div>
+                                            <div class="c-product__body">
+                                                <p class="c-product__ttl">Shell HELIX - HX7</p>
+                                                <p class="c-product__desc">Shell Helix HX3 20W-50 là nhớt động cơ Shell Helix HX3 20W-50 là nhớt động cơ được sản x..</p>
+                                                <div class="c-product__rate" id="js-rating" style="--rating: 1">
+                                                    <i class="fa-solid fa-star"></i>
+                                                    <i class="fa-solid fa-star"></i>
+                                                    <i class="fa-solid fa-star"></i>
+                                                    <i class="fa-solid fa-star"></i>
+                                                    <i class="fa-solid fa-star"></i>
+                                                </div>
+                                                <div class="c-product__btn">Xem báo giá</div>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </li>
+                                <li class="swiper-slide c-item" data-aos="fade-up" data-aos-duration="1000">
+                                    <a href="#">
+                                        <div class="c-product">
+                                            <div class="c-product__top">
+                                                <img loading="lazy" src="../assets/img/top/product/bg_cate6.jpg" alt="Shell HELIX - HX7" />
+                                            </div>
+                                            <div class="c-product__body">
+                                                <p class="c-product__ttl">Shell HELIX - HX7</p>
+                                                <p class="c-product__desc">Shell Helix HX3 20W-50 là nhớt động cơ Shell Helix HX3 20W-50 là nhớt động cơ được sản x..</p>
+                                                <div class="c-product__rate" id="js-rating" style="--rating: 5">
+                                                    <i class="fa-solid fa-star"></i>
+                                                    <i class="fa-solid fa-star"></i>
+                                                    <i class="fa-solid fa-star"></i>
+                                                    <i class="fa-solid fa-star"></i>
+                                                    <i class="fa-solid fa-star"></i>
+                                                </div>
+                                                <div class="c-product__btn">Xem báo giá</div>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </li>
+                                <li class="swiper-slide c-item" data-aos="fade-up" data-aos-duration="1000">
+                                    <a href="#">
+                                        <div class="c-product">
+                                            <div class="c-product__top">
+                                                <img loading="lazy" src="../assets/img/top/product/daunhot2.png" alt="Shell HELIX - HX7" />
+                                            </div>
+                                            <div class="c-product__body">
+                                                <p class="c-product__ttl">Shell HELIX - HX7</p>
+                                                <p class="c-product__desc">Shell Helix HX3 20W-50 là nhớt động cơ Shell Helix HX3 20W-50 là nhớt động cơ được sản x..</p>
+                                                <div class="c-product__rate" id="js-rating" style="--rating: 2">
+                                                    <i class="fa-solid fa-star"></i>
+                                                    <i class="fa-solid fa-star"></i>
+                                                    <i class="fa-solid fa-star"></i>
+                                                    <i class="fa-solid fa-star"></i>
+                                                    <i class="fa-solid fa-star"></i>
+                                                </div>
+                                                <div class="c-product__btn">Xem báo giá</div>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </li>
+                                <li class="swiper-slide c-item" data-aos="fade-up" data-aos-duration="1000">
+                                    <a href="#">
+                                        <div class="c-product">
+                                            <div class="c-product__top">
+                                                <img loading="lazy" src="../assets/img/top/product/daunhot2.png" alt="Shell HELIX - HX7" />
+                                            </div>
+                                            <div class="c-product__body">
+                                                <p class="c-product__ttl">Shell HELIX - HX7</p>
+                                                <p class="c-product__desc">Shell Helix HX3 20W-50 là nhớt động cơ Shell Helix HX3 20W-50 là nhớt động cơ được sản x..</p>
+                                                <div class="c-product__rate" id="js-rating" style="--rating: 1">
+                                                    <i class="fa-solid fa-star"></i>
+                                                    <i class="fa-solid fa-star"></i>
+                                                    <i class="fa-solid fa-star"></i>
+                                                    <i class="fa-solid fa-star"></i>
+                                                    <i class="fa-solid fa-star"></i>
+                                                </div>
+                                                <div class="c-product__btn">Xem báo giá</div>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </li>
+                                <li class="swiper-slide c-item" data-aos="fade-up" data-aos-duration="1000">
+                                    <a href="#">
+                                        <div class="c-product">
+                                            <div class="c-product__top">
+                                                <img loading="lazy" src="../assets/img/top/product/daunhot2.png" alt="Shell HELIX - HX7" />
+                                            </div>
+                                            <div class="c-product__body">
+                                                <p class="c-product__ttl">Shell HELIX - HX7</p>
+                                                <p class="c-product__desc">Shell Helix HX3 20W-50 là nhớt động cơ Shell Helix HX3 20W-50 là nhớt động cơ được sản x..</p>
+                                                <div class="c-product__rate" id="js-rating" style="--rating: 5">
+                                                    <i class="fa-solid fa-star"></i>
+                                                    <i class="fa-solid fa-star"></i>
+                                                    <i class="fa-solid fa-star"></i>
+                                                    <i class="fa-solid fa-star"></i>
+                                                    <i class="fa-solid fa-star"></i>
+                                                </div>
+                                                <div class="c-product__btn">Xem báo giá</div>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </li>
+                            </ul>
+                            <div class="swiper-button-next"></div>
+                            <div class="swiper-button-prev"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <!-- End product cart Section -->
+        </main>
+        <footer class="c-footer">
+            <div class="details">
+                <div class="c-footer__top">
+                    <div class="l-container">
+                        <h2 class="c-footer__ttl" data-aos="fade-up" data-aos-duration="1000">ĐĂNG KÝ TƯ VẤN</h2>
+                        <div class="c-footer__contact" data-aos="fade-up" data-aos-duration="1000">
+                            <div class="c-footer__txt">Sit amet tellus cras adipiscing enim eu turpis egestas. Interdum velit laoreet id donec ultrices tincidunt. Cursus vitae congue mauris rhoncus aenean vel. Nisi quis eleifend quam adipiscing vitae proin sagittis.</div>
+                            <div class="c-footer__input">
+                                <input type="text" placeholder="Nhập số điện thoại của bạn" />
+                                <button class="c-btn01 c-btn01--fw400">Đăng ký</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="c-footer__middle">
+                    <div class="c-footer__middle-wrapper l-container">
+                        <div data-aos="fade-up" data-aos-duration="1000">
+                            <a href="#" class="c-footer__logo">
+                                <img src="../assets/img/common/logo.png" alt=".... Doanh nghiệp ..." />
+                                <h3 class="c-footer__brand">.... Doanh nghiệp ...</h3>
+                            </a>
+                        </div>
+                        <div class="c-footer__menu">
+                            <div class="c-footer__item" data-aos="fade-up" data-aos-duration="1000">
+                                <p class="c-footer__item-ttl">Thông tin</p>
+                                <div class="c-footer__info">
+                                    <strong>Công Ty TNHH VNext Globla Tech</strong>
+                                    <p>Địa chỉ: 108/02 Khu đô thị Vạn Phúc, Tp-HCM</p>
+                                    <p><a href="tel:+0969699879">Hotline: 0969 699 879</a></p>
+                                    <p><a href="mailto:info@vnextglobaltech.com">Mail: info@vnextglobaltech.com</a></p>
+                                </div>
+                            </div>
+                            <div class="c-footer__item" data-aos="fade-up" data-aos-duration="1000">
+                                <p class="c-footer__item-ttl">Thông tin</p>
+                                <ul>
+                                    <li><a href="#">Nhớt Công Nghiệp</a></li>
+                                    <li><a href="#">Nhớt Ngành Điện</a></li>
+                                    <li><a href="#">Nhớt Hàng Hải</a></li>
+                                    <li><a href="#">Nhớt Xe Hơi</a></li>
+                                    <li><a href="#">Nhớt Xe Tải - Buýt</a></li>
+                                </ul>
+                            </div>
+                            <div class="c-footer__item" data-aos="fade-up" data-aos-duration="1000">
+                                <p class="c-footer__item-ttl">Dịch vụ</p>
+                                <ul>
+                                    <li><a href="#">Chính sách bán hàng</a></li>
+                                    <li><a href="#">Chính sách vận chuyển</a></li>
+                                    <li><a href="#">Hẫu mãi sau khi mua</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="c-footer__map">
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3918.5802516987155!2d106.71017677570377!3d10.843399457953455!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3175290020f6d751%3A0x9fb3806425931799!2sC%C3%94NG%20TY%20TNHH%20VNEXT%20GLOBAL%20TECH!5e0!3m2!1sen!2s!4v1758006281055!5m2!1sen!2s" width="100%" height="100%" style="border: 0" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                </div>
+            </div>
+        </footer>
+        <script>
+            console.log("home page")
+        </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js"></script>
+        <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.matchHeight/0.7.2/jquery.matchHeight-min.js" integrity="sha512-/bOVV1DV1AQXcypckRwsR9ThoCj7FqTV2/0Bm79bL3YSyLkVideFLE3MIZkq1u5t28ke1c0n31WYCOrO01dsUg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="./assets/js/main.js"></script>
+        <script src="./assets/js/animation.js"></script>
+        <script src="./assets/js/slider.js"></script>
+        <script src="./assets/js/slider_subpage.js"></script>
+    </body>
+</html>

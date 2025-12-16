@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contact page | Vite Template</title>
+  <meta name="description" content="Contact page" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css" />
+  <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+    integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link href="https://cdn.jsdelivr.net/npm/paper-css@0.4.1/paper.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="./assets/css/style.css">
+</head>
+
+<body>
+  <header class="c-header js-header">
+    <div class="c-header__top">
+      <div class="details l-container">
+        <div class="c-header__mail">
+          <h1>
+            <a href="mailto:info.thuananphat@gmail.com">
+              <img src="./assets/img/icon/ic-mail.svg" alt="" class="c-header__mailic" /> info.thuananphat@gmail.com
+            </a>
+          </h1>
+        </div>
+        <div class="c-header__social">
+          <ul class="c-header__social--list">
+            <li class="c-header__social--item">
+              <a href=""><img src="./assets/img/social/fb.svg" alt="" /></a>
+            </li>
+            <li class="c-header__social--item">
+              <a href=""><img src="./assets/img/social/yt.svg" alt="" /></a>
+            </li>
+            <li class="c-header__social--item">
+              <a href=""><img src="./assets/img/social/zalo.svg" alt="" /></a>
+            </li>
+            <li class="c-header__social--item">
+              <a href=""><img src="./assets/img/social/tiktok.svg" alt="" /></a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="c-header__main">
+      <div class="details l-container">
+        <div class="c-header__hamburger">
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        <ul class="c-header__main--left c-gnav">
+          <li><a href="#">Giới thiệu</a></li>
+          <li><a href="#">Sản Phẩm</a></li>
+          <li><a href="#">Dịch Vụ</a></li>
+          <li><a href="#">Tin Tức</a></li>
+          <li><a href="#">Liên Hệ</a></li>
+        </ul>
+        <a href="/" class="c-header__logo"><img src="./assets/img/common/logo.png" alt=".... Doanh nghiệp ..." /></a>
+        <div class="c-header__main--right">
+          <form class="c-header__form" role="search" action="/search" method="get">
+            <input id="search-input" name="q" class="c-header__form--input" />
+            <img src="./assets/img/icon/ic-search.svg" alt="Tìm kiếm" />
+            <div class="search-tag" id="search-tag">
+              <p class="search-tag__ttl">Từ khóa phổ biến</p>
+              <ul class="search-tag__list js-search-tag">
+                <li><a href="#" class="c-tag">Tag</a></li>
+                <li><a href="#" class="c-tag">Tag</a></li>
+                <li><a href="#" class="c-tag">Tag</a></li>
+              </ul>
+            </div>
+          </form>
+          <a href="tel:+0989181701" class="c-btn01"><img src="./assets/img/icon/ic-phone.svg" alt="" />0989181701</a>
+        </div>
+      </div>
+    </div>
+  </header>
+  <main class="p-subpage p-contact ">
+    <!-- Contact -->
+    <section class="contact">
+      <div class="l-container">
+        <div class="l-sidebar">
+          <div class="contact__grid">
+            <div class="contact__col contact__col--left">
+              <div class="contact__support">
+                <div class="l-sidebar__ttl"> Bạn cần hỗ trợ? </div>
+                <div class="contact__text">
+                  <b>Liqui Moly VietNam</b> rất hân hạnh được hỗ trợ bạn, hãy để lại thông tin cho chúng tôi nhé. Yêu
+                  cầu của bạn sẽ được xử lý và phản hồi trong thời gian sớm nhất.
+                </div>
+              </div>
+              <div id="pagelogin" class="contact__form">
+                <form method="post" action="/postcontact" id="contact" accept-charset="UTF-8">
+                  <div class="contact-form">
+                    <div class="contact-form__row">
+                      <div class="contact-form__field contact-form__field--half">
+                        <label class="contact-form__label">Họ và tên <em>*</em></label>
+                        <input placeholder="Tên đầy đủ" type="text" class="contact-form__input" required="" value=""
+                          name="" fdprocessedid="l3elcf">
+                      </div>
+                      <div class="contact-form__field contact-form__field--half">
+                        <label class="contact-form__label">Email <em>*</em></label>
+                        <input placeholder="Địa chỉ email" type="email" required="" id="email1"
+                          class="contact-form__input" value="" name="" fdprocessedid="bp6efi">
+                      </div>
+                    </div>
+                    <fieldset class="contact-form__field">
+                      <label class="contact-form__label">Tin nhắn<em>*</em></label>
+                      <textarea placeholder="Đừng ngại hỏi về đơn hàng của bạn" name="contact[body]" id="comment"
+                        class="contact-form__textarea" rows="5" required=""></textarea>
+                    </fieldset>
+                    <div class="contact-form__actions">
+                      <button type="submit" class="contact-form__submit c-btn01 c-btn01--fw400"
+                        fdprocessedid="bniu1t">Gửi</button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+            <div class="contact__col contact__col--right">
+              <div class="contact-info contact-info--about">
+                <div class="l-sidebar__ttl"> CÔNG TY TNHH THƯƠNG MẠI .... Doanh nghiệp ... </div>
+                <div class="contact-info__content">
+                  <ul class="contact-info__list">
+                    <li class="contact-info__item">
+                      <b>Liqui Moly</b> là kênh mua sắm dầu nhớt, phụ gia, chăm sóc xe được nhập khẩu từ Đức.
+                    </li>
+                    <li class="contact-info__item"> Phòng 2.21 - 2.22, Tầng 2, Cao ốc Galaxy, 09 Nguyễn Khoái, Phường
+                      01, Quận 4, TP. Hồ Chí Minh, Việt Nam </li>
+                    <li class="contact-info__item"> Giấy chứng nhận đăng ký doanh nghiệp số: 0304709091 </li>
+                  </ul>
+                </div>
+              </div>
+              <div class="contact-info">
+                <div class="contact-info__title"> Liên hệ với chúng tôi </div>
+                <ul class="contact-info__list">
+                  <li class="contact-info__item"> Emai: <a class="contact-info__link"
+                      href="mailto:vnextglobaltech@gmail.com">vnextglobaltech@gmail.com</a>
+                  </li>
+                  <li class="contact-info__item">CSKH: <a class="contact-info__link"
+                      href="tel:0918.800.332">0918.800.332</a> </li>
+                  <li class="contact-info__item">Thời gian làm việc: Sáng: 8h - 12h; Chiều: 13h - 16h30; Từ Thứ 2 - Thứ
+                    6 và Sáng Thứ 7. </li>
+                  <li class="contact-info__item">Fanpage: <a class="contact-info__link"
+                      href="https://www.facebook.com/otodonghoa">Infinitie VN</a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- End -->
+  </main>
+  <footer class="c-footer">
+    <div class="details">
+      <div class="c-footer__top">
+        <div class="l-container">
+          <h2 class="c-footer__ttl" data-aos="fade-up" data-aos-duration="1000">ĐĂNG KÝ TƯ VẤN</h2>
+          <div class="c-footer__contact" data-aos="fade-up" data-aos-duration="1000">
+            <div class="c-footer__txt">Sit amet tellus cras adipiscing enim eu turpis egestas. Interdum velit laoreet id
+              donec ultrices tincidunt. Cursus vitae congue mauris rhoncus aenean vel. Nisi quis eleifend quam
+              adipiscing vitae proin sagittis.</div>
+            <div class="c-footer__input">
+              <input type="text" placeholder="Nhập số điện thoại của bạn" />
+              <button class="c-btn01 c-btn01--fw400">Đăng ký</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="c-footer__middle">
+        <div class="c-footer__middle-wrapper l-container">
+          <div data-aos="fade-up" data-aos-duration="1000">
+            <a href="#" class="c-footer__logo">
+              <img src="../assets/img/common/logo.png" alt=".... Doanh nghiệp ..." />
+              <h3 class="c-footer__brand">.... Doanh nghiệp ...</h3>
+            </a>
+          </div>
+          <div class="c-footer__menu">
+            <div class="c-footer__item" data-aos="fade-up" data-aos-duration="1000">
+              <p class="c-footer__item-ttl">Thông tin</p>
+              <div class="c-footer__info">
+                <strong>Công Ty TNHH VNext Globla Tech</strong>
+                <p>Địa chỉ: 108/02 Khu đô thị Vạn Phúc, Tp-HCM</p>
+                <p><a href="tel:+0969699879">Hotline: 0969 699 879</a></p>
+                <p><a href="mailto:info@vnextglobaltech.com">Mail: info@vnextglobaltech.com</a></p>
+              </div>
+            </div>
+            <div class="c-footer__item" data-aos="fade-up" data-aos-duration="1000">
+              <p class="c-footer__item-ttl">Thông tin</p>
+              <ul>
+                <li><a href="#">Nhớt Công Nghiệp</a></li>
+                <li><a href="#">Nhớt Ngành Điện</a></li>
+                <li><a href="#">Nhớt Hàng Hải</a></li>
+                <li><a href="#">Nhớt Xe Hơi</a></li>
+                <li><a href="#">Nhớt Xe Tải - Buýt</a></li>
+              </ul>
+            </div>
+            <div class="c-footer__item" data-aos="fade-up" data-aos-duration="1000">
+              <p class="c-footer__item-ttl">Dịch vụ</p>
+              <ul>
+                <li><a href="#">Chính sách bán hàng</a></li>
+                <li><a href="#">Chính sách vận chuyển</a></li>
+                <li><a href="#">Hẫu mãi sau khi mua</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="c-footer__map">
+        <iframe
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3918.5802516987155!2d106.71017677570377!3d10.843399457953455!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3175290020f6d751%3A0x9fb3806425931799!2sC%C3%94NG%20TY%20TNHH%20VNEXT%20GLOBAL%20TECH!5e0!3m2!1sen!2s!4v1758006281055!5m2!1sen!2s"
+          width="100%" height="100%" style="border: 0" allowfullscreen="" loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"></iframe>
+      </div>
+    </div>
+  </footer>
+  <script>
+    console.log("home page")
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
+    integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js"></script>
+  <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.matchHeight/0.7.2/jquery.matchHeight-min.js"
+    integrity="sha512-/bOVV1DV1AQXcypckRwsR9ThoCj7FqTV2/0Bm79bL3YSyLkVideFLE3MIZkq1u5t28ke1c0n31WYCOrO01dsUg=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="./assets/js/main.js"></script>
+  <script src="./assets/js/animation.js"></script>
+  <script src="./assets/js/slider.js"></script>
+  <script src="./assets/js/slider_subpage.js"></script>
+</body>
+
+</html>

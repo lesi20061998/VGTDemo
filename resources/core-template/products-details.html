@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home page | Vite Template</title>
+    <meta name="description" content="Home page" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css" />
+    <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://cdn.jsdelivr.net/npm/paper-css@0.4.1/paper.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="./assets/css/style.css">
+  </head>
+
+  <body>
+    <header class="c-header js-header">
+      <div class="c-header__top">
+        <div class="details l-container">
+          <div class="c-header__mail">
+            <h1>
+              <a href="mailto:info.thuananphat@gmail.com">
+                <img src="./assets/img/icon/ic-mail.svg" alt="" class="c-header__mailic" /> info.thuananphat@gmail.com </a>
+            </h1>
+          </div>
+          <div class="c-header__social">
+            <ul class="c-header__social--list">
+              <li class="c-header__social--item">
+                <a href=""><img src="./assets/img/social/fb.svg" alt="" /></a>
+              </li>
+              <li class="c-header__social--item">
+                <a href=""><img src="./assets/img/social/yt.svg" alt="" /></a>
+              </li>
+              <li class="c-header__social--item">
+                <a href=""><img src="./assets/img/social/zalo.svg" alt="" /></a>
+              </li>
+              <li class="c-header__social--item">
+                <a href=""><img src="./assets/img/social/tiktok.svg" alt="" /></a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="c-header__main">
+        <div class="details l-container">
+          <div class="c-header__hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <ul class="c-header__main--left c-gnav">
+            <li><a href="#">Giới thiệu</a></li>
+            <li><a href="#">Sản Phẩm</a></li>
+            <li><a href="#">Dịch Vụ</a></li>
+            <li><a href="#">Tin Tức</a></li>
+            <li><a href="#">Liên Hệ</a></li>
+          </ul>
+          <a href="/" class="c-header__logo"><img src="./assets/img/common/logo.png" alt=".... Doanh nghiệp ..." /></a>
+          <div class="c-header__main--right">
+            <form class="c-header__form" role="search" action="/search" method="get">
+              <input id="search-input" name="q" class="c-header__form--input" />
+              <img src="./assets/img/icon/ic-search.svg" alt="Tìm kiếm" />
+              <div class="search-tag" id="search-tag">
+                <p class="search-tag__ttl">Từ khóa phổ biến</p>
+                <ul class="search-tag__list js-search-tag">
+                  <li><a href="#" class="c-tag">Tag</a></li>
+                  <li><a href="#" class="c-tag">Tag</a></li>
+                  <li><a href="#" class="c-tag">Tag</a></li>
+                </ul>
+              </div>
+            </form>
+            <a href="tel:+0989181701" class="c-btn01"><img src="./assets/img/icon/ic-phone.svg" alt="" />0989181701</a>
+          </div>
+        </div>
+      </div>
+    </header>
+    <main class="p-subpage p-products p-single">
+      <!-- 1. Hero -->
+      <section class="c-mainvisual">
+        <div class="c-mainvisual__bg">
+          <img class="c-mainvisual__bg-img" src="./assets/img/top/bg_banner.jpg" alt="Tin tức" />
+        </div>
+        <div class="c-mainvisual__content">
+          <p class="c-mainvisual__breadcrumb">Trang chủ / Danh mục sản phẩm / Chi tiết sản phẩm</p>
+        </div>
+      </section>
+      <!-- THUONG HIEU  -->
+      <section class="brand sp-only">
+        <div class="details" data-aos="fade-up" data-aos-duration="1000">
+          <div class="brand-slider swiper">
+            <div class="swiper-wrapper">
+              <div class="brand-item swiper-slide">
+                <a href="#"><img src="./assets/img/top/brand/brand1.png" alt="" loading="lazy" /></a>
+              </div>
+              <div class="brand-item swiper-slide">
+                <a href="#"><img src="./assets/img/top/brand/brand2.png" alt="" loading="lazy" /></a>
+              </div>
+              <div class="brand-item swiper-slide">
+                <a href="#"><img src="./assets/img/top/brand/brand3.png" alt="" loading="lazy" /></a>
+              </div>
+              <div class="brand-item swiper-slide">
+                <a href="#"><img src="./assets/img/top/brand/brand4.png" alt="" loading="lazy" /></a>
+              </div>
+              <div class="brand-item swiper-slide">
+                <a href="#"><img src="./assets/img/top/brand/brand1.png" alt="" loading="lazy" /></a>
+              </div>
+              <div class="brand-item swiper-slide">
+                <a href="#"><img src="./assets/img/top/brand/brand2.png" alt="" loading="lazy" /></a>
+              </div>
+              <div class="brand-item swiper-slide">
+                <a href="#"><img src="./assets/img/top/brand/brand3.png" alt="" loading="lazy" /></a>
+              </div>
+              <div class="brand-item swiper-slide">
+                <a href="#"><img src="./assets/img/top/brand/brand4.png" alt="" loading="lazy" /></a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- product-details -->
+      <section class="product-details">
+        <div class="details">
+          <div class="l-container">
+            <div class="l-sidebar">
+              <div class="l-sidebar__left">
+                <div class="product-details__left--top">
+                  <div class="product-details__img">
+                    <div thumbsSlider="" class="swiper js-product-details-thumb">
+                      <div class="swiper-wrapper">
+                        <div class="swiper-slide">
+                          <img src="./assets/img/top/product/daunhot2.png" />
+                        </div>
+                        <div class="swiper-slide">
+                          <img src="./assets/img/top/product/daunhot2.png" />
+                        </div>
+                        <div class="swiper-slide">
+                          <img src="./assets/img/top/product/daunhot2.png" />
+                        </div>
+                        <div class="swiper-slide">
+                          <img src="./assets/img/top/product/daunhot2.png" />
+                        </div>
+                      </div>
+                    </div>
+                    <div class="swiper js-product-details">
+                      <div class="swiper-wrapper">
+                        <div class="swiper-slide">
+                          <img src="./assets/img/top/product/daunhot2.png" />
+                        </div>
+                        <div class="swiper-slide">
+                          <img src="./assets/img/top/product/daunhot2.png" />
+                        </div>
+                        <div class="swiper-slide">
+                          <img src="./assets/img/top/product/daunhot2.png" />
+                        </div>
+                        <div class="swiper-slide">
+                          <img src="./assets/img/top/product/daunhot2.png" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="product-details__info">
+                    <h2 class="l-sidebar__ttl">Shell Helix HX7 Diesel 10W-30</h2>
+                    <p class="product-details__h3">Mã sản phẩm : 10W-30</p>
+                    <p class="product-details__p">Giải pháp bôi trơn tối ưu cho xe số và xe tay ga, giúp động cơ vận hành êm ái, giảm ma sát, tiết kiệm nhiên liệu và kéo dài tuổi thọ máy.</p>
+                    <p class="product-details__h3">Thông số kĩ thuật :</p>
+                    <div class="product-details__table">
+                      <table>
+                        <tr>
+                          <th colspan="2" class="product-details__table-ttl">THÔNG SỐ KỸ THUẬT</th>
+                        </tr>
+                        <tr>
+                          <th>Độ nhớt (SAE):</th>
+                          <td>10W-40</td>
+                        </tr>
+                        <tr>
+                          <th>Tiêu chuẩn API:</th>
+                          <td>SN</td>
+                        </tr>
+                        <tr>
+                          <th>Chỉ số VI:</th>
+                          <td>160</td>
+                        </tr>
+                        <tr>
+                          <th>Điểm chớp cháy:</th>
+                          <td>230°C</td>
+                        </tr>
+                        <tr>
+                          <th>Điểm đông đặc:</th>
+                          <td>-33°C</td>
+                        </tr>
+                      </table>
+                    </div>
+                    <div class="product-details__certi">
+                      <div class="product-details__certi-item">
+                        <img src="./assets/img/icon/ic-medal.svg" alt="" class="product-details__certi-icon" />
+                        <p>Chính hãng</p>
+                      </div>
+                      <div class="product-details__certi-item">
+                        <img src="./assets/img/icon/ic-cer.svg" alt="" class="product-details__certi-icon" />
+                        <p>Tiêu chuẩn<br />quốc tế</p>
+                      </div>
+                      <div class="product-details__certi-item">
+                        <img src="./assets/img/icon/ic-pro.svg" alt="" class="product-details__certi-icon" />
+                        <p>Bảo vệ động <br />cơ tối ưu</p>
+                      </div>
+                    </div>
+                    <div class="product-details__btn">
+                      <a href="#" class="c-btn01 c-btn01--fw400">Xem tất cả</a>
+                    </div>
+                  </div>
+                </div>
+                <div class="product-details__left--bottom">
+                  <h3 class="l-sidebar__ttl u-textcenter">CHÍNH SÁCH GIÁ SỈ VÀ CHIẾT KHẤU</h3>
+                  <div class="product-details__table product-details__table--shape">
+                    <table>
+                      <tr>
+                        <th>Số lượng mua</th>
+                        <th>Giá (VND)</th>
+                        <th>Chiết khấu (%)</th>
+                        <th>Ghi chú</th>
+                      </tr>
+                      <tr>
+                        <td>10 thùng</td>
+                        <td>220.000 / chai</td>
+                        <td>0 %</td>
+                        <td>Giá cơ bản</td>
+                      </tr>
+                      <tr>
+                        <td>20 - 49 thùng</td>
+                        <td>210.000 / chai</td>
+                        <td>5 %</td>
+                        <td>Giao miễn phí nội thành</td>
+                      </tr>
+                      <tr>
+                        <td>50 - 99 thùng</td>
+                        <td>200.000 / chai</td>
+                        <td>10 %</td>
+                        <td>Hỗ trợ banner</td>
+                      </tr>
+                      <tr>
+                        <td>100 thùng trở lên</td>
+                        <td>Liên hệ</td>
+                        <td>12 - 15 %</td>
+                        <td>Hỗ trợ marketing, hợp đồng đại lý</td>
+                      </tr>
+                    </table>
+                  </div>
+                  <div class="product-details__tabs">
+                    <div class="product-details__tabs-item is-selected">THÔNG TIN CHI TIẾT</div>
+                    <div class="product-details__tabs-item">ĐÁNH GIÁ SẢN PHẨM</div>
+                    <div class="product-details__tabs-item">CHÍNH SÁCH VẬN CHUYỂN</div>
+                    <div class="product-details__tabs-item">CHÍNH SÁCH ĐỔI TRẢ</div>
+                  </div>
+                  <div class="product-details__contentbox"> Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Adipiscing commodo elit at imperdiet dui accumsan sit. Luctus accumsan tortor posuere ac. Venenatis tellus in metus vulputate eu scelerisque. A scelerisque purus semper eget duis at tellus. Blandit aliquam etiam erat velit. Sem viverra aliquet eget sit amet tellus cras. Blandit aliquam etiam erat velit scelerisque in. Fames ac turpis egestas maecenas pharetra convallis. Ullamcorper dignissim cras tincidunt lobortis. Semper eget duis at tellus at. Et egestas quis ipsum suspendisse ultrices gravida dictum. Felis eget velit aliquet sagittis id consectetur purus ut faucibus. Vestibulum lectus mauris ultrices eros in. Mauris pellentesque pulvinar pellentesque habitant morbi tristique senectus et. Gravida arcu ac tortor dignissim. Facilisis volutpat est velit egestas dui id ornare arcu odio. <br /><br /> Lobortis mattis aliquam faucibus purus in. Eget aliquet nibh praesent tristique magna sit amet purus. Nunc aliquet bibendum enim facilisis gravida neque convallis a. Mattis enim ut tellus elementum sagittis. Ullamcorper morbi tincidunt ornare massa eget egestas purus viverra accumsan. Eget aliquet nibh praesent tristique. Feugiat nisl pretium fusce id velit. Tortor id aliquet lectus proin. Est sit amet facilisis magna etiam tempor orci. Consequat mauris nunc congue nisi vitae suscipit. Diam maecenas ultricies mi eget mauris pharetra et ultrices. Iaculis urna id volutpat lacus laoreet non. Mi in nulla posuere sollicitudin aliquam ultrices sagittis. Bibendum arcu vitae elementum curabitur vitae. Aliquam ultrices sagittis orci a scelerisque purus. Mi sit amet mauris commodo quis imperdiet massa tincidunt. Elementum sagittis vitae et leo duis ut diam quam nulla. Quis vel eros donec ac odio tempor orci. Blandit massa enim nec dui. Tempus iaculis urna id volutpat lacus laoreet non. </div>
+                  <div class="product-details__btn">
+                    <a href="#" class="c-btn01 c-btn01--fw400">Xem tất cả</a>
+                  </div>
+                </div>
+              </div>
+              <div class="l-sidebar__right">
+                <div class="sidebar-list">
+                  <div class="sidebar-item">
+                    <p class="sidebar-item__ttl">CAM KẾT TỪ CHÚNG TÔI</p>
+                    <div class="sidebar-item__content">
+                      <div class="sidebar-item__content-item">
+                        <img src="./assets/img/sidebar/ic-shield.svg" alt="Đội ngũ tay nghề cao, tư vấn tận tình" class="sidebar-item__img" />
+                        <p>Đội ngũ tay nghề cao, tư vấn tận tình</p>
+                      </div>
+                      <div class="sidebar-item__content-item">
+                        <img src="./assets/img/sidebar/ic-medal.svg" alt="Sản phẩm chất lượng, nguồn gốc rõ ràng" class="sidebar-item__img" />
+                        <p>Sản phẩm chất lượng, nguồn gốc rõ ràng</p>
+                      </div>
+                      <div class="sidebar-item__content-item">
+                        <img src="./assets/img/sidebar/ic-save.svg" alt="Chi phí rõ ràng, cạnh tranh" class="sidebar-item__img" />
+                        <p>Chi phí rõ ràng, cạnh tranh</p>
+                      </div>
+                      <div class="sidebar-item__content-item">
+                        <img src="./assets/img/sidebar/ic-deli.svg" alt="Đảm bảo bàn giao sản phẩm đúng thời gian" class="sidebar-item__img" />
+                        <p>Đảm bảo bàn giao sản phẩm đúng thời gian</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="sidebar-item sidebar-form">
+                    <p class="sidebar-item__ttl">Đăng Ký Tư Vấn Ngay</p>
+                    <form action="process-form.php" method="POST">
+                      <div class="form-group">
+                        <input type="text" id="name" name="name" placeholder="Họ và tên" required />
+                      </div>
+                      <div class="form-group">
+                        <input type="text" id="phone" name="phone" placeholder="Số điện thoại" required />
+                      </div>
+                      <div class="form-group">
+                        <input type="email" id="email" name="email" placeholder="Mail" required />
+                      </div>
+                      <div class="form-group">
+                        <input type="text" id="message" name="message" placeholder="Nội dung"></input>
+                      </div>
+                      <button type="submit">Gửi</button>
+                    </form>
+                  </div>
+                  <div class="sidebar-item sidebar-products">
+                    <p class="sidebar-item__ttl">SẢN PHẨM ĐÃ XEM</p>
+                    <div class="sidebar-item__content">
+                      <div class="sidebar-item__content-item">
+                        <img src="./assets/img/top/product/daunhot2.png" alt="Đội ngũ tay nghề cao, tư vấn tận tình" class="sidebar-item__img" />
+                        <p class="u-textsm">Đội ngũ tay nghề cao, tư vấn tận tình <a href="#">Liên hệ</a></p>
+                      </div>
+                      <div class="sidebar-item__content-item">
+                        <img src="./assets/img/top/product/daunhot2.png" alt="Sản phẩm chất lượng, nguồn gốc rõ ràng" class="sidebar-item__img" />
+                        <p class="u-textsm">Sản phẩm chất lượng, nguồn gốc rõ ràng <a href="#">Liên hệ</a></p>
+                      </div>
+                      <div class="sidebar-item__content-item">
+                        <img src="./assets/img/top/product/daunhot2.png" alt="Chi phí rõ ràng, cạnh tranh" class="sidebar-item__img" />
+                        <p class="u-textsm">Chi phí rõ ràng, cạnh tranh <a href="#">Liên hệ</a></p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- 4. Chi tiết bài viết -->
+      <section class="posts">
+        <div class="details">
+          <div class="related-posts l-container">
+            <div class="c-heading c-heading--row">
+              <h2 class="c-ttl02" data-aos="fade-up" data-aos-duration="1000">TIN TỨC</h2>
+              <div class="c-heading--right" data-aos="fade-up" data-aos-duration="1000">
+                <a href="#" class="c-btn01 c-btn01--fw400">Xem tất cả</a>
+              </div>
+            </div>
+            <div class="related-posts__body">
+              <!-- Bài viết nổi bật bên trái -->
+              <article data-aos="fade-up" data-aos-duration="1000">
+                <a href="#" class="related-posts__featured">
+                  <div href="#" class="related-posts__featured-thumb">
+                    <img class="related-posts__featured-thumb-img" src="./assets/img/top/posts/related-posts-1.png" alt="Dầu nhớt lộn kiếp" />
+                  </div>
+                  <div class="related-posts__featured-content">
+                    <h3 class="related-posts__featured-title ug-line-break-2">
+                      <p href="#">Shell có thể sáp nhập BP trong thương vụ lớn nhất ngành dầu khí toàn cầu</p>
+                    </h3>
+                    <p class="related-posts__featured-desc ug-line-break-2">Hiện vốn hóa thị trường của Shell đạt khoảng 145,6 tỷ bảng Anh, gấp hơn hai lần so với BP là 55,9 tỷ bảng.</p>
+                    <div class="related-posts__featured-meta-group">
+                      <div class="related-posts__date-wrapper">
+                        <div class="related-posts__date-icon">
+                          <i class="fa-regular fa-clock"></i>
+                        </div>
+                        <span class="related-posts__date">02/09/2025</span>
+                      </div>
+                      <div class="related-posts__views-wrapper">
+                        <i class="fa-regular fa-eye"></i>
+                        <span class="related-posts__views">100 lượt xem</span>
+                      </div>
+                    </div>
+                  </div>
+                </a>
+              </article>
+              <!-- Danh sách bài viết nhỏ bên phải -->
+              <div class="related-posts__list">
+                <article data-aos="fade-up" data-aos-duration="1000">
+                  <a href="#" class="related-posts__item">
+                    <div class="related-posts__item-thumb">
+                      <img class="related-posts__item-thumb-img" src="./assets/img/top/posts/related-posts-3.png" alt="Nhớt xe máy" />
+                    </div>
+                    <div class="related-posts__item-content">
+                      <h3 class="related-posts__item-title">
+                        <p class="related-posts__item-title-text ug-line-break-2">Shell có thể sáp nhập BP trong thương vụ lớn nhất ngành dầu khí toàn cầu</p>
+                      </h3>
+                      <p class="related-posts__item-desc ug-line-break-2">Hiện vốn hóa thị trường của Shell đạt khoảng 145,6 tỷ hóa thị trường của Shell đạt khoảng 145,6 tỷhóa thị trường của Shell đạt khoảng 145,6 tỷ bảng Anh...</p>
+                      <div class="related-posts__meta-group">
+                        <div class="related-posts__date-wrapper">
+                          <div class="related-posts__date-icon">
+                            <i class="fa-regular fa-clock"></i>
+                          </div>
+                          <span class="related-posts__date">02/09/2025</span>
+                        </div>
+                        <div class="related-posts__views-wrapper">
+                          <i class="fa-regular fa-eye"></i>
+                          <span class="related-posts__views">100 lượt xem</span>
+                        </div>
+                      </div>
+                    </div>
+                  </a>
+                </article>
+                <article data-aos="fade-up" data-aos-duration="1000">
+                  <a href="#" class="related-posts__item">
+                    <div class="related-posts__item-thumb">
+                      <img class="related-posts__item-thumb-img" src="./assets/img/top/posts/related-posts-3.png" alt="Nhớt xe máy" />
+                    </div>
+                    <div class="related-posts__item-content">
+                      <h3 class="related-posts__item-title">
+                        <p class="related-posts__item-title-text ug-line-break-2">Shell có thể sáp nhập BP trong thương vụ lớn nhất ngành dầu khí toàn cầu</p>
+                      </h3>
+                      <p class="related-posts__item-desc ug-line-break-2">Hiện vốn hóa thị trường của Shell đạt khoảng 145,6 tỷ hóa thị trường của Shell đạt khoảng 145,6 tỷhóa thị trường của Shell đạt khoảng 145,6 tỷ bảng Anh...</p>
+                      <div class="related-posts__meta-group">
+                        <div class="related-posts__date-wrapper">
+                          <div class="related-posts__date-icon">
+                            <i class="fa-regular fa-clock"></i>
+                          </div>
+                          <span class="related-posts__date">02/09/2025</span>
+                        </div>
+                        <div class="related-posts__views-wrapper">
+                          <i class="fa-regular fa-eye"></i>
+                          <span class="related-posts__views">100 lượt xem</span>
+                        </div>
+                      </div>
+                    </div>
+                  </a>
+                </article>
+                <article data-aos="fade-up" data-aos-duration="1000">
+                  <a href="#" class="related-posts__item">
+                    <div class="related-posts__item-thumb">
+                      <img class="related-posts__item-thumb-img" src="./assets/img/top/posts/related-posts-3.png" alt="Nhớt xe máy" />
+                    </div>
+                    <div class="related-posts__item-content">
+                      <h3 class="related-posts__item-title">
+                        <p class="related-posts__item-title-text ug-line-break-2">Shell có thể sáp nhập BP trong thương vụ lớn nhất ngành dầu khí toàn cầu</p>
+                      </h3>
+                      <p class="related-posts__item-desc ug-line-break-2">Hiện vốn hóa thị trường của Shell đạt khoảng 145,6 tỷ hóa thị trường của Shell đạt khoảng 145,6 tỷhóa thị trường của Shell đạt khoảng 145,6 tỷ bảng Anh...</p>
+                      <div class="related-posts__meta-group">
+                        <div class="related-posts__date-wrapper">
+                          <div class="related-posts__date-icon">
+                            <i class="fa-regular fa-clock"></i>
+                          </div>
+                          <span class="related-posts__date">02/09/2025</span>
+                        </div>
+                        <div class="related-posts__views-wrapper">
+                          <i class="fa-regular fa-eye"></i>
+                          <span class="related-posts__views">100 lượt xem</span>
+                        </div>
+                      </div>
+                    </div>
+                  </a>
+                </article>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- 5. Product cart component-->
+      <section class="products">
+        <div class="details">
+          <div class="products-wr l-container">
+            <h2 class="c-ttl01">SẢN PHẨM LIÊN QUAN</h2>
+            <div class="products-slider swiper js-products-slider">
+              <ul class="c-list01 products-list swiper-wrapper">
+                <li class="swiper-slide c-item" data-aos="fade-up" data-aos-duration="1000">
+                  <a href="#">
+                    <div class="c-product">
+                      <div class="c-product__top">
+                        <img loading="lazy" src="./assets/img/top/product/daunhot2.png" alt="Shell HELIX - HX7" />
+                      </div>
+                      <div class="c-product__body">
+                        <p class="c-product__ttl">Shell HELIX - HX7</p>
+                        <p class="c-product__desc">Shell Helix HX3 20W-50 là nhớt động cơ Shell Helix HX3 20W-50 là nhớt động cơ được sản x..</p>
+                        <div class="c-product__rate" id="js-rating" style="--rating: 4">
+                          <i class="fa-solid fa-star"></i>
+                          <i class="fa-solid fa-star"></i>
+                          <i class="fa-solid fa-star"></i>
+                          <i class="fa-solid fa-star"></i>
+                          <i class="fa-solid fa-star"></i>
+                        </div>
+                        <div class="c-product__btn">Xem báo giá</div>
+                      </div>
+                    </div>
+                  </a>
+                </li>
+                <li class="swiper-slide c-item" data-aos="fade-up" data-aos-duration="1000">
+                  <a href="#">
+                    <div class="c-product">
+                      <div class="c-product__top">
+                        <img loading="lazy" src="./assets/img/top/product/daunhot2.png" alt="Shell HELIX - HX7" />
+                      </div>
+                      <div class="c-product__body">
+                        <p class="c-product__ttl">Shell HELIX - HX7</p>
+                        <p class="c-product__desc">Shell Helix HX3 20W-50 là nhớt động cơ Shell Helix HX3 20W-50 là nhớt động cơ được sản x..</p>
+                        <div class="c-product__rate" id="js-rating" style="--rating: 3">
+                          <i class="fa-solid fa-star"></i>
+                          <i class="fa-solid fa-star"></i>
+                          <i class="fa-solid fa-star"></i>
+                          <i class="fa-solid fa-star"></i>
+                          <i class="fa-solid fa-star"></i>
+                        </div>
+                        <div class="c-product__btn">Xem báo giá</div>
+                      </div>
+                    </div>
+                  </a>
+                </li>
+                <li class="swiper-slide c-item" data-aos="fade-up" data-aos-duration="1000">
+                  <a href="#">
+                    <div class="c-product">
+                      <div class="c-product__top">
+                        <img loading="lazy" src="./assets/img/top/product/daunhot2.png" alt="Shell HELIX - HX7" />
+                      </div>
+                      <div class="c-product__body">
+                        <p class="c-product__ttl">Shell HELIX - HX7</p>
+                        <p class="c-product__desc">Shell Helix HX3 20W-50 là nhớt động cơ Shell Helix HX3 20W-50 là nhớt động cơ được sản x..</p>
+                        <div class="c-product__rate" id="js-rating" style="--rating: 3">
+                          <i class="fa-solid fa-star"></i>
+                          <i class="fa-solid fa-star"></i>
+                          <i class="fa-solid fa-star"></i>
+                          <i class="fa-solid fa-star"></i>
+                          <i class="fa-solid fa-star"></i>
+                        </div>
+                        <div class="c-product__btn">Xem báo giá</div>
+                      </div>
+                    </div>
+                  </a>
+                </li>
+                <li class="swiper-slide c-item" data-aos="fade-up" data-aos-duration="1000">
+                  <a href="#">
+                    <div class="c-product">
+                      <div class="c-product__top">
+                        <img loading="lazy" src="./assets/img/top/product/daunhot2.png" alt="Shell HELIX - HX7" />
+                      </div>
+                      <div class="c-product__body">
+                        <p class="c-product__ttl">Shell HELIX - HX7</p>
+                        <p class="c-product__desc">Shell Helix HX3 20W-50 là nhớt động cơ Shell Helix HX3 20W-50 là nhớt động cơ được sản x..</p>
+                        <div class="c-product__rate" id="js-rating" style="--rating: 4">
+                          <i class="fa-solid fa-star"></i>
+                          <i class="fa-solid fa-star"></i>
+                          <i class="fa-solid fa-star"></i>
+                          <i class="fa-solid fa-star"></i>
+                          <i class="fa-solid fa-star"></i>
+                        </div>
+                        <div class="c-product__btn">Xem báo giá</div>
+                      </div>
+                    </div>
+                  </a>
+                </li>
+                <li class="swiper-slide c-item" data-aos="fade-up" data-aos-duration="1000">
+                  <a href="#">
+                    <div class="c-product">
+                      <div class="c-product__top">
+                        <img loading="lazy" src="./assets/img/top/product/daunhot2.png" alt="Shell HELIX - HX7" />
+                      </div>
+                      <div class="c-product__body">
+                        <p class="c-product__ttl">Shell HELIX - HX7</p>
+                        <p class="c-product__desc">Shell Helix HX3 20W-50 là nhớt động cơ Shell Helix HX3 20W-50 là nhớt động cơ được sản x..</p>
+                        <div class="c-product__rate" id="js-rating" style="--rating: 1">
+                          <i class="fa-solid fa-star"></i>
+                          <i class="fa-solid fa-star"></i>
+                          <i class="fa-solid fa-star"></i>
+                          <i class="fa-solid fa-star"></i>
+                          <i class="fa-solid fa-star"></i>
+                        </div>
+                        <div class="c-product__btn">Xem báo giá</div>
+                      </div>
+                    </div>
+                  </a>
+                </li>
+                <li class="swiper-slide c-item" data-aos="fade-up" data-aos-duration="1000">
+                  <a href="#">
+                    <div class="c-product">
+                      <div class="c-product__top">
+                        <img loading="lazy" src="./assets/img/top/product/daunhot2.png" alt="Shell HELIX - HX7" />
+                      </div>
+                      <div class="c-product__body">
+                        <p class="c-product__ttl">Shell HELIX - HX7</p>
+                        <p class="c-product__desc">Shell Helix HX3 20W-50 là nhớt động cơ Shell Helix HX3 20W-50 là nhớt động cơ được sản x..</p>
+                        <div class="c-product__rate" id="js-rating" style="--rating: 5">
+                          <i class="fa-solid fa-star"></i>
+                          <i class="fa-solid fa-star"></i>
+                          <i class="fa-solid fa-star"></i>
+                          <i class="fa-solid fa-star"></i>
+                          <i class="fa-solid fa-star"></i>
+                        </div>
+                        <div class="c-product__btn">Xem báo giá</div>
+                      </div>
+                    </div>
+                  </a>
+                </li>
+                <li class="swiper-slide c-item" data-aos="fade-up" data-aos-duration="1000">
+                  <a href="#">
+                    <div class="c-product">
+                      <div class="c-product__top">
+                        <img loading="lazy" src="./assets/img/top/product/daunhot2.png" alt="Shell HELIX - HX7" />
+                      </div>
+                      <div class="c-product__body">
+                        <p class="c-product__ttl">Shell HELIX - HX7</p>
+                        <p class="c-product__desc">Shell Helix HX3 20W-50 là nhớt động cơ Shell Helix HX3 20W-50 là nhớt động cơ được sản x..</p>
+                        <div class="c-product__rate" id="js-rating" style="--rating: 5">
+                          <i class="fa-solid fa-star"></i>
+                          <i class="fa-solid fa-star"></i>
+                          <i class="fa-solid fa-star"></i>
+                          <i class="fa-solid fa-star"></i>
+                          <i class="fa-solid fa-star"></i>
+                        </div>
+                        <div class="c-product__btn">Xem báo giá</div>
+                      </div>
+                    </div>
+                  </a>
+                </li>
+                <li class="swiper-slide c-item" data-aos="fade-up" data-aos-duration="1000">
+                  <a href="#">
+                    <div class="c-product">
+                      <div class="c-product__top">
+                        <img loading="lazy" src="./assets/img/top/product/daunhot2.png" alt="Shell HELIX - HX7" />
+                      </div>
+                      <div class="c-product__body">
+                        <p class="c-product__ttl">Shell HELIX - HX7</p>
+                        <p class="c-product__desc">Shell Helix HX3 20W-50 là nhớt động cơ Shell Helix HX3 20W-50 là nhớt động cơ được sản x..</p>
+                        <div class="c-product__rate" id="js-rating" style="--rating: 5">
+                          <i class="fa-solid fa-star"></i>
+                          <i class="fa-solid fa-star"></i>
+                          <i class="fa-solid fa-star"></i>
+                          <i class="fa-solid fa-star"></i>
+                          <i class="fa-solid fa-star"></i>
+                        </div>
+                        <div class="c-product__btn">Xem báo giá</div>
+                      </div>
+                    </div>
+                  </a>
+                </li>
+              </ul>
+              <div class="swiper-button-next"></div>
+              <div class="swiper-button-prev"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer class="c-footer">
+      <div class="details">
+        <div class="c-footer__top">
+          <div class="l-container">
+            <h2 class="c-footer__ttl" data-aos="fade-up" data-aos-duration="1000">ĐĂNG KÝ TƯ VẤN</h2>
+            <div class="c-footer__contact" data-aos="fade-up" data-aos-duration="1000">
+              <div class="c-footer__txt">Sit amet tellus cras adipiscing enim eu turpis egestas. Interdum velit laoreet id donec ultrices tincidunt. Cursus vitae congue mauris rhoncus aenean vel. Nisi quis eleifend quam adipiscing vitae proin sagittis.</div>
+              <div class="c-footer__input">
+                <input type="text" placeholder="Nhập số điện thoại của bạn" />
+                <button class="c-btn01 c-btn01--fw400">Đăng ký</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="c-footer__middle">
+          <div class="c-footer__middle-wrapper l-container">
+            <div data-aos="fade-up" data-aos-duration="1000">
+              <a href="#" class="c-footer__logo">
+                <img src="../assets/img/common/logo.png" alt=".... Doanh nghiệp ..." />
+                <h3 class="c-footer__brand">.... Doanh nghiệp ...</h3>
+              </a>
+            </div>
+            <div class="c-footer__menu">
+              <div class="c-footer__item" data-aos="fade-up" data-aos-duration="1000">
+                <p class="c-footer__item-ttl">Thông tin</p>
+                <div class="c-footer__info">
+                  <strong>Công Ty TNHH VNext Globla Tech</strong>
+                  <p>Địa chỉ: 108/02 Khu đô thị Vạn Phúc, Tp-HCM</p>
+                  <p><a href="tel:+0969699879">Hotline: 0969 699 879</a></p>
+                  <p><a href="mailto:info@vnextglobaltech.com">Mail: info@vnextglobaltech.com</a></p>
+                </div>
+              </div>
+              <div class="c-footer__item" data-aos="fade-up" data-aos-duration="1000">
+                <p class="c-footer__item-ttl">Thông tin</p>
+                <ul>
+                  <li><a href="#">Nhớt Công Nghiệp</a></li>
+                  <li><a href="#">Nhớt Ngành Điện</a></li>
+                  <li><a href="#">Nhớt Hàng Hải</a></li>
+                  <li><a href="#">Nhớt Xe Hơi</a></li>
+                  <li><a href="#">Nhớt Xe Tải - Buýt</a></li>
+                </ul>
+              </div>
+              <div class="c-footer__item" data-aos="fade-up" data-aos-duration="1000">
+                <p class="c-footer__item-ttl">Dịch vụ</p>
+                <ul>
+                  <li><a href="#">Chính sách bán hàng</a></li>
+                  <li><a href="#">Chính sách vận chuyển</a></li>
+                  <li><a href="#">Hẫu mãi sau khi mua</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="c-footer__map">
+          <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3918.5802516987155!2d106.71017677570377!3d10.843399457953455!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3175290020f6d751%3A0x9fb3806425931799!2sC%C3%94NG%20TY%20TNHH%20VNEXT%20GLOBAL%20TECH!5e0!3m2!1sen!2s!4v1758006281055!5m2!1sen!2s" width="100%" height="100%" style="border: 0" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>
+      </div>
+    </footer>
+    <script>
+      console.log("home page")
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.matchHeight/0.7.2/jquery.matchHeight-min.js" integrity="sha512-/bOVV1DV1AQXcypckRwsR9ThoCj7FqTV2/0Bm79bL3YSyLkVideFLE3MIZkq1u5t28ke1c0n31WYCOrO01dsUg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="./assets/js/main.js"></script>
+    <script src="./assets/js/animation.js"></script>
+    <script src="./assets/js/slider.js"></script>
+    <script src="./assets/js/slider_subpage.js"></script>
+  </body>
+
+</html>

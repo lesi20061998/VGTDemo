@@ -1,0 +1,13 @@
+{
+    "agents": [
+        "codex",
+        "cursor",
+        "opencode"
+    ],
+    "editors": [
+        "cursor",
+        "opencode",
+        "vscode"
+    ],
+    "guidelines": []
+}

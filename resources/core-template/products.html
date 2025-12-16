@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Home page | Vite Template</title>
+  <meta name="description" content="Home page" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css" />
+  <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+    integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link href="https://cdn.jsdelivr.net/npm/paper-css@0.4.1/paper.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="./assets/css/style.css">
+</head>
+
+<body>
+  <header class="c-header js-header">
+    <div class="c-header__top">
+      <div class="details l-container">
+        <div class="c-header__mail">
+          <h1>
+            <a href="mailto:info.thuananphat@gmail.com">
+              <img src="./assets/img/icon/ic-mail.svg" alt="" class="c-header__mailic" /> info.thuananphat@gmail.com
+            </a>
+          </h1>
+        </div>
+        <div class="c-header__social">
+          <ul class="c-header__social--list">
+            <li class="c-header__social--item">
+              <a href=""><img src="./assets/img/social/fb.svg" alt="" /></a>
+            </li>
+            <li class="c-header__social--item">
+              <a href=""><img src="./assets/img/social/yt.svg" alt="" /></a>
+            </li>
+            <li class="c-header__social--item">
+              <a href=""><img src="./assets/img/social/zalo.svg" alt="" /></a>
+            </li>
+            <li class="c-header__social--item">
+              <a href=""><img src="./assets/img/social/tiktok.svg" alt="" /></a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="c-header__main">
+      <div class="details l-container">
+        <div class="c-header__hamburger">
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        <ul class="c-header__main--left c-gnav">
+          <li><a href="#">Giới thiệu</a></li>
+          <li><a href="#">Sản Phẩm</a></li>
+          <li><a href="#">Dịch Vụ</a></li>
+          <li><a href="#">Tin Tức</a></li>
+          <li><a href="#">Liên Hệ</a></li>
+        </ul>
+        <a href="/" class="c-header__logo"><img src="./assets/img/common/logo.png" alt=".... Doanh nghiệp ..." /></a>
+        <div class="c-header__main--right">
+          <form class="c-header__form" role="search" action="/search" method="get">
+            <input id="search-input" name="q" class="c-header__form--input" />
+            <img src="./assets/img/icon/ic-search.svg" alt="Tìm kiếm" />
+            <div class="search-tag" id="search-tag">
+              <p class="search-tag__ttl">Từ khóa phổ biến</p>
+              <ul class="search-tag__list js-search-tag">
+                <li><a href="#" class="c-tag">Tag</a></li>
+                <li><a href="#" class="c-tag">Tag</a></li>
+                <li><a href="#" class="c-tag">Tag</a></li>
+              </ul>
+            </div>
+          </form>
+          <a href="tel:+0989181701" class="c-btn01"><img src="./assets/img/icon/ic-phone.svg" alt="" />0989181701</a>
+        </div>
+      </div>
+    </div>
+  </header>
+  <main class="p-subpage p-products">
+    <!-- 1. Hero -->
+    <section class="c-mainvisual">
+      <div class="c-mainvisual__bg">
+        <img class="c-mainvisual__bg-img" src="./assets/img/top/bg_banner.jpg" alt="Tin tức" />
+      </div>
+      <div class="c-mainvisual__content">
+        <p class="c-mainvisual__breadcrumb">Trang chủ / Danh mục sản phẩm</p>
+      </div>
+    </section>
+    <!-- THUONG HIEU  -->
+    <section class="brand">
+      <div class="details" data-aos="fade-up" data-aos-duration="1000">
+        <div class="brand-slider swiper">
+          <div class="swiper-wrapper">
+            <div class="brand-item swiper-slide">
+              <a href="#"><img src="./assets/img/top/brand/brand1.png" alt="" loading="lazy" /></a>
+            </div>
+            <div class="brand-item swiper-slide">
+              <a href="#"><img src="./assets/img/top/brand/brand2.png" alt="" loading="lazy" /></a>
+            </div>
+            <div class="brand-item swiper-slide">
+              <a href="#"><img src="./assets/img/top/brand/brand3.png" alt="" loading="lazy" /></a>
+            </div>
+            <div class="brand-item swiper-slide">
+              <a href="#"><img src="./assets/img/top/brand/brand4.png" alt="" loading="lazy" /></a>
+            </div>
+            <div class="brand-item swiper-slide">
+              <a href="#"><img src="./assets/img/top/brand/brand1.png" alt="" loading="lazy" /></a>
+            </div>
+            <div class="brand-item swiper-slide">
+              <a href="#"><img src="./assets/img/top/brand/brand2.png" alt="" loading="lazy" /></a>
+            </div>
+            <div class="brand-item swiper-slide">
+              <a href="#"><img src="./assets/img/top/brand/brand3.png" alt="" loading="lazy" /></a>
+            </div>
+            <div class="brand-item swiper-slide">
+              <a href="#"><img src="./assets/img/top/brand/brand4.png" alt="" loading="lazy" /></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- DANH MỤC SẢN PHẨM  -->
+    <section class="product-cate">
+      <div class="details">
+        <div class="l-container">
+          <div class="product-cate__ttl" data-aos="fade-up" data-aos-duration="1000">
+            <h2>Danh Mục Sản Phẩm</h2>
+          </div>
+          <ul class="c-list01 product-cate__list">
+            <li class="c-item">
+              <a href="#" class="product-cate__item">
+                <p class="product-cate__ttl">Nhớt Động Cơ Diesel</p>
+                <div class="product-cate__banner"><img src="./assets/img/products/bg_cate1.jpg"
+                    alt="Nhớt Động Cơ Diesel" class="product-cate__bg" /></div>
+              </a>
+            </li>
+            <li class="c-item">
+              <a href="#" class="product-cate__item">
+                <p class="product-cate__ttl">Nhớt công nghiệp</p>
+                <div class="product-cate__banner"><img src="./assets/img/products/bg_cate2.jpg" alt="Nhớt công nghiệp"
+                    class="product-cate__bg" /></div>
+              </a>
+            </li>
+            <li class="c-item">
+              <a href="#" class="product-cate__item">
+                <p class="product-cate__ttl">Nhớt đông cơ xăng</p>
+                <div class="product-cate__banner"><img src="./assets/img/products/bg_cate3.jpg" alt="Nhớt đông cơ xăng"
+                    class="product-cate__bg" /></div>
+              </a>
+            </li>
+            <li class="c-item">
+              <a href="#" class="product-cate__item">
+                <p class="product-cate__ttl">Nhớt ngành điện</p>
+                <div class="product-cate__banner"><img src="./assets/img/products/bg_cate4.jpg" alt="Nhớt ngành điện"
+                    class="product-cate__bg" /></div>
+              </a>
+            </li>
+            <li class="c-item">
+              <a href="#" class="product-cate__item">
+                <p class="product-cate__ttl">Nhớt hàng hải</p>
+                <div class="product-cate__banner"><img src="./assets/img/products/bg_cate5.jpg" alt="Nhớt hàng hải"
+                    class="product-cate__bg" /></div>
+              </a>
+            </li>
+            <li class="c-item">
+              <a href="#" class="product-cate__item">
+                <p class="product-cate__ttl">Sản phẩm khác</p>
+                <div class="product-cate__banner"><img src="./assets/img/products/bg_cate6.jpg" alt="Sản phẩm khác"
+                    class="product-cate__bg" /></div>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+    <!-- DANH MỤC   -->
+    <section class="category">
+      <div class="details">
+        <div class="product-cate__banner">
+          <img src="./assets/img/products/bg_cate1.jpg" alt="" class="product-cate__bg" />
+        </div>
+        <div class="l-container">
+          <div class="category-list swiper js-category-list">
+            <div class="swiper-wrapper">
+              <div class="swiper-slide">
+                <a href="" class="category-item">
+                  <div class="category-item__txt">
+                    <p>Dầu Nhớt Động Cơ</p>
+                  </div>
+                  <div class="category-item__img">
+                    <img src="./assets/img/products/daunhot1.png" alt="" />
+                  </div>
+                </a>
+              </div>
+              <div class="swiper-slide">
+                <a href="" class="category-item">
+                  <div class="category-item__txt">
+                    <p>Dầu Nhớt Động Cơ</p>
+                  </div>
+                  <div class="category-item__img">
+                    <img src="./assets/img/products/daunhot2.png" alt="" />
+                  </div>
+                </a>
+              </div>
+              <div class="swiper-slide">
+                <a href="" class="category-item">
+                  <div class="category-item__txt">
+                    <p>Dầu Nhớt Động Cơ</p>
+                  </div>
+                  <div class="category-item__img">
+                    <img src="./assets/img/products/daunhot3.png" alt="" />
+                  </div>
+                </a>
+              </div>
+              <div class="swiper-slide">
+                <a href="" class="category-item">
+                  <div class="category-item__txt">
+                    <p>Dầu Nhớt Động Cơ</p>
+                  </div>
+                  <div class="category-item__img">
+                    <img src="./assets/img/products/daunhot1.png" alt="" />
+                  </div>
+                </a>
+              </div>
+              <div class="swiper-slide">
+                <a href="" class="category-item">
+                  <div class="category-item__txt">
+                    <p>Dầu Nhớt Động Cơ</p>
+                  </div>
+                  <div class="category-item__img">
+                    <img src="./assets/img/products/daunhot2.png" alt="" />
+                  </div>
+                </a>
+              </div>
+            </div>
+            <div class="swiper-button-prev"></div>
+            <div class="swiper-button-next"></div>
+            <div class="swiper-pagination"></div>
+          </div>
+          <div class="category-btn">
+            <a href="#" class="c-btn01 c-btn01--white">Xem Tất Cả</a>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- DANH MỤC   -->
+    <section class="category">
+      <div class="details">
+        <div class="product-cate__banner">
+          <img src="./assets/img/products/bg_cate1.jpg" alt="" class="product-cate__bg" />
+        </div>
+        <div class="l-container">
+          <div class="category-list swiper js-category-list">
+            <div class="swiper-wrapper">
+              <div class="swiper-slide">
+                <a href="" class="category-item">
+                  <div class="category-item__txt">
+                    <p>Dầu Nhớt Động Cơ</p>
+                  </div>
+                  <div class="category-item__img">
+                    <img src="./assets/img/products/daunhot1.png" alt="" />
+                  </div>
+                </a>
+              </div>
+              <div class="swiper-slide">
+                <a href="" class="category-item">
+                  <div class="category-item__txt">
+                    <p>Dầu Nhớt Động Cơ</p>
+                  </div>
+                  <div class="category-item__img">
+                    <img src="./assets/img/products/daunhot2.png" alt="" />
+                  </div>
+                </a>
+              </div>
+              <div class="swiper-slide">
+                <a href="" class="category-item">
+                  <div class="category-item__txt">
+                    <p>Dầu Nhớt Động Cơ</p>
+                  </div>
+                  <div class="category-item__img">
+                    <img src="./assets/img/products/daunhot3.png" alt="" />
+                  </div>
+                </a>
+              </div>
+              <div class="swiper-slide">
+                <a href="" class="category-item">
+                  <div class="category-item__txt">
+                    <p>Dầu Nhớt Động Cơ</p>
+                  </div>
+                  <div class="category-item__img">
+                    <img src="./assets/img/products/daunhot1.png" alt="" />
+                  </div>
+                </a>
+              </div>
+              <div class="swiper-slide">
+                <a href="" class="category-item">
+                  <div class="category-item__txt">
+                    <p>Dầu Nhớt Động Cơ</p>
+                  </div>
+                  <div class="category-item__img">
+                    <img src="./assets/img/products/daunhot2.png" alt="" />
+                  </div>
+                </a>
+              </div>
+            </div>
+            <div class="swiper-button-prev"></div>
+            <div class="swiper-button-next"></div>
+            <div class="swiper-pagination"></div>
+          </div>
+          <div class="category-btn">
+            <a href="#" class="c-btn01 c-btn01--white">Xem Tất Cả</a>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- DANH MỤC   -->
+    <section class="category">
+      <div class="details">
+        <div class="product-cate__banner">
+          <img src="./assets/img/products/bg_cate1.jpg" alt="" class="product-cate__bg" />
+        </div>
+        <div class="l-container">
+          <div class="category-list swiper js-category-list">
+            <div class="swiper-wrapper">
+              <div class="swiper-slide">
+                <a href="" class="category-item">
+                  <div class="category-item__txt">
+                    <p>Dầu Nhớt Động Cơ</p>
+                  </div>
+                  <div class="category-item__img">
+                    <img src="./assets/img/products/daunhot1.png" alt="" />
+                  </div>
+                </a>
+              </div>
+              <div class="swiper-slide">
+                <a href="" class="category-item">
+                  <div class="category-item__txt">
+                    <p>Dầu Nhớt Động Cơ</p>
+                  </div>
+                  <div class="category-item__img">
+                    <img src="./assets/img/products/daunhot2.png" alt="" />
+                  </div>
+                </a>
+              </div>
+              <div class="swiper-slide">
+                <a href="" class="category-item">
+                  <div class="category-item__txt">
+                    <p>Dầu Nhớt Động Cơ</p>
+                  </div>
+                  <div class="category-item__img">
+                    <img src="./assets/img/products/daunhot3.png" alt="" />
+                  </div>
+                </a>
+              </div>
+              <div class="swiper-slide">
+                <a href="" class="category-item">
+                  <div class="category-item__txt">
+                    <p>Dầu Nhớt Động Cơ</p>
+                  </div>
+                  <div class="category-item__img">
+                    <img src="./assets/img/products/daunhot1.png" alt="" />
+                  </div>
+                </a>
+              </div>
+              <div class="swiper-slide">
+                <a href="" class="category-item">
+                  <div class="category-item__txt">
+                    <p>Dầu Nhớt Động Cơ</p>
+                  </div>
+                  <div class="category-item__img">
+                    <img src="./assets/img/products/daunhot2.png" alt="" />
+                  </div>
+                </a>
+              </div>
+            </div>
+            <div class="swiper-button-prev"></div>
+            <div class="swiper-button-next"></div>
+            <div class="swiper-pagination"></div>
+          </div>
+          <div class="category-btn">
+            <a href="#" class="c-btn01 c-btn01--white">Xem Tất Cả</a>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- THUONG HIEU  -->
+    <section class="category">
+      <div class="details" data-aos="fade-up" data-aos-duration="1000">
+        <div class="product-cate__banner">
+          <img src="./assets/img/products/bg_cate1.jpg" alt="" class="product-cate__bg" />
+        </div>
+        <div class="brand-slider swiper">
+          <div class="swiper-wrapper">
+            <div class="brand-item swiper-slide">
+              <a href="#"><img src="./assets/img/products/brand1.png" alt="" loading="lazy" /></a>
+            </div>
+            <div class="brand-item swiper-slide">
+              <a href="#"><img src="./assets/img/products/brand2.png" alt="" loading="lazy" /></a>
+            </div>
+            <div class="brand-item swiper-slide">
+              <a href="#"><img src="./assets/img/products/brand3.png" alt="" loading="lazy" /></a>
+            </div>
+            <div class="brand-item swiper-slide">
+              <a href="#"><img src="./assets/img/products/brand4.png" alt="" loading="lazy" /></a>
+            </div>
+            <div class="brand-item swiper-slide">
+              <a href="#"><img src="./assets/img/products/brand1.png" alt="" loading="lazy" /></a>
+            </div>
+            <div class="brand-item swiper-slide">
+              <a href="#"><img src="./assets/img/products/brand2.png" alt="" loading="lazy" /></a>
+            </div>
+            <div class="brand-item swiper-slide">
+              <a href="#"><img src="./assets/img/products/brand3.png" alt="" loading="lazy" /></a>
+            </div>
+            <div class="brand-item swiper-slide">
+              <a href="#"><img src="./assets/img/products/brand4.png" alt="" loading="lazy" /></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer class="c-footer">
+    <div class="details">
+      <div class="c-footer__top">
+        <div class="l-container">
+          <h2 class="c-footer__ttl" data-aos="fade-up" data-aos-duration="1000">ĐĂNG KÝ TƯ VẤN</h2>
+          <div class="c-footer__contact" data-aos="fade-up" data-aos-duration="1000">
+            <div class="c-footer__txt">Sit amet tellus cras adipiscing enim eu turpis egestas. Interdum velit laoreet id
+              donec ultrices tincidunt. Cursus vitae congue mauris rhoncus aenean vel. Nisi quis eleifend quam
+              adipiscing vitae proin sagittis.</div>
+            <div class="c-footer__input">
+              <input type="text" placeholder="Nhập số điện thoại của bạn" />
+              <button class="c-btn01 c-btn01--fw400">Đăng ký</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="c-footer__middle">
+        <div class="c-footer__middle-wrapper l-container">
+          <div data-aos="fade-up" data-aos-duration="1000">
+            <a href="#" class="c-footer__logo">
+              <img src="../assets/img/common/logo.png" alt=".... Doanh nghiệp ..." />
+              <h3 class="c-footer__brand">.... Doanh nghiệp ...</h3>
+            </a>
+          </div>
+          <div class="c-footer__menu">
+            <div class="c-footer__item" data-aos="fade-up" data-aos-duration="1000">
+              <p class="c-footer__item-ttl">Thông tin</p>
+              <div class="c-footer__info">
+                <strong>Công Ty TNHH VNext Globla Tech</strong>
+                <p>Địa chỉ: 108/02 Khu đô thị Vạn Phúc, Tp-HCM</p>
+                <p><a href="tel:+0969699879">Hotline: 0969 699 879</a></p>
+                <p><a href="mailto:info@vnextglobaltech.com">Mail: info@vnextglobaltech.com</a></p>
+              </div>
+            </div>
+            <div class="c-footer__item" data-aos="fade-up" data-aos-duration="1000">
+              <p class="c-footer__item-ttl">Thông tin</p>
+              <ul>
+                <li><a href="#">Nhớt Công Nghiệp</a></li>
+                <li><a href="#">Nhớt Ngành Điện</a></li>
+                <li><a href="#">Nhớt Hàng Hải</a></li>
+                <li><a href="#">Nhớt Xe Hơi</a></li>
+                <li><a href="#">Nhớt Xe Tải - Buýt</a></li>
+              </ul>
+            </div>
+            <div class="c-footer__item" data-aos="fade-up" data-aos-duration="1000">
+              <p class="c-footer__item-ttl">Dịch vụ</p>
+              <ul>
+                <li><a href="#">Chính sách bán hàng</a></li>
+                <li><a href="#">Chính sách vận chuyển</a></li>
+                <li><a href="#">Hẫu mãi sau khi mua</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="c-footer__map">
+        <iframe
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3918.5802516987155!2d106.71017677570377!3d10.843399457953455!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3175290020f6d751%3A0x9fb3806425931799!2sC%C3%94NG%20TY%20TNHH%20VNEXT%20GLOBAL%20TECH!5e0!3m2!1sen!2s!4v1758006281055!5m2!1sen!2s"
+          width="100%" height="100%" style="border: 0" allowfullscreen="" loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"></iframe>
+      </div>
+    </div>
+  </footer>
+  <script>
+    console.log("home page")
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
+    integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js"></script>
+  <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.matchHeight/0.7.2/jquery.matchHeight-min.js"
+    integrity="sha512-/bOVV1DV1AQXcypckRwsR9ThoCj7FqTV2/0Bm79bL3YSyLkVideFLE3MIZkq1u5t28ke1c0n31WYCOrO01dsUg=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="./assets/js/main.js"></script>
+  <script src="./assets/js/animation.js"></script>
+  <script src="./assets/js/slider.js"></script>
+  <script src="./assets/js/slider_subpage.js"></script>
+</body>
+
+</html>

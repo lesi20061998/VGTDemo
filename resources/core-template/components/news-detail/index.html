@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News Detail Component</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css" />
+    <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+        integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://cdn.jsdelivr.net/npm/paper-css@0.4.1/paper.min.css" rel="stylesheet" />
+</head>
+
+<body>
+    <main class="p-subpage p-news p-single">
+        <section class="product-details">
+            <div class="details">
+                <div class="l-container">
+                    <div class="l-sidebar">
+                        <div class="l-sidebar__left">
+                            <div class="news__featured">
+                                <h2 class="l-sidebar__ttl">Lorem Ipsum is simply dummy text of the printing and
+                                    typesetting industry.
+                                </h2>
+                                <div class="news-detail__toc">
+                                    <h3 class="news-detail__toc-title">Nội dung bài viết</h3>
+                                    <ol class="news-detail__toc-list">
+                                        <li class="news-detail__toc-item">Sản phẩm tiên phong theo xu hướng bảo vệ động
+                                            cơ bền bỉ</li>
+                                        <li class="news-detail__toc-item">Điểm nổi bật khác biệt</li>
+                                        <li class="news-detail__toc-item">Sự kiện ra mắt thu hút đông đảo khách hàng và
+                                            đại lý</li>
+                                        <li class="news-detail__toc-item">Chia sẻ từ khách hàng trải nghiệm thực tế</li>
+                                        <li class="news-detail__toc-item">Định hướng chiến lược phát triển sản phẩm
+                                            trong tương lai</li>
+                                        <li class="news-detail__toc-item">Kỳ vọng mở rộng thị trường trong và ngoài nước
+                                        </li>
+                                    </ol>
+                                </div>
+                                <div class="news-detail__content-main">
+                                    <div class="news-detail__content-box">
+                                        <h3 class="news-detail__content-box-title">1. Sản phẩm tiên phong xu hướng bảo
+                                            vệ động cơ bền bỉ</h3>
+                                        <p class="news-detail__content-box-text">Dầu nhớt .... Doanh nghiệp ... vừa
+                                            chính thức
+                                            giới thiệu dòng sản phẩm công nghệ mới, được nghiên cứu chuyên sâu nhằm đáp
+                                            ứng nhu cầu vận hành êm ái, giảm ma sát, tiết kiệm nhiên liệu và kéo dài
+                                            tuổi thọ động cơ.</p>
+                                    </div>
+                                    <div class="news-detail__content-box">
+                                        <h3 class="news-detail__content-box-title">2. Điểm khác biệt nổi bật</h3>
+                                        <ul class="news-detail__content-box-list">
+                                            <li class="news-detail__content-box-item">Công nghệ phụ gia chống mài mòn
+                                                tiên tiến.</li>
+                                            <li class="news-detail__content-box-item">Độ nhớt ổn định, bảo vệ động cơ
+                                                trong mọi điều kiện thời tiết.</li>
+                                            <li class="news-detail__content-box-item">Giảm phát thải, thân thiện hơn với
+                                                môi trường.</li>
+                                            <li class="news-detail__content-box-item">Được kiểm nghiệm và chứng nhận bởi
+                                                các trung tâm kỹ thuật uy tín.</li>
+                                        </ul>
+                                    </div>
+                                    <div class="news-detail__content-box">
+                                        <h3 class="news-detail__content-box-title">3. Sự kiện ra mắt thu hút đông đảo
+                                            khách hàng và đại lý</h3>
+                                        <p class="news-detail__content-box-text">Dầu nhớt .... Doanh nghiệp ... vừa
+                                            chính thức
+                                            giới thiệu dòng sản phẩm công nghệ mới, được nghiên cứu chuyên sâu nhằm đáp
+                                            ứng nhu cầu vận hành êm ái, giảm ma sát, tiết kiệm nhiên liệu và kéo dài
+                                            tuổi thọ động cơ.</p>
+                                    </div>
+                                    <div class="news-detail__content-box">
+                                        <h3 class="news-detail__content-box-title">4. Chia sẻ từ khách hàng trải nghiệm
+                                            thực tế</h3>
+                                        <p class="news-detail__content-box-text">Dầu nhớt .... Doanh nghiệp ... vừa
+                                            chính thức
+                                            giới thiệu dòng sản phẩm công nghệ mới, được nghiên cứu chuyên sâu nhằm đáp
+                                            ứng nhu cầu vận hành êm ái, giảm ma sát, tiết kiệm nhiên liệu và kéo dài
+                                            tuổi thọ động cơ.</p>
+                                    </div>
+                                    <div class="news-detail__content-box">
+                                        <h3 class="news-detail__content-box-title">5. Định hướng chiến lược phát triển
+                                            sản phẩm</h3>
+                                        <p class="news-detail__content-box-text">Dầu nhớt .... Doanh nghiệp ... vừa
+                                            chính thức
+                                            giới thiệu dòng sản phẩm công nghệ mới, được nghiên cứu chuyên sâu nhằm đáp
+                                            ứng nhu cầu vận hành êm ái, giảm ma sát, tiết kiệm nhiên liệu và kéo dài
+                                            tuổi thọ động cơ.</p>
+                                    </div>
+                                    <div class="news-detail__content-box">
+                                        <h3 class="news-detail__content-box-title">6. Kỳ vọng mở rộng thị trường</h3>
+                                        <p class="news-detail__content-box-text">Dầu nhớt .... Doanh nghiệp ... vừa
+                                            chính thức
+                                            giới thiệu dòng sản phẩm công nghệ mới, được nghiên cứu chuyên sâu nhằm đáp
+                                            ứng nhu cầu vận hành êm ái, giảm ma sát, tiết kiệm nhiên liệu và kéo dài
+                                            tuổi thọ động cơ.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="l-sidebar__right">
+                            <div class="sidebar-list">
+                                <div class="sidebar-item">
+                                    <p class="sidebar-item__ttl">CAM KẾT TỪ CHÚNG TÔI</p>
+                                    <div class="sidebar-item__content">
+                                        <div class="sidebar-item__content-item">
+                                            <img src="./img/ic-shield.svg" alt="Đội ngũ tay nghề cao, tư vấn tận tình"
+                                                class="sidebar-item__img" />
+                                            <p>Đội ngũ tay nghề cao, tư vấn tận tình</p>
+                                        </div>
+                                        <div class="sidebar-item__content-item">
+                                            <img src="./img/ic-medal.svg" alt="Sản phẩm chất lượng, nguồn gốc rõ ràng"
+                                                class="sidebar-item__img" />
+                                            <p>Sản phẩm chất lượng, nguồn gốc rõ ràng</p>
+                                        </div>
+                                        <div class="sidebar-item__content-item">
+                                            <img src="./img/ic-save.svg" alt="Chi phí rõ ràng, cạnh tranh"
+                                                class="sidebar-item__img" />
+                                            <p>Chi phí rõ ràng, cạnh tranh</p>
+                                        </div>
+                                        <div class="sidebar-item__content-item">
+                                            <img src="./img/ic-deli.svg" alt="Đảm bảo bàn giao sản phẩm đúng thời gian"
+                                                class="sidebar-item__img" />
+                                            <p>Đảm bảo bàn giao sản phẩm đúng thời gian</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="sidebar-item sidebar-form">
+                                    <p class="sidebar-item__ttl">Đăng Ký Tư Vấn Ngay</p>
+                                    <form action="process-form.php" method="POST">
+                                        <div class="form-group">
+                                            <input type="text" id="name" name="name" placeholder="Họ và tên" required />
+                                        </div>
+                                        <div class="form-group">
+                                            <input type="text" id="phone" name="phone" placeholder="Số điện thoại"
+                                                required />
+                                        </div>
+                                        <div class="form-group">
+                                            <input type="email" id="email" name="email" placeholder="Mail" required />
+                                        </div>
+                                        <div class="form-group">
+                                            <input type="text" id="message" name="message"
+                                                placeholder="Nội dung"></input>
+                                        </div>
+                                        <button type="submit">Gửi</button>
+                                    </form>
+                                </div>
+                                <div class="sidebar-item sidebar-products">
+                                    <p class="sidebar-item__ttl">SẢN PHẨM ĐÃ XEM</p>
+                                    <div class="sidebar-item__content">
+                                        <div class="sidebar-item__content-item">
+                                            <img src="./img/daunhot2.png" alt="Đội ngũ tay nghề cao, tư vấn tận tình"
+                                                class="sidebar-item__img" />
+                                            <p class="u-textsm">Đội ngũ tay nghề cao, tư vấn tận tình <a href="#">Liên
+                                                    hệ</a></p>
+                                        </div>
+                                        <div class="sidebar-item__content-item">
+                                            <img src="./img/daunhot2.png" alt="Sản phẩm chất lượng, nguồn gốc rõ ràng"
+                                                class="sidebar-item__img" />
+                                            <p class="u-textsm">Sản phẩm chất lượng, nguồn gốc rõ ràng <a href="#">Liên
+                                                    hệ</a></p>
+                                        </div>
+                                        <div class="sidebar-item__content-item">
+                                            <img src="./img/daunhot2.png" alt="Chi phí rõ ràng, cạnh tranh"
+                                                class="sidebar-item__img" />
+                                            <p class="u-textsm">Chi phí rõ ràng, cạnh tranh <a href="#">Liên hệ</a></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <style>
+        html,
+        body,
+        div,
+        span,
+        object,
+        iframe,
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        p,
+        blockquote,
+        pre,
+        abbr,
+        address,
+        cite,
+        code,
+        del,
+        dfn,
+        em,
+        img,
+        ins,
+        kbd,
+        q,
+        samp,
+        small,
+        strong,
+        sub,
+        sup,
+        var,
+        b,
+        i,
+        dl,
+        dt,
+        dd,
+        ol,
+        ul,
+        li,
+        fieldset,
+        form,
+        label,
+        legend,
+        table,
+        caption,
+        tbody,
+        tfoot,
+        thead,
+        tr,
+        th,
+        td,
+        article,
+        aside,
+        dialog,
+        figure,
+        footer,
+        header,
+        nav,
+        section,
+        time,
+        mark,
+        audio,
+        video {
+            margin: 0;
+            padding: 0;
+            border: 0;
+            outline: 0;
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: 62.5%;
+        }
+
+        body,
+        table,
+        input,
+        textarea,
+        select,
+        option,
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-weight: 700;
+        }
+
+        table,
+        input,
+        textarea,
+        select,
+        option {
+            line-height: 1.1;
+        }
+
+        ol,
+        ul {
+            list-style: none;
+        }
+
+        blockquote,
+        q {
+            quotes: none;
+        }
+
+        :focus {
+            outline: 0;
+        }
+
+        ins {
+            text-decoration: none;
+        }
+
+        del {
+            text-decoration: line-through;
+        }
+
+        img {
+            vertical-align: top;
+        }
+
+        a {
+            -webkit-transition: 0.3s;
+            transition: 0.3s;
+            color: inherit;
+            text-decoration: none;
+        }
+
+        img {
+            max-width: 100%;
+        }
+
+        body {
+            font-family: Poppins, sans-serif;
+            font-size: 1.4rem;
+            line-height: 1.5;
+            color: #000;
+            background-color: #fff;
+        }
+
+        @media only screen and (max-width: 767px) {
+            body {
+                min-width: 320px;
+            }
+        }
+
+        .l-container {
+            width: 95%;
+            max-width: 1440px;
+            margin: 0 auto;
+        }
+
+        .sp-only {
+            display: none;
+        }
+
+        .c-ttl03 {
+            color: #000;
+            text-align: center;
+            font-size: 3.2rem;
+            font-style: normal;
+            font-weight: 700;
+            line-height: 1.5;
+            width: 100%;
+        }
+
+        @media (max-width: 1024px) {
+
+            .c-ttl01,
+            .c-ttl03 {
+                margin-bottom: 0;
+                font-size: 2.4rem;
+                line-height: 1.3333333333;
+            }
+        }
+
+        @media (max-width: 767px) {
+
+            .c-ttl01,
+            .c-ttl03 {
+                font-size: 2rem;
+                line-height: 1.4;
+            }
+        }
+
+        .c-ttl01 {
+            text-align: center;
+            color: #31347a;
+            font-size: 3.2rem;
+            line-height: 1.5;
+            font-weight: 700;
+            margin-bottom: 36px;
+        }
+
+        .c-btn01 {
+            font-weight: 700;
+            font-size: 1.8rem;
+            line-height: 1.3333333333;
+            color: #fff;
+            display: -webkit-inline-box;
+            display: -ms-inline-flexbox;
+            display: inline-flex;
+            -webkit-box-pack: center;
+            -ms-flex-pack: center;
+            justify-content: center;
+            -webkit-box-align: center;
+            -ms-flex-align: center;
+            align-items: center;
+            gap: 8px;
+            padding: 12px;
+            max-width: 216px;
+            width: 95%;
+            background: #c42127;
+            -webkit-box-shadow: -5px -5px 5px rgba(255, 255, 255, 0.5), 5px 5px 5px rgba(0, 0, 0, 0.25), inset -5px -5px 5px rgba(255, 255, 255, 0.5), inset 5px 5px 5px rgba(0, 0, 0, 0.25);
+            box-shadow: -5px -5px 5px #ffffff80, 5px 5px 5px #00000040, inset -5px -5px 5px #ffffff80, inset 5px 5px 5px #00000040;
+            border-radius: 18px;
+            cursor: pointer;
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+        }
+
+        .c-btn01--fw400 {
+            font-weight: 400;
+        }
+
+        .c-btn01:hover {
+            background-color: #fff;
+            opacity: 1;
+            color: #c42127;
+        }
+
+        .c-btn01:hover img {
+            -webkit-filter: brightness(0) saturate(100%) invert(14%) sepia(57%) saturate(6667%) hue-rotate(351deg) brightness(88%) contrast(85%);
+            filter: brightness(0) saturate(100%) invert(14%) sepia(57%) saturate(6667%) hue-rotate(351deg) brightness(88%) contrast(85%);
+        }
+
+        @media (max-width: 767px) {
+            .c-btn01 {
+                width: 50%;
+            }
+        }
+    </style>
+
+    <style>
+        /* start sidebar */
+        .l-sidebar {
+            display: -webkit-box;
+            display: -ms-flexbox;
+            display: flex;
+            -webkit-box-pack: justify;
+            -ms-flex-pack: justify;
+            justify-content: space-between;
+            padding: 40px 54px;
+        }
+
+        @media only screen and (max-width: 1024px) {
+            .l-sidebar {
+                -webkit-box-orient: vertical;
+                -webkit-box-direction: normal;
+                -ms-flex-direction: column;
+                flex-direction: column;
+                padding: 0 30px 40px;
+            }
+        }
+
+        @media only screen and (max-width: 767px) {
+            .l-sidebar {
+                padding: 0 20px;
+            }
+        }
+
+        .l-sidebar__ttl {
+            color: #000;
+            font-size: 3.2rem;
+            font-style: normal;
+            font-weight: 700;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        @media only screen and (max-width: 1024px) {
+            .l-sidebar__ttl {
+                font-size: 2.4rem;
+                line-height: 1.3333333333;
+                text-align: center;
+            }
+        }
+
+        .l-sidebar {
+            --rightw: 290px;
+            --gap: 36px;
+            --gapNews: 105px;
+        }
+
+        .l-sidebar__left {
+            width: calc(100% - var(--rightw) - var(--gap));
+            -webkit-box-orient: vertical;
+            -webkit-box-direction: normal;
+            -ms-flex-direction: column;
+            flex-direction: column;
+            -webkit-box-align: start;
+            -ms-flex-align: start;
+            align-items: flex-start;
+            gap: 36px;
+        }
+
+        .l-sidebar__left-news {
+            width: calc(100% - var(--rightw) - var(--gapNews));
+        }
+
+        @media only screen and (max-width: 1024px) {
+            .l-sidebar__left {
+                width: 100%;
+            }
+        }
+
+        .l-sidebar__right {
+            max-width: var(--rightw);
+            width: 100%;
+            -webkit-box-orient: vertical;
+            -webkit-box-direction: normal;
+            -ms-flex-direction: column;
+            flex-direction: column;
+            -webkit-box-align: start;
+            -ms-flex-align: start;
+            align-items: flex-start;
+            gap: 36px;
+            margin-top: 20px;
+        }
+
+        @media only screen and (max-width: 1024px) {
+            .l-sidebar__right {
+                max-width: unset;
+            }
+        }
+
+        /* end sidebar */
+    </style>
+
+    <style>
+        .p-news .news-detail__toc {
+            display: -webkit-box;
+            display: -ms-flexbox;
+            display: flex;
+            width: 100%;
+            -webkit-box-orient: vertical;
+            -webkit-box-direction: normal;
+            -ms-flex-direction: column;
+            flex-direction: column;
+            -webkit-box-align: start;
+            -ms-flex-align: start;
+            align-items: flex-start;
+            gap: 12px;
+            -ms-flex-negative: 0;
+            flex-shrink: 0;
+            padding: 40px 70px;
+            border-radius: 15px;
+            border: 2px solid #000;
+            background: #f6f5f5;
+            margin-bottom: 45px;
+            -webkit-transition: all 0.8s ease-out;
+            transition: all 0.8s ease-out;
+        }
+
+        .p-news .news-detail__toc-title {
+            color: #000;
+            font-size: 2.4rem;
+            font-style: normal;
+            font-weight: 700;
+            line-height: 1.3333333333;
+        }
+
+        .p-news .news-detail__toc-list {
+            display: -webkit-box;
+            display: -ms-flexbox;
+            display: flex;
+            -webkit-box-orient: vertical;
+            -webkit-box-direction: normal;
+            -ms-flex-direction: column;
+            flex-direction: column;
+            -webkit-box-align: start;
+            -ms-flex-align: start;
+            align-items: flex-start;
+            gap: 8px;
+            -ms-flex-item-align: stretch;
+            align-self: stretch;
+            padding-left: 30px;
+            list-style: devanagari !important;
+        }
+
+        .p-news .news-detail__toc-item {
+            color: #000;
+            text-align: justify;
+            font-size: 2rem;
+            font-style: normal;
+            font-weight: 400;
+            line-height: 1.4;
+        }
+
+        .p-news .news-detail__toc-item:hover {
+            color: #c42127;
+            cursor: pointer;
+        }
+
+        .news-detail__content-main {
+            display: -webkit-box;
+            display: -ms-flexbox;
+            display: flex;
+            padding: 10px 30px;
+            -webkit-box-pack: center;
+            -ms-flex-pack: center;
+            justify-content: center;
+            -webkit-box-orient: vertical;
+            -webkit-box-direction: normal;
+            -ms-flex-direction: column;
+            flex-direction: column;
+            -webkit-box-align: center;
+            -ms-flex-align: center;
+            align-items: center;
+            gap: 8px;
+            -ms-flex-item-align: stretch;
+            align-self: stretch;
+        }
+
+        .news-detail__content-box {
+            display: -webkit-box;
+            display: -ms-flexbox;
+            display: flex;
+            -webkit-box-orient: vertical;
+            -webkit-box-direction: normal;
+            -ms-flex-direction: column;
+            flex-direction: column;
+            -webkit-box-align: start;
+            -ms-flex-align: start;
+            align-items: flex-start;
+            gap: 6px;
+            -ms-flex-item-align: stretch;
+            align-self: stretch;
+        }
+
+        .news-detail__content-main-text {
+            color: #000;
+            font-size: 2rem;
+            font-style: normal;
+            font-weight: 700;
+            line-height: 1.4;
+        }
+
+        .news-detail__content-box-title {
+            color: #000;
+            font-size: 2rem;
+            font-style: normal;
+            font-weight: 700;
+            line-height: 1.4;
+            margin: 0;
+            position: relative;
+            -webkit-transition: color 0.3s ease;
+            transition: color 0.3s ease;
+            cursor: pointer;
+        }
+
+        .news-detail__content-box-title:after {
+            content: "";
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: #31347a;
+            -webkit-transition: width 0.4s ease;
+            transition: width 0.4s ease;
+        }
+
+        .news-detail__content-box-title:hover {
+            color: #31347a;
+        }
+
+        .news-detail__content-box-title:hover:after {
+            width: 100%;
+        }
+
+        .news-detail__content-box-text {
+            color: #000;
+            font-size: 1.8rem;
+            font-style: normal;
+            font-weight: 400;
+            line-height: 1.5555555556;
+            margin: 0;
+            text-align: justify;
+            padding-left: 30px;
+        }
+
+        .news-detail__content-box-list {
+            display: -webkit-box;
+            display: -ms-flexbox;
+            display: flex;
+            -webkit-box-orient: vertical;
+            -webkit-box-direction: normal;
+            -ms-flex-direction: column;
+            flex-direction: column;
+            gap: 12px;
+            margin: 0;
+            padding-left: 30px;
+        }
+
+        .news-detail__content-box-item {
+            color: #000;
+            font-size: 1.8rem;
+            font-style: normal;
+            font-weight: 400;
+            line-height: 1.5555555556;
+            position: relative;
+            list-style: disc !important;
+        }
+
+        .news-detail__content-box-item::marker {
+            font-weight: 700;
+        }
+
+        @media (max-width: 480px) {
+            .news-detail__toc {
+                padding: 10px;
+            }
+
+            .news-detail__toc-title {
+                color: #000;
+                font-size: 2rem;
+                font-style: normal;
+                font-weight: 700;
+                line-height: 1.4;
+            }
+
+            .news-detail__toc-item {
+                font-size: 1.8rem;
+                line-height: 1.7777777778;
+            }
+
+            .news-detail__content-main,
+            .news-detail__content-box {
+                padding: 0;
+            }
+
+            .news-detail__content-box-text {
+                padding-left: 10px;
+            }
+
+            .news-detail__content-box-list {
+                padding-left: 30px;
+            }
+
+            .news-detail__popular-item,
+            .news-detail__popular-thumb {
+                width: 100%;
+            }
+
+            .news-detail__heading {
+                font-size: 2.4rem;
+                line-height: 1.3333333333;
+                text-align: center;
+            }
+
+            .news-detail__popular-title {
+                font-size: 1.6rem;
+            }
+
+            .news-detail__popular-excerpt {
+                font-size: 1.4rem;
+            }
+
+            .news-detail__content-box {
+                margin-bottom: 8px;
+            }
+
+            .news-detail__content-box-title {
+                font-size: 1.8rem;
+                line-height: 1.3333333333;
+            }
+
+            .news-detail__content-box-text {
+                font-size: 1.4rem;
+                line-height: 1.4285714286;
+            }
+
+            .news-detail__content-box-list {
+                gap: 8px;
+                padding-left: 16px;
+            }
+
+            .news-detail__content-box-item {
+                font-size: 1.4rem;
+                line-height: 1.4285714286;
+            }
+        }
+
+        .sidebar-list {
+            display: -webkit-box;
+            display: -ms-flexbox;
+            display: flex;
+            -webkit-box-orient: vertical;
+            -webkit-box-direction: normal;
+            -ms-flex-direction: column;
+            flex-direction: column;
+            gap: 36px;
+        }
+
+        .sidebar-item {
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #e2e2e2;
+        }
+
+        .sidebar-item__ttl {
+            color: #fff;
+            font-size: 2rem;
+            line-height: 1.4;
+            text-align: center;
+            background-color: #31347a;
+            padding: 16px 20px;
+        }
+
+        .sidebar-item__content {
+            display: -webkit-box;
+            display: -ms-flexbox;
+            display: flex;
+            -webkit-box-orient: vertical;
+            -webkit-box-direction: normal;
+            -ms-flex-direction: column;
+            flex-direction: column;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        .sidebar-item__content-item {
+            display: -webkit-box;
+            display: -ms-flexbox;
+            display: flex;
+            -webkit-box-align: center;
+            -ms-flex-align: center;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sidebar-item__content-item p {
+            font-size: 1.4rem;
+        }
+
+        .sidebar-item__content-item p.u-textsm {
+            font-size: 1.2rem;
+        }
+
+        .sidebar-item__content-item p a {
+            color: red;
+            font-weight: 700;
+            font-size: 1.4rem;
+            display: block;
+        }
+
+        .sidebar-products .sidebar-item__img {
+            max-width: 70px;
+            -ms-flex-negative: 0;
+            flex-shrink: 0;
+        }
+
+        .sidebar-form {
+            background-color: #31347a;
+            padding: 0 10px 20px;
+        }
+
+        .sidebar-form input,
+        .sidebar-form textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+            font-size: 16px;
+            background-color: #ddd;
+            color: #000;
+            margin-bottom: 18px;
+        }
+
+        .sidebar-form button {
+            background-color: #fff;
+            color: #31347a;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            display: block;
+            margin: 18px auto 0;
+            font-weight: 700;
+            font-size: 1.8rem;
+            line-height: 1.7777777778;
+            text-align: center;
+            max-width: 140px;
+            width: 100%;
+        }
+    </style>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
+        integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.matchHeight/0.7.2/jquery.matchHeight-min.js"
+        integrity="sha512-/bOVV1DV1AQXcypckRwsR9ThoCj7FqTV2/0Bm79bL3YSyLkVideFLE3MIZkq1u5t28ke1c0n31WYCOrO01dsUg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <script>
+        // Initialize AOS animation
+        AOS.init();
+
+        // PRODUCT DETAILS SLIDer
+        var productDetailsSwiper = new Swiper(".js-product-details", {
+            spaceBetween: 10,
+            freeMode: true,
+            watchSlidesProgress: true,
+
+            breakpoints: {
+                // when window width is >= 1200px
+                1200: {
+                    slidesPerView: 3,
+                },
+                // when window width is >= 1025px and < 1200px
+                1025: {
+                    slidesPerView: 2,
+                },
+                // when window width is < 1025px
+                0: {
+                    slidesPerView: 3,
+                },
+            },
+        })
+        var productDetailsThumb = new Swiper(".js-product-details-thumb", {
+            spaceBetween: 10,
+            navigation: {
+                nextEl: ".swiper-button-next",
+                prevEl: ".swiper-button-prev",
+            },
+            thumbs: {
+                swiper: productDetailsSwiper,
+            },
+        })
+    </script>
+</body>
+
+</html>
