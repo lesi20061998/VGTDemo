@@ -4,15 +4,18 @@
 @section('page-title', 'Social & Traffic')
 
 @section('content')
-<div class="mb-6">
-    <a href="{{ route('cms.settings.index') }}" class="text-sm text-gray-600 hover:text-gray-900">← Quay lại</a>
-</div>
+@include('cms.settings.partials.back-link')
+
+@php
+    $projectCode = request()->route('projectCode') ?? request()->segment(1);
+    $settingsSaveUrl = $projectCode ? route('project.admin.settings.save', ['projectCode' => $projectCode]) : url('/admin/settings/save');
+@endphp
 
 <div class="bg-white rounded-lg shadow-sm p-6">
     <h3 class="text-lg font-semibold mb-4">Thống kê truy cập (Số liệu ảo)</h3>
     <p class="text-sm text-gray-600 mb-6">Cấu hình số liệu hiển thị để tăng uy tín website</p>
 
-    <form action="{{ route('cms.settings.save') }}" method="POST">
+    <form action="{{ $settingsSaveUrl }}" method="POST">
         @csrf
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">

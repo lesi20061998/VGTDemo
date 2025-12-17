@@ -1,21 +1,33 @@
 <?php
+
 // MODIFIED: 2025-01-25 - Added Multi-Tenant Support
 
 namespace App\Models;
 
 use App\Traits\BelongsToTenant;
 use App\Traits\ProjectScoped;
+use App\Traits\Translatable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Builder;
-use Spatie\MediaLibrary\{HasMedia, InteractsWithMedia};
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class Product extends Model implements HasMedia
 {
-    use HasFactory, InteractsWithMedia, BelongsToTenant, ProjectScoped;
+    use BelongsToTenant, HasFactory, InteractsWithMedia, ProjectScoped, Translatable;
 
     protected $table = 'products_enhanced';
+
+    // Các field có thể dịch
+    protected $translatable = [
+        'name',
+        'short_description',
+        'description',
+        'meta_title',
+        'meta_description',
+    ];
 
     protected $fillable = [
         'name', 'slug', 'short_description', 'description', 'sku', 'price', 'sale_price',
@@ -23,7 +35,7 @@ class Product extends Model implements HasMedia
         'gallery', 'weight', 'dimensions', 'product_category_id', 'brand_id', 'status',
         'is_featured', 'badges', 'meta_title', 'meta_description',
         'schema_type', 'canonical_url', 'noindex', 'settings', 'views',
-        'rating_average', 'rating_count', 'product_type', 'tenant_id'
+        'rating_average', 'rating_count', 'product_type', 'tenant_id', 'language',
     ];
 
     protected $casts = [
@@ -53,7 +65,7 @@ class Product extends Model implements HasMedia
 
     /**
      * Danh sách attribute-value mappings của sản phẩm
-     * 
+     *
      * Ví dụ:
      * - Color: Red, Blue
      * - Size: M, L
@@ -99,7 +111,7 @@ class Product extends Model implements HasMedia
     {
         return $this->attributeMappings()
             ->with('attribute', 'attributeValue')
-            ->whereHas('attribute', fn($q) => $q->where('slug', $attributeSlug))
+            ->whereHas('attribute', fn ($q) => $q->where('slug', $attributeSlug))
             ->get()
             ->pluck('attributeValue.display_name')
             ->toArray();
@@ -124,15 +136,15 @@ class Product extends Model implements HasMedia
     public function scopeSearch(Builder $query, $search)
     {
         return $query->where('name', 'like', "%{$search}%")
-                    ->orWhere('sku', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%");
+            ->orWhere('sku', 'like', "%{$search}%")
+            ->orWhere('description', 'like', "%{$search}%");
     }
 
     public function scopeFilter(Builder $query, $filters)
     {
         return $query->when($filters['category'] ?? null, function ($query, $category) {
-                return $query->where('product_category_id', $category);
-            })
+            return $query->where('product_category_id', $category);
+        })
             ->when($filters['brand'] ?? null, function ($query, $brand) {
                 return $query->where('brand_id', $brand);
             })
@@ -155,9 +167,10 @@ class Product extends Model implements HasMedia
     // Accessors
     public function getDisplayPriceAttribute()
     {
-        if (!$this->has_price) {
+        if (! $this->has_price) {
             return config('app.price_placeholder', 'Liên hệ');
         }
+
         return $this->sale_price ?: $this->price;
     }
 
@@ -173,7 +186,7 @@ class Product extends Model implements HasMedia
     /**
      * Register conversions used for thumbnails and previews.
      */
-    public function registerMediaConversions(Media $media = null): void
+    public function registerMediaConversions(?Media $media = null): void
     {
         $this->addMediaConversion('thumb')
             ->width(400)

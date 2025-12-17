@@ -1,18 +1,19 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\SuperAdmin\ContractController;
 use App\Http\Controllers\SuperAdmin\DashboardController;
 use App\Http\Controllers\SuperAdmin\EmployeeController;
-use App\Http\Controllers\SuperAdmin\ContractController;
 use App\Http\Controllers\SuperAdmin\TaskController;
-use App\Http\Controllers\SuperAdmin\TicketController;
 use App\Http\Controllers\SuperAdmin\TenantController;
+use App\Http\Controllers\SuperAdmin\TicketController;
+use Illuminate\Support\Facades\Route;
 
 // SuperAdmin Project Management - For project management
+// Uses 'auth:web' to ensure main database authentication
 Route::middleware([
-    'auth', 
+    'auth:web',
     \App\Http\Middleware\SuperAdminMiddleware::class,
-    \App\Http\Middleware\SuperAdminBypassProjectScope::class
+    \App\Http\Middleware\SuperAdminBypassProjectScope::class,
 ])->prefix('superadmin')->name('superadmin.')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/multi-tenancy', [DashboardController::class, 'multiTenancy'])->name('multi-tenancy');
@@ -29,19 +30,19 @@ Route::middleware([
     Route::resource('tenants', TenantController::class);
     Route::post('websites/{tenant}/control', [\App\Http\Controllers\SuperAdmin\WebsiteController::class, 'control'])->name('websites.control');
     Route::post('websites/{tenant}/sync', [\App\Http\Controllers\SuperAdmin\WebsiteController::class, 'updateData'])->name('websites.sync');
-    
+
     // Website Export & CMS Control
     Route::post('projects/{projectCode}/export', [\App\Http\Controllers\SuperAdmin\ProjectExportController::class, 'exportWebsite'])->name('projects.export');
     Route::get('projects/{projectId}/cms-features', [\App\Http\Controllers\SuperAdmin\ProjectExportController::class, 'getCmsFeatures'])->name('projects.cms-features.get');
     Route::put('projects/{projectId}/cms-features', [\App\Http\Controllers\SuperAdmin\ProjectExportController::class, 'updateCmsFeatures'])->name('projects.cms-features.update');
-    
+
     // File Monitor
     Route::get('file-monitor', [\App\Http\Controllers\SuperAdmin\FileMonitorController::class, 'index'])->name('file-monitor');
     Route::get('file-monitor/recent-changes', [\App\Http\Controllers\SuperAdmin\FileMonitorController::class, 'getRecentChanges'])->name('file-monitor.recent-changes');
-    
+
     // Test export routes
     Route::get('test-export/{projectCode}', [\App\Http\Controllers\SuperAdmin\TestExportController::class, 'testExport'])->name('test.export');
-    
+
     // Remote CMS Management - SuperAdmin can manage any project's CMS
     Route::prefix('projects/{projectCode}/cms')->name('projects.cms.')->group(function () {
         Route::get('menus', [\App\Http\Controllers\SuperAdmin\RemoteCmsController::class, 'menus'])->name('menus.index');
@@ -53,4 +54,3 @@ Route::middleware([
         Route::post('menus/{menu}/update-tree', [\App\Http\Controllers\SuperAdmin\RemoteCmsController::class, 'updateMenuTree'])->name('menus.update-tree');
     });
 });
-

@@ -4,28 +4,54 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpFoundation\Response;
 
 class SetProjectDatabase
 {
     public function handle(Request $request, Closure $next): Response
     {
         $project = $request->attributes->get('project');
-        
+
         if ($project) {
             // Set database connection for this project
-            $this->setProjectDatabase($project->code);
+            $this->setProjectDatabase($project, $request);
         }
-        
-        return $next($request);
+
+        $response = $next($request);
+
+        // Reset to main database after request
+        if ($project) {
+            $this->resetToMainDatabase();
+        }
+
+        return $response;
     }
-    
-    private function setProjectDatabase($projectCode)
+
+    private function setProjectDatabase($project, Request $request)
     {
-        $projectDbName = 'project_' . strtolower($projectCode);
-        
+        $code = $project->code;
+
+        // Fallback to project ID if code is empty
+        if (empty($code)) {
+            $code = 'project_'.$project->id;
+        }
+
+        $projectDbName = 'project_'.strtolower($code);
+
+        Log::debug("SetProjectDatabase: Connecting to {$projectDbName}");
+
+        // Store main database name for later reset
+        $request->attributes->set('main_database', config('database.default'));
+
+        // Set tenant ID cho SettingsService
+        session(['current_tenant_id' => $project->id]);
+
+        // Clear settings cache để load lại từ project database
+        \App\Services\SettingsService::getInstance()->clearCache();
+
         Config::set('database.connections.project', [
             'driver' => 'mysql',
             'host' => env('DB_HOST', '127.0.0.1'),
@@ -39,12 +65,21 @@ class SetProjectDatabase
             'strict' => true,
             'engine' => null,
         ]);
-        
+
         DB::purge('project');
+
+        // Set default connection to project for this request
         DB::setDefaultConnection('project');
-        
         Config::set('database.default', 'project');
     }
-    
 
+    private function resetToMainDatabase()
+    {
+        // Reset to mysql (main) connection
+        DB::setDefaultConnection('mysql');
+        Config::set('database.default', 'mysql');
+        DB::purge('project');
+
+        Log::debug('SetProjectDatabase: Reset to main database');
+    }
 }

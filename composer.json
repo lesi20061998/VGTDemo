@@ -41,7 +41,8 @@
             "app/Helpers/helpers.php",
             "app/Helpers/settings_helper.php",
             "app/Helpers/widget_helper.php",
-            "app/Helpers/LayoutHelper.php"
+            "app/Helpers/LayoutHelper.php",
+            "app/Helpers/language_helper.php"
         ]
     },
     "autoload-dev": {

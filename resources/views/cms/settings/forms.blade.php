@@ -4,9 +4,12 @@
 @section('page-title', 'Form Builder')
 
 @section('content')
-<div class="mb-6">
-    <a href="{{ route('cms.settings.index') }}" class="text-sm text-gray-600 hover:text-gray-900">← Quay lại</a>
-</div>
+@include('cms.settings.partials.back-link')
+
+@php
+    $projectCode = request()->route('projectCode') ?? request()->segment(1);
+    $settingsSaveUrl = $projectCode ? route('project.admin.settings.save', ['projectCode' => $projectCode]) : url('/admin/settings/save');
+@endphp
 
 <div class="bg-white rounded-lg shadow-sm p-6" x-data="formManager()">
     <div class="flex items-center justify-between mb-6">
@@ -89,7 +92,7 @@
         </template>
     </div>
 
-    <form method="POST" action="{{ route('cms.settings.save') }}" class="mt-6">
+    <form method="POST" action="{{ $settingsSaveUrl }}" class="mt-6">
         @csrf
         <input type="hidden" name="forms" :value="JSON.stringify(forms)">
         <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg">Lưu tất cả</button>
@@ -100,7 +103,7 @@
 <script>
 function formManager() {
     return {
-        forms: @json(json_decode(setting('forms', '[]'), true)),
+        forms: @json(is_array(setting('forms', [])) ? setting('forms', []) : json_decode(setting('forms', '[]'), true) ?? []),
         showEditor: false,
         showFieldSelector: false,
         editIndex: null,

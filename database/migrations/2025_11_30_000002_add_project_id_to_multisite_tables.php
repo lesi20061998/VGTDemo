@@ -10,19 +10,19 @@ return new class extends Migration
     {
         $tables = [
             'product_categories',
-            'brands', 
+            'brands',
             'orders',
             'menus',
             'widgets',
             'settings',
             'posts',
-            'pages'
+            'pages',
         ];
 
         foreach ($tables as $table) {
             if (Schema::hasTable($table)) {
                 Schema::table($table, function (Blueprint $table_blueprint) use ($table) {
-                    if (!Schema::hasColumn($table, 'project_id')) {
+                    if (! Schema::hasColumn($table, 'project_id')) {
                         $table_blueprint->unsignedBigInteger('project_id')->nullable()->after('id');
                         $table_blueprint->index('project_id');
                     }
@@ -36,12 +36,12 @@ return new class extends Migration
         $tables = [
             'product_categories',
             'brands',
-            'orders', 
+            'orders',
             'menus',
             'widgets',
             'settings',
             'posts',
-            'pages'
+            'pages',
         ];
 
         foreach ($tables as $table) {

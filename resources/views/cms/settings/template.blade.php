@@ -5,9 +5,9 @@
 
 @section('content')
 @php
-$isProject = request()->segment(1) && request()->segment(1) !== 'cms';
-$backRoute = $isProject ? route('project.admin.settings.index', ['projectCode' => request()->segment(1)]) : route('cms.settings.index');
-$saveRoute = $isProject ? route('project.admin.settings.save', ['projectCode' => request()->segment(1)]) : route('cms.settings.save');
+$projectCode = request()->route('projectCode') ?? ($currentProject->code ?? request()->segment(1));
+$backRoute = $projectCode ? route('project.admin.settings.index', ['projectCode' => $projectCode]) : url('/admin/settings');
+$saveRoute = $projectCode ? route('project.admin.settings.save', ['projectCode' => $projectCode]) : url('/admin/settings/save');
 @endphp
 <div class="mb-6">
     <a href="{{ $backRoute }}" class="inline-flex items-center text-sm text-gray-600 hover:text-gray-900">

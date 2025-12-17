@@ -10,8 +10,6 @@
     @stack('styles')
 </head>
 <body class="bg-gray-100" x-data="{ showAlert: false, alertMessage: '', alertType: 'success' }">
-</head>
-<body class="bg-gray-100" x-data="{ showAlert: false, alertMessage: '', alertType: 'success' }">
     <!-- Global Alert -->
     <div x-show="showAlert" 
          x-transition:enter="transition ease-out duration-300"
@@ -286,15 +284,18 @@
                         </div>
                         
                         <!-- User Menu -->
+                        @php
+                            $currentUser = $authUser ?? auth()->user();
+                        @endphp
                         <div class="flex items-center space-x-3">
                             <div class="text-right">
-                                <p class="text-sm font-medium text-gray-900">{{ auth()->user()->name }}</p>
+                                <p class="text-sm font-medium text-gray-900">{{ $currentUser->name ?? 'User' }}</p>
                                 <p class="text-xs text-gray-500">Administrator</p>
                             </div>
                             <div class="h-8 w-8 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full flex items-center justify-center">
-                                <span class="text-white text-sm font-medium">{{ substr(auth()->user()->name, 0, 1) }}</span>
+                                <span class="text-white text-sm font-medium">{{ substr($currentUser->name ?? 'U', 0, 1) }}</span>
                             </div>
-                            <form method="POST" action="{{ route('logout') }}">
+                            <form method="POST" action="{{ isset($currentProject) ? route('project.logout', $currentProject->code) : route('logout') }}"></form>
                                 @csrf
                                 <button type="submit" class="text-sm text-gray-500 hover:text-red-600 transition-colors">
                                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

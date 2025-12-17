@@ -4,8 +4,9 @@
 @section('page-title', 'Quản lý đánh giá mẫu')
 
 @section('content')
+@php $projectCode = request()->segment(1); $isProject = $projectCode && $projectCode !== 'cms'; @endphp
 <div class="mb-6">
-    <a href="{{ route('cms.settings.reviews') }}" class="text-sm text-gray-600 hover:text-gray-900">← Quay lại</a>
+    <a href="{{ $isProject ? route('project.admin.settings.reviews', $projectCode) : route('cms.settings.reviews') }}" class="text-sm text-gray-600 hover:text-gray-900">← Quay lại</a>
 </div>
 
 <div class="bg-white rounded-lg shadow-sm p-6" x-data="fakeReviews()">
@@ -66,7 +67,7 @@
         </tbody>
     </table>
 
-    <form method="POST" action="{{ route('cms.settings.save') }}" class="mt-6">
+    <form method="POST" action="{{ $isProject ? route('project.admin.settings.save', $projectCode) : route('cms.settings.save') }}" class="mt-6">
         @csrf
         <input type="hidden" name="fake_reviews" :value="JSON.stringify(reviews)">
         <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg">Lưu tất cả</button>

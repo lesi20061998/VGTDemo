@@ -4,12 +4,15 @@
 @section('page-title', 'Table of Contents - Mục lục bài viết')
 
 @section('content')
-<div class="mb-6">
-    <a href="{{ route('cms.settings.index') }}" class="text-sm text-gray-600 hover:text-gray-900">← Quay lại</a>
-</div>
+@include('cms.settings.partials.back-link')
+
+@php
+    $projectCode = request()->route('projectCode') ?? request()->segment(1);
+    $settingsSaveUrl = $projectCode ? route('project.admin.settings.save', ['projectCode' => $projectCode]) : url('/admin/settings/save');
+@endphp
 
 <div class="bg-white rounded-lg shadow-sm p-6">
-    <form action="{{ route('cms.settings.save') }}" method="POST">
+    <form action="{{ $settingsSaveUrl }}" method="POST">
         @csrf
         
         <div class="space-y-6">

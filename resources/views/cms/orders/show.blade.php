@@ -125,10 +125,10 @@
 </div>
 
 <div class="flex gap-4">
-    <a href="{{ route('cms.orders.index') }}" class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">
+    <a href="{{ isset($currentProject) && $currentProject ? route('project.admin.orders.index', $currentProject->code) : route('cms.orders.index') }}" class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">
         Quay lại
     </a>
-    <a href="{{ route('cms.orders.edit', $order) }}" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+    <a href="{{ isset($currentProject) && $currentProject ? route('project.admin.orders.edit', [$currentProject->code, $order]) : route('cms.orders.edit', $order) }}" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
         Chỉnh sửa
     </a>
 </div>

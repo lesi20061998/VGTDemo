@@ -167,7 +167,8 @@
                                         @endif
                                     </select>
                                     @if(!isset($menus) || $menus->count() == 0)
-                                        <p class="text-sm text-gray-500 mt-1">Vui lòng <a href="{{ route('cms.menus.index') }}" class="text-blue-600 hover:underline">tạo menu</a> trước</p>
+                                        @php $projectCode = request()->segment(1); $isProject = $projectCode && $projectCode !== 'cms'; @endphp
+                                        <p class="text-sm text-gray-500 mt-1">Vui lòng <a href="{{ $isProject ? route('project.admin.menus.index', $projectCode) : route('cms.menus.index') }}" class="text-blue-600 hover:underline">tạo menu</a> trước</p>
                                     @endif
                                 
                                 @elseif($field['type'] === 'image')
@@ -198,11 +199,12 @@
                             <i data-lucide="save" class="w-4 h-4 inline mr-2"></i>
                             Lưu cấu hình
                         </button>
-                        <a href="{{ route('cms.website-config.preview') }}" target="_blank" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                        @php $projectCode = request()->segment(1); $isProject = $projectCode && $projectCode !== 'cms'; @endphp
+                        <a href="{{ $isProject ? route('project.admin.website-config.preview', $projectCode) : route('cms.website-config.preview') }}" target="_blank" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
                             <i data-lucide="eye" class="w-4 h-4 inline mr-2"></i>
                             Xem trước
                         </a>
-                        <a href="{{ route('cms.dashboard') }}" class="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+                        <a href="{{ $isProject ? route('project.admin.dashboard', $projectCode) : route('cms.dashboard') }}" class="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
                             Hủy
                         </a>
                     </div>

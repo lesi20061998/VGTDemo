@@ -3,16 +3,26 @@
 namespace App\Models;
 
 use App\Traits\BelongsToTenant;
+use App\Traits\ProjectScoped;
+use App\Traits\Translatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Traits\ProjectScoped;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Post extends Model
 {
-    use HasFactory, BelongsToTenant, ProjectScoped;
+    use BelongsToTenant, HasFactory, ProjectScoped, Translatable;
+
+    // Các field có thể dịch
+    protected $translatable = [
+        'title',
+        'excerpt',
+        'content',
+        'meta_title',
+        'meta_description',
+    ];
 
     protected $fillable = [
         'title',
@@ -30,6 +40,7 @@ class Post extends Model
         'published_at',
         'author_id',
         'tenant_id',
+        'language',
     ];
 
     protected $casts = [

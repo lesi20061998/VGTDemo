@@ -38,7 +38,7 @@
         Quản lý nội dung
     </h2>
     <div class="grid grid-cols-6 gap-4">
-        @foreach($modules->whereIn('permission', ['settings.seo', 'settings.languages', 'settings.fonts', 'settings.watermark']) as $module)
+        @foreach($modules->whereIn('permission', ['settings.seo', 'settings.languages', 'settings.fonts', 'settings.watermark', 'settings.toc', 'settings.frontend_features']) as $module)
         <a href="{{ route($module['route'], $module['route_params'] ?? []) }}" class="group bg-white rounded-lg shadow-sm hover:shadow-md hover:border-red-300 border-2 border-transparent transition-all p-4 h-24 flex items-center">
             <div class="flex items-center space-x-3 w-full">
                 <div class="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center group-hover:bg-red-100 flex-shrink-0">
@@ -86,7 +86,7 @@
         Marketing & Tương tác
     </h2>
     <div class="grid grid-cols-6 gap-4">
-        @foreach($modules->whereIn('permission', ['settings.notifications', 'settings.popups', 'settings.fake_notifications', 'settings.forms']) as $module)
+        @foreach($modules->whereIn('permission', ['settings.notifications', 'settings.popups', 'settings.fake_notifications', 'settings.forms', 'settings.contact_buttons']) as $module)
         <a href="{{ route($module['route'], $module['route_params'] ?? []) }}" class="group bg-white rounded-lg shadow-sm hover:shadow-md hover:border-red-300 border-2 border-transparent transition-all p-4 h-24 flex items-center">
             <div class="flex items-center space-x-3 w-full">
                 <div class="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center group-hover:bg-red-100 flex-shrink-0">
@@ -134,7 +134,7 @@
         Công cụ nâng cao
     </h2>
     <div class="grid grid-cols-6 gap-4">
-        @foreach($modules->whereIn('permission', ['settings.ai', 'settings.toc', 'settings.contact_buttons']) as $module)
+        @foreach($modules->whereIn('permission', ['settings.ai']) as $module)
         <a href="{{ route($module['route'], $module['route_params'] ?? []) }}" class="group bg-white rounded-lg shadow-sm hover:shadow-md hover:border-red-300 border-2 border-transparent transition-all p-4 h-24 flex items-center">
             <div class="flex items-center space-x-3 w-full">
                 <div class="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center group-hover:bg-red-100 flex-shrink-0">
@@ -153,12 +153,12 @@
 </div>
 
 @if($modules->isEmpty())
-<div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
-    <svg class="w-12 h-12 text-yellow-600 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<div class="bg-yellow-50 border border-yellow-200 rounded-lg p-8 text-center">
+    <svg class="w-16 h-16 text-yellow-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
     </svg>
-    <h3 class="text-lg font-semibold text-yellow-900 mb-1">Không có quyền truy cập</h3>
-    <p class="text-yellow-700">Bạn không có quyền truy cập vào bất kỳ module cấu hình nào.</p>
+    <h3 class="text-xl font-semibold text-yellow-900 mb-2">Không có quyền truy cập</h3>
+    <p class="text-yellow-700">Bạn không có quyền truy cập vào bất kỳ module cấu hình nào. Vui lòng liên hệ quản trị viên để được cấp quyền.</p>
 </div>
 @endif
 @endsection

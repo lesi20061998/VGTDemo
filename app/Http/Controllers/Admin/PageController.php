@@ -3,64 +3,50 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Post;
 use Illuminate\Http\Request;
 
 class PageController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $pages = Post::pages()
+            ->with('author')
+            ->when($request->search, fn ($q) => $q->where('title', 'like', "%{$request->search}%"))
+            ->when($request->status, fn ($q) => $q->where('status', $request->status))
+            ->latest()
+            ->paginate(20);
+
+        return view('cms.pages.index', compact('pages'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        //
+        return redirect()->route('cms.posts.create', ['type' => 'page']);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        return redirect()->route('cms.posts.store');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function show(Post $page)
     {
-        //
+        return view('cms.pages.show', compact('page'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    public function edit(Post $page)
     {
-        //
+        return redirect()->route('cms.posts.edit', $page);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Post $page)
     {
-        //
+        return redirect()->route('cms.posts.update', $page);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function destroy(Post $page)
     {
-        //
+        return redirect()->route('cms.posts.destroy', $page);
     }
 }
-

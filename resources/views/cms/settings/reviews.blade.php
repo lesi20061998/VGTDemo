@@ -4,17 +4,21 @@
 @section('page-title', 'Đánh giá & Rating')
 
 @section('content')
-<div class="mb-6">
-    <a href="{{ route('cms.settings.index') }}" class="text-sm text-gray-600 hover:text-gray-900">← Quay lại</a>
-</div>
+@include('cms.settings.partials.back-link')
+
+@php
+    $projectCode = request()->route('projectCode') ?? request()->segment(1);
+    $settingsSaveUrl = $projectCode ? route('project.admin.settings.save', ['projectCode' => $projectCode]) : url('/admin/settings/save');
+@endphp
 
 <div class="bg-white rounded-lg shadow-sm p-6">
-    <form action="{{ route('cms.settings.save') }}" method="POST">
+    <form action="{{ $settingsSaveUrl }}" method="POST">
         @csrf
         
         <div class="space-y-6">
             @php
-                $reviews = json_decode(setting('reviews', '{}'), true);
+                $reviewsSetting = setting('reviews', []);
+                $reviews = is_array($reviewsSetting) ? $reviewsSetting : json_decode($reviewsSetting, true) ?? [];
                 $enabled = $reviews['enabled'] ?? true;
                 $requireLogin = $reviews['require_login'] ?? true;
                 $requirePurchase = $reviews['require_purchase'] ?? false;
@@ -156,7 +160,8 @@
                         </label>
                         <p class="text-xs text-gray-500 mt-1 ml-6">Tự động thêm đánh giá mẫu cho sản phẩm mới</p>
                     </div>
-                    <a href="{{ route('cms.reviews.fake') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 text-sm">
+                    @php $projectCode = request()->segment(1); $isProject = $projectCode && $projectCode !== 'cms'; @endphp
+                    <a href="{{ $isProject ? route('project.admin.reviews.fake', $projectCode) : route('cms.reviews.fake') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 text-sm">
                         Quản lý dữ liệu mẫu
                     </a>
                 </div>

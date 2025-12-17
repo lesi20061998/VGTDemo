@@ -1,73 +1,84 @@
 <?php
 
-require_once 'vendor/autoload.php';
+/**
+ * Script để tạo user trong project database
+ * Usage: php create-project-users.php [project_code]
+ */
 
-$app = require_once 'bootstrap/app.php';
-$app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+require_once __DIR__.'/vendor/autoload.php';
+$app = require_once __DIR__.'/bootstrap/app.php';
+$app->make('Illuminate\Contracts\Console\Kernel')->bootstrap();
 
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
-use App\Models\Project;
+use Illuminate\Support\Facades\Hash;
 
-echo "🔧 Creating admin users for all projects...\n\n";
+$projectCode = $argv[1] ?? 'sivgt';
+$projectDbName = 'project_'.strtolower($projectCode);
 
-$projects = Project::all();
+echo "Creating user in project database: {$projectDbName}\n";
 
-foreach ($projects as $project) {
-    $dbName = strtolower($project->name);
-    $dbName = preg_replace('/[^a-z0-9_]/', '_', $dbName);
-    $dbName = preg_replace('/_+/', '_', $dbName);
-    $dbName = trim($dbName, '_');
-    
-    echo "📁 Processing project: {$project->name}\n";
-    echo "   Database: {$dbName}\n";
-    
-    try {
-        // Check if database exists
-        $databases = DB::select("SHOW DATABASES LIKE '{$dbName}'");
-        if (empty($databases)) {
-            echo "   ⚠️  Database doesn't exist, skipping\n\n";
-            continue;
-        }
-        
-        DB::statement("USE `{$dbName}`");
-        
-        // Check if users table exists
-        $tables = DB::select("SHOW TABLES LIKE 'users'");
-        if (empty($tables)) {
-            echo "   ⚠️  Users table doesn't exist, skipping\n\n";
-            continue;
-        }
-        
-        $password = \App\Models\Project::generateProjectAdminPassword();
-        $username = $project->code;
-        $email = strtolower($project->code) . '@project.local';
-        
-        // Insert or update admin user
-        DB::statement("
-            INSERT INTO users (name, username, email, password, role, level, email_verified_at, created_at, updated_at) 
-            VALUES (?, ?, ?, ?, 'cms', 2, NOW(), NOW(), NOW())
-            ON DUPLICATE KEY UPDATE 
-                password = VALUES(password),
-                updated_at = NOW()
-        ", [
-            'CMS Admin - ' . $project->code,
-            $username,
-            $email,
-            bcrypt($password)
-        ]);
-        
-        // Update project with credentials
-        DB::statement("USE " . config('database.connections.mysql.database'));
-        $project->update([
-            'project_admin_username' => $username,
-            'project_admin_password' => $password
-        ]);
-        
-        echo "   ✅ Admin user created: {$username} / {$password}\n\n";
-        
-    } catch (\Exception $e) {
-        echo "   ❌ Error: " . $e->getMessage() . "\n\n";
+// Set project database connection
+Config::set('database.connections.project.database', $projectDbName);
+DB::purge('project');
+
+try {
+    // Check if users table exists
+    $tables = DB::connection('project')->select('SHOW TABLES');
+    $tableNames = array_map(fn ($t) => array_values((array) $t)[0], $tables);
+
+    if (! in_array('users', $tableNames)) {
+        echo "ERROR: users table does not exist in {$projectDbName}\n";
+        echo 'Available tables: '.implode(', ', $tableNames)."\n";
+        exit(1);
     }
+
+    // Check if user already exists
+    $existingUser = DB::connection('project')
+        ->table('users')
+        ->where('username', $projectCode)
+        ->orWhere('username', strtoupper($projectCode))
+        ->first();
+
+    if ($existingUser) {
+        echo "User already exists: {$existingUser->username}\n";
+
+        // Update password to '1'
+        DB::connection('project')
+            ->table('users')
+            ->where('id', $existingUser->id)
+            ->update(['password' => Hash::make('1')]);
+
+        echo "Password updated to: 1\n";
+    } else {
+        // Create new user
+        $userId = DB::connection('project')->table('users')->insertGetId([
+            'name' => 'Admin - '.strtoupper($projectCode),
+            'username' => strtoupper($projectCode),
+            'email' => strtolower($projectCode).'@project.local',
+            'password' => Hash::make('1'),
+            'role' => 'cms',
+            'level' => 2,
+            'email_verified_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        echo "Created new user with ID: {$userId}\n";
+        echo 'Username: '.strtoupper($projectCode)."\n";
+        echo "Password: 1\n";
+    }
+
+    // List all users
+    echo "\nAll users in {$projectDbName}:\n";
+    $users = DB::connection('project')->table('users')->get(['id', 'username', 'email', 'role']);
+    foreach ($users as $user) {
+        echo "- ID: {$user->id}, Username: {$user->username}, Email: {$user->email}, Role: {$user->role}\n";
+    }
+
+} catch (\Exception $e) {
+    echo 'ERROR: '.$e->getMessage()."\n";
+    exit(1);
 }
 
-echo "✅ All project admin users created!\n";
+echo "\nDone!\n";

@@ -11,19 +11,19 @@ class SettingsController extends Controller
     {
         $project = request()->attributes->get('project');
         $user = auth()->user();
-        
+
         if ($project) {
             \DB::setDefaultConnection('mysql');
-            
+
             $enabledSettings = \App\Models\ProjectSetting::where('project_id', $project->id)
                 ->where('value', '1')
                 ->pluck('key')
                 ->toArray();
-            
+
             \DB::setDefaultConnection('project');
-            
+
             // Chỉ hiển thị các module đã được bật
-            $modules = collect(config('system_menu'))->filter(function($module) use ($enabledSettings) {
+            $modules = collect(config('system_menu'))->filter(function ($module) use ($enabledSettings) {
                 return in_array($module['permission'], $enabledSettings);
             });
         } else {
@@ -44,41 +44,41 @@ class SettingsController extends Controller
         try {
             $keys = [];
             $viewPath = resource_path('views');
-            
+
             // Scan all blade files
             $files = new \RecursiveIteratorIterator(
                 new \RecursiveDirectoryIterator($viewPath)
             );
-            
+
             foreach ($files as $file) {
                 if ($file->isFile() && $file->getExtension() === 'php') {
                     $content = file_get_contents($file->getRealPath());
-                    
+
                     // Match __('key') and __("key") patterns
                     preg_match_all("/__\('([^']+)'\)/", $content, $matches1);
                     preg_match_all('/__\("([^"]+)"\)/', $content, $matches2);
-                    
-                    if (!empty($matches1[1])) {
+
+                    if (! empty($matches1[1])) {
                         $keys = array_merge($keys, $matches1[1]);
                     }
-                    if (!empty($matches2[1])) {
+                    if (! empty($matches2[1])) {
                         $keys = array_merge($keys, $matches2[1]);
                     }
                 }
             }
-            
+
             $keys = array_unique($keys);
             sort($keys);
-            
+
             return response()->json([
                 'success' => true,
                 'keys' => $keys,
-                'count' => count($keys)
+                'count' => count($keys),
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 500);
         }
     }
@@ -86,6 +86,8 @@ class SettingsController extends Controller
     public function save(Request $request)
     {
         try {
+            $project = $request->attributes->get('project');
+
             foreach ($request->except('_token', '_method', 'page') as $key => $value) {
                 if (is_string($value)) {
                     $decoded = json_decode($value, true);
@@ -93,20 +95,27 @@ class SettingsController extends Controller
                         $value = $decoded;
                     }
                 }
-                
-                \App\Models\Setting::set($key, $value);
+
+                // Sử dụng model phù hợp dựa trên context
+                if ($project) {
+                    \App\Models\ProjectSettingModel::set($key, $value);
+                } else {
+                    \App\Models\Setting::set($key, $value);
+                }
             }
-            
+
             \App\Services\SettingsService::getInstance()->clearCache();
 
             return back()->with('alert', [
                 'type' => 'success',
-                'message' => 'Lưu cấu hình thành công!'
+                'message' => 'Lưu cấu hình thành công!',
             ]);
         } catch (\Exception $e) {
+            \Log::error('Settings save error: '.$e->getMessage());
+
             return back()->with('alert', [
                 'type' => 'error',
-                'message' => 'Lỗi: ' . $e->getMessage()
+                'message' => 'Lỗi: '.$e->getMessage(),
             ]);
         }
     }
@@ -114,41 +123,42 @@ class SettingsController extends Controller
     public function projectSettings(Request $request)
     {
         $project = $request->attributes->get('project');
-        
+
         $mainDb = config('database.connections.mysql.database');
         \DB::setDefaultConnection('mysql');
-        
+
         $enabledSettings = \App\Models\ProjectSetting::where('project_id', $project->id)
             ->where('value', '1')
             ->pluck('key')
             ->toArray();
-        
+
         \DB::setDefaultConnection('project');
-        
+
         // Chỉ hiển thị các module đã được bật
         $modules = collect(config('system_menu'))
-            ->filter(function($module) use ($enabledSettings) {
+            ->filter(function ($module) use ($enabledSettings) {
                 return in_array($module['permission'], $enabledSettings);
             })
-            ->map(function($module) use ($project) {
+            ->map(function ($module) use ($project) {
                 $module['route'] = str_replace('cms.', 'project.admin.', $module['route']);
                 $module['route_params'] = ['projectCode' => $project->code];
+
                 return $module;
             })
-            ->filter(function($module) {
+            ->filter(function ($module) {
                 return \Route::has($module['route']);
             });
-        
+
         return view('cms.settings.index', [
             'currentProject' => $project,
-            'modules' => $modules
+            'modules' => $modules,
         ]);
     }
 
     public function saveProjectSettings(Request $request)
     {
         $project = $request->attributes->get('project');
-        
+
         try {
             if ($request->has('permissions')) {
                 foreach ($request->permissions as $module => $perms) {
@@ -161,14 +171,13 @@ class SettingsController extends Controller
 
             return back()->with('alert', [
                 'type' => 'success',
-                'message' => 'Cập nhật phân quyền thành công!'
+                'message' => 'Cập nhật phân quyền thành công!',
             ]);
         } catch (\Exception $e) {
             return back()->with('alert', [
                 'type' => 'error',
-                'message' => 'Lỗi: ' . $e->getMessage()
+                'message' => 'Lỗi: '.$e->getMessage(),
             ]);
         }
     }
 }
-

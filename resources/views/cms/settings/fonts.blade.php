@@ -6,7 +6,13 @@
 @section('content')
 <div class="mb-6">
     <div class="flex justify-between items-center mb-4">
-        <a href="{{ route('cms.settings.index') }}" class="text-sm text-gray-600 hover:text-gray-900">← Quay lại</a>
+        @php
+            $projectCode = request()->route('projectCode');
+            $backUrl = $projectCode 
+                ? route('project.admin.settings.index', ['projectCode' => $projectCode]) 
+                : route('cms.settings.index');
+        @endphp
+        <a href="{{ $backUrl }}" class="text-sm text-gray-600 hover:text-gray-900">← Quay lại</a>
         <button onclick="document.getElementById('addModal').classList.remove('hidden')" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Thêm Font</button>
     </div>
 
@@ -35,7 +41,7 @@
                     <td class="px-6 py-4">{{ $font['label'] ?? '' }}</td>
                     <td class="px-6 py-4">{{ $font['load'] ?? '' }}</td>
                     <td class="px-6 py-4">
-                        <form action="{{ route('cms.fonts.toggle') }}" method="POST" style="display:inline">
+                        <form action="{{ $projectCode ? route('project.admin.fonts.toggle', $projectCode) : route('cms.fonts.toggle') }}" method="POST" style="display:inline">
                             @csrf
                             <input type="hidden" name="id" value="{{ $font['id'] }}">
                             <button type="submit" class="px-3 py-1 text-xs rounded {{ $font['is_active'] ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
@@ -44,7 +50,7 @@
                         </form>
                     </td>
                     <td class="px-6 py-4">
-                        <form action="{{ route('cms.fonts.default') }}" method="POST" style="display:inline">
+                        <form action="{{ $projectCode ? route('project.admin.fonts.default', $projectCode) : route('cms.fonts.default') }}" method="POST" style="display:inline">
                             @csrf
                             <input type="hidden" name="id" value="{{ $font['id'] }}">
                             <button type="submit" class="px-3 py-1 text-xs rounded {{ $font['is_default'] ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800' }}">
@@ -53,7 +59,7 @@
                         </form>
                     </td>
                     <td class="px-6 py-4 text-right">
-                        <form action="{{ route('cms.fonts.destroy') }}" method="POST" style="display:inline" onsubmit="return confirm('Xác nhận xóa?')">
+                        <form action="{{ $projectCode ? route('project.admin.fonts.destroy', $projectCode) : route('cms.fonts.destroy') }}" method="POST" style="display:inline" onsubmit="return confirm('Xác nhận xóa?')">
                             @csrf @method('DELETE')
                             <input type="hidden" name="id" value="{{ $font['id'] }}">
                             <button type="submit" class="text-red-600 hover:text-red-800 text-sm">Xóa</button>
@@ -76,7 +82,7 @@
         <div class="bg-white rounded-lg max-w-lg w-full p-6">
             <h3 class="text-lg font-semibold mb-4">Thêm Font mới</h3>
 
-            <form action="{{ route('cms.fonts.store') }}" method="POST" id="fontForm">
+            <form action="{{ $projectCode ? route('project.admin.fonts.store', $projectCode) : route('cms.fonts.store') }}" method="POST" id="fontForm">
                 @csrf
                 
                 <div class="space-y-4">

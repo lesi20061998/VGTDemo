@@ -24,13 +24,13 @@
                 <!-- Toolbar -->
                 <div class="p-4 border-b bg-gray-50 flex items-center gap-3">
                     <input type="file" x-ref="fileInput" @change="uploadFiles($event)" multiple accept="image/*" class="hidden">
-                    <button @click="$refs.fileInput.click()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2">
+                    <button type="button" @click="$refs.fileInput.click()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                         </svg>
                         Upload
                     </button>
-                    <button @click="showCreateFolder = true" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center gap-2">
+                    <button type="button" @click="showCreateFolder = true" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center gap-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path>
                         </svg>
@@ -160,6 +160,7 @@ function mediaManager() {
         searchQuery: '',
         showCreateFolder: false,
         newFolderName: '',
+        baseUrl: '{{ request()->route("projectCode") ? "/" . request()->route("projectCode") . "/admin" : "/admin" }}',
         
         openModal() {
             this.isOpen = true;
@@ -174,7 +175,7 @@ function mediaManager() {
         async loadMedia() {
             this.loading = true;
             try {
-                const response = await fetch(`/admin/media/list?path=${encodeURIComponent(this.currentPath)}`);
+                const response = await fetch(`${this.baseUrl}/media/list?path=${encodeURIComponent(this.currentPath)}`);
                 const data = await response.json();
                 this.folders = data.folders || [];
                 this.mediaItems = data.files || [];
@@ -196,7 +197,7 @@ function mediaManager() {
             if (!this.newFolderName) return;
             
             try {
-                const response = await fetch('/admin/media/folder', {
+                const response = await fetch(`${this.baseUrl}/media/folder`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -225,7 +226,7 @@ function mediaManager() {
             if (!confirm('Xóa thư mục này và tất cả nội dung bên trong?')) return;
             
             try {
-                const response = await fetch('/admin/media/folder', {
+                const response = await fetch(`${this.baseUrl}/media/folder`, {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
@@ -273,7 +274,7 @@ function mediaManager() {
             
             this.loading = true;
             try {
-                const response = await fetch('/admin/media/upload', {
+                const response = await fetch(`${this.baseUrl}/media/upload`, {
                     method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
@@ -293,7 +294,7 @@ function mediaManager() {
             if (!confirm('Xóa ảnh này?')) return;
             
             try {
-                const response = await fetch(`/admin/media/${id}`, {
+                const response = await fetch(`${this.baseUrl}/media/${id}`, {
                     method: 'DELETE',
                     headers: {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
@@ -337,7 +338,7 @@ function mediaManager() {
                 if (!confirm(`Di chuyển "${item.name}" vào thư mục này?`)) return;
                 
                 try {
-                    const response = await fetch('/admin/media/move', {
+                    const response = await fetch(`${this.baseUrl}/media/move`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -363,7 +364,7 @@ function mediaManager() {
                 if (!confirm(`Di chuyển thư mục "${folder.name}" vào đây?`)) return;
                 
                 try {
-                    const response = await fetch('/admin/media/move', {
+                    const response = await fetch(`${this.baseUrl}/media/move`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',

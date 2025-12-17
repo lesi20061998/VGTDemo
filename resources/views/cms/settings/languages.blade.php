@@ -5,16 +5,58 @@
     <div class="bg-white rounded-lg shadow p-6">
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold">Quản lý Ngôn ngữ</h2>
-            <button @click="showAddModal = true" class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            <div class="flex items-center gap-4">
+                <label class="flex items-center gap-2 cursor-pointer"></label>
+                    <input type="checkbox" 
+                           x-model="multilingualEnabled"
+                           @change="toggleMultilingual"
+                           class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer">
+                    <span class="text-sm font-medium">Bật chức năng đa ngôn ngữ</span>
+                </label>
+                <button @click="showAddModal = true" 
+                        :disabled="!multilingualEnabled"
+                        :class="multilingualEnabled ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'"
+                        class="flex items-center gap-2 px-4 py-2 text-white rounded">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    Thêm ngôn ngữ
+                </button>
+            </div>
+        </div>
+
+        <!-- Multilingual Info -->
+        <div x-show="multilingualEnabled" class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+            <div class="flex items-start gap-2">
+                <svg class="w-5 h-5 text-green-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
-                Thêm ngôn ngữ
-            </button>
+                <div>
+                    <h4 class="font-medium text-green-900">Chức năng đa ngôn ngữ đã được bật</h4>
+                    <p class="text-sm text-green-800 mt-1">
+                        Khi tạo/sửa bài viết và sản phẩm, bạn sẽ thấy các tab ngôn ngữ để nhập nội dung riêng biệt cho từng ngôn ngữ.
+                        Mỗi ngôn ngữ sẽ được lưu thành bản ghi riêng trong database.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div x-show="!multilingualEnabled" class="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+            <div class="flex items-start gap-2">
+                <svg class="w-5 h-5 text-gray-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <div>
+                    <h4 class="font-medium text-gray-900">Chức năng đa ngôn ngữ đang tắt</h4>
+                    <p class="text-sm text-gray-700 mt-1">
+                        Bật chức năng này để có thể tạo nội dung đa ngôn ngữ cho website.
+                    </p>
+                </div>
+            </div>
         </div>
 
         <!-- Languages List -->
-        <div class="space-y-3">
+        <div class="space-y-3" x-show="multilingualEnabled">
             <template x-for="(lang, index) in languages" :key="index">
                 <div class="flex items-center gap-4 p-4 border rounded-lg hover:bg-gray-50">
                     <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg" x-text="lang.code.toUpperCase()"></div>
@@ -97,12 +139,13 @@
         </div>
 
         <!-- Save Form -->
-        <form action="{{ route('cms.settings.save') }}" method="POST" x-ref="saveForm">
+        @php $projectCode = request()->segment(1); $isProject = $projectCode && $projectCode !== 'cms'; @endphp
+        <form action="{{ $isProject ? route('project.admin.settings.save', $projectCode) : route('cms.settings.save') }}" method="POST" x-ref="saveForm">
             @csrf
             <input type="hidden" name="page" value="languages">
             <input type="hidden" name="languages" :value="JSON.stringify(languages)">
-            
-
+            <input type="hidden" name="multilingual_enabled" :value="multilingualEnabled ? '1' : '0'">
+            <button type="submit" style="display: none;" id="autoSubmit">Submit</button>
         </form>
     </div>
 
@@ -196,7 +239,7 @@
         </div>
 
         <!-- Save Form -->
-        <form action="{{ route('cms.settings.save') }}" method="POST" x-ref="transForm">
+        <form action="{{ $isProject ? route('project.admin.settings.save', $projectCode) : route('cms.settings.save') }}" method="POST" x-ref="transForm">
             @csrf
             <input type="hidden" name="page" value="translations">
             <input type="hidden" name="translations" :value="JSON.stringify(translations)">
@@ -222,6 +265,34 @@
 </div>
 
 <script>
+// Global alert function
+function showAlert(message, type = 'info') {
+    // Create alert element
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-sm ${
+        type === 'success' ? 'bg-green-100 border border-green-400 text-green-700' :
+        type === 'error' ? 'bg-red-100 border border-red-400 text-red-700' :
+        type === 'warning' ? 'bg-yellow-100 border border-yellow-400 text-yellow-700' :
+        'bg-blue-100 border border-blue-400 text-blue-700'
+    }`;
+    
+    alertDiv.innerHTML = `
+        <div class="flex items-center">
+            <span class="flex-1">${message}</span>
+            <button onclick="this.parentElement.parentElement.remove()" class="ml-2 text-lg font-bold">&times;</button>
+        </div>
+    `;
+    
+    document.body.appendChild(alertDiv);
+    
+    // Auto remove after 3 seconds
+    setTimeout(() => {
+        if (alertDiv.parentElement) {
+            alertDiv.remove();
+        }
+    }, 3000);
+}
+
 function languageManager() {
     let savedLanguages = {!! json_encode(setting('languages', [])) !!};
     if (!Array.isArray(savedLanguages) || savedLanguages.length === 0) {
@@ -233,12 +304,18 @@ function languageManager() {
 
     return {
         languages: savedLanguages,
+        multilingualEnabled: {!! json_encode((bool)setting('multilingual_enabled', false)) !!},
         showAddModal: false,
         editIndex: null,
         form: {
             name: '',
             code: '',
             is_default: false
+        },
+        
+        init() {
+            console.log('Language manager initialized');
+            console.log('Initial multilingual state:', this.multilingualEnabled);
         },
 
         setDefault(index) {
@@ -310,6 +387,42 @@ function languageManager() {
             this.$nextTick(() => {
                 this.$refs.saveForm.submit();
             });
+        },
+
+        async toggleMultilingual() {
+            console.log('toggleMultilingual called!');
+            console.log('Multilingual toggled to:', this.multilingualEnabled);
+            console.log('Saving to URL:', '{{ $isProject ? route('project.admin.settings.save', $projectCode) : route('cms.settings.save') }}');
+            
+            // Show immediate feedback
+            showAlert('Đang lưu cài đặt...', 'info');
+            
+            // Save via AJAX instead of form submit to avoid page reload
+            try {
+                const formData = new FormData();
+                formData.append('_token', '{{ csrf_token() }}');
+                formData.append('page', 'languages');
+                formData.append('multilingual_enabled', this.multilingualEnabled ? '1' : '0');
+                formData.append('languages', JSON.stringify(this.languages));
+                
+                const response = await fetch('{{ $isProject ? route('project.admin.settings.save', $projectCode) : route('cms.settings.save') }}', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    showAlert('Cập nhật cài đặt thành công!', 'success');
+                } else {
+                    showAlert('Lỗi khi lưu cài đặt', 'error');
+                    // Revert checkbox state on error
+                    this.multilingualEnabled = !this.multilingualEnabled;
+                }
+            } catch (error) {
+                console.error('Error saving settings:', error);
+                showAlert('Lỗi kết nối', 'error');
+                // Revert checkbox state on error
+                this.multilingualEnabled = !this.multilingualEnabled;
+            }
         },
 
         closeModal() {

@@ -5,10 +5,11 @@
     <div class="bg-white rounded-lg shadow p-6">
         <h2 class="text-2xl font-bold mb-6">Cài đặt Contact Buttons</h2>
 
+        @php $projectCode = request()->segment(1); $isProject = $projectCode && $projectCode !== 'cms'; @endphp
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Left: Settings Form -->
             <div class="lg:col-span-2">
-                <form action="{{ route('cms.settings.save') }}" method="POST">
+                <form action="{{ $isProject ? route('project.admin.settings.save', $projectCode) : route('cms.settings.save') }}" method="POST">
                     @csrf
                     <input type="hidden" name="page" value="contact-buttons">
 

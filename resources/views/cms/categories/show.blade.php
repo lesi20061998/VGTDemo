@@ -20,8 +20,8 @@
             <p class="mt-2 text-gray-700">{{ $category->description }}</p>
 
             <div class="mt-4">
-                <a href="{{ route('cms.categories.edit', $category) }}" class="px-4 py-2 bg-indigo-600 text-white rounded-lg">Sửa</a>
-                <a href="{{ route('cms.categories.index') }}" class="px-4 py-2 ml-2 text-gray-700 border rounded-lg">Quay lại</a>
+                <a href="{{ isset($currentProject) && $currentProject ? route('project.admin.categories.edit', [$currentProject->code, $category]) : route('cms.categories.edit', $category) }}" class="px-4 py-2 bg-indigo-600 text-white rounded-lg">Sửa</a>
+                <a href="{{ isset($currentProject) && $currentProject ? route('project.admin.categories.index', $currentProject->code) : route('cms.categories.index') }}" class="px-4 py-2 ml-2 text-gray-700 border rounded-lg">Quay lại</a>
             </div>
         </div>
     </div>

@@ -6,7 +6,7 @@
 
 @section('content')
 <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-6">
-    <form method="POST" action="{{ route('cms.orders.update', $order) }}">
+    <form method="POST" action="{{ isset($currentProject) && $currentProject ? route('project.admin.orders.update', [$currentProject->code, $order]) : route('cms.orders.update', $order) }}">
         @csrf @method('PUT')
 
         <div class="grid grid-cols-2 gap-6 mb-6">
@@ -38,7 +38,7 @@
         </div>
 
         <div class="flex justify-end space-x-4">
-            <a href="{{ route('cms.orders.show', $order) }}" class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">
+            <a href="{{ isset($currentProject) && $currentProject ? route('project.admin.orders.show', [$currentProject->code, $order]) : route('cms.orders.show', $order) }}" class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">
                 Hủy
             </a>
             <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">

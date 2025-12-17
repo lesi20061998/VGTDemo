@@ -17,7 +17,7 @@ return [
             'bg_image_size' => ['type' => 'select', 'label' => 'Background Size', 'options' => ['cover' => 'Cover', 'contain' => 'Contain', 'auto' => 'Auto']],
             'bg_image_position' => ['type' => 'select', 'label' => 'Background Position', 'options' => ['center' => 'Center', 'top' => 'Top', 'bottom' => 'Bottom', 'left' => 'Left', 'right' => 'Right']],
             'bg_image_repeat' => ['type' => 'select', 'label' => 'Background Repeat', 'options' => ['no-repeat' => 'No Repeat', 'repeat' => 'Repeat', 'repeat-x' => 'Repeat X', 'repeat-y' => 'Repeat Y']],
-        ]
+        ],
     ],
     'topbar' => [
         'label' => 'Top Bar',
@@ -28,7 +28,7 @@ return [
             'topbar_text' => ['type' => 'text', 'label' => 'Nội dung'],
             'topbar_bg_color' => ['type' => 'color', 'label' => 'Màu nền'],
             'topbar_text_color' => ['type' => 'color', 'label' => 'Màu chữ'],
-        ]
+        ],
     ],
     'header' => [
         'label' => 'Header',
@@ -41,7 +41,7 @@ return [
             'show_search' => ['type' => 'checkbox', 'label' => 'Hiển thị tìm kiếm'],
             'show_cart' => ['type' => 'checkbox', 'label' => 'Hiển thị giỏ hàng'],
             'show_account' => ['type' => 'checkbox', 'label' => 'Hiển thị tài khoản'],
-        ]
+        ],
     ],
     'header_mobile' => [
         'label' => 'Header Mobile',
@@ -50,17 +50,18 @@ return [
             'mobile_menu_style' => ['type' => 'select', 'label' => 'Kiểu menu', 'options' => ['sidebar' => 'Sidebar', 'fullscreen' => 'Toàn màn hình']],
             'mobile_show_search' => ['type' => 'checkbox', 'label' => 'Hiển thị tìm kiếm'],
             'mobile_show_cart' => ['type' => 'checkbox', 'label' => 'Hiển thị giỏ hàng'],
-        ]
+        ],
     ],
     'navigation' => [
         'label' => 'Navigation',
         'icon' => 'menu',
         'fields' => [
+            'navigation_menu_id' => ['type' => 'menu_select', 'label' => 'Chọn Menu Navigation'],
             'nav_style' => ['type' => 'select', 'label' => 'Kiểu menu', 'options' => ['horizontal' => 'Ngang', 'mega' => 'Mega Menu']],
             'nav_bg_color' => ['type' => 'color', 'label' => 'Màu nền'],
             'nav_text_color' => ['type' => 'color', 'label' => 'Màu chữ'],
             'nav_hover_color' => ['type' => 'color', 'label' => 'Màu hover'],
-        ]
+        ],
     ],
     'map' => [
         'label' => 'Map',
@@ -68,7 +69,7 @@ return [
         'fields' => [
             'map_enabled' => ['type' => 'checkbox', 'label' => 'Hiển thị bản đồ'],
             'map_iframe' => ['type' => 'textarea', 'label' => 'Google Maps Iframe'],
-        ]
+        ],
     ],
     'footer' => [
         'label' => 'Footer',
@@ -79,7 +80,7 @@ return [
             'footer_text_color' => ['type' => 'color', 'label' => 'Màu chữ'],
             'footer_copyright' => ['type' => 'textarea', 'label' => 'Copyright'],
             'footer_about' => ['type' => 'textarea', 'label' => 'Giới thiệu'],
-        ]
+        ],
     ],
     'branches' => [
         'label' => 'Chi Nhánh',
@@ -87,7 +88,7 @@ return [
         'fields' => [
             'show_branches' => ['type' => 'checkbox', 'label' => 'Hiển thị chi nhánh'],
             'branches_title' => ['type' => 'text', 'label' => 'Tiêu đề'],
-        ]
+        ],
     ],
     'posts' => [
         'label' => 'Bài viết',
@@ -97,7 +98,7 @@ return [
             'show_author' => ['type' => 'checkbox', 'label' => 'Hiển thị tác giả'],
             'show_date' => ['type' => 'checkbox', 'label' => 'Hiển thị ngày'],
             'show_excerpt' => ['type' => 'checkbox', 'label' => 'Hiển thị mô tả ngắn'],
-        ]
+        ],
     ],
     'products' => [
         'label' => 'Sản phẩm',
@@ -107,7 +108,7 @@ return [
             'show_quick_view' => ['type' => 'checkbox', 'label' => 'Quick view'],
             'show_compare' => ['type' => 'checkbox', 'label' => 'So sánh sản phẩm'],
             'show_wishlist' => ['type' => 'checkbox', 'label' => 'Yêu thích'],
-        ]
+        ],
     ],
     'floating_cart' => [
         'label' => 'Nút giỏ hàng nổi',
@@ -116,7 +117,7 @@ return [
             'floating_cart_enabled' => ['type' => 'checkbox', 'label' => 'Hiển thị'],
             'floating_cart_position' => ['type' => 'select', 'label' => 'Vị trí', 'options' => ['bottom-right' => 'Dưới phải', 'bottom-left' => 'Dưới trái', 'top-right' => 'Trên phải']],
             'floating_cart_color' => ['type' => 'color', 'label' => 'Màu nút'],
-        ]
+        ],
     ],
     'contact_form' => [
         'label' => 'Form tư vấn',
@@ -126,6 +127,6 @@ return [
             'form_title' => ['type' => 'text', 'label' => 'Tiêu đề'],
             'form_position' => ['type' => 'select', 'label' => 'Vị trí', 'options' => ['sidebar' => 'Sidebar', 'popup' => 'Popup', 'footer' => 'Footer']],
             'form_fields' => ['type' => 'textarea', 'label' => 'Các trường (JSON)'],
-        ]
+        ],
     ],
 ];

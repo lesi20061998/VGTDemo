@@ -4,117 +4,263 @@
 @section('page-title', 'Watermark - Đóng dấu ảnh')
 
 @section('content')
-<div class="mb-6">
-    <a href="{{ route('cms.settings.index') }}" class="text-sm text-gray-600 hover:text-gray-900">← Quay lại</a>
-</div>
+@include('cms.settings.partials.back-link')
 
-<div class="bg-white rounded-lg shadow-sm p-6">
-    <form action="{{ route('cms.settings.save') }}" method="POST" enctype="multipart/form-data">
-        @csrf
-        
-        <div class="space-y-6">
-            @php
-                $watermark = setting('watermark', []);
-                $enabled = $watermark['enabled'] ?? false;
-                $image = $watermark['image'] ?? '';
-                $position = $watermark['position'] ?? 'bottom-right';
-                $offsetX = $watermark['offset_x'] ?? 10;
-                $offsetY = $watermark['offset_y'] ?? 10;
-                $scale = $watermark['scale'] ?? 20;
-                $opacity = $watermark['opacity'] ?? 80;
-            @endphp
+@php
+    $projectCode = request()->route('projectCode') ?? request()->segment(1);
+    $settingsSaveUrl = $projectCode ? route('project.admin.settings.save', ['projectCode' => $projectCode]) : url('/admin/settings/save');
+@endphp
 
-            <!-- Enable Watermark -->
-            <div>
-                <label class="flex items-center">
-                    <input type="checkbox" name="watermark[enabled]" value="1" {{ $enabled ? 'checked' : '' }} class="mr-2">
-                    <span class="font-medium">Bật đóng dấu ảnh tự động</span>
-                </label>
+<div class="mx-auto">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Settings Panel -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+            <div class="p-6 border-b border-gray-200">
+                <h2 class="text-xl font-semibold text-gray-900 flex items-center gap-3">
+                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                        </svg>
+                    </div>
+                    Cấu hình Watermark
+                </h2>
+                <p class="text-gray-600 mt-2">Thiết lập đóng dấu bản quyền tự động cho ảnh</p>
             </div>
 
-            <!-- Upload Watermark -->
-            <div x-data="{ watermarkImage: '{{ $image }}' }">
-                <label class="block text-sm font-medium mb-2">Ảnh watermark</label>
-                <div class="mb-2">
-                    <img :src="watermarkImage || '{{ asset('assets/img/placeholder-images-image_large.webp') }}'" 
-                         id="watermarkImagePreview" class="max-w-xs border rounded">
+            <form action="{{ $settingsSaveUrl }}" method="POST" enctype="multipart/form-data" class="p-6">
+                @csrf
+                
+                <div class="space-y-8">
+                    @php
+                        $watermark = setting('watermark', []);
+                        $enabled = $watermark['enabled'] ?? false;
+                        $image = $watermark['image'] ?? '';
+                        $position = $watermark['position'] ?? 'bottom-right';
+                        $offsetX = $watermark['offset_x'] ?? 10;
+                        $offsetY = $watermark['offset_y'] ?? 10;
+                        $scale = $watermark['scale'] ?? 20;
+                        $opacity = $watermark['opacity'] ?? 80;
+                    @endphp
+
+                    <!-- Enable Watermark -->
+                    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200">
+                        <label class="flex items-center cursor-pointer">
+                            <input type="checkbox" name="watermark[enabled]" value="1" {{ $enabled ? 'checked' : '' }} 
+                                   class="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2">
+                            <div class="ml-3">
+                                <span class="font-semibold text-gray-900">Bật đóng dấu ảnh tự động</span>
+                                <p class="text-sm text-gray-600">Tự động thêm watermark cho tất cả ảnh mới upload</p>
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- Upload Watermark -->
+                    <div x-data="{ 
+                        watermarkImage: '{{ $image }}',
+                        updateWatermarkImage(event) {
+                            if (event.detail.files && event.detail.files.length > 0) {
+                                const url = event.detail.files[0].url;
+                                this.watermarkImage = url;
+                                document.getElementById('watermarkImagePreview').src = url;
+                                document.getElementById('watermarkPreview').src = url;
+                            }
+                        }
+                    }" @media-selected.window="updateWatermarkImage($event)">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-900 mb-3">Ảnh watermark</label>
+                            <div class="bg-gray-50 rounded-lg p-4 border-2 border-dashed border-gray-300 hover:border-blue-400 transition-colors">
+                                <div class="text-center">
+                                    <img :src="watermarkImage ? (watermarkImage.startsWith('http') ? watermarkImage : '{{ asset('') }}' + watermarkImage) : '{{ asset('assets/img/placeholder-images-image_large.webp') }}'" 
+                                         id="watermarkImagePreview" class="mx-auto max-w-48 max-h-32 object-contain rounded-lg shadow-sm border bg-white">
+                                    <div class="mt-4">
+                                        @include('cms.components.media-manager')
+                                    </div>
+                                </div>
+                            </div>
+                            <input type="hidden" name="watermark[image]" x-model="watermarkImage">
+                            <div class="mt-2 flex items-center gap-2 text-sm text-amber-700 bg-amber-50 rounded-lg p-3">
+                                <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                </svg>
+                                <span>Nên sử dụng ảnh PNG có nền trong suốt để có hiệu quả tốt nhất</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Position Settings -->
+                    <div class="space-y-4">
+                        <h3 class="text-lg font-semibold text-gray-900">Vị trí & Kích thước</h3>
+                        
+                        <!-- Alignment -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Vị trí đặt watermark</label>
+                            <select name="watermark[position]" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
+                                <option value="top-left" {{ $position == 'top-left' ? 'selected' : '' }}>Góc trên - Trái</option>
+                                <option value="top-center" {{ $position == 'top-center' ? 'selected' : '' }}>Trên - Giữa</option>
+                                <option value="top-right" {{ $position == 'top-right' ? 'selected' : '' }}>Góc trên - Phải</option>
+                                <option value="center-left" {{ $position == 'center-left' ? 'selected' : '' }}>Giữa - Trái</option>
+                                <option value="center" {{ $position == 'center' ? 'selected' : '' }}>Chính giữa</option>
+                                <option value="center-right" {{ $position == 'center-right' ? 'selected' : '' }}>Giữa - Phải</option>
+                                <option value="bottom-left" {{ $position == 'bottom-left' ? 'selected' : '' }}>Góc dưới - Trái</option>
+                                <option value="bottom-center" {{ $position == 'bottom-center' ? 'selected' : '' }}>Dưới - Giữa</option>
+                                <option value="bottom-right" {{ $position == 'bottom-right' ? 'selected' : '' }}>Góc dưới - Phải</option>
+                            </select>
+                        </div>
+
+                        <!-- Offset Controls -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Khoảng cách ngang (px)</label>
+                                <input type="number" name="watermark[offset_x]" value="{{ $offsetX }}" min="0" max="200"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Khoảng cách dọc (px)</label>
+                                <input type="number" name="watermark[offset_y]" value="{{ $offsetY }}" min="0" max="200"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                        </div>
+
+                        <!-- Scale Slider -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Kích thước: <span id="scaleValue" class="font-semibold text-blue-600">{{ $scale }}%</span>
+                            </label>
+                            <div class="relative">
+                                <input type="range" name="watermark[scale]" min="5" max="100" value="{{ $scale }}" 
+                                       class="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                                       oninput="document.getElementById('scaleValue').textContent = this.value + '%'">
+                                <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                    <span>5%</span>
+                                    <span>50%</span>
+                                    <span>100%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Opacity Slider -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Độ trong suốt: <span id="opacityValue" class="font-semibold text-blue-600">{{ $opacity }}%</span>
+                            </label>
+                            <div class="relative">
+                                <input type="range" name="watermark[opacity]" min="10" max="100" value="{{ $opacity }}" 
+                                       class="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                                       oninput="document.getElementById('opacityValue').textContent = this.value + '%'">
+                                <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                    <span>10%</span>
+                                    <span>50%</span>
+                                    <span>100%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <input type="hidden" name="watermark[image]" x-model="watermarkImage">
-                @include('cms.components.media-manager')
-                <p class="text-xs text-gray-500 mt-1">Nên dùng ảnh PNG có nền trong suốt</p>
-            </div>
 
-            <!-- Alignment -->
-            <div>
-                <label class="block text-sm font-medium mb-2">Vị trí (Alignment)</label>
-                <select name="watermark[position]" class="w-full px-4 py-2 border rounded-lg">
-                    <option value="top-left" {{ $position == 'top-left' ? 'selected' : '' }}>Trên - Trái</option>
-                    <option value="top-center" {{ $position == 'top-center' ? 'selected' : '' }}>Trên - Giữa</option>
-                    <option value="top-right" {{ $position == 'top-right' ? 'selected' : '' }}>Trên - Phải</option>
-                    <option value="center-left" {{ $position == 'center-left' ? 'selected' : '' }}>Giữa - Trái</option>
-                    <option value="center" {{ $position == 'center' ? 'selected' : '' }}>Chính giữa</option>
-                    <option value="center-right" {{ $position == 'center-right' ? 'selected' : '' }}>Giữa - Phải</option>
-                    <option value="bottom-left" {{ $position == 'bottom-left' ? 'selected' : '' }}>Dưới - Trái</option>
-                    <option value="bottom-center" {{ $position == 'bottom-center' ? 'selected' : '' }}>Dưới - Giữa</option>
-                    <option value="bottom-right" {{ $position == 'bottom-right' ? 'selected' : '' }}>Dưới - Phải</option>
-                </select>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Offset X -->
-                <div>
-                    <label class="block text-sm font-medium mb-2">Offset X (px)</label>
-                    <input type="number" name="watermark[offset_x]" value="{{ $offsetX }}" class="w-full px-4 py-2 border rounded-lg">
-                    <p class="text-xs text-gray-500 mt-1">Khoảng cách theo chiều ngang</p>
+                <div class="mt-8 pt-6 border-t border-gray-200">
+                    <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold py-3 px-6 rounded-lg hover:from-blue-700 hover:to-indigo-700 focus:ring-4 focus:ring-blue-300 transition-all duration-200 flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        Lưu cấu hình
+                    </button>
                 </div>
-
-                <!-- Offset Y -->
-                <div>
-                    <label class="block text-sm font-medium mb-2">Offset Y (px)</label>
-                    <input type="number" name="watermark[offset_y]" value="{{ $offsetY }}" class="w-full px-4 py-2 border rounded-lg">
-                    <p class="text-xs text-gray-500 mt-1">Khoảng cách theo chiều dọc</p>
-                </div>
-            </div>
-
-            <!-- Scale -->
-            <div>
-                <label class="block text-sm font-medium mb-2">Tỷ lệ (Scale) - {{ $scale }}%</label>
-                <input type="range" name="watermark[scale]" min="5" max="100" value="{{ $scale }}" class="w-full" oninput="this.previousElementSibling.textContent = 'Tỷ lệ (Scale) - ' + this.value + '%'">
-                <p class="text-xs text-gray-500 mt-1">Kích thước watermark so với ảnh gốc</p>
-            </div>
-
-            <!-- Opacity -->
-            <div>
-                <label class="block text-sm font-medium mb-2">Độ mờ (Opacity) - {{ $opacity }}%</label>
-                <input type="range" name="watermark[opacity]" min="10" max="100" value="{{ $opacity }}" class="w-full" oninput="this.previousElementSibling.textContent = 'Độ mờ (Opacity) - ' + this.value + '%'">
-                <p class="text-xs text-gray-500 mt-1">Độ trong suốt của watermark</p>
-            </div>
+            </form>
         </div>
 
-        <div class="mt-6 flex justify-end">
-            <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Lưu cấu hình</button>
-        </div>
-    </form>
-</div>
+        <!-- Preview Panel -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+            <div class="p-6 border-b border-gray-200">
+                <h2 class="text-xl font-semibold text-gray-900 flex items-center gap-3">
+                    <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                        </svg>
+                    </div>
+                    Xem trước
+                </h2>
+                <p class="text-gray-600 mt-2">Kết quả watermark sẽ hiển thị như thế này</p>
+            </div>
 
-<!-- Preview Demo -->
-<div class="bg-gray-50 rounded-lg p-6 mt-6">
-    <h3 class="text-lg font-semibold mb-4">Xem trước (Demo)</h3>
-    <div class="relative inline-block border-4 border-dashed border-gray-300 rounded">
-        <img src="{{ asset('assets/img/placeholder-images-image_large.webp') }}" alt="Demo" class="w-full max-w-2xl" id="demoImage">
-        <img src="{{ $image ? asset($image) : 'https://via.placeholder.com/150x50/3b82f6/ffffff?text=LOGO' }}" alt="Watermark" id="watermarkPreview" class="absolute" style="opacity: {{ $opacity / 100 }}; width: {{ $scale }}%;">
+            <div class="p-6">
+                <div class="bg-gray-50 rounded-lg p-6">
+                    <div class="relative inline-block border-4 border-dashed border-gray-300 rounded-lg overflow-hidden bg-white">
+                        <img src="{{ asset('assets/img/placeholder-images-image_large.webp') }}" alt="Demo" class="w-full max-w-lg" id="demoImage">
+                        <img src="{{ $image ? (str_starts_with($image, 'http') ? $image : asset($image)) : 'https://via.placeholder.com/150x50/3b82f6/ffffff?text=LOGO' }}" 
+                             alt="Watermark" id="watermarkPreview" class="absolute" 
+                             style="opacity: {{ $opacity / 100 }}; width: {{ $scale }}%;">
+                    </div>
+                    
+                    <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                            </svg>
+                            <div>
+                                <h4 class="font-semibold text-blue-900">Lưu ý quan trọng</h4>
+                                <p class="text-sm text-blue-800 mt-1">
+                                    Watermark sẽ tự động được áp dụng cho tất cả ảnh mới upload. 
+                                    Ảnh cũ cần xử lý lại thủ công nếu muốn thêm watermark.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Settings -->
+                <div class="mt-6 space-y-4">
+                    <h3 class="font-semibold text-gray-900">Cài đặt nhanh</h3>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button type="button" onclick="setQuickSettings('bottom-right', 10, 10, 20)" 
+                                class="p-3 text-left border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors">
+                            <div class="font-medium text-sm">Góc dưới phải</div>
+                            <div class="text-xs text-gray-500">Vị trí phổ biến nhất</div>
+                        </button>
+                        <button type="button" onclick="setQuickSettings('center', 0, 0, 30)" 
+                                class="p-3 text-left border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors">
+                            <div class="font-medium text-sm">Chính giữa</div>
+                            <div class="text-xs text-gray-500">Bảo vệ tối đa</div>
+                        </button>
+                        <button type="button" onclick="setQuickSettings('top-left', 15, 15, 15)" 
+                                class="p-3 text-left border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors">
+                            <div class="font-medium text-sm">Góc trên trái</div>
+                            <div class="text-xs text-gray-500">Nhỏ gọn</div>
+                        </button>
+                        <button type="button" onclick="setQuickSettings('bottom-center', 0, 20, 25)" 
+                                class="p-3 text-left border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors">
+                            <div class="font-medium text-sm">Dưới giữa</div>
+                            <div class="text-xs text-gray-500">Thương hiệu</div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <p class="text-xs text-gray-500 mt-2">Đây là hình minh họa, thay đổi cài đặt và lưu lại để xem kết quả</p>
 </div>
 
-<div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-6">
-    <p class="text-sm text-blue-800">
-        <strong>Lưu ý:</strong> Watermark sẽ tự động được áp dụng cho tất cả ảnh mới upload. 
-        Ảnh cũ cần xử lý lại thủ công nếu muốn thêm watermark.
-    </p>
-</div>
+<style>
+.slider::-webkit-slider-thumb {
+    appearance: none;
+    height: 20px;
+    width: 20px;
+    border-radius: 50%;
+    background: #3b82f6;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
 
-<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+.slider::-moz-range-thumb {
+    height: 20px;
+    width: 20px;
+    border-radius: 50%;
+    background: #3b82f6;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+</style>
+
 <script>
 function updatePreview() {
     const position = document.querySelector('[name="watermark[position]"]').value;
@@ -142,25 +288,22 @@ function updatePreview() {
     watermark.style.cssText = positions[position] + `opacity: ${opacity / 100}; width: ${scale}%;`;
 }
 
+function setQuickSettings(position, offsetX, offsetY, scale) {
+    document.querySelector('[name="watermark[position]"]').value = position;
+    document.querySelector('[name="watermark[offset_x]"]').value = offsetX;
+    document.querySelector('[name="watermark[offset_y]"]').value = offsetY;
+    document.querySelector('[name="watermark[scale]"]').value = scale;
+    
+    document.getElementById('scaleValue').textContent = scale + '%';
+    
+    updatePreview();
+}
+
 document.querySelectorAll('[name="watermark[position]"], [name="watermark[offset_x]"], [name="watermark[offset_y]"], [name="watermark[scale]"], [name="watermark[opacity]"]').forEach(el => {
     el.addEventListener('change', updatePreview);
     el.addEventListener('input', updatePreview);
 });
 
-// Listen for media selection
-window.addEventListener('media-selected', function(e) {
-    if (e.detail.items.length > 0) {
-        const selected = e.detail.items[0];
-        const watermarkData = Alpine.$data(document.querySelector('[x-data*="watermarkImage"]'));
-        if (watermarkData) {
-            watermarkData.watermarkImage = selected.url;
-        }
-        document.getElementById('watermarkPreview').src = selected.url;
-    }
-});
-
 updatePreview();
 </script>
-
-@include('cms.components.media-manager')
 @endsection

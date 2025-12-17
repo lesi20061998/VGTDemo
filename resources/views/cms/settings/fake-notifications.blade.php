@@ -72,7 +72,8 @@
         </div>
     </div>
 
-    <form action="{{ route('cms.settings.save') }}" method="POST" x-ref="saveForm">
+    @php $projectCode = request()->segment(1); $isProject = $projectCode && $projectCode !== 'cms'; @endphp
+    <form action="{{ $isProject ? route('project.admin.settings.save', $projectCode) : route('cms.settings.save') }}" method="POST" x-ref="saveForm">
         @csrf
         <input type="hidden" name="fake_notifications" :value="JSON.stringify(notifications)">
         <input type="hidden" name="fake_notifications_config" :value="JSON.stringify(config)">

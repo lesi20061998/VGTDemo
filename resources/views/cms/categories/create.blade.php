@@ -6,7 +6,7 @@
 
 @section('content')
 <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
-    <form method="POST" action="{{ route('cms.categories.store') }}" enctype="multipart/form-data">
+    <form method="POST" action="{{ isset($currentProject) && $currentProject ? route('project.admin.categories.store', $currentProject->code) : route('cms.categories.store') }}" enctype="multipart/form-data">
         @csrf
 
         <div class="mb-4">
@@ -46,7 +46,7 @@
         </div>
 
         <div class="flex justify-end space-x-4 mt-6">
-            <a href="{{ route('cms.categories.index') }}" class="px-4 py-2 text-gray-700 border rounded-lg">Hủy</a>
+            <a href="{{ isset($currentProject) && $currentProject ? route('project.admin.categories.index', $currentProject->code) : route('cms.categories.index') }}" class="px-4 py-2 text-gray-700 border rounded-lg">Hủy</a>
             <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg">Thêm danh mục</button>
         </div>
     </form>

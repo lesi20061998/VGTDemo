@@ -8,57 +8,63 @@ use Illuminate\Support\Facades\Auth;
 
 class ProjectLoginController extends Controller
 {
+    /**
+     * Get the guard for project authentication
+     */
+    protected function guard()
+    {
+        return Auth::guard('project');
+    }
+
     public function showLoginForm(Request $request)
     {
         $project = $request->attributes->get('project');
-        
-        if (!$project) {
+
+        if (! $project) {
             abort(404, 'Dự án không tồn tại.');
         }
-        
-        if (Auth::check()) {
-            return redirect('/' . $project->code . '/admin');
+
+        // Check if already logged in via session
+        if (session('project_user_id') && session('current_project') === $project->code) {
+            return redirect('/'.$project->code.'/admin');
         }
-        
+
         return view('auth.project-login', compact('project'));
     }
 
     public function login(Request $request)
     {
         $project = $request->attributes->get('project');
-        
-        if (!$project) {
+
+        if (! $project) {
             abort(404, 'Dự án không tồn tại.');
         }
-        
+
         $credentials = $request->validate([
             'username' => 'required',
             'password' => 'required',
         ]);
 
-        // Try login with username first, then email
-        $loginField = filter_var($credentials['username'], FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
-        $loginCredentials = [
-            $loginField => $credentials['username'],
-            'password' => $credentials['password']
-        ];
+        // Store project code in session for later use
+        $request->session()->put('current_project', $project->code);
 
-        if (Auth::attempt($loginCredentials, $request->filled('remember'))) {
+        // Find user directly from project database
+        $user = \App\Models\ProjectUser::where('username', $credentials['username'])
+            ->orWhere('email', $credentials['username'])
+            ->first();
+
+        if ($user && \Hash::check($credentials['password'], $user->password)) {
+            // Store user ID in session for manual authentication
+            $request->session()->put('project_user_id', $user->id);
+            $request->session()->put('project_user_username', $user->username);
             $request->session()->regenerate();
-            return redirect()->intended('/' . $project->code . '/admin');
+
+            \Log::info("Project login success: {$user->username} for project {$project->code}");
+
+            return redirect()->intended('/'.$project->code.'/admin');
         }
-        
-        // If first attempt fails and we tried username, try with email
-        if ($loginField === 'username') {
-            $emailCredentials = [
-                'email' => $credentials['username'],
-                'password' => $credentials['password']
-            ];
-            if (Auth::attempt($emailCredentials, $request->filled('remember'))) {
-                $request->session()->regenerate();
-                return redirect()->intended('/' . $project->code . '/admin');
-            }
-        }
+
+        \Log::warning("Project login failed for username: {$credentials['username']}");
 
         return back()->withErrors([
             'username' => 'Thông tin đăng nhập không chính xác.',
@@ -68,12 +74,11 @@ class ProjectLoginController extends Controller
     public function logout(Request $request)
     {
         $project = $request->attributes->get('project');
-        
-        Auth::logout();
-        $request->session()->invalidate();
+
+        // Clear session-based auth
+        $request->session()->forget(['project_user_id', 'project_user_username', 'current_project']);
         $request->session()->regenerateToken();
 
-        return redirect()->route('project.login', $project ? $project->code : 'default');
+        return redirect()->route('project.login', ['projectCode' => $project ? $project->code : 'default']);
     }
 }
-

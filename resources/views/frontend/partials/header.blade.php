@@ -1,38 +1,72 @@
 @php
-    $topbarBg = setting('topbar_background_color', '#000000');
-    $topbarText = setting('topbar_text_color', '#ffffff');
-    $headerBg = setting('header_background_color', '#ffffff');
-    $headerText = setting('header_text_color', '#000000');
-    $logo = setting('site_logo');
-    if (is_array($logo)) {
-        $logo = $logo['value'] ?? '';
-    }
-    $topbarMenuId = setting('topbar_menu_id');
-    $navMenuId = setting('navigation_menu_id');
+    // Helper để lấy giá trị string từ setting (có thể là array hoặc string)
+    $getSettingValue = function($key, $default = '') {
+        $value = setting($key, $default);
+        if (is_array($value)) {
+            return $value['value'] ?? $default;
+        }
+        return $value ?? $default;
+    };
+    
+    // Lấy màu từ website-config (topbar_bg_color) hoặc fallback
+    $topbarBg = $getSettingValue('topbar_bg_color', '#1a1a1a');
+    $topbarText = $getSettingValue('topbar_text_color', '#ffffff');
+    $headerBg = $getSettingValue('header_bg_color', '#ffffff');
+    $headerText = $getSettingValue('header_text_color', '#000000');
+    $logo = $getSettingValue('site_logo', '');
+    $siteName = $getSettingValue('site_name', 'Website');
+    $hotline = $getSettingValue('hotline', '1900 1234');
+    
+    // Get menus - load tất cả items với children (submenu)
+    $topbarMenuId = $getSettingValue('topbar_menu_id', null);
+    $navMenuId = $getSettingValue('navigation_menu_id', null);
+    
+    // Load topbar menu với tất cả items
     $topbarMenu = $topbarMenuId ? \App\Models\Menu::with(['items' => function($query) {
-        $query->whereNull('parent_id')->orderBy('order');
+        $query->whereNull('parent_id')
+              ->orderBy('order')
+              ->with(['children' => function($q) {
+                  $q->orderBy('order');
+              }]);
     }])->find($topbarMenuId) : null;
+    
+    // Load navigation menu với tất cả items và children (submenu đa cấp)
     $navMenu = $navMenuId ? \App\Models\Menu::with(['items' => function($query) {
-        $query->whereNull('parent_id')->orderBy('order');
+        $query->whereNull('parent_id')
+              ->orderBy('order')
+              ->with(['children' => function($q) {
+                  $q->orderBy('order')
+                    ->with(['children' => function($q2) {
+                        $q2->orderBy('order');
+                    }]);
+              }]);
     }])->find($navMenuId) : null;
     
-    // Get topbar style from theme_option_topbar
+    // Get styles from theme options
     $themeTopbar = setting('theme_option_topbar', []);
     $topbarStyle = is_array($themeTopbar) ? ($themeTopbar['topbar_style'] ?? 'style-1') : 'style-1';
     
-    // Debug
-    // dd([
-    //     'topbar_enabled' => setting('topbar_enabled'),
-    //     'themeTopbar' => $themeTopbar,
-    //     'topbarStyle' => $topbarStyle,
-    //     'view_exists' => view()->exists('frontend.partials.topbars.' . $topbarStyle)
-    // ]);
+    $themeHeader = setting('theme_option_header', []);
+    $headerStyle = is_array($themeHeader) ? ($themeHeader['header_style'] ?? 'style-1') : 'style-1';
+    
+    // Project code for URLs
+    $projectCode = request()->route('projectCode');
 @endphp
 
 <!-- Topbar -->
-@if(setting('topbar_enabled') == 1)
-    @if(view()->exists('frontend.partials.topbars.' . $topbarStyle))
-        @include('frontend.partials.topbars.' . $topbarStyle, [
+@php
+    // Check topbar enabled từ website-config HOẶC từ theme_option_topbar
+    $topbarEnabled = $getSettingValue('topbar_enabled', 0);
+    $isTopbarEnabled = $topbarEnabled == 1 || $topbarEnabled === true || $topbarEnabled === '1' || $topbarEnabled === 'on';
+    
+    // Nếu đã chọn topbar style trong theme options thì cũng hiển thị
+    if (!$isTopbarEnabled && !empty($topbarStyle) && $topbarStyle !== 'none') {
+        $isTopbarEnabled = true;
+    }
+@endphp
+@if($isTopbarEnabled)
+    @if(view()->exists("frontend.partials.topbars.{$topbarStyle}"))
+        @include("frontend.partials.topbars.{$topbarStyle}", [
             'topbarBg' => $topbarBg,
             'topbarText' => $topbarText,
             'topbarMenu' => $topbarMenu
@@ -47,34 +81,19 @@
 @endif
 
 <!-- Header -->
-<header style="background-color: {{ $headerBg }}; color: {{ $headerText }};">
-    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-        @if($logo)
-            <a href="/"><img src="{{ $logo }}" alt="Logo" class="h-12"></a>
-        @else
-            <a href="/" class="text-2xl font-bold" style="color: {{ $headerText }};">{{ setting('site_name', 'Website') }}</a>
-        @endif
-        
-        <div class="flex gap-4 items-center">
-            <button class="search-btn p-2 hover:bg-gray-100 rounded">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-            </button>
-            <button class="cart-btn p-2 hover:bg-gray-100 rounded relative">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-            </button>
-        </div>
-    </div>
-</header>
-
-<!-- Navigation -->
-@if($navMenu && $navMenu->items)
-<nav class="bg-gray-100 border-b">
-    <div class="container mx-auto px-4">
-        <ul class="flex gap-6 py-3">
-            @foreach($navMenu->items as $item)
-                <li><a href="{{ $item->url }}" class="hover:text-blue-600">{{ $item->title }}</a></li>
-            @endforeach
-        </ul>
-    </div>
-</nav>
-@endif
+@php
+    // Fallback to style-1 if selected style doesn't exist
+    $headerViewPath = 'frontend.partials.headers.' . $headerStyle;
+    if (!view()->exists($headerViewPath)) {
+        $headerViewPath = 'frontend.partials.headers.style-1';
+    }
+@endphp
+@include($headerViewPath, [
+    'headerBg' => $headerBg,
+    'headerText' => $headerText,
+    'logo' => $logo,
+    'siteName' => $siteName,
+    'hotline' => $hotline,
+    'navMenu' => $navMenu,
+    'projectCode' => $projectCode
+])

@@ -4,7 +4,7 @@
 @section('page-title', 'Thêm sản phẩm mới')
 
 @section('content')
-<form method="POST" action="{{ route('cms.products.store') }}" enctype="multipart/form-data" x-data="productForm()">
+<form method="POST" action="{{ isset($currentProject) && $currentProject ? route('project.admin.products.store', $currentProject->code) : route('cms.products.store') }}" enctype="multipart/form-data" x-data="productForm()" @media-selected.window="handleMediaSelected($event)">
     @csrf
     
     <!-- Header với nút Lưu/Hủy -->
@@ -12,25 +12,20 @@
         <div class="flex items-center justify-between">
             <h1 class="text-xl font-bold text-gray-900">Thêm sản phẩm mới</h1>
             <div class="flex gap-3">
-                <a href="{{ route('cms.products.index') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">Hủy</a>
+                <a href="{{ isset($currentProject) && $currentProject ? route('project.admin.products.index', $currentProject->code) : route('cms.products.index') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">Hủy</a>
                 <button type="submit" class="inline-flex items-center px-6 py-2 bg-[#98191F] text-white rounded-lg hover:bg-[#7a1419] transition">Lưu sản phẩm</button>
             </div>
         </div>
     </div>
+
+    <!-- Language Switcher -->
+    @include('cms.components.language-switcher')
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Cột trái: Form chính -->
         <div class="lg:col-span-2 space-y-6">
             <!-- Thông tin cơ bản -->
             <div class="bg-white rounded-lg shadow-sm p-6 space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Tên sản phẩm *</label>
-                    <input type="text" name="name" value="{{ old('name') }}"  
-                           @input="generateSlug($event.target.value)"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#98191F] @error('name') border-red-500 @enderror">
-                    @error('name')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
-                </div>
-
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">SKU *</label>
@@ -46,18 +41,39 @@
                 </div>
             </div>
 
-            <!-- Mô tả -->
-            <div class="bg-white rounded-lg shadow-sm p-6 space-y-4">
+            <!-- Nội dung sản phẩm -->
+            <div class="bg-white rounded-lg shadow-sm p-6 space-y-6">
+                <h2 class="font-semibold text-gray-900 mb-4">Nội dung sản phẩm</h2>
+                
+                <!-- Tên sản phẩm -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Mô tả ngắn</label>
-                    <textarea name="short_description" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#98191F]">{{ old('short_description') }}</textarea>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Tên sản phẩm *
+                    </label>
+                    <input type="text" name="name" value="{{ old('name') }}" 
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#98191F] @error('name') border-red-500 @enderror">
+                    @error('name')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
                 </div>
 
+                <!-- Mô tả ngắn -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Mô tả đầy đủ *</label>
-                    <x-summernote name="description" :value="old('description')" :height="400" />
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Mô tả ngắn</label>
+                    <textarea name="short_description" rows="3" 
+                              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#98191F]">{{ old('short_description') }}</textarea>
+                </div>
+
+                <!-- Mô tả đầy đủ -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Mô tả đầy đủ *
+                    </label>
+                    <div class="summernote-container">
+                        <textarea name="description" class="summernote" required>{{ old('description') }}</textarea>
+                    </div>
                     @error('description')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
                 </div>
+
+
             </div>
 
             <!-- Dữ liệu sản phẩm - Tabs như WooCommerce -->
@@ -442,8 +458,11 @@
                 <h2 class="font-semibold text-gray-900 mb-4">Ảnh đại diện</h2>
                 <div class="space-y-3">
                     <div class="border-2 border-dashed border-gray-300 rounded-lg overflow-hidden bg-gray-50 h-48 flex items-center justify-center">
+                        <!-- Debug info -->
+                        <div x-show="false" x-text="'Debug: featuredImage = ' + featuredImage"></div>
+                        
                         <template x-if="featuredImage">
-                            <img :src="featuredImage" class="w-full h-full object-cover">
+                            <img :src="featuredImage" class="w-full h-full object-cover" :alt="'Preview: ' + featuredImage">
                         </template>
                         <template x-if="!featuredImage">
                             <div class="text-center text-gray-400">
@@ -451,11 +470,14 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                                 </svg>
                                 <p class="text-sm">Chưa có ảnh</p>
+                                <p class="text-xs mt-1" x-text="featuredImage ? 'Has image: ' + featuredImage : 'No image set'"></p>
                             </div>
                         </template>
                     </div>
                     <input type="hidden" name="featured_image" x-model="featuredImage">
-                    @include('cms.components.media-manager')
+                    <div @click="currentGalleryMode = false">
+                        @include('cms.components.media-manager')
+                    </div>
                 </div>
             </div>
 
@@ -477,7 +499,9 @@
                             </div>
                         </template>
                     </div>
-                    @include('cms.components.media-manager', ['slot' => '+ Thêm ảnh gallery'])
+                    <div @click="currentGalleryMode = true">
+                        @include('cms.components.media-manager', ['slot' => '+ Thêm ảnh gallery'])
+                    </div>
                 </div>
             </div>
 
@@ -576,6 +600,8 @@
 </form>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 <script>
 function productForm() {
@@ -583,6 +609,9 @@ function productForm() {
         slug: '',
         featuredImage: null,
         gallery: [],
+        currentGalleryMode: false,
+        currentVariationIndex: undefined,
+        currentVariationMode: undefined,
         productType: 'simple',
         activeTab: 'general',
         basePrice: 0,
@@ -598,6 +627,53 @@ function productForm() {
         noindex: false,
         seoScore: 0,
         seoChecks: [],
+        
+        handleMediaSelected(event) {
+            console.log('Media selected event:', event.detail);
+            const items = event.detail.files || [];
+            
+            if (items.length === 0) {
+                console.log('No files selected');
+                return;
+            }
+            
+            // Xử lý cho biến thể
+            if (this.currentVariationIndex !== undefined) {
+                if (this.currentVariationMode === 'image') {
+                    this.variations[this.currentVariationIndex].image = items[0].url;
+                    console.log('Set variation image:', items[0].url);
+                } else if (this.currentVariationMode === 'gallery') {
+                    if (!this.variations[this.currentVariationIndex].gallery) {
+                        this.variations[this.currentVariationIndex].gallery = [];
+                    }
+                    items.forEach(item => {
+                        if (!this.variations[this.currentVariationIndex].gallery.includes(item.url)) {
+                            this.variations[this.currentVariationIndex].gallery.push(item.url);
+                        }
+                    });
+                }
+                this.currentVariationIndex = undefined;
+                this.currentVariationMode = undefined;
+            } else {
+                // Xử lý cho sản phẩm chính
+                if (items.length === 1 && !this.currentGalleryMode) {
+                    this.featuredImage = items[0].url;
+                    console.log('Set featured image:', items[0].url);
+                    console.log('featuredImage value after set:', this.featuredImage);
+                    // Force Alpine.js to re-render
+                    this.$nextTick(() => {
+                        console.log('After nextTick, featuredImage:', this.featuredImage);
+                    });
+                } else {
+                    items.forEach(item => {
+                        if (!this.gallery.some(g => g.url === item.url)) {
+                            this.gallery.push({ id: item.id, url: item.url });
+                        }
+                    });
+                }
+                this.currentGalleryMode = false;
+            }
+        },
         
         init() {
             // Auto set main category and brand
@@ -623,45 +699,32 @@ function productForm() {
                 });
             });
             
+            // Listen for media selection events
             window.addEventListener('media-selected', (e) => {
-                const items = e.detail.files;
-                
-                // Xử lý cho biến thể
-                if (this.currentVariationIndex !== undefined) {
-                    if (this.currentVariationMode === 'image') {
-                        this.variations[this.currentVariationIndex].image = items[0].url;
-                    } else if (this.currentVariationMode === 'gallery') {
-                        if (!this.variations[this.currentVariationIndex].gallery) {
-                            this.variations[this.currentVariationIndex].gallery = [];
-                        }
-                        items.forEach(item => {
-                            if (!this.variations[this.currentVariationIndex].gallery.includes(item.url)) {
-                                this.variations[this.currentVariationIndex].gallery.push(item.url);
-                            }
-                        });
-                    }
-                    this.currentVariationIndex = undefined;
-                    this.currentVariationMode = undefined;
-                } else {
-                    // Xử lý cho sản phẩm chính
-                    if (items.length === 1 && !this.currentGalleryMode) {
-                        this.featuredImage = items[0].url;
-                    } else {
-                        items.forEach(item => {
-                            if (!this.gallery.some(g => g.url === item.url)) {
-                                this.gallery.push({ id: item.id, url: item.url });
-                            }
-                        });
-                    }
-                    this.currentGalleryMode = false;
-                }
-            });
-            
-            window.addEventListener('open-media-manager', () => {
-                // Trigger mở media manager
+                this.handleMediaSelected(e);
             });
             
             this.analyzeSeo();
+            
+            // Initialize Summernote
+            this.initSummernote();
+        },
+        
+        initSummernote() {
+            if (typeof $ !== 'undefined' && $.fn.summernote) {
+                $('.summernote').summernote({
+                    height: 300,
+                    toolbar: [
+                        ['style', ['style']],
+                        ['font', ['bold', 'underline', 'clear']],
+                        ['color', ['color']],
+                        ['para', ['ul', 'ol', 'paragraph']],
+                        ['table', ['table']],
+                        ['insert', ['link', 'picture', 'video']],
+                        ['view', ['fullscreen', 'codeview', 'help']]
+                    ]
+                });
+            }
         },
         
         generateSlug(name) {
@@ -784,31 +847,6 @@ function productForm() {
             } else {
                 variation.priceError = '';
             }
-        },
-        
-        init() {
-            // Auto set main category and brand
-            document.querySelectorAll('input[name="categories[]"]').forEach((cb, index) => {
-                cb.addEventListener('change', () => {
-                    const checked = document.querySelectorAll('input[name="categories[]"]:checked');
-                    if (checked.length > 0) {
-                        document.getElementById('mainCategory').value = checked[0].value;
-                    } else {
-                        document.getElementById('mainCategory').value = '';
-                    }
-                });
-            });
-            
-            document.querySelectorAll('input[name="brands[]"]').forEach((cb, index) => {
-                cb.addEventListener('change', () => {
-                    const checked = document.querySelectorAll('input[name="brands[]"]:checked');
-                    if (checked.length > 0) {
-                        document.getElementById('mainBrand').value = checked[0].value;
-                    } else {
-                        document.getElementById('mainBrand').value = '';
-                    }
-                });
-            });
         },
         
         analyzeSeo() {

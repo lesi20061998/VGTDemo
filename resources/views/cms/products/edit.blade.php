@@ -4,7 +4,7 @@
 @section('page-title', 'Chỉnh sửa sản phẩm')
 
 @section('content')
-<form method="POST" action="{{ route('cms.products.update', $product) }}" enctype="multipart/form-data" x-data="productForm()">
+<form method="POST" action="{{ isset($currentProject) && $currentProject ? route('project.admin.products.update', [$currentProject->code, $product]) : route('cms.products.update', $product) }}" enctype="multipart/form-data" x-data="productForm()">
     @csrf @method('PUT')
     
     <!-- Header với nút Lưu/Hủy -->
@@ -15,7 +15,7 @@
                 <p class="text-sm text-gray-500">{{ $product->name }}</p>
             </div>
             <div class="flex gap-3">
-                <a href="{{ route('cms.products.index') }}" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">
+                <a href="{{ isset($currentProject) && $currentProject ? route('project.admin.products.index', $currentProject->code) : route('cms.products.index') }}" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">
                     Hủy
                 </a>
                 <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
@@ -25,21 +25,16 @@
         </div>
     </div>
 
+    <!-- Language Switcher -->
+    @if(setting('multilingual_enabled', false))
+        @include('cms.components.language-switcher', ['model' => $allLanguageVersions ?? collect()])
+    @endif
+
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Cột trái: Form chính -->
         <div class="lg:col-span-2 space-y-6">
             <!-- Thông tin cơ bản -->
             <div class="bg-white rounded-lg shadow-sm p-6 space-y-4">
-                <h2 class="font-semibold text-gray-900">Thông tin cơ bản</h2>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Tên sản phẩm *</label>
-                    <input type="text" name="name" value="{{ old('name', $product->name) }}" required 
-                           @input="generateSlug($event.target.value)"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 @error('name') border-red-500 @enderror">
-                    @error('name')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
-                </div>
-
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">SKU *</label>
@@ -55,20 +50,45 @@
                 </div>
             </div>
 
-            <!-- Mô tả -->
-            <div class="bg-white rounded-lg shadow-sm p-6 space-y-4">
-                <h2 class="font-semibold text-gray-900">Mô tả sản phẩm</h2>
+            <!-- Nội dung sản phẩm -->
+            <div class="bg-white rounded-lg shadow-sm p-6 space-y-6">
+                <h2 class="font-semibold text-gray-900 mb-4">Nội dung sản phẩm</h2>
                 
+                @php
+                    $editProduct = isset($languageProduct) ? $languageProduct : $product;
+                @endphp
+                
+                <!-- Tên sản phẩm -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Mô tả ngắn</label>
-                    <textarea name="short_description" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">{{ old('short_description', $product->short_description) }}</textarea>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Tên sản phẩm *
+                    </label>
+                    <input type="text" name="name" value="{{ old('name', $editProduct->name) }}" 
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 @error('name') border-red-500 @enderror">
+                    @error('name')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
                 </div>
 
+                <!-- Mô tả ngắn -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Mô tả đầy đủ *</label>
-                    <x-summernote name="description" :value="old('description', $product->description)" :height="400" />
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Mô tả ngắn</label>
+                    <textarea name="short_description" rows="3" 
+                              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">{{ old('short_description', $editProduct->short_description) }}</textarea>
+                </div>
+
+                <!-- Mô tả đầy đủ -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Mô tả đầy đủ *
+                    </label>
+                    <div class="summernote-container">
+                        <textarea name="description" class="summernote" required>{{ old('description', $editProduct->description) }}</textarea>
+                    </div>
                     @error('description')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
                 </div>
+
+
+            </div>
+                @include('cms.components.multilingual-tabs', ['model' => $product])
             </div>
 
             <!-- SEO Analyzer -->

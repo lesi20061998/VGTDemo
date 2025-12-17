@@ -14,7 +14,8 @@
         
         <div class="space-y-6">
             @php
-                $popup = json_decode(setting('popup', '{}'), true);
+                $popupSetting = setting('popup', []);
+                $popup = is_array($popupSetting) ? $popupSetting : json_decode($popupSetting, true) ?? [];
                 $enabled = $popup['enabled'] ?? false;
                 $delay = $popup['delay'] ?? 3;
                 $frequency = $popup['frequency'] ?? 'once';
@@ -53,7 +54,8 @@
                         <label class="block text-sm font-medium mb-2">Chọn Form</label>
                         <select name="popup[form_id]" class="w-full px-4 py-2 border rounded-lg">
                             <option value="">-- Chọn form --</option>
-                            @foreach(json_decode(setting('forms', '[]'), true) as $index => $form)
+                            @php $formsSetting = setting('forms', []); $formsArray = is_array($formsSetting) ? $formsSetting : json_decode($formsSetting, true) ?? []; @endphp
+                            @foreach($formsArray as $index => $form)
                             <option value="{{ $index }}" {{ ($popup['form_id'] ?? '') == $index ? 'selected' : '' }}>{{ $form['name'] }}</option>
                             @endforeach
                         </select>

@@ -32,7 +32,7 @@
         </button>
     </form>
 
-    <a href="{{ route('cms.orders.reports') }}" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+    <a href="{{ isset($currentProject) && $currentProject ? route('project.admin.orders.reports', $currentProject->code) : route('cms.orders.reports') }}" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
         Báo cáo
     </a>
 </div>
@@ -81,8 +81,8 @@
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div class="flex space-x-2">
-                        <a href="{{ route('cms.orders.show', $order) }}" class="text-blue-600 hover:text-blue-900">Xem</a>
-                        <a href="{{ route('cms.orders.edit', $order) }}" class="text-indigo-600 hover:text-indigo-900">Sửa</a>
+                        <a href="{{ isset($currentProject) && $currentProject ? route('project.admin.orders.show', [$currentProject->code, $order]) : route('cms.orders.show', $order) }}" class="text-blue-600 hover:text-blue-900">Xem</a>
+                        <a href="{{ isset($currentProject) && $currentProject ? route('project.admin.orders.edit', [$currentProject->code, $order]) : route('cms.orders.edit', $order) }}" class="text-indigo-600 hover:text-indigo-900">Sửa</a>
                     </div>
                 </td>
             </tr>

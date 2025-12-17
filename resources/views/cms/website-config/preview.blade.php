@@ -18,6 +18,11 @@
                 background-repeat: {{ setting('bg_image_repeat', 'no-repeat') }};
             @endif
         }
+        <?php
+            $Top_bg_color = setting('topbar_bg_color');
+            dd($Top_bg_color);
+        
+        ?>
     </style>
 </head>
 <body class="min-h-screen">
@@ -193,7 +198,8 @@
     @endif
 
     <!-- Back to Config -->
-    <a href="{{ route('cms.website-config.index') }}" 
+    @php $projectCode = request()->segment(1); $isProject = $projectCode && $projectCode !== 'cms'; @endphp
+    <a href="{{ $isProject ? route('project.admin.website-config.index', $projectCode) : route('cms.website-config.index') }}" 
        class="fixed bottom-6 left-6 px-4 py-2 bg-blue-600 text-white rounded-lg shadow-lg hover:bg-blue-700 transition">
         ← Quay lại cấu hình
     </a>

@@ -4,17 +4,21 @@
 @section('page-title', 'Vận chuyển')
 
 @section('content')
-<div class="mb-6">
-    <a href="{{ route('cms.settings.index') }}" class="text-sm text-gray-600 hover:text-gray-900">← Quay lại</a>
-</div>
+@include('cms.settings.partials.back-link')
+
+@php
+    $projectCode = request()->route('projectCode') ?? request()->segment(1);
+    $settingsSaveUrl = $projectCode ? route('project.admin.settings.save', ['projectCode' => $projectCode]) : url('/admin/settings/save');
+@endphp
 
 <div class="bg-white rounded-lg shadow-sm p-6" x-data="shippingConfig()">
-    <form action="{{ route('cms.settings.save') }}" method="POST">
+    <form action="{{ $settingsSaveUrl }}" method="POST">
         @csrf
         
         <div class="space-y-6">
             @php
-                $shipping = json_decode(setting('shipping', '{}'), true);
+                $shippingSetting = setting('shipping', []);
+                $shipping = is_array($shippingSetting) ? $shippingSetting : json_decode($shippingSetting, true) ?? [];
                 $providers = $shipping['providers'] ?? [];
             @endphp
 
