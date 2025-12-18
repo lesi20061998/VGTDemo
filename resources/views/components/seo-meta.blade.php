@@ -1,12 +1,12 @@
 @php
-$metaTitle = $title ?? setting('seo_meta_title', config('app.name'));
-$metaDescription = $description ?? setting('seo_meta_description', '');
-$metaKeywords = $keywords ?? setting('seo_meta_keywords', '');
+$metaTitle = $title ?? setting_string('seo_meta_title', config('app.name', ''));
+$metaDescription = $description ?? setting_string('seo_meta_description');
+$metaKeywords = $keywords ?? setting_string('seo_meta_keywords');
 $metaImage = $image ?? asset('images/default-og.jpg');
 $metaUrl = $url ?? url()->current();
-$siteName = config('app.name');
+$siteName = config('app.name', '');
 $locale = app()->getLocale();
-$gaId = setting('google_analytics_id');
+$gaId = setting_string('google_analytics_id');
 @endphp
 <title>{{ $metaTitle }}</title>
 <meta name="description" content="{{ $metaDescription }}">
@@ -27,14 +27,14 @@ $gaId = setting('google_analytics_id');
 <meta name="twitter:title" content="{{ $metaTitle }}">
 <meta name="twitter:description" content="{{ $metaDescription }}">
 <meta name="twitter:image" content="{{ $metaImage }}">
-@if(setting('google_site_verification'))
-<meta name="google-site-verification" content="{{ setting('google_site_verification') }}">
+@if(setting_string('google_site_verification'))
+<meta name="google-site-verification" content="{{ setting_string('google_site_verification') }}">
 @endif
-@if(setting('bing_site_verification'))
-<meta name="msvalidate.01" content="{{ setting('bing_site_verification') }}">
+@if(setting_string('bing_site_verification'))
+<meta name="msvalidate.01" content="{{ setting_string('bing_site_verification') }}">
 @endif
-@if(setting('custom_header_code'))
-{!! setting('custom_header_code') !!}
+@if(setting_string('custom_header_code'))
+{!! setting_string('custom_header_code') !!}
 @endif
 @if($gaId)
 <script async src="https://www.googletagmanager.com/gtag/js?id={{ $gaId }}"></script>

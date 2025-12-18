@@ -1,11 +1,7 @@
 @php
     // Helper để lấy giá trị string từ setting (có thể là array hoặc string)
     $getSettingValue = function($key, $default = '') {
-        $value = setting($key, $default);
-        if (is_array($value)) {
-            return $value['value'] ?? $default;
-        }
-        return $value ?? $default;
+        return setting_string($key, $default);
     };
     
     // Lấy màu từ website-config (topbar_bg_color) hoặc fallback

@@ -70,7 +70,7 @@
                             <label class="block text-sm font-semibold text-gray-900 mb-3">Ảnh watermark</label>
                             <div class="bg-gray-50 rounded-lg p-4 border-2 border-dashed border-gray-300 hover:border-blue-400 transition-colors">
                                 <div class="text-center">
-                                    <img :src="watermarkImage ? (watermarkImage.startsWith('http') ? watermarkImage : '{{ asset('') }}' + watermarkImage) : '{{ asset('assets/img/placeholder-images-image_large.webp') }}'" 
+                                    <img :src="watermarkImage ? (watermarkImage.startsWith('http') ? watermarkImage : '{{ url('/') }}' + (watermarkImage.startsWith('/') ? watermarkImage : '/' + watermarkImage)) : '{{ asset('assets/img/placeholder-images-image_large.webp') }}'" 
                                          id="watermarkImagePreview" class="mx-auto max-w-48 max-h-32 object-contain rounded-lg shadow-sm border bg-white">
                                     <div class="mt-4">
                                         @include('cms.components.media-manager')

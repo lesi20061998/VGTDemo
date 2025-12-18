@@ -20,8 +20,8 @@
 </head>
 <body class="bg-gray-50">
     {{-- Custom Body Code --}}
-    @if(setting('custom_body_code'))
-        {!! setting('custom_body_code') !!}
+    @if(setting_string('custom_body_code'))
+        {!! setting_string('custom_body_code') !!}
     @endif
     
     <!-- Header -->
@@ -38,8 +38,8 @@
     @stack('scripts')
     
     {{-- Custom Footer Code --}}
-    @if(setting('custom_footer_code'))
-        {!! setting('custom_footer_code') !!}
+    @if(setting_string('custom_footer_code'))
+        {!! setting_string('custom_footer_code') !!}
     @endif
 </body>
 </html>

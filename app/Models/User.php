@@ -1,4 +1,5 @@
 <?php
+
 // MODIFIED: 2025-01-25 - Added Multi-Tenant Support
 
 namespace App\Models;
@@ -10,7 +11,7 @@ use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, BelongsToTenant;
+    use BelongsToTenant, HasFactory, Notifiable;
 
     protected $fillable = [
         'name',
@@ -64,14 +65,55 @@ class User extends Authenticatable
         if (is_string($roles)) {
             return $this->roles->contains('name', $roles);
         }
-        
+
         return $this->roles->whereIn('name', $roles)->isNotEmpty();
+    }
+
+    public function can($permission)
+    {
+        // Super admin có tất cả permissions
+        if ($this->isSuperAdmin()) {
+            return true;
+        }
+
+        // Admin có hầu hết permissions
+        if ($this->hasRole('admin')) {
+            return true;
+        }
+
+        // Editor có permissions cho content management
+        if ($this->hasRole('editor')) {
+            $editorPermissions = [
+                'manage products',
+                'manage categories',
+                'manage brands',
+                'manage attributes',
+                'manage posts',
+                'manage pages',
+                'manage menus',
+            ];
+
+            return in_array($permission, $editorPermissions);
+        }
+
+        // Support có permissions hạn chế
+        if ($this->hasRole('support')) {
+            $supportPermissions = [
+                'view products',
+                'view categories',
+                'view orders',
+            ];
+
+            return in_array($permission, $supportPermissions);
+        }
+
+        return false;
     }
 
     public function assignRole($role)
     {
         $roleModel = Role::where('name', $role)->first();
-        if ($roleModel && !$this->roles->contains($roleModel)) {
+        if ($roleModel && ! $this->roles->contains($roleModel)) {
             $this->roles()->attach($roleModel);
         }
     }
@@ -105,7 +147,7 @@ class User extends Authenticatable
     public function assignToProject($projectId)
     {
         $projects = $this->project_ids ?? [];
-        if (!in_array($projectId, $projects)) {
+        if (! in_array($projectId, $projects)) {
             $projects[] = $projectId;
             $this->update(['project_ids' => $projects]);
         }

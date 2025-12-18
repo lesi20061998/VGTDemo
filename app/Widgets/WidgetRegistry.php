@@ -2,21 +2,22 @@
 
 namespace App\Widgets;
 
-use App\Widgets\Hero\HeroWidget;
-use App\Widgets\Hero\FeaturesWidget;
+use App\Widgets\Analytics\AnalyticsWidget;
+use App\Widgets\Category\HomeCateWidget;
 use App\Widgets\Hero\BentoGridHomeWidget;
+use App\Widgets\Hero\FeaturesWidget;
+use App\Widgets\Hero\HeroWidget;
 use App\Widgets\Marketing\CtaWidget;
 use App\Widgets\Marketing\NewsletterWidget;
 use App\Widgets\Marketing\TestimonialWidget;
-use App\Widgets\Post\PostListWidget;
-use App\Widgets\Slider\PostSliderWidget;
-use App\Widgets\Product\ProductListWidget;
-use App\Widgets\Product\ProductsWidget;
-use App\Widgets\Product\ProductCateWidget;
-use App\Widgets\Category\HomeCateWidget;
 use App\Widgets\News\NewsArticleWidget;
 use App\Widgets\News\NewsFeaturedWidget;
 use App\Widgets\News\RelatedPostsWidget;
+use App\Widgets\Post\PostListWidget;
+use App\Widgets\Product\ProductCateWidget;
+use App\Widgets\Product\ProductListWidget;
+use App\Widgets\Product\ProductsWidget;
+use App\Widgets\Slider\PostSliderWidget;
 
 class WidgetRegistry
 {
@@ -36,14 +37,16 @@ class WidgetRegistry
         'news_article' => NewsArticleWidget::class,
         'news_featured' => NewsFeaturedWidget::class,
         'related_posts' => RelatedPostsWidget::class,
+        'analytics' => AnalyticsWidget::class,
     ];
 
     public static function all()
     {
-        return array_map(function($class, $type) {
+        return array_map(function ($class, $type) {
             $config = $class::getConfig();
             $config['type'] = $type;
             $config['class'] = $class;
+
             return $config;
         }, self::$widgets, array_keys(self::$widgets));
     }
@@ -52,12 +55,12 @@ class WidgetRegistry
     {
         $widgets = self::all();
         $categories = [];
-        
+
         foreach ($widgets as $widget) {
             $category = $widget['category'] ?? 'general';
             $categories[$category][] = $widget;
         }
-        
+
         return $categories;
     }
 
@@ -69,21 +72,27 @@ class WidgetRegistry
     public static function getConfig($type)
     {
         $class = self::get($type);
-        if (!$class) return null;
-        
+        if (! $class) {
+            return null;
+        }
+
         $config = $class::getConfig();
         $config['type'] = $type;
         $config['class'] = $class;
+
         return $config;
     }
 
     public static function render($type, $settings)
     {
         $class = self::get($type);
-        if (!$class) return '';
-        
+        if (! $class) {
+            return '';
+        }
+
         $widget = new $class($settings);
-        return $widget->css() . $widget->render() . $widget->js();
+
+        return $widget->css().$widget->render().$widget->js();
     }
 
     public static function register($type, $class)
@@ -96,4 +105,3 @@ class WidgetRegistry
         return array_keys(self::$widgets);
     }
 }
-

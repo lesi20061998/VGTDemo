@@ -1,4 +1,5 @@
 <?php
+
 // MODIFIED: 2025-01-21
 
 namespace App\Http\Requests;
@@ -10,7 +11,7 @@ class CategoryRequest extends FormRequest
 {
     public function authorize()
     {
-        return auth()->user()->hasRole(['admin', 'editor']);
+        return auth()->user()->can('manage categories');
     }
 
     public function rules()
@@ -23,7 +24,7 @@ class CategoryRequest extends FormRequest
                 'nullable',
                 'string',
                 'max:255',
-                Rule::unique('product_categories', 'slug')->ignore($categoryId)
+                Rule::unique('product_categories', 'slug')->ignore($categoryId),
             ],
             'description' => 'nullable|string',
             'image' => 'nullable|image|max:2048',

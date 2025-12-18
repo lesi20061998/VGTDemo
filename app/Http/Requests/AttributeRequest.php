@@ -1,4 +1,5 @@
 <?php
+
 // MODIFIED: 2025-01-21
 
 namespace App\Http\Requests;
@@ -10,7 +11,7 @@ class AttributeRequest extends FormRequest
 {
     public function authorize()
     {
-        return auth()->user()->hasRole(['admin', 'editor']);
+        return auth()->user()->can('manage attributes');
     }
 
     public function rules()
@@ -23,7 +24,7 @@ class AttributeRequest extends FormRequest
                 'nullable',
                 'string',
                 'max:255',
-                Rule::unique('product_attributes', 'slug')->ignore($attributeId)
+                Rule::unique('product_attributes', 'slug')->ignore($attributeId),
             ],
             'attribute_group_id' => 'nullable|exists:attribute_groups,id',
             'type' => 'required|in:text,number,select,multiselect,color,boolean',

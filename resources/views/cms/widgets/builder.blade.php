@@ -45,6 +45,28 @@
             </div>
         </div>
 
+        <!-- Sidebar -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-4">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-bold text-lg">Sidebar</h3>
+            </div>
+
+            <div id="sidebarZone" class="min-h-[200px] border-2 border-dashed border-gray-300 rounded-lg p-4" data-area="sidebar">
+                <p class="text-gray-400 text-center py-12">Drag widgets here for sidebar</p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="bg-white rounded-lg shadow-sm p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-bold text-lg">Footer</h3>
+            </div>
+
+            <div id="footerZone" class="min-h-[200px] border-2 border-dashed border-gray-300 rounded-lg p-4" data-area="footer">
+                <p class="text-gray-400 text-center py-12">Drag widgets here for footer</p>
+            </div>
+        </div>
+
 
     </div>
 </div>
@@ -97,8 +119,10 @@ document.querySelectorAll('.widget-template').forEach(template => {
 });
 
 const dropZone = document.getElementById('dropZone');
+const sidebarZone = document.getElementById('sidebarZone');
+const footerZone = document.getElementById('footerZone');
 
-[dropZone].forEach(zone => {
+[dropZone, sidebarZone, footerZone].forEach(zone => {
     zone.addEventListener('dragover', (e) => {
         e.preventDefault();
         zone.classList.add('bg-blue-50', 'border-blue-500');
@@ -179,6 +203,12 @@ function getDefaultSettings(type) {
                 {name: 'Trần Thị B', role: 'Trưởng phòng Marketing', content: 'Giải pháp hiệu quả, tiết kiệm thời gian và chi phí đáng kể.'},
                 {name: 'Lê Minh C', role: 'CTO Startup XYZ', content: 'Công nghệ tiên tiến, hỗ trợ tận tình. Đáng đầu tư!'}
             ]
+        },
+        analytics: {
+            title: 'Thống kê truy cập',
+            show_title: true,
+            style: 'default',
+            columns: '2'
         }
     };
     return defaults[type] || {};
@@ -186,6 +216,8 @@ function getDefaultSettings(type) {
 
 function renderWidgets() {
     const homepageWidgets = widgets.filter(w => w.area === 'homepage-main');
+    const sidebarWidgets = widgets.filter(w => w.area === 'sidebar');
+    const footerWidgets = widgets.filter(w => w.area === 'footer');
     
     // Render homepage widgets
     if (homepageWidgets.length === 0) {
@@ -193,22 +225,45 @@ function renderWidgets() {
     } else {
         dropZone.innerHTML = homepageWidgets.map((widget) => {
             const globalIndex = widgets.indexOf(widget);
-            return `
-                <div class="mb-4 border rounded-lg p-4 bg-blue-50">
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="font-semibold">${widget.name}</span>
-                        <div class="flex gap-2">
-                            <button onclick="editWidget(${globalIndex})" class="text-blue-600 hover:text-blue-800">Edit</button>
-                            <button onclick="removeWidget(${globalIndex})" class="text-red-600 hover:text-red-800">Remove</button>
-                        </div>
-                    </div>
-                    <div class="text-sm text-gray-600">Type: ${widget.type}</div>
-                </div>
-            `;
+            return renderWidgetItem(widget, globalIndex);
+        }).join('');
+    }
+    
+    // Render sidebar widgets
+    if (sidebarWidgets.length === 0) {
+        sidebarZone.innerHTML = '<p class="text-gray-400 text-center py-12">Drag widgets here for sidebar</p>';
+    } else {
+        sidebarZone.innerHTML = sidebarWidgets.map((widget) => {
+            const globalIndex = widgets.indexOf(widget);
+            return renderWidgetItem(widget, globalIndex);
+        }).join('');
+    }
+  
+// Render footer widgets
+    if (footerWidgets.length === 0) {
+        footerZone.innerHTML = '<p class="text-gray-400 text-center py-12">Drag widgets here for footer</p>';
+    } else {
+        footerZone.innerHTML = footerWidgets.map((widget) => {
+            const globalIndex = widgets.indexOf(widget);
+            return renderWidgetItem(widget, globalIndex);
         }).join('');
     }
 }
 
+function renderWidgetItem(widget, globalIndex) {
+    return `
+        <div class="mb-4 border rounded-lg p-4 bg-blue-50">
+            <div class="flex justify-between items-center mb-2">
+                <span class="font-semibold">${widget.name}</span>
+                <div class="flex gap-2">
+                    <button onclick="editWidget(${globalIndex})" class="text-blue-600 hover:text-blue-800">Edit</button>
+                    <button onclick="removeWidget(${globalIndex})" class="text-red-600 hover:text-red-800">Remove</button>
+                </div>
+            </div>
+            <div class="text-sm text-gray-600">Type: ${widget.type} | Area: ${widget.area}</div>
+        </div>
+    `;
+}
 function removeWidget(index) {
     widgets.splice(index, 1);
     renderWidgets();
@@ -285,6 +340,37 @@ function renderConfigForm(widget) {
                 </div>
             </div>
         `;
+    } else if (widget.type === 'analytics') {
+        return `
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Title</label>
+                    <input type="text" id="cfg_title" value="${widget.settings.title || 'Thống kê truy cập'}" class="w-full px-3 py-2 border rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Show Title</label>
+                    <input type="checkbox" id="cfg_show_title" ${widget.settings.show_title !== false ? 'checked' : ''} class="rounded">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Style</label>
+                    <select id="cfg_style" class="w-full px-3 py-2 border rounded-lg">
+                        <option value="default" ${widget.settings.style === 'default' ? 'selected' : ''}>Mặc định</option>
+                        <option value="cards" ${widget.settings.style === 'cards' ? 'selected' : ''}>Thẻ card</option>
+                        <option value="compact" ${widget.settings.style === 'compact' ? 'selected' : ''}>Gọn gàng</option>
+                        <option value="modern" ${widget.settings.style === 'modern' ? 'selected' : ''}>Hiện đại</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Columns</label>
+                    <select id="cfg_columns" class="w-full px-3 py-2 border rounded-lg">
+                        <option value="1" ${widget.settings.columns === '1' ? 'selected' : ''}>1 cột</option>
+                        <option value="2" ${widget.settings.columns === '2' ? 'selected' : ''}>2 cột</option>
+                        <option value="3" ${widget.settings.columns === '3' ? 'selected' : ''}>3 cột</option>
+                        <option value="4" ${widget.settings.columns === '4' ? 'selected' : ''}>4 cột</option>
+                    </select>
+                </div>
+            </div>
+        `;
     }
 }
 
@@ -303,6 +389,11 @@ function saveConfig() {
             title: document.getElementById(`cfg_f${i}_title`).value,
             desc: document.getElementById(`cfg_f${i}_desc`).value
         }));
+    } else if (widget.type === 'analytics') {
+        widget.settings.title = document.getElementById('cfg_title').value;
+        widget.settings.show_title = document.getElementById('cfg_show_title').checked;
+        widget.settings.style = document.getElementById('cfg_style').value;
+        widget.settings.columns = document.getElementById('cfg_columns').value;
     }
     
     closeConfig();
