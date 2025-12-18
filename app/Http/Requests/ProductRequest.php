@@ -1,4 +1,5 @@
 <?php
+
 // MODIFIED: 2025-01-21
 
 namespace App\Http\Requests;
@@ -8,17 +9,31 @@ use Illuminate\Validation\Rule;
 
 class ProductRequest extends FormRequest
 {
-    public function authorize()
+    public function authorize(): bool
     {
-        return auth()->user()->can('manage products');
+        // For project routes, get user from request attributes (set by CheckCmsRole middleware)
+        $user = $this->attributes->get('auth_user');
+
+        if ($user) {
+            // Super admin or admin level users have all permissions
+            if (isset($user->level) && in_array($user->level, [0, 1])) {
+                return true;
+            }
+
+            // Check if user has the specific permission
+            return $user->hasPermission('manage_products');
+        }
+
+        // Fallback to regular auth for non-project routes
+        return auth()->check() && auth()->user()->hasPermission('manage_products');
     }
 
     public function rules()
     {
         $productId = $this->route('product')?->id;
 
-        $allowed = config('cms.media.allowed_types', ['jpg','jpeg','png','gif','pdf','doc','docx']);
-        $mimeExt = implode(',', array_map(fn($ext) => $ext, $allowed));
+        $allowed = config('cms.media.allowed_types', ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'doc', 'docx']);
+        $mimeExt = implode(',', array_map(fn ($ext) => $ext, $allowed));
 
         // sizes are in KB in config/cms.php -> MEDIA_MAX_SIZE
         $maxKb = (int) config('cms.media.max_file_size', 2048);
@@ -29,7 +44,7 @@ class ProductRequest extends FormRequest
                 'nullable',
                 'string',
                 'max:255',
-                Rule::unique('products_enhanced', 'slug')->ignore($productId)
+                Rule::unique('products_enhanced', 'slug')->ignore($productId),
             ],
             'short_description' => 'nullable|string|max:500',
             'description' => 'required|string',
@@ -37,7 +52,7 @@ class ProductRequest extends FormRequest
                 'required',
                 'string',
                 'max:100',
-                Rule::unique('products_enhanced', 'sku')->ignore($productId)
+                Rule::unique('products_enhanced', 'sku')->ignore($productId),
             ],
             'price' => 'nullable|numeric|min:0',
             'sale_price' => 'nullable|numeric|min:0|lt:price',
@@ -55,7 +70,7 @@ class ProductRequest extends FormRequest
             'meta_description' => 'nullable|string|max:500',
             'featured_image' => ['nullable', 'file', 'mimes:'.$mimeExt, 'max:'.$maxKb],
             'images.*' => ['nullable', 'file', 'mimes:'.$mimeExt, 'max:'.$maxKb],
-            'images' => ['nullable','array'],
+            'images' => ['nullable', 'array'],
         ];
     }
 

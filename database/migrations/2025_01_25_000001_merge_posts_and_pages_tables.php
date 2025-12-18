@@ -2,19 +2,23 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
     public function up()
     {
-        // Tắt kiểm tra khóa ngoại tạm thời
-        DB::statement('SET FOREIGN_KEY_CHECKS=0');
-        
+        // Tắt kiểm tra khóa ngoại tạm thời (database agnostic)
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement('SET FOREIGN_KEY_CHECKS=0');
+        } elseif (DB::getDriverName() === 'sqlite') {
+            DB::statement('PRAGMA foreign_keys=OFF');
+        }
+
         // Xóa bảng posts_unified nếu đã tồn tại
         Schema::dropIfExists('posts_unified');
-        
+
         // Tạo bảng posts_unified mới
         Schema::create('posts_unified', function (Blueprint $table) {
             $table->id();
@@ -33,7 +37,7 @@ return new class extends Migration
             $table->timestamp('published_at')->nullable();
             $table->foreignId('author_id')->nullable()->constrained('users')->onDelete('set null');
             $table->timestamps();
-            
+
             $table->index(['post_type', 'status', 'published_at']);
             $table->index(['slug']);
             $table->index(['author_id']);
@@ -72,9 +76,13 @@ return new class extends Migration
 
         // Đổi tên bảng mới
         Schema::rename('posts_unified', 'posts');
-        
-        // Bật lại kiểm tra khóa ngoại
-        DB::statement('SET FOREIGN_KEY_CHECKS=1');
+
+        // Bật lại kiểm tra khóa ngoại (database agnostic)
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement('SET FOREIGN_KEY_CHECKS=1');
+        } elseif (DB::getDriverName() === 'sqlite') {
+            DB::statement('PRAGMA foreign_keys=ON');
+        }
     }
 
     public function down()

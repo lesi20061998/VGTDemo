@@ -9,9 +9,23 @@ use Illuminate\Validation\Rule;
 
 class AttributeRequest extends FormRequest
 {
-    public function authorize()
+    public function authorize(): bool
     {
-        return auth()->user()->can('manage attributes');
+        // For project routes, get user from request attributes (set by CheckCmsRole middleware)
+        $user = $this->attributes->get('auth_user');
+
+        if ($user) {
+            // Super admin or admin level users have all permissions
+            if (isset($user->level) && in_array($user->level, [0, 1])) {
+                return true;
+            }
+
+            // Check if user has the specific permission
+            return $user->hasPermission('manage_attributes');
+        }
+
+        // Fallback to regular auth for non-project routes
+        return auth()->check() && auth()->user()->hasPermission('manage_attributes');
     }
 
     public function rules()

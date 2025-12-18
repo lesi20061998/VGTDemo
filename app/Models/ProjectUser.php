@@ -52,7 +52,7 @@ class ProjectUser extends Authenticatable
 
     public function roles()
     {
-        return $this->belongsToMany(Role::class, 'user_roles');
+        return $this->belongsToMany(ProjectRole::class, 'user_roles', 'user_id', 'role_id');
     }
 
     public function hasRole($roles)
@@ -77,5 +77,71 @@ class ProjectUser extends Authenticatable
     public function canAccessSuperAdmin()
     {
         return isset($this->level) && in_array($this->level, [0, 1]);
+    }
+
+    public function permissions()
+    {
+        return $this->belongsToMany(ProjectPermission::class, 'user_permissions', 'user_id', 'permission_id');
+    }
+
+    public function hasPermission(string $permission): bool
+    {
+        // Super admin có tất cả permissions
+        if ($this->isSuperAdmin()) {
+            return true;
+        }
+        // dd($permission);
+        // Check direct permissions
+        if ($this->permissions()->where('name', $permission)->exists()) {
+            return true;
+        }
+
+        // Check permissions through roles
+        foreach ($this->roles as $role) {
+            if ($role->hasPermission($permission)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Give permission directly to user.
+     */
+    public function givePermissionTo(string|ProjectPermission $permission): void
+    {
+        if (is_string($permission)) {
+            $permission = ProjectPermission::where('name', $permission)->first();
+        }
+
+        if ($permission && ! $this->permissions->contains($permission)) {
+            $this->permissions()->attach($permission);
+        }
+    }
+
+    /**
+     * Revoke permission from user.
+     */
+    public function revokePermissionTo(string|ProjectPermission $permission): void
+    {
+        if (is_string($permission)) {
+            $permission = ProjectPermission::where('name', $permission)->first();
+        }
+
+        if ($permission) {
+            $this->permissions()->detach($permission);
+        }
+    }
+
+    /**
+     * Get all permissions for user (direct + through roles).
+     */
+    public function getAllPermissions()
+    {
+        $directPermissions = $this->permissions;
+        $rolePermissions = $this->roles->flatMap->permissions;
+
+        return $directPermissions->merge($rolePermissions)->unique('id');
     }
 }

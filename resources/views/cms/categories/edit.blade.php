@@ -6,7 +6,7 @@
 
 @section('content')
 <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
-    <form method="POST" action="{{ isset($currentProject) && $currentProject ? route('project.admin.categories.update', [$currentProject->code, $category]) : route('cms.categories.update', $category) }}" enctype="multipart/form-data">
+    <form method="POST" action="{{ isset($currentProject) && $currentProject ? route('project.admin.categories.update', [$currentProject->code, $category->id]) : route('cms.categories.update', $category->id) }}" enctype="multipart/form-data">
         @csrf @method('PUT')
 
         <div class="mb-4">

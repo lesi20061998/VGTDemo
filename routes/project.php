@@ -99,8 +99,11 @@ Route::prefix('{projectCode}/admin')
 
         // Products Management
         Route::resource('products', ProductController::class);
-        Route::resource('categories', CategoryController::class);
         Route::resource('brands', BrandController::class);
+
+        // Category Management - Consistent Routes
+        Route::resource('categories', CategoryController::class);
+        Route::get('categories/{category}/subcategories', [CategoryController::class, 'getSubcategories'])->name('categories.subcategories');
 
         // Attributes Management
         Route::resource('attributes', \App\Http\Controllers\Admin\AttributeController::class);
@@ -129,6 +132,23 @@ Route::prefix('{projectCode}/admin')
         Route::post('ai/test', [AiController::class, 'test'])->name('ai.test');
         Route::post('ai/generate', [AiController::class, 'generate'])->name('ai.generate');
         Route::post('ai/list-models', [AiController::class, 'listModels'])->name('ai.list-models');
+
+        // Debug routes
+        Route::get('debug/session', function () {
+            return [
+                'session' => session()->all(),
+                'user_id' => session('project_user_id'),
+                'username' => session('project_user_username'),
+                'project' => session('current_project'),
+                'auth_user' => request()->attributes->get('auth_user'),
+                'csrf_token' => csrf_token(),
+                'session_token' => session()->token(),
+            ];
+        })->name('debug.session');
+
+        Route::get('debug/csrf', function () {
+            return view('cms.debug.csrf');
+        })->name('debug.csrf');
 
         // Page Builder
         Route::get('widgets', [\App\Http\Controllers\Admin\WidgetController::class, 'index'])->name('widgets.index');

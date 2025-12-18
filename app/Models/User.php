@@ -18,10 +18,16 @@ class User extends Authenticatable
         'username',
         'email',
         'password',
+        'avatar',
+        'phone',
+        'address',
+        'status',
         'role',
         'level',
         'project_ids',
         'tenant_id',
+        'last_login_at',
+        'preferences',
     ];
 
     public function employee()
@@ -45,6 +51,9 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'project_ids' => 'array',
+            'preferences' => 'array',
+            'last_login_at' => 'datetime',
+            'status' => 'boolean',
         ];
     }
 
@@ -54,63 +63,93 @@ class User extends Authenticatable
         return $this->belongsToMany(Role::class, 'user_roles');
     }
 
+    public function permissions()
+    {
+        return $this->belongsToMany(Permission::class, 'user_permissions');
+    }
+
+    public function activityLogs()
+    {
+        return $this->hasMany(ActivityLog::class);
+    }
+
     public function orders()
     {
         return $this->hasMany(Order::class);
     }
 
     // Methods
-    public function hasRole($roles)
+    public function hasRole(string|array $roles): bool
     {
-        if (is_string($roles)) {
+        if (\is_string($roles)) {
             return $this->roles->contains('name', $roles);
         }
 
         return $this->roles->whereIn('name', $roles)->isNotEmpty();
     }
 
-    public function can($permission)
+    public function hasPermission(string $permission): bool
     {
         // Super admin có tất cả permissions
         if ($this->isSuperAdmin()) {
             return true;
         }
 
-        // Admin có hầu hết permissions
-        if ($this->hasRole('admin')) {
+        // Check direct permissions
+        if ($this->permissions()->where('name', $permission)->exists()) {
             return true;
         }
 
-        // Editor có permissions cho content management
-        if ($this->hasRole('editor')) {
-            $editorPermissions = [
-                'manage products',
-                'manage categories',
-                'manage brands',
-                'manage attributes',
-                'manage posts',
-                'manage pages',
-                'manage menus',
-            ];
-
-            return in_array($permission, $editorPermissions);
-        }
-
-        // Support có permissions hạn chế
-        if ($this->hasRole('support')) {
-            $supportPermissions = [
-                'view products',
-                'view categories',
-                'view orders',
-            ];
-
-            return in_array($permission, $supportPermissions);
+        // Check permissions through roles
+        foreach ($this->roles as $role) {
+            if ($role->hasPermission($permission)) {
+                return true;
+            }
         }
 
         return false;
     }
 
-    public function assignRole($role)
+    /**
+     * Give permission directly to user.
+     */
+    public function givePermissionTo(string|Permission $permission): void
+    {
+        if (is_string($permission)) {
+            $permission = Permission::where('name', $permission)->first();
+        }
+
+        if ($permission && ! $this->permissions->contains($permission)) {
+            $this->permissions()->attach($permission);
+        }
+    }
+
+    /**
+     * Revoke permission from user.
+     */
+    public function revokePermissionTo(string|Permission $permission): void
+    {
+        if (is_string($permission)) {
+            $permission = Permission::where('name', $permission)->first();
+        }
+
+        if ($permission) {
+            $this->permissions()->detach($permission);
+        }
+    }
+
+    /**
+     * Get all permissions for user (direct + through roles).
+     */
+    public function getAllPermissions()
+    {
+        $directPermissions = $this->permissions;
+        $rolePermissions = $this->roles->flatMap->permissions;
+
+        return $directPermissions->merge($rolePermissions)->unique('id');
+    }
+
+    public function assignRole(string $role): void
     {
         $roleModel = Role::where('name', $role)->first();
         if ($roleModel && ! $this->roles->contains($roleModel)) {
@@ -119,35 +158,35 @@ class User extends Authenticatable
     }
 
     // Accessors
-    public function getIsAdminAttribute()
+    public function getIsAdminAttribute(): bool
     {
         return $this->hasRole(['admin', 'editor', 'support']);
     }
 
-    public function isSuperAdmin()
+    public function isSuperAdmin(): bool
     {
         return isset($this->level) && $this->level === 0;
     }
 
-    public function isAdministrator()
+    public function isAdministrator(): bool
     {
         return isset($this->level) && $this->level === 1;
     }
 
-    public function canAccessSuperAdmin()
+    public function canAccessSuperAdmin(): bool
     {
-        return isset($this->level) && in_array($this->level, [0, 1]);
+        return isset($this->level) && \in_array($this->level, [0, 1]);
     }
 
-    public function hasAccessToProject($projectId)
+    public function hasAccessToProject(int $projectId): bool
     {
-        return $this->project_ids && in_array($projectId, $this->project_ids);
+        return $this->project_ids && \in_array($projectId, $this->project_ids);
     }
 
-    public function assignToProject($projectId)
+    public function assignToProject(int $projectId): void
     {
         $projects = $this->project_ids ?? [];
-        if (! in_array($projectId, $projects)) {
+        if (! \in_array($projectId, $projects)) {
             $projects[] = $projectId;
             $this->update(['project_ids' => $projects]);
         }

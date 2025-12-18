@@ -6,9 +6,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-class Role extends Model
+class ProjectRole extends Model
 {
     use HasFactory;
+
+    protected $connection = 'project';
+
+    protected $table = 'roles';
 
     protected $fillable = [
         'name',
@@ -16,10 +20,12 @@ class Role extends Model
         'description',
         'is_default',
         'level',
+        'permissions',
     ];
 
     protected $casts = [
         'is_default' => 'boolean',
+        'permissions' => 'array',
     ];
 
     /**
@@ -27,7 +33,7 @@ class Role extends Model
      */
     public function users(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'user_roles');
+        return $this->belongsToMany(ProjectUser::class, 'user_roles', 'role_id', 'user_id');
     }
 
     /**
@@ -35,7 +41,7 @@ class Role extends Model
      */
     public function permissions(): BelongsToMany
     {
-        return $this->belongsToMany(Permission::class, 'role_permissions');
+        return $this->belongsToMany(ProjectPermission::class, 'role_permissions', 'role_id', 'permission_id');
     }
 
     /**
@@ -49,10 +55,10 @@ class Role extends Model
     /**
      * Give permission to role.
      */
-    public function givePermissionTo(string|Permission $permission): void
+    public function givePermissionTo(string|ProjectPermission $permission): void
     {
         if (is_string($permission)) {
-            $permission = Permission::where('name', $permission)->first();
+            $permission = ProjectPermission::where('name', $permission)->first();
         }
 
         if ($permission && ! $this->permissions->contains($permission)) {
@@ -63,10 +69,10 @@ class Role extends Model
     /**
      * Revoke permission from role.
      */
-    public function revokePermissionTo(string|Permission $permission): void
+    public function revokePermissionTo(string|ProjectPermission $permission): void
     {
         if (is_string($permission)) {
-            $permission = Permission::where('name', $permission)->first();
+            $permission = ProjectPermission::where('name', $permission)->first();
         }
 
         if ($permission) {

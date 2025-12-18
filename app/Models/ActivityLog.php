@@ -34,16 +34,21 @@ class ActivityLog extends Model
 
     public static function log($action, $description, $projectId = null, $model = null, $modelId = null)
     {
-        return self::create([
+        $data = [
             'user_id' => auth()->id(),
-            'project_id' => $projectId,
             'action' => $action,
             'model' => $model,
             'model_id' => $modelId,
             'description' => $description,
             'ip_address' => request()->ip(),
             'user_agent' => request()->userAgent(),
-        ]);
+        ];
+
+        // Only add project_id if it's not null and the column exists
+        if ($projectId !== null) {
+            $data['project_id'] = $projectId;
+        }
+
+        return self::create($data);
     }
 }
-

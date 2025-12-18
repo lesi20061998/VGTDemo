@@ -2,26 +2,30 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\Brand;
-use App\Models\ProductCategory;
 use App\Models\AttributeGroup;
-use App\Models\ProductAttribute;
-use App\Models\ProductAttributeValue;
-use App\Models\Product;
-use App\Models\ProductVariation;
-use App\Models\ProductReview;
+use App\Models\Brand;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Product;
+use App\Models\ProductAttribute;
+use App\Models\ProductAttributeValue;
+use App\Models\ProductCategory;
+use App\Models\ProductReview;
+use App\Models\ProductVariation;
 use App\Services\ProductAttributeService;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
 class EcommerceSeeder extends Seeder
 {
     public function run(): void
     {
-        // Disable foreign key checks
-        \DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        // Disable foreign key checks (database agnostic)
+        if (\DB::getDriverName() === 'mysql') {
+            \DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        } elseif (\DB::getDriverName() === 'sqlite') {
+            \DB::statement('PRAGMA foreign_keys=OFF;');
+        }
 
         // Clear existing data
         $this->truncateTable('order_status_histories');
@@ -37,7 +41,12 @@ class EcommerceSeeder extends Seeder
         $this->truncateTable('product_categories');
         $this->truncateTable('brands');
 
-        \DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        // Re-enable foreign key checks (database agnostic)
+        if (\DB::getDriverName() === 'mysql') {
+            \DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        } elseif (\DB::getDriverName() === 'sqlite') {
+            \DB::statement('PRAGMA foreign_keys=ON;');
+        }
 
         // Create brands
         $brands = collect([
@@ -45,17 +54,17 @@ class EcommerceSeeder extends Seeder
             ['name' => 'Adidas', 'description' => 'Adidas - Thiết bị thể thao chất lượng cao'],
             ['name' => 'Puma', 'description' => 'Puma - Giày thể thao phong cách và hiệu năng'],
             ['name' => 'Mizuno', 'description' => 'Mizuno - Thương hiệu Nhật Bản huyền thoại'],
-        ])->map(fn($brand) => Brand::factory()->create($brand));
+        ])->map(fn ($brand) => Brand::factory()->create($brand));
 
         // Create product categories
         $mainCategories = collect([
             ['name' => 'Giày đá banh', 'description' => 'Giày đá banh chuyên nghiệp'],
             ['name' => 'Phụ kiện thể thao', 'description' => 'Các phụ kiện thể thao chất lượng cao'],
             ['name' => 'Quần áo thể thao', 'description' => 'Quần áo thể thao nam nữ'],
-        ])->map(fn($cat) => ProductCategory::factory()->create($cat));
+        ])->map(fn ($cat) => ProductCategory::factory()->create($cat));
 
         // Create subcategories
-        $mainCategories->each(function($parent) {
+        $mainCategories->each(function ($parent) {
             ProductCategory::factory(2)->withParent($parent)->create();
         });
 
@@ -69,11 +78,11 @@ class EcommerceSeeder extends Seeder
             'attribute_group_id' => $colorGroup->id,
             'name' => 'Màu sắc',
             'slug' => 'mau-sac',
-            'type' => 'color'
+            'type' => 'color',
         ]);
 
         collect(['Red' => '#FF0000', 'Blue' => '#0000FF', 'Black' => '#000000', 'White' => '#FFFFFF', 'Green' => '#00FF00'])
-            ->each(fn($code, $name) => ProductAttributeValue::factory()->create([
+            ->each(fn ($code, $name) => ProductAttributeValue::factory()->create([
                 'product_attribute_id' => $colorAttr->id,
                 'value' => Str::lower($name),
                 'display_value' => $name,
@@ -85,14 +94,14 @@ class EcommerceSeeder extends Seeder
             'attribute_group_id' => $sizeGroup->id,
             'name' => 'Kích thước',
             'slug' => 'kich-thuoc',
-            'type' => 'select'
+            'type' => 'select',
         ]);
 
         collect(['35', '36', '37', '38', '39', '40', '41', '42'])
-            ->each(fn($size, $idx) => ProductAttributeValue::factory()->create([
+            ->each(fn ($size, $idx) => ProductAttributeValue::factory()->create([
                 'product_attribute_id' => $sizeAttr->id,
                 'value' => $size,
-                'display_value' => 'Size ' . $size,
+                'display_value' => 'Size '.$size,
                 'sort_order' => $idx,
             ]));
 
@@ -101,11 +110,11 @@ class EcommerceSeeder extends Seeder
             'attribute_group_id' => $materialGroup->id,
             'name' => 'Chất liệu',
             'slug' => 'chat-lieu',
-            'type' => 'multiselect'
+            'type' => 'multiselect',
         ]);
 
         collect(['Leather' => 'Da thật', 'Synthetic' => 'Da tổng hợp', 'Canvas' => 'Vải canvas', 'Mesh' => 'Lưới thoáng khí'])
-            ->each(fn($display, $value) => ProductAttributeValue::factory()->create([
+            ->each(fn ($display, $value) => ProductAttributeValue::factory()->create([
                 'product_attribute_id' => $materialAttr->id,
                 'value' => Str::lower($value),
                 'display_value' => $display,
@@ -114,12 +123,12 @@ class EcommerceSeeder extends Seeder
         // Create products with variations and attributes
         Product::factory(10)
             ->published()
-            ->state(fn() => [
+            ->state(fn () => [
                 'brand_id' => $brands->random()->id,
                 'product_category_id' => $mainCategories->random()->id,
             ])
             ->create()
-            ->each(function($product) use ($colorAttr, $sizeAttr, $materialAttr) {
+            ->each(function ($product) use ($colorAttr, $sizeAttr, $materialAttr) {
                 // Create 3-5 variations per product
                 ProductVariation::factory(rand(3, 5))->create([
                     'product_id' => $product->id,
@@ -161,7 +170,7 @@ class EcommerceSeeder extends Seeder
         // Create orders with items
         Order::factory(20)
             ->create()
-            ->each(function($order) {
+            ->each(function ($order) {
                 // Create 2-5 order items per order
                 $itemCount = rand(2, 5);
                 foreach (range(1, $itemCount) as $i) {

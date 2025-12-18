@@ -1,0 +1,34 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::table('roles', function (Blueprint $table) {
+            // Drop the unwanted 'permissions' column if it exists
+            if (Schema::hasColumn('roles', 'permissions')) {
+                $table->dropColumn('permissions');
+            }
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::table('roles', function (Blueprint $table) {
+            // Add back the permissions column if needed for rollback
+            if (! Schema::hasColumn('roles', 'permissions')) {
+                $table->text('permissions')->nullable();
+            }
+        });
+    }
+};

@@ -44,7 +44,9 @@ Route::prefix('cms/admin')->name('cms.')->middleware(['auth', 'cms'])->group(fun
     Route::post('products/{product}/quick-update', [ProductController::class, 'quickUpdate'])->name('products.quick-update');
     Route::post('products/bulk-edit', [ProductController::class, 'bulkEdit'])->name('products.bulk-edit');
     Route::post('products/bulk-update', [ProductController::class, 'bulkUpdate'])->name('products.bulk-update');
+    // Category Management - Consistent Routes
     Route::resource('categories', CategoryController::class);
+    Route::get('categories/{category}/subcategories', [CategoryController::class, 'getSubcategories'])->name('categories.subcategories');
     Route::resource('brands', BrandController::class);
 
     // Attributes Management
@@ -85,6 +87,13 @@ Route::prefix('cms/admin')->name('cms.')->middleware(['auth', 'cms'])->group(fun
     Route::resource('posts', \App\Http\Controllers\Admin\PostController::class);
     Route::resource('faqs', \App\Http\Controllers\Admin\FaqController::class);
     Route::resource('pages', \App\Http\Controllers\Admin\PageController::class);
+
+    // Menu Management
+    Route::resource('menus', \App\Http\Controllers\Admin\MenuController::class);
+    Route::post('menus/{menu}/items', [\App\Http\Controllers\Admin\MenuController::class, 'storeItem'])->name('menus.items.store');
+    Route::put('menus/items/{item}', [\App\Http\Controllers\Admin\MenuController::class, 'updateItem'])->name('menus.items.update');
+    Route::delete('menus/items/{item}', [\App\Http\Controllers\Admin\MenuController::class, 'destroyItem'])->name('menus.items.destroy');
+    Route::post('menus/{menu}/update-tree', [\App\Http\Controllers\Admin\MenuController::class, 'updateTree'])->name('menus.update-tree');
 
     // Page Config
     Route::get('page-config', [\App\Http\Controllers\Admin\PageConfigController::class, 'index'])->name('page-config.index');

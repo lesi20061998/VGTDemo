@@ -2,20 +2,24 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\ProductCategory;
 use App\Models\ProductAttribute;
 use App\Models\ProductAttributeValue;
+use App\Models\ProductCategory;
 use App\Models\ProductEnhanced;
 use App\Models\ProductReview;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
 class ProductSystemSeeder extends Seeder
 {
     public function run()
     {
-        // Xóa dữ liệu cũ nếu bảng tồn tại
-        \DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        // Xóa dữ liệu cũ nếu bảng tồn tại (database agnostic)
+        if (\DB::getDriverName() === 'mysql') {
+            \DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        } elseif (\DB::getDriverName() === 'sqlite') {
+            \DB::statement('PRAGMA foreign_keys=OFF;');
+        }
         if (\Schema::hasTable('products_enhanced')) {
             \DB::table('products_enhanced')->truncate();
         }
@@ -31,8 +35,13 @@ class ProductSystemSeeder extends Seeder
         if (\Schema::hasTable('product_categories')) {
             \DB::table('product_categories')->truncate();
         }
-        \DB::statement('SET FOREIGN_KEY_CHECKS=1;');
-        
+        // Re-enable foreign key checks (database agnostic)
+        if (\DB::getDriverName() === 'mysql') {
+            \DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        } elseif (\DB::getDriverName() === 'sqlite') {
+            \DB::statement('PRAGMA foreign_keys=ON;');
+        }
+
         // Tạo danh mục sản phẩm
         $categories = [
             ['name' => 'Giày đá banh', 'description' => 'Giày đá banh chuyên nghiệp'],
@@ -61,7 +70,7 @@ class ProductSystemSeeder extends Seeder
                     ['value' => 'black', 'display_value' => 'Đen', 'color_code' => '#000000'],
                     ['value' => 'white', 'display_value' => 'Trắng', 'color_code' => '#FFFFFF'],
                     ['value' => 'green', 'display_value' => 'Xanh lá', 'color_code' => '#00FF00'],
-                ]
+                ],
             ],
             [
                 'name' => 'Kích thước',
@@ -75,7 +84,7 @@ class ProductSystemSeeder extends Seeder
                     ['value' => '40', 'display_value' => '40'],
                     ['value' => '41', 'display_value' => '41'],
                     ['value' => '42', 'display_value' => '42'],
-                ]
+                ],
             ],
             [
                 'name' => 'Thương hiệu',
@@ -85,7 +94,7 @@ class ProductSystemSeeder extends Seeder
                     ['value' => 'adidas', 'display_value' => 'Adidas'],
                     ['value' => 'puma', 'display_value' => 'Puma'],
                     ['value' => 'mizuno', 'display_value' => 'Mizuno'],
-                ]
+                ],
             ],
             [
                 'name' => 'Chất liệu',
@@ -95,7 +104,7 @@ class ProductSystemSeeder extends Seeder
                     ['value' => 'synthetic', 'display_value' => 'Da tổng hợp'],
                     ['value' => 'canvas', 'display_value' => 'Vải canvas'],
                     ['value' => 'mesh', 'display_value' => 'Lưới thoáng khí'],
-                ]
+                ],
             ],
             [
                 'name' => 'Loại sân',
@@ -104,8 +113,8 @@ class ProductSystemSeeder extends Seeder
                     ['value' => 'natural_grass', 'display_value' => 'Sân cỏ tự nhiên'],
                     ['value' => 'artificial_grass', 'display_value' => 'Sân cỏ nhân tạo'],
                     ['value' => 'indoor', 'display_value' => 'Sân trong nhà'],
-                ]
-            ]
+                ],
+            ],
         ];
 
         foreach ($attributes as $attrData) {
@@ -147,7 +156,7 @@ class ProductSystemSeeder extends Seeder
                     3 => [1], // Nike
                     4 => [2], // Da tổng hợp
                     5 => [1], // Sân cỏ tự nhiên
-                ]
+                ],
             ],
             [
                 'name' => 'Giày đá banh Adidas Predator',
@@ -165,7 +174,7 @@ class ProductSystemSeeder extends Seeder
                     3 => [2], // Adidas
                     4 => [1], // Da thật
                     5 => [2], // Sân cỏ nhân tạo
-                ]
+                ],
             ],
             [
                 'name' => 'Giày đá banh Puma Future',
@@ -183,7 +192,7 @@ class ProductSystemSeeder extends Seeder
                     3 => [3], // Puma
                     4 => [2, 4], // Da tổng hợp, lưới
                     5 => [3], // Sân trong nhà
-                ]
+                ],
             ],
             [
                 'name' => 'Giày đá banh Mizuno Morelia',
@@ -201,7 +210,7 @@ class ProductSystemSeeder extends Seeder
                     3 => [4], // Mizuno
                     4 => [1], // Da thật
                     5 => [1], // Sân cỏ tự nhiên
-                ]
+                ],
             ],
             [
                 'name' => 'Bóng đá FIFA Quality Pro',
@@ -215,8 +224,8 @@ class ProductSystemSeeder extends Seeder
                 'badges' => ['sale'],
                 'attributes' => [
                     1 => [4, 1], // Trắng, đỏ
-                ]
-            ]
+                ],
+            ],
         ];
 
         foreach ($products as $productData) {
@@ -233,7 +242,7 @@ class ProductSystemSeeder extends Seeder
                 'status' => 'published',
                 'is_featured' => rand(0, 1),
                 'badges' => $productData['badges'],
-                'featured_image' => '/assets/img/products/product-' . rand(1, 5) . '.jpg',
+                'featured_image' => '/assets/img/products/product-'.rand(1, 5).'.jpg',
                 'gallery' => [
                     '/assets/img/products/gallery-1.jpg',
                     '/assets/img/products/gallery-2.jpg',
@@ -248,7 +257,7 @@ class ProductSystemSeeder extends Seeder
                 foreach ($productData['attributes'] as $attributeId => $valueIds) {
                     foreach ($valueIds as $valueId) {
                         $product->attributeValues()->attach($valueId, [
-                            'product_attribute_id' => $attributeId
+                            'product_attribute_id' => $attributeId,
                         ]);
                     }
                 }
@@ -258,8 +267,8 @@ class ProductSystemSeeder extends Seeder
             for ($i = 0; $i < rand(3, 8); $i++) {
                 ProductReview::create([
                     'product_id' => $product->id,
-                    'reviewer_name' => 'Khách hàng ' . ($i + 1),
-                    'reviewer_email' => 'customer' . ($i + 1) . '@example.com',
+                    'reviewer_name' => 'Khách hàng '.($i + 1),
+                    'reviewer_email' => 'customer'.($i + 1).'@example.com',
                     'rating' => rand(3, 5),
                     'title' => 'Sản phẩm tốt',
                     'comment' => 'Sản phẩm chất lượng, giao hàng nhanh, đóng gói cẩn thận.',
