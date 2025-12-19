@@ -156,7 +156,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="8" class="px-6 py-4 text-center text-gray-500">Không có sản phẩm nào</td>
+                <td colspan="8" class="px-6 py-4 text-center text-gray-500">Không có sản phẩm nào1</td>
             </tr>
             @endforelse
         </tbody>
@@ -256,7 +256,14 @@ function openBulkEdit() {
     
     console.log('Opening bulk edit for products:', selectedProducts);
     
-    fetch('/cms/admin/products/bulk-edit', {
+    // Determine the correct URL based on context
+    const bulkEditUrl = @if(isset($currentProject) && $currentProject)
+        '{{ route("project.admin.products.bulk-edit", $currentProject->code) }}'
+    @else
+        '/cms/admin/products/bulk-edit'
+    @endif;
+    
+    fetch(bulkEditUrl, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -286,7 +293,14 @@ function openBulkEdit() {
 function openSingleQuickEdit(productId) {
     console.log('Opening quick edit for product:', productId);
     
-    fetch('/cms/admin/products/bulk-edit', {
+    // Determine the correct URL based on context
+    const bulkEditUrl = @if(isset($currentProject) && $currentProject)
+        '{{ route("project.admin.products.bulk-edit", $currentProject->code) }}'
+    @else
+        '/cms/admin/products/bulk-edit'
+    @endif;
+    
+    fetch(bulkEditUrl, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -397,7 +411,14 @@ function saveBulkEdit() {
         sale_price: document.getElementById('bulkSalePrice').value
     };
     
-    fetch('/cms/admin/products/bulk-update', {
+    // Determine the correct URL based on context
+    const bulkUpdateUrl = @if(isset($currentProject) && $currentProject)
+        '{{ route("project.admin.products.bulk-update", $currentProject->code) }}'
+    @else
+        '/cms/admin/products/bulk-update'
+    @endif;
+    
+    fetch(bulkUpdateUrl, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

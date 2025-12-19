@@ -16,7 +16,7 @@
         </button>
     </form>
     
-    <a href="{{ route('cms.brands.create') }}" 
+    <a href="{{ route('project.admin.brands.create', request()->route('projectCode')) }}" 
        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
         Thêm nhà sản xuất
     </a>
@@ -62,8 +62,8 @@
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div class="flex space-x-2">
-                        <a href="{{ route('cms.brands.edit', $brand) }}" class="text-indigo-600 hover:text-indigo-900">Sửa</a>
-                        <form method="POST" action="{{ route('cms.brands.destroy', $brand) }}" class="inline">
+                        <a href="{{ route('project.admin.brands.edit', [request()->route('projectCode'), $brand]) }}" class="text-indigo-600 hover:text-indigo-900">Sửa</a>
+                        <form method="POST" action="{{ route('project.admin.brands.destroy', [request()->route('projectCode'), $brand]) }}" class="inline">
                             @csrf @method('DELETE')
                             <button type="submit" class="text-red-600 hover:text-red-900" 
                                     onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</button>

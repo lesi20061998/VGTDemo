@@ -6,7 +6,7 @@
 
 @section('content')
 <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
-    <form method="POST" action="{{ route('cms.attributes.update', $attribute) }}">
+    <form method="POST" action="{{ route('project.admin.attributes.update', [request()->route('projectCode'), $attribute]) }}">
         @csrf @method('PUT')
         
         <div class="mb-6">
@@ -67,7 +67,7 @@
         </div>
 
         <div class="flex justify-end space-x-4">
-            <a href="{{ route('cms.attributes.index') }}" class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">
+            <a href="{{ route('project.admin.attributes.index', request()->route('projectCode')) }}" class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">
                 Hủy
             </a>
             <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">

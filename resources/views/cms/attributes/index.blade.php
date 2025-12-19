@@ -26,10 +26,10 @@
     </form>
 
     <div class="flex gap-2">
-        <a href="{{ route('cms.attributes.groups.index') }}" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">
+        <a href="{{ route('project.admin.attributes.groups.index', request()->route('projectCode')) }}" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">
             Quản lý nhóm
         </a>
-        <a href="{{ route('cms.attributes.create') }}" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+        <a href="{{ route('project.admin.attributes.create', request()->route('projectCode')) }}" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
             Thêm thuộc tính
         </a>
     </div>
@@ -57,15 +57,15 @@
                     </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                    <a href="{{ route('cms.attributes.values.index', $attribute) }}" 
+                    <a href="{{ route('project.admin.attributes.show', [request()->route('projectCode'), $attribute]) }}" 
                        class="text-blue-600 hover:text-blue-900 text-sm font-medium">
                         {{ $attribute->values()->count() }} giá trị
                     </a>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div class="flex space-x-2">
-                        <a href="{{ route('cms.attributes.edit', $attribute) }}" class="text-indigo-600 hover:text-indigo-900">Sửa</a>
-                        <form method="POST" action="{{ route('cms.attributes.destroy', $attribute) }}" class="inline">
+                        <a href="{{ route('project.admin.attributes.edit', [request()->route('projectCode'), $attribute]) }}" class="text-indigo-600 hover:text-indigo-900">Sửa</a>
+                        <form method="POST" action="{{ route('project.admin.attributes.destroy', [request()->route('projectCode'), $attribute]) }}" class="inline">
                             @csrf @method('DELETE')
                             <button type="submit" class="text-red-600 hover:text-red-900" 
                                     onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</button>

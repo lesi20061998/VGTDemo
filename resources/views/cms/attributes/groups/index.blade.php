@@ -1,4 +1,4 @@
-{{-- MODIFIED: 2025-01-21 --}}
+{{-- MODIFIED: 2025-12-19 --}}
 @extends('cms.layouts.app')
 
 @section('title', 'Quản lý nhóm thuộc tính')
@@ -16,10 +16,16 @@
         </button>
     </form>
     
-    <a href="{{ route('cms.attributes.groups.create') }}" 
-       class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-        Thêm nhóm
-    </a>
+    <div class="flex gap-2">
+        <a href="{{ route('project.admin.attributes.index', request()->route('projectCode')) }}" 
+           class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">
+            Quản lý thuộc tính
+        </a>
+        <a href="{{ route('project.admin.attributes.groups.create', request()->route('projectCode')) }}" 
+           class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+            Thêm nhóm
+        </a>
+    </div>
 </div>
 
 <div class="bg-white rounded-lg shadow overflow-hidden">
@@ -51,8 +57,8 @@
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div class="flex space-x-2">
-                        <a href="{{ route('cms.attributes.groups.edit', $group) }}" class="text-indigo-600 hover:text-indigo-900">Sửa</a>
-                        <form method="POST" action="{{ route('cms.attributes.groups.destroy', $group) }}" class="inline">
+                        <a href="{{ route('project.admin.attributes.groups.edit', [request()->route('projectCode'), $group]) }}" class="text-indigo-600 hover:text-indigo-900">Sửa</a>
+                        <form method="POST" action="{{ route('project.admin.attributes.groups.destroy', [request()->route('projectCode'), $group]) }}" class="inline">
                             @csrf @method('DELETE')
                             <button type="submit" class="text-red-600 hover:text-red-900" 
                                     onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</button>

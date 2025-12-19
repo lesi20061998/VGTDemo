@@ -1,4 +1,4 @@
-{{-- MODIFIED: 2025-01-21 --}}
+{{-- MODIFIED: 2025-12-19 --}}
 @extends('cms.layouts.app')
 
 @section('title', 'Chỉnh sửa nhóm thuộc tính')
@@ -6,7 +6,7 @@
 
 @section('content')
 <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
-    <form method="POST" action="{{ route('cms.attributes.groups.update', $group) }}">
+    <form method="POST" action="{{ route('project.admin.attributes.groups.update', [request()->route('projectCode'), $group]) }}">
         @csrf @method('PUT')
         
         <div class="mb-6">
@@ -52,7 +52,7 @@
         </div>
 
         <div class="flex justify-end space-x-4">
-            <a href="{{ route('cms.attributes.groups.index') }}" class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">
+            <a href="{{ route('project.admin.attributes.groups.index', request()->route('projectCode')) }}" class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">
                 Hủy
             </a>
             <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">

@@ -1,28 +1,29 @@
 <?php
+
 // MODIFIED: 2025-01-21
 
 namespace App\Models;
 
+use App\Traits\BelongsToTenant;
+use App\Traits\ProjectScoped;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Traits\ProjectScoped;
-use App\Traits\BelongsToTenant;
-use Illuminate\Database\Eloquent\Builder;
 
 /**
  * ProductAttribute - Loại thuộc tính chung
- * 
+ *
  * Ví dụ: Color, Size, Material
  * Là định nghĩa tên, slug, loại (text/select).
  * Có thể áp dụng cho nhiều sản phẩm.
  */
 class ProductAttribute extends Model
 {
-    use HasFactory, ProjectScoped, BelongsToTenant;
+    use HasFactory; // Temporarily disabled ProjectScoped, BelongsToTenant
 
     protected $fillable = [
-        'attribute_group_id', 'name', 'slug', 'type', 'is_filterable', 
-        'is_required', 'sort_order', 'tenant_id'
+        'attribute_group_id', 'name', 'slug', 'type', 'is_filterable',
+        'is_required', 'sort_order', 'tenant_id',
     ];
 
     protected $casts = [
@@ -78,6 +79,6 @@ class ProductAttribute extends Model
     public function scopeSearch(Builder $query, $search): Builder
     {
         return $query->where('name', 'like', "%{$search}%")
-                    ->orWhere('slug', 'like', "%{$search}%");
+            ->orWhere('slug', 'like', "%{$search}%");
     }
 }

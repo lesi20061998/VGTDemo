@@ -78,6 +78,7 @@ class CategoryController extends Controller
         $modelClass = $this->getCategoryModel();
 
         $categories = $modelClass::with(['parent', 'children'])
+            ->withCount('products')
             ->when($request->search, fn ($q) => $q->search($request->search))
             ->when($request->parent_id, fn ($q) => $q->where('parent_id', $request->parent_id))
             ->orderBy('path')
@@ -112,7 +113,7 @@ class CategoryController extends Controller
         }
 
         // Calculate level and path
-        if (!empty($data['parent_id'])) {
+        if (! empty($data['parent_id'])) {
             $parent = $modelClass::find($data['parent_id']);
             $data['level'] = $parent->level + 1;
             $data['path'] = $parent->path.'/'.$data['slug'];
@@ -122,7 +123,7 @@ class CategoryController extends Controller
         }
 
         // Set default sort_order if not provided
-        if (!isset($data['sort_order'])) {
+        if (! isset($data['sort_order'])) {
             $data['sort_order'] = 0;
         }
 
@@ -139,103 +140,150 @@ class CategoryController extends Controller
         ]);
     }
 
-    // public function show($id)
-    // {
-    //     $modelClass = $this->getCategoryModel();
-    //     $category = $modelClass::with(['parent', 'children'])->findOrFail($id);
-       
-    //     return view('cms.categories.show', compact('category'));
-    // }
-
-    public function edit($id)
+    public function show($projectCodeOrId, $categoryId = null)
     {
+        // Determine if this is a project route or CMS route
+        $id = $categoryId ?? $projectCodeOrId;
+
         $modelClass = $this->getCategoryModel();
         $category = $modelClass::with(['parent', 'children'])->findOrFail($id);
-        dd($modelClass);
-        die();
-       
-       
-        //return view('cms.categories.edit', compact('category', 'parentCategories'));
+
+        return view('cms.categories.show', compact('category'));
     }
 
-    // public function update(CategoryRequest $request, $id)
-    // {
-    //     $modelClass = $this->getCategoryModel();
-    //     $category = $modelClass::findOrFail($id);
+    public function edit($projectCodeOrId, $categoryId = null)
+    {
+        // Determine if this is a project route or CMS route
+        $id = $categoryId ?? $projectCodeOrId;
 
-    //     $data = $request->validated();
+        $modelClass = $this->getCategoryModel();
+        $category = $modelClass::findOrFail($id);
 
-    //     // Generate unique slug (excluding current category)
-    //     if (empty($data['slug'])) {
-    //         $data['slug'] = $this->generateUniqueSlug($data['name'], $category->id);
-    //     } else {
-    //         // If slug is provided, still check for uniqueness
-    //         $data['slug'] = $this->generateUniqueSlug($data['slug'], $category->id);
-    //     }
+        $parentCategories = $modelClass::where('id', '!=', $category->id)
+            ->active()
+            ->get();
 
-    //     // Recalculate level and path
-    //     if (!empty($data['parent_id'])) {
-    //         $parent = $modelClass::find($data['parent_id']);
-    //         $data['level'] = $parent->level + 1;
-    //         $data['path'] = $parent->path.'/'.$data['slug'];
-    //     } else {
-    //         $data['level'] = 0;
-    //         $data['path'] = $data['slug'];
-    //     }
+        return view('cms.categories.edit', compact('category', 'parentCategories'));
+    }
 
-    //     $category->update($data);
+    public function update(CategoryRequest $request, $projectCodeOrId, $categoryId = null)
+    {
+        // Determine if this is a project route or CMS route
+        $id = $categoryId ?? $projectCodeOrId;
 
-    //     $projectCode = request()->route('projectCode');
-    //     $route = $projectCode
-    //         ? route('project.admin.categories.index', $projectCode)
-    //         : route('cms.categories.index');
+        $modelClass = $this->getCategoryModel();
+        $category = $modelClass::findOrFail($id);
 
-    //     return redirect($route)->with('alert', [
-    //         'type' => 'success',
-    //         'message' => 'Cập nhật danh mục thành công!',
-    //     ]);
-    // }
+        $data = $request->validated();
 
-    // public function destroy($id)
-    // {
-    //     $modelClass = $this->getCategoryModel();
-    //     $category = $modelClass::findOrFail($id);
+        // Generate unique slug (excluding current category)
+        if (empty($data['slug'])) {
+            $data['slug'] = $this->generateUniqueSlug($data['name'], $category->id);
+        } else {
+            // If slug is provided, still check for uniqueness
+            $data['slug'] = $this->generateUniqueSlug($data['slug'], $category->id);
+        }
 
-    //     if ($category->children()->count() > 0) {
-    //         return redirect()->back()->with('alert', [
-    //             'type' => 'error',
-    //             'message' => 'Không thể xóa danh mục có danh mục con!',
-    //         ]);
-    //     }
+        // Recalculate level and path
+        if (! empty($data['parent_id'])) {
+            $parent = $modelClass::find($data['parent_id']);
+            $data['level'] = $parent->level + 1;
+            $data['path'] = $parent->path.'/'.$data['slug'];
+        } else {
+            $data['level'] = 0;
+            $data['path'] = $data['slug'];
+        }
 
-    //     if ($category->products()->count() > 0) {
-    //         return redirect()->back()->with('alert', [
-    //             'type' => 'error',
-    //             'message' => 'Không thể xóa danh mục có sản phẩm!',
-    //         ]);
-    //     }
+        $category->update($data);
 
-    //     $category->delete();
+        $projectCode = request()->route('projectCode');
+        $route = $projectCode
+            ? route('project.admin.categories.index', $projectCode)
+            : route('cms.categories.index');
 
-    //     $projectCode = request()->route('projectCode');
-    //     $route = $projectCode
-    //         ? route('project.admin.categories.index', $projectCode)
-    //         : route('cms.categories.index');
+        return redirect($route)->with('alert', [
+            'type' => 'success',
+            'message' => 'Cập nhật danh mục thành công!',
+        ]);
+    }
 
-    //     return redirect($route)->with('alert', [
-    //         'type' => 'success',
-    //         'message' => 'Xóa danh mục thành công!',
-    //     ]);
-    // }
+    public function destroy($projectCodeOrId, $categoryId = null)
+    {
+        // Determine if this is a project route or CMS route
+        $id = $categoryId ?? $projectCodeOrId;
 
-    // public function getSubcategories(Request $request)
-    // {
-    //     $modelClass = $this->getCategoryModel();
-    //     $subcategories = $modelClass::where('parent_id', $request->parent_id)
-    //         ->active()
-    //         ->orderBy('sort_order')
-    //         ->get();
+        $modelClass = $this->getCategoryModel();
+        $category = $modelClass::findOrFail($id);
 
-    //     return response()->json($subcategories);
-    // }
+        // Check if category has products - still prevent deletion if has products
+        if ($category->products()->count() > 0) {
+            return redirect()->back()->with('alert', [
+                'type' => 'error',
+                'message' => 'Không thể xóa danh mục có sản phẩm! Vui lòng di chuyển sản phẩm sang danh mục khác trước.',
+            ]);
+        }
+
+        // Handle children: promote them to parent's level
+        if ($category->children()->count() > 0) {
+            $newParentId = $category->parent_id; // Children will inherit this category's parent
+            $newLevel = $category->level; // Children will move to this category's level
+
+            foreach ($category->children as $child) {
+                // Update child's parent and level
+                $child->parent_id = $newParentId;
+                $child->level = $newLevel;
+
+                // Recalculate path
+                if ($newParentId) {
+                    $newParent = $modelClass::find($newParentId);
+                    $child->path = $newParent->path.'/'.$child->slug;
+                } else {
+                    $child->path = $child->slug;
+                }
+
+                $child->save();
+
+                // Recursively update all descendants
+                $this->updateDescendantsPaths($child, $modelClass);
+            }
+        }
+
+        $category->delete();
+
+        $projectCode = request()->route('projectCode');
+        $route = $projectCode
+            ? route('project.admin.categories.index', $projectCode)
+            : route('cms.categories.index');
+
+        return redirect($route)->with('alert', [
+            'type' => 'success',
+            'message' => 'Xóa danh mục thành công!',
+        ]);
+    }
+
+    public function getSubcategories(Request $request)
+    {
+        $modelClass = $this->getCategoryModel();
+        $subcategories = $modelClass::where('parent_id', $request->parent_id)
+            ->active()
+            ->orderBy('sort_order')
+            ->get();
+
+        return response()->json($subcategories);
+    }
+
+    /**
+     * Recursively update paths for all descendants of a category
+     */
+    private function updateDescendantsPaths($category, $modelClass)
+    {
+        foreach ($category->children as $child) {
+            // Update child's path based on its parent's new path
+            $child->path = $category->path.'/'.$child->slug;
+            $child->save();
+
+            // Recursively update this child's descendants
+            $this->updateDescendantsPaths($child, $modelClass);
+        }
+    }
 }

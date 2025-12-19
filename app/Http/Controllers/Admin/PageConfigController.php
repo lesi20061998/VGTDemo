@@ -18,18 +18,18 @@ class PageConfigController extends Controller
             'contact' => 'Liên hệ',
             'about' => 'Giới thiệu',
         ];
-        
+
         return view('cms.page-config.index', compact('pages'));
     }
-    
+
     public function edit($page)
     {
         $config = Setting::where('key', "page_config_{$page}")->first();
         $settings = $config ? $config->payload : [];
-        
+
         return view('cms.page-config.edit', compact('page', 'settings'));
     }
-    
+
     public function update(Request $request, $page)
     {
         $validated = $request->validate([
@@ -40,12 +40,14 @@ class PageConfigController extends Controller
             'custom_css' => 'nullable|string',
             'custom_js' => 'nullable|string',
         ]);
-        
+
+        $tenantId = session('current_tenant_id');
+
         Setting::updateOrCreate(
-            ['key' => "page_config_{$page}"],
+            ['key' => "page_config_{$page}", 'tenant_id' => $tenantId],
             ['payload' => $validated]
         );
-        
+
         return redirect()->back()->with('success', 'Cấu hình đã được lưu!');
     }
 }

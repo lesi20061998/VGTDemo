@@ -1,4 +1,4 @@
-{{-- MODIFIED: 2025-01-21 --}}
+{{-- MODIFIED: 2025-12-19 --}}
 @extends('cms.layouts.app')
 
 @section('title', 'Thêm giá trị thuộc tính')
@@ -6,8 +6,9 @@
 
 @section('content')
 <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
-    <form method="POST" action="{{ route('cms.attributes.values.store', $attribute) }}">
+    <form method="POST" action="{{ route('project.admin.attributes.values.store', [request()->route('projectCode'), $attribute->id]) }}">
         @csrf
+        <input type="hidden" name="product_attribute_id" value="{{ $attribute->id }}">
         
         <div class="mb-6">
             <label for="value" class="block text-sm font-medium text-gray-700 mb-2">Giá trị *</label>
@@ -40,7 +41,7 @@
         </div>
 
         <div class="flex justify-end space-x-4">
-            <a href="{{ route('cms.attributes.values.index', $attribute) }}" class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">
+            <a href="{{ route('project.admin.attributes.show', [request()->route('projectCode'), $attribute->id]) }}" class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">
                 Hủy
             </a>
             <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
@@ -51,9 +52,16 @@
 </div>
 
 <script>
-document.getElementById('value').addEventListener('input', function() {
-    if (!document.getElementById('display_value').value) {
-        document.getElementById('display_value').value = this.value.charAt(0).toUpperCase() + this.value.slice(1);
+document.addEventListener('DOMContentLoaded', function() {
+    const valueInput = document.getElementById('value');
+    const displayValueInput = document.getElementById('display_value');
+    
+    if (valueInput && displayValueInput) {
+        valueInput.addEventListener('input', function() {
+            if (!displayValueInput.value) {
+                displayValueInput.value = this.value.charAt(0).toUpperCase() + this.value.slice(1);
+            }
+        });
     }
 });
 </script>

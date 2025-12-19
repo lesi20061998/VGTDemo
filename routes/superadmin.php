@@ -42,6 +42,31 @@ Route::middleware([
 
     // Test export routes
     Route::get('test-export/{projectCode}', [\App\Http\Controllers\SuperAdmin\TestExportController::class, 'testExport'])->name('test.export');
+    
+    // Test logging route
+    Route::get('test-logging', function() {
+        return view('test-logging');
+    })->name('test-logging');
+    
+    Route::post('test-log', function(\Illuminate\Http\Request $request) {
+        return response()->json(['message' => 'Test log created', 'data' => $request->all()]);
+    })->name('test-log');
+    
+    // Debug route to test file monitor API
+    Route::get('debug-file-monitor', function(\Illuminate\Http\Request $request) {
+        $controller = new \App\Http\Controllers\SuperAdmin\FileMonitorController();
+        $request->headers->set('Accept', 'application/json');
+        $request->headers->set('X-Requested-With', 'XMLHttpRequest');
+        return $controller->index($request);
+    })->name('debug-file-monitor');
+    
+    // Debug history page
+    Route::get('debug-history', function() {
+        return view('debug-history');
+    })->name('debug-history');
+    
+    // Export project config with debug info
+    Route::get('projects/{project}/export-config', [\App\Http\Controllers\SuperAdmin\ProjectController::class, 'exportConfig'])->name('projects.export-config');
 
     // Remote CMS Management - SuperAdmin can manage any project's CMS
     Route::prefix('projects/{projectCode}/cms')->name('projects.cms.')->group(function () {

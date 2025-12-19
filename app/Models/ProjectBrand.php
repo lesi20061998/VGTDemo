@@ -23,6 +23,11 @@ class ProjectBrand extends Model
         'is_active' => 'boolean',
     ];
 
+    // Multi-site: Hide project_id since each project has separate database
+    protected $hidden = [
+        'project_id',
+    ];
+
     // Relationships
     public function products()
     {

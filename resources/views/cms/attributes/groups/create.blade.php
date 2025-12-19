@@ -1,4 +1,4 @@
-{{-- MODIFIED: 2025-01-21 --}}
+{{-- MODIFIED: 2025-12-19 --}}
 @extends('cms.layouts.app')
 
 @section('title', 'Thêm nhóm thuộc tính')
@@ -6,21 +6,21 @@
 
 @section('content')
 <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
-    <form method="POST" action="{{ route('cms.attributes.groups.store') }}">
+    <form method="POST" action="{{ route('project.admin.attributes.groups.store', request()->route('projectCode')) }}">
         @csrf
         
         <div class="mb-6">
             <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Tên nhóm *</label>
             <input type="text" id="name" name="name" value="{{ old('name') }}" 
                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('name') border-red-500 @enderror"
-                   required>
+                   required oninput="generateSlug()">
             @error('name')
                 <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
             @enderror
         </div>
 
         <div class="mb-6">
-            <label for="slug" class="block text-sm font-medium text-gray-700 mb-2">Slug</label>
+            <label for="slug" class="block text-sm font-medium text-gray-700 mb-2">Slug (tự động tạo nếu để trống)</label>
             <input type="text" id="slug" name="slug" value="{{ old('slug') }}" 
                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('slug') border-red-500 @enderror">
             @error('slug')
@@ -52,7 +52,7 @@
         </div>
 
         <div class="flex justify-end space-x-4">
-            <a href="{{ route('cms.attributes.groups.index') }}" class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">
+            <a href="{{ route('project.admin.attributes.groups.index', request()->route('projectCode')) }}" class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">
                 Hủy
             </a>
             <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
@@ -63,10 +63,18 @@
 </div>
 
 <script>
-document.getElementById('name').addEventListener('input', function() {
-    if (!document.getElementById('slug').value) {
-        document.getElementById('slug').value = this.value.toLowerCase().replace(/\s+/g, '-');
+function generateSlug() {
+    const name = document.getElementById('name').value;
+    const slugField = document.getElementById('slug');
+    if (!slugField.value) {
+        slugField.value = name.toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/đ/g, 'd').replace(/Đ/g, 'd')
+            .replace(/[^a-z0-9\s-]/g, '')
+            .trim()
+            .replace(/\s+/g, '-');
     }
-});
+}
 </script>
 @endsection

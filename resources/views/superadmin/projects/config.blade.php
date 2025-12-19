@@ -204,13 +204,20 @@
         
         <!-- History Tab -->
         <div id="history-tab" class="tab-content hidden">
-            <div class="mb-4">
+            <div class="mb-4 flex gap-2">
                 <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2" onclick="refreshHistory()">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                     </svg>
                     Refresh
                 </button>
+                <a href="/superadmin/debug-history" target="_blank" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    Debug
+                </a>
             </div>
             
             <div id="history-content">
@@ -311,23 +318,120 @@ function showTab(tabName) {
 }
 
 function loadHistory() {
-    fetch('/superadmin/file-monitor?project={{ $project->code }}')
-        .then(response => response.text())
-        .then(html => {
-            // Extract logs table from response
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            const logsTable = doc.querySelector('.table-striped');
+    console.log('Loading history for project: {{ $project->code }}');
+    
+    fetch('/superadmin/file-monitor?project={{ $project->code }}', {
+        headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+        .then(response => {
+            console.log('Response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('History data:', data);
             
-            if (logsTable) {
-                document.getElementById('history-content').innerHTML = '<div class="table-responsive">' + logsTable.outerHTML + '</div>';
+            // Handle both array and object response formats
+            const logs = data.logs || data || [];
+            console.log('Processed logs:', logs);
+            
+            if (logs && logs.length > 0) {
+                let historyHtml = '<div class="space-y-3 max-h-[500px] overflow-y-auto">';
+                
+                logs.forEach(log => {
+                    const date = new Date(log.timestamp);
+                    const timeAgo = getTimeAgo(date);
+                    
+                    historyHtml += `
+                        <div class="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                            <div class="flex items-start justify-between mb-2">
+                                <div class="flex-1">
+                                    <h5 class="font-semibold text-gray-900">${log.action || 'Thay đổi'}</h5>
+                                    <p class="text-sm text-gray-600">${log.route || log.url}</p>
+                                </div>
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full ${getMethodColor(log.method)}">
+                                    ${log.method}
+                                </span>
+                            </div>
+                            <div class="flex items-center justify-between text-sm text-gray-500">
+                                <span class="flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                    </svg>
+                                    ${log.user_name} (${log.user_email})
+                                </span>
+                                <span class="flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    ${timeAgo}
+                                </span>
+                            </div>
+                            ${log.data_summary && Object.keys(log.data_summary).length > 0 ? `
+                                <div class="mt-3 p-2 bg-gray-100 rounded text-xs">
+                                    <strong>Dữ liệu:</strong> ${JSON.stringify(log.data_summary, null, 2).substring(0, 200)}...
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                });
+                
+                historyHtml += '</div>';
+                document.getElementById('history-content').innerHTML = historyHtml;
             } else {
-                document.getElementById('history-content').innerHTML = '<div class="text-center text-gray-500 py-8">Không có lịch sử chỉnh sửa</div>';
+                document.getElementById('history-content').innerHTML = `
+                    <div class="text-center py-12">
+                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <h3 class="mt-2 text-sm font-medium text-gray-900">Chưa có lịch sử</h3>
+                        <p class="mt-1 text-sm text-gray-500">Các thay đổi sẽ được ghi lại tự động khi bạn thực hiện các hành động.</p>
+                    </div>
+                `;
             }
         })
         .catch(error => {
-            document.getElementById('history-content').innerHTML = '<div class="alert alert-danger">Lỗi tải lịch sử</div>';
+            console.error('Error loading history:', error);
+            document.getElementById('history-content').innerHTML = `
+                <div class="text-center py-8">
+                    <div class="text-red-600 mb-2">
+                        <svg class="mx-auto h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                    </div>
+                    <p class="text-red-600">Lỗi tải lịch sử chỉnh sửa: ${error.message}</p>
+                    <p class="text-sm text-gray-500 mt-2">Kiểm tra console để xem chi tiết lỗi</p>
+                    <button onclick="loadHistory()" class="mt-3 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                        Thử lại
+                    </button>
+                </div>
+            `;
         });
+}
+
+function getMethodColor(method) {
+    const colors = {
+        'GET': 'bg-blue-100 text-blue-800',
+        'POST': 'bg-green-100 text-green-800',
+        'PUT': 'bg-yellow-100 text-yellow-800',
+        'PATCH': 'bg-orange-100 text-orange-800',
+        'DELETE': 'bg-red-100 text-red-800'
+    };
+    return colors[method] || 'bg-gray-100 text-gray-800';
+}
+
+function getTimeAgo(date) {
+    const now = new Date();
+    const diffInSeconds = Math.floor((now - date) / 1000);
+    
+    if (diffInSeconds < 60) return 'Vừa xong';
+    if (diffInSeconds < 3600) return Math.floor(diffInSeconds / 60) + ' phút trước';
+    if (diffInSeconds < 86400) return Math.floor(diffInSeconds / 3600) + ' giờ trước';
+    if (diffInSeconds < 2592000) return Math.floor(diffInSeconds / 86400) + ' ngày trước';
+    
+    return date.toLocaleDateString('vi-VN');
 }
 
 function refreshHistory() {

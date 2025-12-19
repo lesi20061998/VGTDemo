@@ -1,27 +1,29 @@
 <?php
+
 // MODIFIED: 2025-01-21
 
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Traits\ProjectScoped;
+
+// use App\Traits\ProjectScoped; // Temporarily disabled for performance
 
 /**
  * ProductAttributeValue - Giá trị của thuộc tính
- * 
+ *
  * Ví dụ: Color → Red, Blue, Green
  *        Size → S, M, L, XL
- * 
+ *
  * Lưu giá trị thực tế cho sản phẩm.
  */
 class ProductAttributeValue extends Model
 {
-    use HasFactory, ProjectScoped;
+    use HasFactory; // Temporarily disabled ProjectScoped for performance
 
     protected $fillable = [
-        'product_attribute_id', 'value', 'slug', 'display_value', 
-        'color_code', 'sort_order'
+        'product_attribute_id', 'value', 'slug', 'display_value',
+        'color_code', 'sort_order',
     ];
 
     protected $casts = [

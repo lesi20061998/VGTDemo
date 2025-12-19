@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Brand;
 use App\Http\Requests\BrandRequest;
+use App\Models\Brand;
 use App\Traits\HasAlerts;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -12,9 +12,10 @@ use Illuminate\Support\Str;
 class BrandController extends Controller
 {
     use HasAlerts;
+
     public function index(Request $request)
     {
-        $brands = Brand::when($request->search, fn($q) => $q->search($request->search))
+        $brands = Brand::when($request->search, fn ($q) => $q->search($request->search))
             ->orderBy('name')
             ->paginate(config('app.admin_per_page', 20));
 
@@ -37,18 +38,20 @@ class BrandController extends Controller
             $brand->addMediaFromRequest('logo')->toMediaCollection('logos');
         }
 
-        return redirect()->route('cms.brands.index')->with('alert', [
+        $projectCode = request()->route('projectCode');
+
+        return redirect()->route('project.admin.brands.index', $projectCode)->with('alert', [
             'type' => 'success',
-            'message' => 'Thêm thương hiệu thành công!'
+            'message' => 'Thêm thương hiệu thành công!',
         ]);
     }
 
-    public function edit(Brand $brand)
+    public function edit($projectCode, Brand $brand)
     {
         return view('cms.brands.edit', compact('brand'));
     }
 
-    public function update(BrandRequest $request, Brand $brand)
+    public function update(BrandRequest $request, $projectCode, Brand $brand)
     {
         $data = $request->validated();
         $data['slug'] = $data['slug'] ?: Str::slug($data['name']);
@@ -60,20 +63,19 @@ class BrandController extends Controller
             $brand->addMediaFromRequest('logo')->toMediaCollection('logos');
         }
 
-        return redirect()->route('cms.brands.index')->with('alert', [
+        return redirect()->route('project.admin.brands.index', $projectCode)->with('alert', [
             'type' => 'success',
-            'message' => 'Cập nhật thương hiệu thành công!'
+            'message' => 'Cập nhật thương hiệu thành công!',
         ]);
     }
 
-    public function destroy(Brand $brand)
+    public function destroy($projectCode, Brand $brand)
     {
         $brand->delete();
 
-        return redirect()->route('cms.brands.index')->with('alert', [
+        return redirect()->route('project.admin.brands.index', $projectCode)->with('alert', [
             'type' => 'success',
-            'message' => 'Xóa thương hiệu thành công!'
+            'message' => 'Xóa thương hiệu thành công!',
         ]);
     }
 }
-

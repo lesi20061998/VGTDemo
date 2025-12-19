@@ -1,4 +1,4 @@
-{{-- MODIFIED: 2025-01-21 --}}
+{{-- MODIFIED: 2025-12-19 --}}
 @extends('cms.layouts.app')
 
 @section('title', 'Quản lý giá trị thuộc tính')
@@ -6,11 +6,11 @@
 
 @section('content')
 <div class="flex justify-between items-center mb-6">
-    <a href="{{ route('cms.attributes.index') }}" class="text-blue-600 hover:text-blue-900">
+    <a href="{{ route('project.admin.attributes.index', request()->route('projectCode')) }}" class="text-blue-600 hover:text-blue-900">
         ← Quay lại danh sách
     </a>
     
-    <a href="{{ route('cms.attributes.values.create', $attribute) }}" 
+    <a href="{{ route('project.admin.attributes.values.create', [request()->route('projectCode'), $attribute->id]) }}" 
        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
         Thêm giá trị
     </a>
@@ -45,8 +45,8 @@
                 @endif
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div class="flex space-x-2">
-                        <a href="{{ route('cms.attributes.values.edit', [$attribute, $value]) }}" class="text-indigo-600 hover:text-indigo-900">Sửa</a>
-                        <form method="POST" action="{{ route('cms.attributes.values.destroy', [$attribute, $value]) }}" class="inline">
+                        <a href="{{ route('project.admin.attributes.values.edit', [request()->route('projectCode'), $attribute->id, $value->id]) }}" class="text-indigo-600 hover:text-indigo-900">Sửa</a>
+                        <form method="POST" action="{{ route('project.admin.attributes.values.destroy', [request()->route('projectCode'), $attribute->id, $value->id]) }}" class="inline">
                             @csrf @method('DELETE')
                             <button type="submit" class="text-red-600 hover:text-red-900" 
                                     onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</button>
@@ -56,7 +56,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="4" class="px-6 py-4 text-center text-gray-500">Không có giá trị nào</td>
+                <td colspan="{{ $attribute->type === 'color' ? 4 : 3 }}" class="px-6 py-4 text-center text-gray-500">Không có giá trị nào</td>
             </tr>
             @endforelse
         </tbody>

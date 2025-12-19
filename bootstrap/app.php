@@ -21,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\SetLocale::class,
             \App\Http\Middleware\HideServerSignature::class,
             \App\Http\Middleware\LogVisitor::class,
+            \App\Http\Middleware\LogFileChanges::class,
         ]);
 
         // Chỉ áp dụng TenantMiddleware cho các route không phải admin

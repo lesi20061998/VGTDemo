@@ -6,7 +6,7 @@
 
 @section('content')
 <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
-    <form method="POST" action="{{ route('cms.attributes.store') }}">
+    <form method="POST" action="{{ route('project.admin.attributes.store', request()->route('projectCode')) }}">
         @csrf
         
         <div class="mb-6">
@@ -67,7 +67,7 @@
         </div>
 
         <div class="flex justify-end space-x-4">
-            <a href="{{ route('cms.attributes.index') }}" class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">
+            <a href="{{ route('project.admin.attributes.index', request()->route('projectCode')) }}" class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">
                 Hủy
             </a>
             <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
@@ -78,9 +78,26 @@
 </div>
 
 <script>
-document.getElementById('name').addEventListener('input', function() {
-    if (!document.getElementById('slug').value) {
-        document.getElementById('slug').value = this.value.toLowerCase().replace(/\s+/g, '-');
+document.addEventListener('DOMContentLoaded', function() {
+    const nameInput = document.getElementById('name');
+    const slugInput = document.getElementById('slug');
+    
+    if (nameInput && slugInput) {
+        nameInput.addEventListener('input', function() {
+            if (!slugInput.value) {
+                // Vietnamese slug generation
+                let slug = this.value
+                    .toLowerCase()
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '') // Remove accents
+                    .replace(/đ/g, 'd').replace(/Đ/g, 'd') // Replace đ with d
+                    .replace(/[^a-z0-9\s-]/g, '') // Remove special chars
+                    .replace(/\s+/g, '-') // Replace spaces with hyphens
+                    .replace(/-+/g, '-') // Replace multiple hyphens with single
+                    .trim();
+                slugInput.value = slug;
+            }
+        });
     }
 });
 </script>

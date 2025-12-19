@@ -10,6 +10,7 @@ Route::get('/', function () {
 Route::prefix('api')->name('api.')->middleware('api')->group(function () {
     Route::post('/bridge', [App\Http\Controllers\Api\ProjectBridgeController::class, 'handle'])->name('bridge');
     Route::post('/newsletter/subscribe', [App\Http\Controllers\Api\NewsletterController::class, 'subscribe'])->name('newsletter.subscribe');
+    Route::get('/reviews/config', [App\Http\Controllers\Api\ReviewController::class, 'getConfig'])->name('reviews.config');
     Route::post('/reviews', [App\Http\Controllers\Api\ReviewController::class, 'store'])->name('reviews.store');
     Route::post('/form-submit', [App\Http\Controllers\FormSubmissionController::class, 'submit'])->name('form.submit');
 

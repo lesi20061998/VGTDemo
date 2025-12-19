@@ -1,4 +1,4 @@
-{{-- MODIFIED: 2025-01-21 --}}
+{{-- MODIFIED: 2025-12-19 --}}
 @extends('cms.layouts.app')
 
 @section('title', 'Chỉnh sửa giá trị thuộc tính')
@@ -6,7 +6,7 @@
 
 @section('content')
 <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
-    <form method="POST" action="{{ route('cms.attributes.values.update', [$attribute, $value]) }}">
+    <form method="POST" action="{{ route('project.admin.attributes.values.update', [request()->route('projectCode'), $attribute->id, $value->id]) }}">
         @csrf @method('PUT')
         
         <div class="mb-6">
@@ -40,7 +40,7 @@
         </div>
 
         <div class="flex justify-end space-x-4">
-            <a href="{{ route('cms.attributes.values.index', $attribute) }}" class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">
+            <a href="{{ route('project.admin.attributes.show', [request()->route('projectCode'), $attribute->id]) }}" class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"></a>
                 Hủy
             </a>
             <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">

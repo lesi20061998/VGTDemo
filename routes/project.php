@@ -99,6 +99,10 @@ Route::prefix('{projectCode}/admin')
 
         // Products Management
         Route::resource('products', ProductController::class);
+        Route::post('products/bulk-edit', [ProductController::class, 'bulkEdit'])->name('products.bulk-edit');
+        Route::post('products/bulk-update', [ProductController::class, 'bulkUpdate'])->name('products.bulk-update');
+        Route::post('products/toggle-badge', [ProductController::class, 'toggleBadge'])->name('products.toggle-badge');
+
         Route::resource('brands', BrandController::class);
 
         // Category Management - Consistent Routes
@@ -107,6 +111,22 @@ Route::prefix('{projectCode}/admin')
 
         // Attributes Management
         Route::resource('attributes', \App\Http\Controllers\Admin\AttributeController::class);
+
+        // Attribute Groups Management
+        Route::get('attributes/groups', [\App\Http\Controllers\Admin\AttributeController::class, 'indexGroups'])->name('attributes.groups.index');
+        Route::get('attributes/groups/create', [\App\Http\Controllers\Admin\AttributeController::class, 'createGroup'])->name('attributes.groups.create');
+        Route::post('attributes/groups', [\App\Http\Controllers\Admin\AttributeController::class, 'storeGroup'])->name('attributes.groups.store');
+        Route::get('attributes/groups/{group}/edit', [\App\Http\Controllers\Admin\AttributeController::class, 'editGroup'])->name('attributes.groups.edit');
+        Route::put('attributes/groups/{group}', [\App\Http\Controllers\Admin\AttributeController::class, 'updateGroup'])->name('attributes.groups.update');
+        Route::delete('attributes/groups/{group}', [\App\Http\Controllers\Admin\AttributeController::class, 'destroyGroup'])->name('attributes.groups.destroy');
+
+        // Attribute Values Management
+        Route::get('attributes/{attribute}/values', [\App\Http\Controllers\Admin\AttributeController::class, 'indexValues'])->name('attributes.values.index');
+        Route::get('attributes/{attribute}/values/create', [\App\Http\Controllers\Admin\AttributeController::class, 'createValue'])->name('attributes.values.create');
+        Route::post('attributes/{attribute}/values', [\App\Http\Controllers\Admin\AttributeController::class, 'storeValue'])->name('attributes.values.store');
+        Route::get('attributes/{attribute}/values/{value}/edit', [\App\Http\Controllers\Admin\AttributeController::class, 'editValue'])->name('attributes.values.edit');
+        Route::put('attributes/{attribute}/values/{value}', [\App\Http\Controllers\Admin\AttributeController::class, 'updateValue'])->name('attributes.values.update');
+        Route::delete('attributes/{attribute}/values/{value}', [\App\Http\Controllers\Admin\AttributeController::class, 'destroyValue'])->name('attributes.values.destroy');
 
         // Orders Management
         Route::get('orders/reports', [OrderController::class, 'reports'])->name('orders.reports');
@@ -202,7 +222,6 @@ Route::prefix('{projectCode}/admin')
             Route::get('ai', fn () => view('cms.settings.ai'))->name('ai');
             Route::get('reviews', fn () => view('cms.settings.reviews'))->name('reviews');
             Route::get('languages', fn () => view('cms.settings.languages'))->name('languages');
-            Route::get('frontend-features', fn () => view('cms.settings.frontend-features'))->name('frontend-features');
             Route::get('forms', fn () => view('cms.settings.forms'))->name('forms');
             Route::get('contact-buttons', fn () => view('cms.settings.contact-buttons'))->name('contact-buttons');
             Route::get('redirects', fn () => view('cms.settings.redirects'))->name('redirects');

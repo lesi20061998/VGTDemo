@@ -26,6 +26,19 @@
         <div class="lg:col-span-2 space-y-6">
             <!-- Thông tin cơ bản -->
             <div class="bg-white rounded-lg shadow-sm p-6 space-y-4">
+                <h2 class="font-semibold text-gray-900 mb-4">Thông tin cơ bản</h2>
+                
+                <!-- Tên sản phẩm -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Tên sản phẩm *
+                    </label>
+                    <input type="text" name="name" id="product-name" value="{{ old('name') }}" 
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#98191F] @error('name') border-red-500 @enderror"
+                           oninput="generateSlug()">
+                    @error('name')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
+                </div>
+                
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">SKU *</label>
@@ -35,8 +48,9 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Slug</label>
-                        <input type="text" name="slug" x-model="slug" value="{{ old('slug') }}"
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#98191F]">
+                        <input type="text" name="slug" id="product-slug" value="{{ old('slug') }}"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#98191F]"
+                               placeholder="Tự động tạo từ tên sản phẩm">
                     </div>
                 </div>
             </div>
@@ -44,16 +58,6 @@
             <!-- Nội dung sản phẩm -->
             <div class="bg-white rounded-lg shadow-sm p-6 space-y-6">
                 <h2 class="font-semibold text-gray-900 mb-4">Nội dung sản phẩm</h2>
-                
-                <!-- Tên sản phẩm -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">
-                        Tên sản phẩm *
-                    </label>
-                    <input type="text" name="name" value="{{ old('name') }}" 
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#98191F] @error('name') border-red-500 @enderror">
-                    @error('name')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
-                </div>
 
                 <!-- Mô tả ngắn -->
                 <div>
@@ -65,11 +69,13 @@
                 <!-- Mô tả đầy đủ -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Mô tả đầy đủ *
+                        Mô tả đầy đủ
                     </label>
-                    <div class="summernote-container">
-                        <textarea name="description" class="summernote" required>{{ old('description') }}</textarea>
-                    </div>
+                    <x-quill-editor 
+                        name="description" 
+                        :value="old('description')" 
+                        height="400px"
+                        placeholder="Nhập mô tả chi tiết về sản phẩm..." />
                     @error('description')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
                 </div>
 
@@ -600,8 +606,7 @@
 </form>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
+
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 <script>
 function productForm() {
@@ -706,26 +711,10 @@ function productForm() {
             
             this.analyzeSeo();
             
-            // Initialize Summernote
-            this.initSummernote();
+
         },
         
-        initSummernote() {
-            if (typeof $ !== 'undefined' && $.fn.summernote) {
-                $('.summernote').summernote({
-                    height: 300,
-                    toolbar: [
-                        ['style', ['style']],
-                        ['font', ['bold', 'underline', 'clear']],
-                        ['color', ['color']],
-                        ['para', ['ul', 'ol', 'paragraph']],
-                        ['table', ['table']],
-                        ['insert', ['link', 'picture', 'video']],
-                        ['view', ['fullscreen', 'codeview', 'help']]
-                    ]
-                });
-            }
-        },
+
         
         generateSlug(name) {
             if (!this.slug) {
@@ -918,6 +907,43 @@ function productForm() {
             this.seoScore = Math.min(score, 100);
         }
     }
+}
+
+// Function to generate slug from product name
+function generateSlug() {
+    const nameInput = document.getElementById('product-name');
+    const slugInput = document.getElementById('product-slug');
+    
+    if (!nameInput || !slugInput) return;
+    
+    let str = nameInput.value;
+    
+    // Convert to lowercase
+    str = str.toLowerCase();
+    
+    // Remove Vietnamese accents
+    str = str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    
+    // Replace đ with d
+    str = str.replace(/đ/g, 'd');
+    str = str.replace(/Đ/g, 'd');
+    
+    // Remove special characters except spaces and hyphens
+    str = str.replace(/[^a-z0-9\s-]/g, '');
+    
+    // Replace multiple spaces with single space
+    str = str.replace(/\s+/g, ' ');
+    
+    // Trim spaces
+    str = str.trim();
+    
+    // Replace spaces with hyphens
+    str = str.replace(/\s/g, '-');
+    
+    // Replace multiple hyphens with single hyphen
+    str = str.replace(/-+/g, '-');
+    
+    slugInput.value = str;
 }
 </script>
 @endsection

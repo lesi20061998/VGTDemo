@@ -14,6 +14,15 @@ class FileMonitorController extends Controller
         $logs = $this->getFileChangeLogs($projectCode);
         $projects = $this->getAvailableProjects();
         
+        // If AJAX request, return JSON
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'logs' => $logs->values(),
+                'project_code' => $projectCode,
+                'total' => $logs->count()
+            ]);
+        }
+        
         return view('superadmin.file-monitor.index', compact('logs', 'projects', 'projectCode'));
     }
     

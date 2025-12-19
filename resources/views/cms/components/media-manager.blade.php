@@ -1,20 +1,20 @@
 <!-- Media Manager Modal -->
-<div x-data="mediaManager()" x-cloak>
+<div x-data="mediaManager()" x-cloak @submit.prevent>
     <!-- Trigger Button -->
-    <button type="button" @click.prevent="openModal()" class="w-full px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+    <button type="button" @click.prevent.stop="openModal()" class="w-full px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
         <slot>Chọn từ thư viện</slot>
     </button>
 
     <!-- Modal -->
-    <div x-show="isOpen" class="fixed inset-0 z-50 overflow-y-auto" style="display: none;">
+    <div x-show="isOpen" class="fixed inset-0 z-50 overflow-y-auto" style="display: none;" @click.stop>
         <div class="flex items-center justify-center min-h-screen px-4">
-            <div x-show="isOpen" @click="closeModal()" class="fixed inset-0 bg-black bg-opacity-50"></div>
+            <div x-show="isOpen" @click.prevent.stop="closeModal()" class="fixed inset-0 bg-black bg-opacity-50"></div>
 
             <div x-show="isOpen" class="relative bg-white rounded-lg shadow-xl max-w-7xl w-full h-[95vh] flex flex-col">
                 <!-- Header -->
                 <div class="flex items-center justify-between p-4 border-b">
                     <h3 class="text-lg font-semibold">Quản lý Media</h3>
-                    <button @click="closeModal()" class="text-gray-400 hover:text-gray-600">
+                    <button type="button" @click.prevent.stop="closeModal()" class="text-gray-400 hover:text-gray-600">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
@@ -24,20 +24,20 @@
                 <!-- Toolbar -->
                 <div class="p-4 border-b bg-gray-50 flex items-center gap-3">
                     <input type="file" x-ref="fileInput" @change="uploadFiles($event)" multiple accept="image/*" class="hidden">
-                    <button type="button" @click="$refs.fileInput.click()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2">
+                    <button type="button" @click.prevent.stop="$refs.fileInput.click()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                         </svg>
                         Upload
                     </button>
-                    <button type="button" @click="showCreateFolder = true" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center gap-2">
+                    <button type="button" @click.prevent.stop="showCreateFolder = true" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center gap-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path>
                         </svg>
                         Tạo thư mục
                     </button>
                     <div class="flex-1"></div>
-                    <input type="text" x-model="searchQuery" @input="filterMedia()" placeholder="Tìm kiếm..." class="px-4 py-2 border rounded-lg w-64">
+                    <input type="text" x-model="searchQuery" @input.stop="filterMedia()" placeholder="Tìm kiếm..." class="px-4 py-2 border rounded-lg w-64">
                 </div>
 
                 <!-- Breadcrumb -->
@@ -53,15 +53,15 @@
                 </div>
 
                 <!-- Create Folder Modal -->
-                <div x-show="showCreateFolder" class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
+                <div x-show="showCreateFolder" class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10" @click.stop>
                     <div @click.stop class="bg-white rounded-lg p-6 w-96">
                         <h4 class="font-semibold mb-4">Tạo thư mục mới</h4>
-                        <input type="text" x-model="newFolderName" @keyup.enter="createFolder()" 
+                        <input type="text" x-model="newFolderName" @keyup.enter.prevent.stop="createFolder()" 
                                placeholder="Tên thư mục" class="w-full px-4 py-2 border rounded-lg mb-4">
                         <div class="flex gap-3 justify-end">
-                            <button @click="showCreateFolder = false; newFolderName = ''" 
+                            <button type="button" @click.prevent.stop="showCreateFolder = false; newFolderName = ''" 
                                     class="px-4 py-2 border rounded-lg hover:bg-gray-50">Hủy</button>
-                            <button @click="createFolder()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Tạo</button>
+                            <button type="button" @click.prevent.stop="createFolder()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Tạo</button>
                         </div>
                     </div>
                 </div>
@@ -138,8 +138,8 @@
                         <span x-text="selectedItems.length"></span> ảnh đã chọn
                     </div>
                     <div class="flex gap-3">
-                        <button type="button" @click="closeModal()" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">Hủy</button>
-                        <button type="button" @click="confirmSelection()" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Chọn ảnh</button>
+                        <button type="button" @click.prevent.stop="closeModal()" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">Hủy</button>
+                        <button type="button" @click.prevent.stop="confirmSelection()" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Chọn ảnh</button>
                     </div>
                 </div>
             </div>
@@ -162,12 +162,20 @@ function mediaManager() {
         newFolderName: '',
         baseUrl: '{{ request()->route("projectCode") ? "/" . request()->route("projectCode") . "/admin" : "/admin" }}',
         
-        openModal() {
+        openModal(event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
             this.isOpen = true;
             this.loadMedia();
         },
         
-        closeModal() {
+        closeModal(event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
             this.isOpen = false;
             this.selectedItems = [];
         },
@@ -386,7 +394,11 @@ function mediaManager() {
             }
         },
         
-        confirmSelection() {
+        confirmSelection(event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
             if (this.selectedItems.length === 0) {
                 alert('Vui lòng chọn ít nhất một ảnh');
                 return;

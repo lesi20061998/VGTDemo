@@ -39,9 +39,7 @@ class SetProjectDatabase
             $code = 'project_'.$project->id;
         }
 
-        $projectDbName = 'project_'.strtolower($code);
-
-        Log::debug("SetProjectDatabase: Connecting to {$projectDbName}");
+        Log::debug("SetProjectDatabase: Setting up project context for {$code}");
 
         // Store main database name for later reset
         $request->attributes->set('main_database', config('database.default'));
@@ -50,13 +48,18 @@ class SetProjectDatabase
         session(['current_tenant_id' => $project->id]);
 
         // Clear settings cache để load lại từ project database
-        \App\Services\SettingsService::getInstance()->clearCache();
+        if (class_exists('\App\Services\SettingsService')) {
+            \App\Services\SettingsService::getInstance()->clearCache();
+        }
+
+        // Multi-site: Each project has its own database
+        $projectDbName = 'project_'.strtolower($code);
 
         Config::set('database.connections.project', [
             'driver' => 'mysql',
             'host' => env('DB_HOST', '127.0.0.1'),
             'port' => env('DB_PORT', '3306'),
-            'database' => $projectDbName,
+            'database' => $projectDbName, // Separate database for each project
             'username' => env('DB_USERNAME', 'root'),
             'password' => env('DB_PASSWORD', ''),
             'charset' => 'utf8mb4',

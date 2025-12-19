@@ -30,13 +30,25 @@ class ProductRequest extends FormRequest
 
     public function rules()
     {
-        $productId = $this->route('product')?->id;
+        // Get product ID from route parameter
+        $productParam = $this->route('product');
+        $productId = is_object($productParam) ? $productParam->id : $productParam;
+        $projectCode = $this->route('projectCode');
 
-        $allowed = config('cms.media.allowed_types', ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'doc', 'docx']);
-        $mimeExt = implode(',', array_map(fn ($ext) => $ext, $allowed));
+        // Dynamic table names based on context
+        if ($projectCode) {
+            // Project context - always use project tables
+            $productsTable = 'products_enhanced';
+            $categoriesTable = 'product_categories';
+            $brandsTable = 'brands';
+        } else {
+            // Legacy CMS context (should not be used anymore)
+            $productsTable = 'products';
+            $categoriesTable = 'product_categories';
+            $brandsTable = 'brands';
+        }
 
-        // sizes are in KB in config/cms.php -> MEDIA_MAX_SIZE
-        $maxKb = (int) config('cms.media.max_file_size', 2048);
+        // File upload validation removed since we're using media manager
 
         return [
             'name' => 'required|string|max:255',
@@ -44,7 +56,7 @@ class ProductRequest extends FormRequest
                 'nullable',
                 'string',
                 'max:255',
-                Rule::unique('products_enhanced', 'slug')->ignore($productId),
+                Rule::unique($productsTable, 'slug')->ignore($productId),
             ],
             'short_description' => 'nullable|string|max:500',
             'description' => 'required|string',
@@ -52,25 +64,34 @@ class ProductRequest extends FormRequest
                 'required',
                 'string',
                 'max:100',
-                Rule::unique('products_enhanced', 'sku')->ignore($productId),
+                Rule::unique($productsTable, 'sku')->ignore($productId),
             ],
             'price' => 'nullable|numeric|min:0',
             'sale_price' => 'nullable|numeric|min:0|lt:price',
             'has_price' => 'boolean',
             'stock_quantity' => 'integer|min:0',
             'manage_stock' => 'boolean',
-            'stock_status' => 'required|in:in_stock,out_of_stock,on_backorder',
+            'stock_status' => 'in:in_stock,out_of_stock,on_backorder',
             'weight' => 'nullable|numeric|min:0',
             'dimensions' => 'nullable|string|max:100',
-            'product_category_id' => 'nullable|exists:product_categories,id',
-            'brand_id' => 'nullable|exists:brands,id',
+            'product_category_id' => "nullable|exists:{$categoriesTable},id",
+            'brand_id' => "nullable|exists:{$brandsTable},id",
             'status' => 'required|in:draft,published,archived',
             'is_featured' => 'boolean',
             'meta_title' => 'nullable|string|max:255',
             'meta_description' => 'nullable|string|max:500',
-            'featured_image' => ['nullable', 'file', 'mimes:'.$mimeExt, 'max:'.$maxKb],
-            'images.*' => ['nullable', 'file', 'mimes:'.$mimeExt, 'max:'.$maxKb],
-            'images' => ['nullable', 'array'],
+            'featured_image' => 'nullable|string',
+            'gallery' => 'nullable|array',
+            'categories' => 'nullable|array',
+            'categories.*' => "exists:{$categoriesTable},id",
+            'brands' => 'nullable|array',
+            'brands.*' => "exists:{$brandsTable},id",
+            'focus_keyword' => 'nullable|string',
+            'schema_type' => 'nullable|string',
+            'canonical_url' => 'nullable|url',
+            'noindex' => 'boolean',
+            'language_id' => 'required|integer|min:1', // REQUIRED for multi-language support
+
         ];
     }
 
