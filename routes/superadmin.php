@@ -67,6 +67,7 @@ Route::middleware([
     
     // Export project config with debug info
     Route::get('projects/{project}/export-config', [\App\Http\Controllers\SuperAdmin\ProjectController::class, 'exportConfig'])->name('projects.export-config');
+    Route::get('projects/{project}/export-viewer', [\App\Http\Controllers\SuperAdmin\ProjectController::class, 'exportViewer'])->name('projects.export-viewer');
 
     // Remote CMS Management - SuperAdmin can manage any project's CMS
     Route::prefix('projects/{projectCode}/cms')->name('projects.cms.')->group(function () {

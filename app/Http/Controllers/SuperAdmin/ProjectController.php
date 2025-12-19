@@ -469,4 +469,321 @@ class ProjectController extends Controller
 
         return $remoteService->syncRemoteData($project->remote_url, $project->code, $data);
     }
+
+    public function exportConfig(Request $request, Project $project)
+    {
+        try {
+            // Get current execution trace
+            $trace = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 10);
+            $executionTrace = collect($trace)->map(function ($item) {
+                return [
+                    'file' => $item['file'] ?? 'unknown',
+                    'line' => $item['line'] ?? 0,
+                    'function' => $item['function'] ?? 'unknown',
+                    'class' => $item['class'] ?? null,
+                ];
+            });
+
+            // Get project settings
+            $settings = ProjectSetting::where('project_id', $project->id)->get()->pluck('value', 'key');
+            
+            // Get system modules
+            $systemModules = collect(config('system_menu'))->map(function ($module) use ($settings) {
+                return [
+                    'title' => $module['title'],
+                    'description' => $module['description'],
+                    'permission' => $module['permission'],
+                    'enabled' => isset($settings[$module['permission']]) && $settings[$module['permission']] == '1',
+                ];
+            });
+
+            // Get file change logs
+            $logs = $this->getProjectLogs($project->code);
+
+            // Get project users
+            $users = $this->getProjectUsers($project);
+
+            // Get remote stats if available
+            $remoteStats = null;
+            if ($project->remote_url) {
+                try {
+                    $remoteService = new \App\Services\RemoteProjectService;
+                    $remoteStats = $remoteService->getRemoteStats($project->remote_url, $project->code);
+                } catch (\Exception $e) {
+                    $remoteStats = ['error' => $e->getMessage()];
+                }
+            }
+
+            // Get current file being processed (if eval is used)
+            $currentFile = $this->getCurrentProcessingFile();
+
+            // Prepare export data
+            $exportData = [
+                'project' => [
+                    'id' => $project->id,
+                    'name' => $project->name,
+                    'code' => $project->code,
+                    'status' => $project->status,
+                    'remote_url' => $project->remote_url,
+                    'created_at' => $project->created_at,
+                    'updated_at' => $project->updated_at,
+                ],
+                'settings' => $settings,
+                'modules' => $systemModules,
+                'users' => $users,
+                'remote_stats' => $remoteStats,
+                'logs' => $logs->take(50), // Last 50 logs
+                'debug_info' => [
+                    'export_time' => now()->toISOString(),
+                    'export_by' => auth()->user()?->name ?? 'System',
+                    'execution_trace' => $executionTrace,
+                    'current_file' => $currentFile,
+                    'memory_usage' => memory_get_usage(true),
+                    'peak_memory' => memory_get_peak_usage(true),
+                    'included_files_count' => count(get_included_files()),
+                    'php_version' => PHP_VERSION,
+                    'laravel_version' => app()->version(),
+                ],
+                'file_analysis' => $this->analyzeProjectFiles($project),
+            ];
+
+            // Add eval detection if requested
+            if ($request->get('include_eval')) {
+                $exportData['eval_detection'] = $this->detectEvalUsage($project);
+            }
+
+            // Return as JSON or download
+            if ($request->get('format') === 'download') {
+                $filename = "project-{$project->code}-config-" . now()->format('Y-m-d-H-i-s') . '.json';
+                
+                return response()->json($exportData, 200, [
+                    'Content-Type' => 'application/json',
+                    'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+                ]);
+            }
+
+            return response()->json($exportData, 200, [], JSON_PRETTY_PRINT);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Export failed',
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ], 500);
+        }
+    }
+
+    private function getProjectLogs(string $projectCode): \Illuminate\Support\Collection
+    {
+        $logPath = storage_path("logs/file-changes-{$projectCode}.log");
+        
+        if (!file_exists($logPath)) {
+            return collect();
+        }
+        
+        $content = file_get_contents($logPath);
+        $lines = array_filter(explode("\n", $content));
+        
+        return collect($lines)->map(function($line) {
+            $data = json_decode($line, true);
+            return $data ? (object) $data : null;
+        })->filter()->sortByDesc('timestamp');
+    }
+
+    private function getProjectUsers(Project $project): \Illuminate\Support\Collection
+    {
+        try {
+            if ($project->remote_url) {
+                // For remote projects, we might not have direct access
+                return collect();
+            }
+
+            $dbName = $this->getProjectDatabaseName($project);
+            $mainDb = config('database.connections.mysql.database');
+
+            \DB::statement("USE `{$dbName}`");
+            $users = \DB::table('users')->select('id', 'name', 'email', 'username', 'role', 'created_at')->get();
+            \DB::statement("USE `{$mainDb}`");
+
+            return collect($users);
+        } catch (\Exception $e) {
+            return collect();
+        }
+    }
+
+    private function getCurrentProcessingFile(): array
+    {
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+        $currentFile = null;
+        
+        foreach ($trace as $item) {
+            if (isset($item['file']) && !str_contains($item['file'], 'vendor/')) {
+                $currentFile = [
+                    'file' => $item['file'],
+                    'line' => $item['line'] ?? 0,
+                    'function' => $item['function'] ?? 'unknown',
+                    'relative_path' => str_replace(base_path(), '', $item['file']),
+                ];
+                break;
+            }
+        }
+
+        return $currentFile ?? ['file' => 'unknown', 'line' => 0, 'function' => 'unknown', 'relative_path' => 'unknown'];
+    }
+
+    private function analyzeProjectFiles(Project $project): array
+    {
+        $analysis = [
+            'total_files' => 0,
+            'recent_changes' => [],
+            'file_types' => [],
+            'large_files' => [],
+        ];
+
+        try {
+            // Analyze recent file changes
+            $directories = [
+                'app/Http/Controllers',
+                'app/Models',
+                'resources/views',
+                'routes',
+                'config',
+                'database/migrations'
+            ];
+
+            foreach ($directories as $dir) {
+                $fullPath = base_path($dir);
+                if (is_dir($fullPath)) {
+                    $files = new \RecursiveIteratorIterator(
+                        new \RecursiveDirectoryIterator($fullPath)
+                    );
+
+                    foreach ($files as $file) {
+                        if ($file->isFile()) {
+                            $analysis['total_files']++;
+                            
+                            $extension = $file->getExtension();
+                            $analysis['file_types'][$extension] = ($analysis['file_types'][$extension] ?? 0) + 1;
+                            
+                            // Check for recent changes (last 24 hours)
+                            if (filemtime($file->getPathname()) > (time() - 86400)) {
+                                $analysis['recent_changes'][] = [
+                                    'file' => str_replace(base_path(), '', $file->getPathname()),
+                                    'modified' => date('Y-m-d H:i:s', filemtime($file->getPathname())),
+                                    'size' => $file->getSize(),
+                                ];
+                            }
+                            
+                            // Check for large files (> 1MB)
+                            if ($file->getSize() > 1048576) {
+                                $analysis['large_files'][] = [
+                                    'file' => str_replace(base_path(), '', $file->getPathname()),
+                                    'size' => $file->getSize(),
+                                    'size_mb' => round($file->getSize() / 1048576, 2),
+                                ];
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Sort by modification time
+            usort($analysis['recent_changes'], function($a, $b) {
+                return strtotime($b['modified']) - strtotime($a['modified']);
+            });
+
+            // Limit results
+            $analysis['recent_changes'] = array_slice($analysis['recent_changes'], 0, 20);
+            $analysis['large_files'] = array_slice($analysis['large_files'], 0, 10);
+
+        } catch (\Exception $e) {
+            $analysis['error'] = $e->getMessage();
+        }
+
+        return $analysis;
+    }
+
+    private function detectEvalUsage(Project $project): array
+    {
+        $evalDetection = [
+            'found_eval' => false,
+            'eval_files' => [],
+            'suspicious_functions' => [],
+        ];
+
+        try {
+            $directories = [
+                'app',
+                'resources/views',
+                'routes',
+                'config'
+            ];
+
+            $suspiciousFunctions = ['eval', 'exec', 'system', 'shell_exec', 'passthru', 'file_get_contents', 'file_put_contents'];
+
+            foreach ($directories as $dir) {
+                $fullPath = base_path($dir);
+                if (is_dir($fullPath)) {
+                    $files = new \RecursiveIteratorIterator(
+                        new \RecursiveDirectoryIterator($fullPath)
+                    );
+
+                    foreach ($files as $file) {
+                        if ($file->isFile() && in_array($file->getExtension(), ['php', 'blade.php'])) {
+                            $content = file_get_contents($file->getPathname());
+                            
+                            foreach ($suspiciousFunctions as $func) {
+                                if (strpos($content, $func . '(') !== false) {
+                                    $evalDetection['suspicious_functions'][] = [
+                                        'file' => str_replace(base_path(), '', $file->getPathname()),
+                                        'function' => $func,
+                                        'lines' => $this->findFunctionLines($content, $func),
+                                    ];
+                                    
+                                    if ($func === 'eval') {
+                                        $evalDetection['found_eval'] = true;
+                                        $evalDetection['eval_files'][] = str_replace(base_path(), '', $file->getPathname());
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+        } catch (\Exception $e) {
+            $evalDetection['error'] = $e->getMessage();
+        }
+
+        return $evalDetection;
+    }
+
+    private function findFunctionLines(string $content, string $function): array
+    {
+        $lines = explode("\n", $content);
+        $foundLines = [];
+
+        foreach ($lines as $lineNumber => $line) {
+            if (strpos($line, $function . '(') !== false) {
+                $foundLines[] = [
+                    'line_number' => $lineNumber + 1,
+                    'content' => trim($line),
+                ];
+            }
+        }
+
+        return array_slice($foundLines, 0, 5); // Limit to 5 occurrences per file
+    }
+
+    public function exportViewer(Request $request, Project $project)
+    {
+        // Get export data
+        $exportRequest = $request->duplicate();
+        $exportRequest->query->set('include_eval', '1'); // Always include eval detection for viewer
+        
+        $response = $this->exportConfig($exportRequest, $project);
+        $exportData = $response->getData(true);
+
+        return view('superadmin.projects.export-viewer', compact('project', 'exportData'));
+    }
 }
