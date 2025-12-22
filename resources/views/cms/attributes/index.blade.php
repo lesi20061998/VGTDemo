@@ -5,6 +5,8 @@
 @section('page-title', 'Thuộc tính sản phẩm')
 
 @section('content')
+@include('cms.components.alert')
+
 <div class="flex justify-between items-center mb-6">
     <form method="GET" class="flex space-x-2">
         <input type="text" name="search" value="{{ request('search') }}" 

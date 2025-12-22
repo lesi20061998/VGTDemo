@@ -1,12 +1,13 @@
 <?php
+
 // MODIFIED: 2025-01-21
 
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\OrderRequest;
 use App\Models\Order;
 use App\Models\OrderItem;
-use App\Http\Requests\OrderRequest;
 use App\Traits\HasAlerts;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -14,10 +15,11 @@ use Illuminate\Support\Facades\Cache;
 class OrderController extends Controller
 {
     use HasAlerts;
+
     public function index(Request $request)
     {
         $orders = Order::with(['items'])
-            ->when($request->search, fn($q) => $q->search($request->search))
+            ->when($request->search, fn ($q) => $q->search($request->search))
             ->filter($request->only(['status', 'payment_status', 'date_from', 'date_to']))
             ->latest()
             ->paginate(config('app.admin_per_page', 20));
@@ -28,12 +30,14 @@ class OrderController extends Controller
     public function show(Order $order)
     {
         $order->load(['items.product', 'statusHistories.user']);
+
         return view('cms.orders.show', compact('order'));
     }
 
     public function edit(Order $order)
     {
         $order->load('items.product');
+
         return view('cms.orders.edit', compact('order'));
     }
 
@@ -44,7 +48,7 @@ class OrderController extends Controller
 
         return redirect()->route('cms.orders.show', $order)->with('alert', [
             'type' => 'success',
-            'message' => 'Cập nhật đơn hàng thành công!'
+            'message' => 'Cập nhật đơn hàng thành công!',
         ]);
     }
 
@@ -52,12 +56,12 @@ class OrderController extends Controller
     {
         $validated = $request->validate([
             'status' => 'required|in:pending,processing,shipped,delivered,cancelled,refunded',
-            'notes' => 'nullable|string|max:500'
+            'notes' => 'nullable|string|max:500',
         ]);
 
         $order->updateStatus(
-            $validated['status'], 
-            $validated['notes'] ?? null, 
+            $validated['status'],
+            $validated['notes'] ?? null,
             auth()->id()
         );
 
@@ -66,7 +70,7 @@ class OrderController extends Controller
 
         return redirect()->back()->with('alert', [
             'type' => 'success',
-            'message' => 'Cập nhật trạng thái đơn hàng thành công!'
+            'message' => 'Cập nhật trạng thái đơn hàng thành công!',
         ]);
     }
 
@@ -85,25 +89,25 @@ class OrderController extends Controller
 
         return redirect()->back()->with('alert', [
             'type' => 'success',
-            'message' => 'Cập nhật trạng thái thanh toán thành công!'
+            'message' => 'Cập nhật trạng thái thanh toán thành công!',
         ]);
     }
 
     public function addNote(Request $request, Order $order)
     {
         $validated = $request->validate([
-            'internal_notes' => 'required|string|max:1000'
+            'internal_notes' => 'required|string|max:1000',
         ]);
 
         $order->update([
-            'internal_notes' => $order->internal_notes . "\n\n" . 
-                              "[" . now()->format('d/m/Y H:i') . " - " . auth()->user()->name . "]\n" . 
-                              $validated['internal_notes']
+            'internal_notes' => $order->internal_notes."\n\n".
+                              '['.now()->format('d/m/Y H:i').' - '.auth()->user()->name."]\n".
+                              $validated['internal_notes'],
         ]);
 
         return redirect()->back()->with('alert', [
             'type' => 'success',
-            'message' => 'Thêm ghi chú thành công!'
+            'message' => 'Thêm ghi chú thành công!',
         ]);
     }
 
@@ -115,7 +119,7 @@ class OrderController extends Controller
 
         return redirect()->route('cms.orders.index')->with('alert', [
             'type' => 'success',
-            'message' => 'Xóa đơn hàng thành công!'
+            'message' => 'Xóa đơn hàng thành công!',
         ]);
     }
 
@@ -125,25 +129,30 @@ class OrderController extends Controller
         $dateFrom = $request->input('date_from', now()->startOfMonth()->toDateString());
         $dateTo = $request->input('date_to', now()->endOfMonth()->toDateString());
 
-        $cacheKey = 'order_reports_' . md5($dateFrom . $dateTo);
+        $cacheKey = 'order_reports_'.md5($dateFrom.$dateTo);
 
         $reportData = Cache::remember($cacheKey, 60, function () use ($dateFrom, $dateTo) {
             return [
-                'total_sales' => Order::whereBetween('created_at', [$dateFrom, $dateTo])
+                'total_sales' => Order::withoutGlobalScope('project')
+                    ->whereBetween('created_at', [$dateFrom, $dateTo])
                     ->where('payment_status', 'paid')
                     ->sum('total_amount'),
-                'total_orders' => Order::whereBetween('created_at', [$dateFrom, $dateTo])->count(),
-                'orders_by_status' => Order::whereBetween('created_at', [$dateFrom, $dateTo])
+                'total_orders' => Order::withoutGlobalScope('project')
+                    ->whereBetween('created_at', [$dateFrom, $dateTo])->count(),
+                'orders_by_status' => Order::withoutGlobalScope('project')
+                    ->whereBetween('created_at', [$dateFrom, $dateTo])
                     ->selectRaw('status, COUNT(*) as count')
                     ->groupBy('status')
                     ->pluck('count', 'status'),
-                'daily_revenue' => Order::whereBetween('created_at', [$dateFrom, $dateTo])
+                'daily_revenue' => Order::withoutGlobalScope('project')
+                    ->whereBetween('created_at', [$dateFrom, $dateTo])
                     ->where('payment_status', 'paid')
                     ->selectRaw('DATE(created_at) as date, SUM(total_amount) as revenue, COUNT(*) as count')
                     ->groupBy('date')
                     ->orderBy('date')
                     ->get(),
-                'top_products' => OrderItem::whereBetween('created_at', [$dateFrom, $dateTo])
+                'top_products' => OrderItem::withoutGlobalScope('project')
+                    ->whereBetween('created_at', [$dateFrom, $dateTo])
                     ->selectRaw('product_name, SUM(quantity) as total_quantity, SUM(total_price) as total_revenue, COUNT(DISTINCT order_id) as order_count')
                     ->groupBy('product_name')
                     ->orderByDesc('total_revenue')

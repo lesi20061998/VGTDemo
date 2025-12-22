@@ -41,7 +41,13 @@
             </div>
 
             <div id="dropZone" class="min-h-[300px] border-2 border-dashed border-gray-300 rounded-lg p-4" data-area="homepage-main">
-                <p class="text-gray-400 text-center py-20">Drag widgets here to build your page</p>
+                <p class="text-gray-400 text-center py-20">
+                    <svg class="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    Drag widgets here to build your page<br>
+                    <small class="text-xs">You can reorder widgets by dragging them</small>
+                </p>
             </div>
         </div>
 
@@ -91,14 +97,53 @@
 </div>
 
 <style>
-.widget-dragging { opacity: 0.5; transform: scale(0.95); }
+.widget-dragging { 
+    opacity: 0.5; 
+    transform: scale(0.95); 
+}
 
+.widget-item {
+    transition: all 0.2s ease;
+}
+
+.widget-item:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.widget-item.opacity-50 {
+    opacity: 0.5;
+    transform: rotate(2deg);
+}
+
+.drag-handle {
+    transition: all 0.2s ease;
+}
+
+.drag-handle:hover {
+    transform: scale(1.1);
+}
+
+.drop-zone-active {
+    background-color: #dbeafe !important;
+    border-color: #3b82f6 !important;
+    border-style: solid !important;
+}
+
+.widget-item[draggable="true"] {
+    cursor: grab;
+}
+
+.widget-item[draggable="true"]:active {
+    cursor: grabbing;
+}
 </style>
 
 <script>
 let draggedElement = null;
 let existingWidgetsGrouped = @json($existingWidgets ?? []);
 let widgets = [];
+let draggedWidgetItem = null; // For reordering widgets within areas
 
 // Flatten grouped widgets
 Object.values(existingWidgetsGrouped).forEach(group => {
@@ -219,50 +264,138 @@ function renderWidgets() {
     const sidebarWidgets = widgets.filter(w => w.area === 'sidebar');
     const footerWidgets = widgets.filter(w => w.area === 'footer');
     
-    // Render homepage widgets
+    // Render homepage widgets with sortable functionality
     if (homepageWidgets.length === 0) {
         dropZone.innerHTML = '<p class="text-gray-400 text-center py-20">Drag widgets here to build your page</p>';
     } else {
         dropZone.innerHTML = homepageWidgets.map((widget) => {
             const globalIndex = widgets.indexOf(widget);
-            return renderWidgetItem(widget, globalIndex);
+            return renderWidgetItem(widget, globalIndex, true); // true for sortable
         }).join('');
+        
+        // Make homepage widgets sortable
+        makeSortable(dropZone, 'homepage-main');
     }
     
-    // Render sidebar widgets
+    // Render sidebar widgets with sortable functionality
     if (sidebarWidgets.length === 0) {
         sidebarZone.innerHTML = '<p class="text-gray-400 text-center py-12">Drag widgets here for sidebar</p>';
     } else {
         sidebarZone.innerHTML = sidebarWidgets.map((widget) => {
             const globalIndex = widgets.indexOf(widget);
-            return renderWidgetItem(widget, globalIndex);
+            return renderWidgetItem(widget, globalIndex, true); // true for sortable
         }).join('');
+        
+        // Make sidebar widgets sortable
+        makeSortable(sidebarZone, 'sidebar');
     }
   
-// Render footer widgets
+    // Render footer widgets with sortable functionality
     if (footerWidgets.length === 0) {
         footerZone.innerHTML = '<p class="text-gray-400 text-center py-12">Drag widgets here for footer</p>';
     } else {
         footerZone.innerHTML = footerWidgets.map((widget) => {
             const globalIndex = widgets.indexOf(widget);
-            return renderWidgetItem(widget, globalIndex);
+            return renderWidgetItem(widget, globalIndex, true); // true for sortable
         }).join('');
+        
+        // Make footer widgets sortable
+        makeSortable(footerZone, 'footer');
     }
 }
 
-function renderWidgetItem(widget, globalIndex) {
+function renderWidgetItem(widget, globalIndex, sortable = false) {
+    const dragHandle = sortable ? `
+        <div class="drag-handle cursor-move text-gray-400 hover:text-gray-600 mr-2" title="Drag to reorder">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path>
+            </svg>
+        </div>
+    ` : '';
+    
     return `
-        <div class="mb-4 border rounded-lg p-4 bg-blue-50">
+        <div class="widget-item mb-4 border rounded-lg p-4 bg-blue-50" data-widget-index="${globalIndex}" ${sortable ? 'draggable="true"' : ''}>
             <div class="flex justify-between items-center mb-2">
-                <span class="font-semibold">${widget.name}</span>
+                <div class="flex items-center">
+                    ${dragHandle}
+                    <span class="font-semibold">${widget.name}</span>
+                </div>
                 <div class="flex gap-2">
-                    <button onclick="editWidget(${globalIndex})" class="text-blue-600 hover:text-blue-800">Edit</button>
-                    <button onclick="removeWidget(${globalIndex})" class="text-red-600 hover:text-red-800">Remove</button>
+                    <button onclick="editWidget(${globalIndex})" class="text-blue-600 hover:text-blue-800 text-sm px-2 py-1 rounded">Edit</button>
+                    <button onclick="removeWidget(${globalIndex})" class="text-red-600 hover:text-red-800 text-sm px-2 py-1 rounded">Remove</button>
                 </div>
             </div>
-            <div class="text-sm text-gray-600">Type: ${widget.type} | Area: ${widget.area}</div>
+            <div class="text-sm text-gray-600">Type: ${widget.type} | Area: ${widget.area} | Order: ${widget.sort_order}</div>
         </div>
     `;
+}
+
+// Add sortable functionality to widget areas
+function makeSortable(container, area) {
+    const widgetItems = container.querySelectorAll('.widget-item');
+    
+    widgetItems.forEach(item => {
+        item.addEventListener('dragstart', (e) => {
+            e.dataTransfer.setData('text/plain', '');
+            item.classList.add('opacity-50');
+            draggedWidgetItem = item;
+        });
+        
+        item.addEventListener('dragend', (e) => {
+            item.classList.remove('opacity-50');
+            draggedWidgetItem = null;
+        });
+        
+        item.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            const afterElement = getDragAfterElement(container, e.clientY);
+            if (afterElement == null) {
+                container.appendChild(draggedWidgetItem);
+            } else {
+                container.insertBefore(draggedWidgetItem, afterElement);
+            }
+        });
+    });
+    
+    // Update sort order when drag ends
+    container.addEventListener('drop', (e) => {
+        e.preventDefault();
+        updateSortOrder(area);
+    });
+}
+
+function getDragAfterElement(container, y) {
+    const draggableElements = [...container.querySelectorAll('.widget-item:not(.opacity-50)')];
+    
+    return draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        
+        if (offset < 0 && offset > closest.offset) {
+            return { offset: offset, element: child };
+        } else {
+            return closest;
+        }
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
+
+function updateSortOrder(area) {
+    const areaWidgets = widgets.filter(w => w.area === area);
+    const container = area === 'homepage-main' ? dropZone : 
+                     area === 'sidebar' ? sidebarZone : footerZone;
+    
+    const widgetItems = container.querySelectorAll('.widget-item');
+    
+    widgetItems.forEach((item, index) => {
+        const widgetIndex = parseInt(item.dataset.widgetIndex);
+        const widget = widgets[widgetIndex];
+        if (widget) {
+            widget.sort_order = index;
+        }
+    });
+    
+    // Re-render to reflect new order
+    renderWidgets();
 }
 function removeWidget(index) {
     widgets.splice(index, 1);
@@ -422,12 +555,15 @@ async function saveWidgets() {
     btn.disabled = true;
     btn.textContent = 'Saving...';
     
-    const baseUrl = '/cms/admin/widgets';
+    const baseUrl = '{{ isset($currentProject) ? route("project.admin.widgets.store", $currentProject->code) : "#" }}';
+    
+    let successCount = 0;
+    let errorCount = 0;
     
     // Save widgets
     for (const widget of widgets) {
         try {
-            await fetch(baseUrl, {
+            const response = await fetch(baseUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -436,17 +572,34 @@ async function saveWidgets() {
                 },
                 body: JSON.stringify(widget)
             });
+            
+            if (response.ok) {
+                successCount++;
+            } else {
+                errorCount++;
+                const errorData = await response.json();
+                console.error('Error saving widget:', errorData);
+            }
         } catch (error) {
+            errorCount++;
             console.error('Error saving widget:', error);
         }
     }
     
-    btn.textContent = 'Saved!';
+    if (errorCount === 0) {
+        btn.textContent = 'Saved!';
+        btn.className = btn.className.replace('bg-[#98191F]', 'bg-green-600');
+    } else {
+        btn.textContent = `Saved ${successCount}, Failed ${errorCount}`;
+        btn.className = btn.className.replace('bg-[#98191F]', 'bg-yellow-600');
+    }
+    
     setTimeout(() => {
         btn.disabled = false;
         btn.textContent = 'Save All';
+        btn.className = btn.className.replace('bg-green-600', 'bg-[#98191F]').replace('bg-yellow-600', 'bg-[#98191F]');
         isSaving = false;
-    }, 2000);
+    }, 3000);
 }
 </script>
 @endsection

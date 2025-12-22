@@ -122,12 +122,12 @@
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Giá gốc (₫)</label>
                                 <input type="number" name="price" value="{{ old('price') }}" x-model="basePrice" @input="validateSalePrice()"
-                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#98191F]">
+                                       max="9999999999999.99" step="0.01" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#98191F]">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Giá khuyến mãi (₫)</label>
                                 <input type="number" name="sale_price" value="{{ old('sale_price') }}" x-model="salePrice" @input="validateSalePrice()"
-                                       :max="basePrice" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#98191F]">
+                                       max="9999999999999.99" step="0.01" :max="basePrice" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#98191F]">
                                 <p x-show="salePriceError" class="text-red-600 text-sm mt-1" x-text="salePriceError"></p>
                             </div>
                         </div>
@@ -822,6 +822,21 @@ function productForm() {
         },
         
         validateSalePrice() {
+            const maxPrice = 9999999999999.99; // Giới hạn tối đa cho decimal(15,2)
+            
+            // Kiểm tra giá trị tối đa
+            if (this.salePrice && parseFloat(this.salePrice) > maxPrice) {
+                this.salePriceError = 'Giá khuyến mãi không được vượt quá 9,999,999,999,999.99 VNĐ';
+                return;
+            }
+            
+            if (this.basePrice && parseFloat(this.basePrice) > maxPrice) {
+                // Cũng kiểm tra giá gốc nếu cần
+                this.salePriceError = 'Giá gốc không được vượt quá 9,999,999,999,999.99 VNĐ';
+                return;
+            }
+            
+            // Kiểm tra giá khuyến mãi phải nhỏ hơn giá gốc
             if (this.salePrice && this.basePrice && parseFloat(this.salePrice) >= parseFloat(this.basePrice)) {
                 this.salePriceError = 'Giá khuyến mãi phải thấp hơn giá gốc';
             } else {

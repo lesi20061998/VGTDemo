@@ -5,6 +5,13 @@
 @section('page-title', 'Đơn hàng')
 
 @section('content')
+
+@if(session('debug_info'))
+    <div class="mb-4 p-4 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded">
+        <strong>Debug Info:</strong> {{ session('debug_info') }}
+    </div>
+@endif
+
 <div class="flex justify-between items-center mb-6">
     <form method="GET" class="flex space-x-2">
         <input type="text" name="search" value="{{ request('search') }}" 

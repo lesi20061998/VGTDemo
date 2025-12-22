@@ -65,7 +65,7 @@
     </div>
 
     <!-- Attribute Values -->
-    <div class="lg:col-span-2 bg-white rounded-lg shadow-md overflow-hidden">
+    <div class="lg:col-span-2 bg-white rounded-lg shadow-md h-fit overflow-scroll">
         <div class="p-4 border-b flex justify-between items-center">
             <h3 class="text-lg font-semibold">Giá trị thuộc tính ({{ $attribute->values->count() }})</h3>
         </div>

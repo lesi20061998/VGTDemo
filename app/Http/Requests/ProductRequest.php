@@ -66,8 +66,8 @@ class ProductRequest extends FormRequest
                 'max:100',
                 Rule::unique($productsTable, 'sku')->ignore($productId),
             ],
-            'price' => 'nullable|numeric|min:0',
-            'sale_price' => 'nullable|numeric|min:0|lt:price',
+            'price' => 'nullable|numeric|min:0|max:9999999999999.99',
+            'sale_price' => 'nullable|numeric|min:0|max:9999999999999.99|lt:price',
             'has_price' => 'boolean',
             'stock_quantity' => 'integer|min:0',
             'manage_stock' => 'boolean',
@@ -102,6 +102,8 @@ class ProductRequest extends FormRequest
             'sku.required' => 'Mã SKU là bắt buộc.',
             'sku.unique' => 'Mã SKU đã tồn tại.',
             'description.required' => 'Mô tả sản phẩm là bắt buộc.',
+            'price.max' => 'Giá sản phẩm không được vượt quá 9,999,999,999,999.99 VNĐ.',
+            'sale_price.max' => 'Giá khuyến mãi không được vượt quá 9,999,999,999,999.99 VNĐ.',
             'sale_price.lt' => 'Giá khuyến mãi phải nhỏ hơn giá gốc.',
         ];
     }

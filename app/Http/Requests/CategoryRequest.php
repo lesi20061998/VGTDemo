@@ -5,7 +5,6 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class CategoryRequest extends FormRequest
 {
@@ -28,30 +27,27 @@ class CategoryRequest extends FormRequest
         return auth()->check() && auth()->user()->hasPermission('manage_categories');
     }
 
-    public function rules()
+    public function rules(): array
     {
         // Get category ID from route parameter
         $categoryId = null;
         if ($this->route('category')) {
-            $categoryId = is_object($this->route('category')) 
-                ? $this->route('category')->id 
+            $categoryId = is_object($this->route('category'))
+                ? $this->route('category')->id
                 : $this->route('category');
         }
-        
-        // Determine table name based on context
-        $tableName = 'product_categories';
-        
+
         return [
-            'name' => 'required|string|max:255',
-            'slug' => [
-                'nullable',
+            'name' => [
+                'required',
                 'string',
                 'max:255',
-                Rule::unique($tableName, 'slug')->ignore($categoryId),
+                // We'll handle unique validation in controller to show warning alerts
             ],
+            'slug' => 'nullable|string|max:255',
             'description' => 'nullable|string',
             'image' => 'nullable|string|max:500',
-            'parent_id' => "nullable|exists:{$tableName},id",
+            'parent_id' => 'nullable|exists:product_categories,id',
             'sort_order' => 'nullable|integer|min:0',
             'is_active' => 'nullable|boolean',
             'meta_title' => 'nullable|string|max:255',
@@ -59,12 +55,15 @@ class CategoryRequest extends FormRequest
         ];
     }
 
-    public function messages()
+    public function messages(): array
     {
         return [
             'name.required' => 'Tên danh mục là bắt buộc.',
-            'slug.unique' => 'Slug đã tồn tại.',
             'parent_id.exists' => 'Danh mục cha không tồn tại.',
+            'image.string' => 'Hình ảnh phải là đường dẫn URL hợp lệ.',
+            'image.max' => 'Đường dẫn hình ảnh không được vượt quá 500 ký tự.',
+            'meta_title.max' => 'Tiêu đề SEO không được vượt quá 255 ký tự.',
+            'meta_description.max' => 'Mô tả SEO không được vượt quá 500 ký tự.',
         ];
     }
 }

@@ -13,10 +13,10 @@
                 <p class="text-sm text-gray-500">Quản lý nội dung website</p>
             </div>
             <div class="flex gap-3">
-                <a href="{{ route('cms.posts.create', ['type' => 'post']) }}" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                <a href="{{ isset($currentProject) ? route('project.admin.posts.create', $currentProject->code) : '#' }}" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
                     + Thêm bài viết
                 </a>
-                <a href="{{ route('cms.posts.create', ['type' => 'page']) }}" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                <a href="{{ isset($currentProject) ? route('project.admin.pages.create', $currentProject->code) : '#' }}" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
                     + Thêm trang
                 </a>
             </div>
@@ -102,8 +102,8 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <div class="flex items-center justify-end gap-2">
-                                <a href="{{ route('cms.posts.edit', $post) }}" class="text-blue-600 hover:text-blue-900">Sửa</a>
-                                <form method="POST" action="{{ route('cms.posts.destroy', $post) }}" class="inline" 
+                                <a href="{{ isset($currentProject) ? route('project.admin.posts.edit', [$currentProject->code, $post]) : '#' }}" class="text-blue-600 hover:text-blue-900">Sửa</a>
+                                <form method="POST" action="{{ isset($currentProject) ? route('project.admin.posts.destroy', [$currentProject->code, $post]) : '#' }}" class="inline" 
                                       onsubmit="return confirm('Bạn có chắc muốn xóa?')">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="text-red-600 hover:text-red-900">Xóa</button>

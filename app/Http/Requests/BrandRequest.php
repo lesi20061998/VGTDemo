@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class BrandRequest extends FormRequest
 {
@@ -26,29 +25,38 @@ class BrandRequest extends FormRequest
         return auth()->check() && auth()->user()->hasPermission('manage_brands');
     }
 
-    public function rules()
+    public function rules(): array
     {
-        $brandId = $this->route('brand')?->id;
+        $brandId = $this->route('brand') ?: null;
+
+        // For ProjectBrand, we need to get the ID differently since we're not using route model binding
+        $brandId = is_numeric($brandId) ? $brandId : null;
 
         return [
-            'name' => 'required|string|max:255',
-            'slug' => [
-                'nullable',
+            'name' => [
+                'required',
                 'string',
                 'max:255',
-                Rule::unique('brands', 'slug')->ignore($brandId),
+                // We'll handle unique validation in controller to show warning alerts
             ],
+            'slug' => 'nullable|string|max:255',
             'description' => 'nullable|string',
-            'logo' => 'nullable|image|max:2048',
-            'is_active' => 'boolean',
+            'logo' => 'nullable|string|max:500',
+            'meta_title' => 'nullable|string|max:255',
+            'meta_description' => 'nullable|string|max:500',
+            'is_active' => 'nullable|boolean',
         ];
     }
 
     public function messages()
     {
         return [
-            'name.required' => 'Tên nhà sản xuất là bắt buộc.',
-            'slug.unique' => 'Slug nhà sản xuất đã tồn tại.',
+            'name.required' => 'Tên thương hiệu là bắt buộc.',
+            'slug.unique' => 'Slug thương hiệu đã tồn tại.',
+            'logo.string' => 'Logo phải là đường dẫn URL hợp lệ.',
+            'logo.max' => 'Đường dẫn logo không được vượt quá 500 ký tự.',
+            'meta_title.max' => 'Tiêu đề SEO không được vượt quá 255 ký tự.',
+            'meta_description.max' => 'Mô tả SEO không được vượt quá 500 ký tự.',
         ];
     }
 }

@@ -22,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\HideServerSignature::class,
             \App\Http\Middleware\LogVisitor::class,
             \App\Http\Middleware\LogFileChanges::class,
+            \App\Http\Middleware\HandleDatabaseErrors::class,
         ]);
 
         // Chỉ áp dụng TenantMiddleware cho các route không phải admin
@@ -51,5 +52,43 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        // Xử lý lỗi database QueryException
+        $exceptions->render(function (\Illuminate\Database\QueryException $e, $request) {
+            // Xử lý lỗi numeric overflow
+            if (str_contains($e->getMessage(), 'Out of range value')) {
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'error' => 'Giá trị nhập vào quá lớn! Vui lòng nhập giá không vượt quá 9,999,999,999,999.99 VNĐ.',
+                        'message' => 'Validation Error',
+                    ], 422);
+                }
+
+                return back()
+                    ->withInput()
+                    ->with('alert', [
+                        'type' => 'error',
+                        'message' => 'Giá trị nhập vào quá lớn! Vui lòng nhập giá không vượt quá 9,999,999,999,999.99 VNĐ.',
+                    ]);
+            }
+
+            // Xử lý lỗi duplicate entry
+            if (str_contains($e->getMessage(), 'Duplicate entry')) {
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'error' => 'Dữ liệu đã tồn tại trong hệ thống.',
+                        'message' => 'Duplicate Entry Error',
+                    ], 422);
+                }
+
+                return back()
+                    ->withInput()
+                    ->with('alert', [
+                        'type' => 'error',
+                        'message' => 'Dữ liệu đã tồn tại trong hệ thống. Vui lòng kiểm tra lại.',
+                    ]);
+            }
+
+            // Không xử lý ở đây, để Laravel xử lý mặc định
+            return null;
+        });
     })->create();

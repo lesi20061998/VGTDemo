@@ -20,6 +20,19 @@ class Product extends Model implements HasMedia
 
     protected $table = 'products_enhanced';
 
+    /**
+     * Get the database connection for the model.
+     */
+    public function getConnectionName()
+    {
+        // If we're in a project context (project database is set), use project connection
+        if (config('database.default') === 'project') {
+            return 'project';
+        }
+
+        return parent::getConnectionName();
+    }
+
     // Các field có thể dịch
     protected $translatable = [
         'name',

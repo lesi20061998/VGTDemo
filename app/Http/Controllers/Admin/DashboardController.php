@@ -1,4 +1,5 @@
 <?php
+
 // MODIFIED: 2025-01-21
 
 namespace App\Http\Controllers\Admin;
@@ -9,10 +10,10 @@ use App\Models\Product;
 use App\Models\User;
 use App\Models\VisitorLog;
 use App\Services\CacheService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
@@ -20,17 +21,17 @@ class DashboardController extends Controller
     {
         $data = CacheService::remember(CacheService::DASHBOARD_STATS, 5, function () {
             return [
-                'today_orders' => rand(5, 25),
-                'today_revenue' => rand(2000000, 8000000),
-                'total_revenue' => rand(50000000, 150000000),
-                'out_of_stock_products' => rand(2, 15),
-                'new_users_today' => rand(3, 18),
-                'total_users' => rand(150, 500),
-                'total_products' => rand(80, 300),
-                'pending_orders' => rand(5, 25),
-                
+                'today_orders' => Order::whereDate('created_at', today())->count(),
+                'today_revenue' => Order::whereDate('created_at', today())->sum('total_amount'),
+                'total_revenue' => Order::sum('total_amount'),
+                'out_of_stock_products' => Product::where('stock_status', 'out_of_stock')->count(),
+                'new_users_today' => User::whereDate('created_at', today())->count(),
+                'total_users' => User::count(),
+                'total_products' => Product::count(),
+                'pending_orders' => Order::where('status', 'pending')->count(),
+
                 'revenue_chart' => $this->getRevenueChart(),
-                'orders_chart' => $this->getOrdersChart(), 
+                'orders_chart' => $this->getOrdersChart(),
                 'device_chart' => $this->getDeviceChart(),
                 'traffic_chart' => $this->getTrafficChart(),
                 'order_status_chart' => $this->getOrderStatusChart(),
@@ -58,9 +59,10 @@ class DashboardController extends Controller
             $revenue = Order::whereDate('created_at', $date)->sum('total_amount');
             $days->push([
                 'date' => $date->format('d/m'),
-                'revenue' => $revenue
+                'revenue' => $revenue,
             ]);
         }
+
         return $days;
     }
 
@@ -72,31 +74,91 @@ class DashboardController extends Controller
             $orders = Order::whereDate('created_at', $date)->count();
             $days->push([
                 'date' => $date->format('d/m'),
-                'orders' => $orders
+                'orders' => $orders,
             ]);
         }
+
         return $days;
     }
 
     private function getDeviceChart()
     {
-        // Simulate device data
-        return collect([
-            ['device' => 'Desktop', 'percentage' => 45, 'color' => '#3B82F6'],
-            ['device' => 'Mobile', 'percentage' => 35, 'color' => '#10B981'],
-            ['device' => 'Tablet', 'percentage' => 20, 'color' => '#F59E0B']
-        ]);
+        // Get real device data from visitor logs
+        $deviceData = Cache::remember('device_analytics', 300, function () {
+            $totalVisits = VisitorLog::where('visited_at', '>=', now()->subDays(30))->count();
+
+            if ($totalVisits == 0) {
+                // Fallback to sample data if no visitor logs
+                return collect([
+                    ['device' => 'Desktop', 'percentage' => 45, 'color' => '#3B82F6'],
+                    ['device' => 'Mobile', 'percentage' => 35, 'color' => '#10B981'],
+                    ['device' => 'Tablet', 'percentage' => 20, 'color' => '#F59E0B'],
+                ]);
+            }
+
+            $devices = VisitorLog::select(DB::raw('
+                CASE 
+                    WHEN user_agent LIKE "%Mobile%" OR user_agent LIKE "%Android%" OR user_agent LIKE "%iPhone%" THEN "Mobile"
+                    WHEN user_agent LIKE "%Tablet%" OR user_agent LIKE "%iPad%" THEN "Tablet"
+                    ELSE "Desktop"
+                END as device_type,
+                COUNT(*) as count
+            '))
+                ->where('visited_at', '>=', now()->subDays(30))
+                ->groupBy('device_type')
+                ->get();
+
+            $colors = ['Desktop' => '#3B82F6', 'Mobile' => '#10B981', 'Tablet' => '#F59E0B'];
+
+            return $devices->map(function ($device) use ($totalVisits, $colors) {
+                return [
+                    'device' => $device->device_type,
+                    'percentage' => round(($device->count / $totalVisits) * 100),
+                    'color' => $colors[$device->device_type] ?? '#6B7280',
+                ];
+            });
+        });
+
+        return $deviceData;
     }
 
     private function getTrafficChart()
     {
-        // Simulate traffic data
-        return collect([
-            ['source' => 'Organic Search', 'visitors' => 1250, 'percentage' => 42],
-            ['source' => 'Direct', 'visitors' => 890, 'percentage' => 30],
-            ['source' => 'Social Media', 'visitors' => 520, 'percentage' => 18],
-            ['source' => 'Referral', 'visitors' => 298, 'percentage' => 10]
-        ]);
+        // Get real traffic source data from visitor logs
+        return Cache::remember('traffic_analytics', 300, function () {
+            $totalVisits = VisitorLog::where('visited_at', '>=', now()->subDays(30))->count();
+
+            if ($totalVisits == 0) {
+                // Fallback to sample data if no visitor logs
+                return collect([
+                    ['source' => 'Direct', 'visitors' => 0, 'percentage' => 100],
+                ]);
+            }
+
+            // Analyze referrer patterns from URL and user agent
+            $sources = VisitorLog::select(DB::raw('
+                CASE 
+                    WHEN url LIKE "%utm_source=google%" OR user_agent LIKE "%Googlebot%" THEN "Google Search"
+                    WHEN url LIKE "%utm_source=facebook%" OR url LIKE "%facebook%" THEN "Facebook"
+                    WHEN url LIKE "%utm_source=%" THEN "Social Media"
+                    WHEN url LIKE "%ref=%" THEN "Referral"
+                    ELSE "Direct"
+                END as source_type,
+                COUNT(*) as count
+            '))
+                ->where('visited_at', '>=', now()->subDays(30))
+                ->groupBy('source_type')
+                ->orderBy('count', 'desc')
+                ->get();
+
+            return $sources->map(function ($source) use ($totalVisits) {
+                return [
+                    'source' => $source->source_type,
+                    'visitors' => $source->count,
+                    'percentage' => round(($source->count / $totalVisits) * 100),
+                ];
+            });
+        });
     }
 
     private function getOrderStatusChart()
@@ -143,30 +205,34 @@ class DashboardController extends Controller
     public function projectDashboard(Request $request)
     {
         $project = $request->attributes->get('project');
-        
-        $data = [
-            'today_orders' => Order::whereDate('created_at', today())->count(),
-            'today_revenue' => Order::whereDate('created_at', today())->sum('total_amount'),
-            'total_revenue' => Order::sum('total_amount'),
-            'out_of_stock_products' => Product::where('stock_status', 'out_of_stock')->count(),
-            'new_users_today' => User::whereDate('created_at', today())->count(),
-            'total_users' => User::count(),
-            'total_products' => Product::count(),
-            'pending_orders' => Order::where('status', 'pending')->count(),
-            
-            'revenue_chart' => $this->getRevenueChart(),
-            'orders_chart' => $this->getOrdersChart(), 
-            'device_chart' => $this->getDeviceChart(),
-            'traffic_chart' => $this->getTrafficChart(),
-            'order_status_chart' => $this->getOrderStatusChart(),
-            'top_products' => $this->getTopProducts(),
-            'recent_orders' => Order::with(['items'])->latest()->take(5)->get(),
-            'visitor_stats' => $this->getVisitorStats(),
-            'top_ips' => VisitorLog::getTopIPs(10),
-            'currentProject' => $project
-        ];
+
+        // Cache the dashboard data for better performance
+        $data = Cache::remember("project_dashboard_{$project->id}", 5, function () {
+            return [
+                'today_orders' => Order::whereDate('created_at', today())->count(),
+                'today_revenue' => Order::whereDate('created_at', today())->sum('total_amount'),
+                'total_revenue' => Order::sum('total_amount'),
+                'out_of_stock_products' => Product::where('stock_status', 'out_of_stock')->count(),
+                'new_users_today' => User::whereDate('created_at', today())->count(),
+                'total_users' => User::count(),
+                'total_products' => Product::count(),
+                'pending_orders' => Order::where('status', 'pending')->count(),
+
+                'revenue_chart' => $this->getRevenueChart(),
+                'orders_chart' => $this->getOrdersChart(),
+                'order_status_chart' => $this->getOrderStatusChart(),
+                'top_products' => $this->getTopProducts(),
+                'recent_orders' => Order::with(['items'])->latest()->take(5)->get(),
+            ];
+        });
+
+        // Add real-time data that shouldn't be cached
+        $data['device_chart'] = $this->getDeviceChart();
+        $data['traffic_chart'] = $this->getTrafficChart();
+        $data['visitor_stats'] = $this->getVisitorStats();
+        $data['top_ips'] = VisitorLog::getTopIPs(10);
+        $data['currentProject'] = $project;
 
         return view('cms.dashboard.index', $data);
     }
-
 }

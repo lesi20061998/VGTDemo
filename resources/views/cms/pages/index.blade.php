@@ -13,7 +13,7 @@
                 <p class="text-sm text-gray-500">Quản lý các trang tĩnh của website</p>
             </div>
             <div class="flex gap-3">
-                <a href="{{ route('cms.posts.create', ['type' => 'page']) }}" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                <a href="{{ isset($currentProject) ? route('project.admin.pages.create', $currentProject->code) : '#' }}" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
                     + Thêm trang mới
                 </a>
             </div>
@@ -86,8 +86,8 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <div class="flex items-center justify-end gap-2">
-                                <a href="{{ route('cms.posts.edit', $page) }}" class="text-blue-600 hover:text-blue-900">Sửa</a>
-                                <form method="POST" action="{{ route('cms.posts.destroy', $page) }}" class="inline" 
+                                <a href="{{ isset($currentProject) ? route('project.admin.pages.edit', [$currentProject->code, $page]) : '#' }}" class="text-blue-600 hover:text-blue-900">Sửa</a>
+                                <form method="POST" action="{{ isset($currentProject) ? route('project.admin.pages.destroy', [$currentProject->code, $page]) : '#' }}" class="inline" 
                                       onsubmit="return confirm('Bạn có chắc muốn xóa trang này?')">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="text-red-600 hover:text-red-900">Xóa</button>

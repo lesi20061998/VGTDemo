@@ -109,6 +109,18 @@ Route::prefix('{projectCode}/admin')
         Route::resource('categories', CategoryController::class);
         Route::get('categories/{category}/subcategories', [CategoryController::class, 'getSubcategories'])->name('categories.subcategories');
 
+        // Posts Management (Bài viết)
+        Route::resource('posts', \App\Http\Controllers\Admin\PostController::class);
+        Route::get('posts/create', [\App\Http\Controllers\Admin\PostController::class, 'create'])->name('posts.create');
+
+        // Pages Management (Trang tĩnh)
+        Route::get('pages', [\App\Http\Controllers\Admin\PostController::class, 'index'])->name('pages.index')->defaults('post_type', 'page');
+        Route::get('pages/create', [\App\Http\Controllers\Admin\PostController::class, 'create'])->name('pages.create')->defaults('type', 'page');
+        Route::get('pages/{post}', [\App\Http\Controllers\Admin\PostController::class, 'show'])->name('pages.show');
+        Route::get('pages/{post}/edit', [\App\Http\Controllers\Admin\PostController::class, 'edit'])->name('pages.edit');
+        Route::put('pages/{post}', [\App\Http\Controllers\Admin\PostController::class, 'update'])->name('pages.update');
+        Route::delete('pages/{post}', [\App\Http\Controllers\Admin\PostController::class, 'destroy'])->name('pages.destroy');
+
         // Attributes Management
         Route::resource('attributes', \App\Http\Controllers\Admin\AttributeController::class);
 

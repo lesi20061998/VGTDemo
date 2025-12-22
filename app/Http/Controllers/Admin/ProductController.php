@@ -8,13 +8,13 @@ use App\Models\ProductAttribute;
 use App\Models\ProjectBrand;
 use App\Models\ProjectProduct;
 use App\Models\ProjectProductCategory;
-use App\Traits\HasAlerts;
+use App\Traits\HasCrudAlerts;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class ProductController extends Controller
 {
-    use HasAlerts;
+    use HasCrudAlerts;
 
     public function index(Request $request)
     {
@@ -56,7 +56,7 @@ class ProductController extends Controller
         $categoriesTree = $this->getCategoriesTree(); // For dropdown if needed
 
         // Categories loaded successfully
-        $attributes = ProductAttribute::with('values')->get();
+        $attributes = ProductAttribute::with('values')->orderBy('sort_order')->get();
         $brands = ProjectBrand::orderBy('name')->get();
 
         // Lấy ngôn ngữ hiện tại từ URL parameter
@@ -156,27 +156,61 @@ class ProductController extends Controller
             $validated['gallery'] = $request->gallery;
         }
 
-        // Lưu sản phẩm vào database
-        $product = ProjectProduct::create($validated);
+        // Lưu sản phẩm vào database với xử lý lỗi
+        try {
+            $product = ProjectProduct::create($validated);
 
-        // Handle categories - sync với pivot table
-        if ($request->has('categories') && is_array($request->categories) && count($request->categories) > 0) {
-            $product->categories()->sync($request->categories);
-            // Set primary category (first one selected)
-            $product->update(['product_category_id' => $request->categories[0]]);
+            // Handle categories - sync với pivot table
+            if ($request->has('categories') && is_array($request->categories) && count($request->categories) > 0) {
+                $product->categories()->sync($request->categories);
+                // Set primary category (first one selected)
+                $product->update(['product_category_id' => $request->categories[0]]);
+            }
+
+            // Handle brands - sync với pivot table
+            if ($request->has('brands') && is_array($request->brands) && count($request->brands) > 0) {
+                $product->brands()->sync($request->brands);
+                // Set primary brand (first one selected)
+                $product->update(['brand_id' => $request->brands[0]]);
+            }
+
+            // Handle attributes - sync với pivot table cho variable products
+            if ($request->input('product_type') === 'variable' && $request->has('attributes')) {
+                $this->syncProductAttributes($product, $request->input('attributes', []));
+            }
+
+            $this->alertCreated('sản phẩm', "Sản phẩm '{$product->name}' đã được thêm vào hệ thống.");
+
+            return redirect()->route('project.admin.products.index', $projectCode);
+
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Xử lý lỗi database (như numeric overflow)
+            if (str_contains($e->getMessage(), 'Out of range value')) {
+                return back()
+                    ->withInput()
+                    ->with('alert', [
+                        'type' => 'error',
+                        'message' => 'Giá trị nhập vào quá lớn! Vui lòng nhập giá không vượt quá 9,999,999,999,999.99 VNĐ.',
+                    ]);
+            }
+
+            // Xử lý các lỗi database khác
+            return back()
+                ->withInput()
+                ->with('alert', [
+                    'type' => 'error',
+                    'message' => 'Có lỗi xảy ra khi lưu sản phẩm. Vui lòng kiểm tra lại dữ liệu và thử lại.',
+                ]);
+
+        } catch (\Exception $e) {
+            // Xử lý các lỗi khác
+            return back()
+                ->withInput()
+                ->with('alert', [
+                    'type' => 'error',
+                    'message' => 'Có lỗi không mong muốn xảy ra. Vui lòng thử lại sau.',
+                ]);
         }
-
-        // Handle brands - sync với pivot table
-        if ($request->has('brands') && is_array($request->brands) && count($request->brands) > 0) {
-            $product->brands()->sync($request->brands);
-            // Set primary brand (first one selected)
-            $product->update(['brand_id' => $request->brands[0]]);
-        }
-
-        return redirect()->route('project.admin.products.index', $projectCode)->with('alert', [
-            'type' => 'success',
-            'message' => 'Thêm sản phẩm thành công!',
-        ]);
     }
 
     // Removed legacy CMS product model method - now always use ProjectProduct
@@ -359,7 +393,7 @@ class ProductController extends Controller
             abort(404, 'Project context required');
         }
 
-        $product = ProjectProduct::with(['categories', 'brands'])->findOrFail($id);
+        $product = ProjectProduct::with(['categories', 'brands', 'attributeMappings.attribute', 'attributeMappings.attributeValue'])->findOrFail($id);
 
         // Get all categories for multi-select
         $categories = ProjectProductCategory::orderBy('sort_order')->get();
@@ -432,31 +466,92 @@ class ProductController extends Controller
             $validated['gallery'] = $request->gallery;
         }
 
-        // Cập nhật sản phẩm
-        $product->update($validated);
+        // Cập nhật sản phẩm với xử lý lỗi
+        try {
+            $product->update($validated);
 
-        // Handle categories - sync với pivot table
-        if ($request->has('categories') && is_array($request->categories) && count($request->categories) > 0) {
-            $product->categories()->sync($request->categories);
-            $product->update(['product_category_id' => $request->categories[0]]);
-        } else {
-            $product->categories()->sync([]);
-            $product->update(['product_category_id' => null]);
+            // Handle categories - sync với pivot table
+            if ($request->has('categories') && is_array($request->categories) && count($request->categories) > 0) {
+                $product->categories()->sync($request->categories);
+                $product->update(['product_category_id' => $request->categories[0]]);
+            } else {
+                $product->categories()->sync([]);
+                $product->update(['product_category_id' => null]);
+            }
+
+            // Handle brands - sync với pivot table
+            if ($request->has('brands') && is_array($request->brands) && count($request->brands) > 0) {
+                $product->brands()->sync($request->brands);
+                $product->update(['brand_id' => $request->brands[0]]);
+            } else {
+                $product->brands()->sync([]);
+                $product->update(['brand_id' => null]);
+            }
+
+            // Handle attributes - sync với pivot table khi chuyển sang variable product
+            if ($request->input('product_type') === 'variable' && $request->has('attributes')) {
+                $this->syncProductAttributes($product, $request->input('attributes', []));
+            } elseif ($request->input('product_type') === 'simple') {
+                // Xóa tất cả attributes khi chuyển về simple product
+                $product->attributeMappings()->delete();
+            }
+
+            $this->alertUpdated('sản phẩm', "Sản phẩm '{$product->name}' đã được cập nhật.");
+
+            return redirect()->route('project.admin.products.index', $projectCode);
+
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Xử lý lỗi database (như numeric overflow)
+            if (str_contains($e->getMessage(), 'Out of range value')) {
+                return back()
+                    ->withInput()
+                    ->with('alert', [
+                        'type' => 'error',
+                        'message' => 'Giá trị nhập vào quá lớn! Vui lòng nhập giá không vượt quá 9,999,999,999,999.99 VNĐ.',
+                    ]);
+            }
+
+            // Xử lý các lỗi database khác
+            return back()
+                ->withInput()
+                ->with('alert', [
+                    'type' => 'error',
+                    'message' => 'Có lỗi xảy ra khi cập nhật sản phẩm. Vui lòng kiểm tra lại dữ liệu và thử lại.',
+                ]);
+
+        } catch (\Exception $e) {
+            // Xử lý các lỗi khác
+            return back()
+                ->withInput()
+                ->with('alert', [
+                    'type' => 'error',
+                    'message' => 'Có lỗi không mong muốn xảy ra. Vui lòng thử lại sau.',
+                ]);
         }
+    }
 
-        // Handle brands - sync với pivot table
-        if ($request->has('brands') && is_array($request->brands) && count($request->brands) > 0) {
-            $product->brands()->sync($request->brands);
-            $product->update(['brand_id' => $request->brands[0]]);
-        } else {
-            $product->brands()->sync([]);
-            $product->update(['brand_id' => null]);
+    /**
+     * Sync product attributes when converting to variable product
+     */
+    private function syncProductAttributes(ProjectProduct $product, array $attributes): void
+    {
+        // Xóa tất cả mappings cũ
+        $product->attributeMappings()->delete();
+
+        // Tạo mappings mới
+        foreach ($attributes as $attributeId => $valueIds) {
+            if (empty($valueIds) || ! is_array($valueIds)) {
+                continue;
+            }
+
+            foreach ($valueIds as $valueId) {
+                ProjectProductAttributeValueMapping::create([
+                    'product_id' => $product->id,
+                    'product_attribute_id' => $attributeId,
+                    'product_attribute_value_id' => $valueId,
+                ]);
+            }
         }
-
-        return redirect()->route('project.admin.products.index', $projectCode)->with('alert', [
-            'type' => 'success',
-            'message' => 'Cập nhật sản phẩm thành công!',
-        ]);
     }
 
     private function updateSingle(Request $request, $product)
@@ -982,11 +1077,11 @@ class ProductController extends Controller
     public function destroy($projectCode, $id)
     {
         $product = ProjectProduct::findOrFail($id);
+        $productName = $product->name;
         $product->delete();
 
-        return redirect()->route('project.admin.products.index', $projectCode)->with('alert', [
-            'type' => 'success',
-            'message' => 'Xóa sản phẩm thành công!',
-        ]);
+        $this->alertDeleted('sản phẩm', "Sản phẩm '{$productName}' đã được xóa khỏi hệ thống.");
+
+        return redirect()->route('project.admin.products.index', $projectCode);
     }
 }

@@ -1,23 +1,37 @@
 <?php
+
 // MODIFIED: 2025-01-21
 
 namespace App\Models;
 
+use App\Traits\BelongsToTenant;
+use App\Traits\ProjectScoped;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Traits\ProjectScoped;
-use App\Traits\BelongsToTenant;
-use Illuminate\Database\Eloquent\Builder;
 
 class Order extends Model
 {
-    use HasFactory, ProjectScoped, BelongsToTenant;
+    use BelongsToTenant, HasFactory, ProjectScoped;
+
+    /**
+     * Get the database connection for the model.
+     */
+    public function getConnectionName()
+    {
+        // If we're in a project context (project database is set), use project connection
+        if (config('database.default') === 'project') {
+            return 'project';
+        }
+
+        return parent::getConnectionName();
+    }
 
     protected $fillable = [
         'order_number', 'status', 'subtotal', 'tax_amount', 'shipping_amount',
         'discount_amount', 'total_amount', 'currency', 'customer_name',
         'customer_email', 'customer_phone', 'billing_address', 'shipping_address',
-        'payment_method', 'payment_status', 'paid_at', 'customer_notes', 'internal_notes', 'tenant_id'
+        'payment_method', 'payment_status', 'paid_at', 'customer_notes', 'internal_notes', 'tenant_id',
     ];
 
     protected $casts = [
@@ -46,15 +60,15 @@ class Order extends Model
     public function scopeSearch(Builder $query, $search)
     {
         return $query->where('order_number', 'like', "%{$search}%")
-                    ->orWhere('customer_name', 'like', "%{$search}%")
-                    ->orWhere('customer_email', 'like', "%{$search}%");
+            ->orWhere('customer_name', 'like', "%{$search}%")
+            ->orWhere('customer_email', 'like', "%{$search}%");
     }
 
     public function scopeFilter(Builder $query, $filters)
     {
         return $query->when($filters['status'] ?? null, function ($query, $status) {
-                return $query->where('status', $status);
-            })
+            return $query->where('status', $status);
+        })
             ->when($filters['payment_status'] ?? null, function ($query, $status) {
                 return $query->where('payment_status', $status);
             })

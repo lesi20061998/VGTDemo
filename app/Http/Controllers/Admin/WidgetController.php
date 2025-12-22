@@ -15,17 +15,17 @@ class WidgetController extends Controller
             ->orderBy('sort_order')
             ->get()
             ->groupBy('area')
-            ->map(fn($widgets) => $widgets->map(fn($w) => [
+            ->map(fn ($widgets) => $widgets->map(fn ($w) => [
                 'type' => $w->type,
                 'name' => $w->name,
                 'area' => $w->area,
                 'sort_order' => $w->sort_order,
                 'is_active' => $w->is_active,
-                'settings' => $w->settings
+                'settings' => $w->settings,
             ]));
-        
+
         $availableWidgets = WidgetRegistry::getByCategory();
-        
+
         return view('cms.widgets.builder', compact('existingWidgets', 'availableWidgets'));
     }
 
@@ -49,20 +49,30 @@ class WidgetController extends Controller
         if (is_string($validated['settings'] ?? null)) {
             $validated['settings'] = json_decode($validated['settings'], true);
         }
-        
+
         // Nếu có config, merge vào settings
-        if (!empty($validated['config'])) {
+        if (! empty($validated['config'])) {
             $validated['settings'] = array_merge($validated['settings'] ?? [], ['config' => $validated['config']]);
         }
         unset($validated['config']);
 
+        // Ensure tenant_id is set for project context
+        $projectCode = request()->route('projectCode');
+        if ($projectCode && ! isset($validated['tenant_id'])) {
+            // You might need to get the tenant_id from the project
+            // For now, let's use the session or a default approach
+            if (session('current_tenant_id')) {
+                $validated['tenant_id'] = session('current_tenant_id');
+            }
+        }
+
         Widget::create($validated);
         clear_widget_cache($validated['area']);
-        
+
         if ($request->expectsJson()) {
-            return response()->json(['success' => true]);
+            return response()->json(['success' => true, 'message' => 'Widget saved successfully']);
         }
-        
+
         return redirect()->back()->with('success', 'Widget created successfully');
     }
 
@@ -84,8 +94,13 @@ class WidgetController extends Controller
 
         $widget->update($validated);
         clear_widget_cache($widget->area);
-        
-        return redirect()->route('cms.widgets.index')->with('success', 'Widget updated successfully');
+
+        $projectCode = request()->route('projectCode');
+        $route = $projectCode
+            ? route('project.admin.widgets.index', $projectCode)
+            : route('cms.widgets.index');
+
+        return redirect($route)->with('success', 'Widget updated successfully');
     }
 
     public function destroy(Widget $widget)
@@ -93,8 +108,12 @@ class WidgetController extends Controller
         $area = $widget->area;
         $widget->delete();
         clear_widget_cache($area);
-        
-        return redirect()->route('cms.widgets.index')->with('success', 'Widget deleted successfully');
+
+        $projectCode = request()->route('projectCode');
+        $route = $projectCode
+            ? route('project.admin.widgets.index', $projectCode)
+            : route('cms.widgets.index');
+
+        return redirect($route)->with('success', 'Widget deleted successfully');
     }
 }
-

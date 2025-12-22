@@ -4,7 +4,7 @@
 @section('page-title', $post->post_type === 'page' ? 'Chỉnh sửa trang' : 'Chỉnh sửa bài viết')
 
 @section('content')
-<form method="POST" action="{{ route('cms.posts.update', $post) }}" enctype="multipart/form-data" x-data="postForm()">
+<form method="POST" action="{{ isset($currentProject) ? route('project.admin.posts.update', [$currentProject->code, $post]) : '#' }}" enctype="multipart/form-data" x-data="postForm()"></form>
     @csrf @method('PUT')
     <input type="hidden" name="post_type" value="{{ $post->post_type }}">
     
@@ -16,7 +16,7 @@
                 <p class="text-sm text-gray-500">{{ $post->title }}</p>
             </div>
             <div class="flex gap-3">
-                <a href="{{ route('cms.posts.index') }}" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">
+                <a href="{{ isset($currentProject) ? route('project.admin.posts.index', $currentProject->code) : '#' }}" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">
                     Hủy
                 </a>
                 <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">

@@ -15,8 +15,8 @@ class ProjectBrand extends Model
     protected $table = 'brands';
 
     protected $fillable = [
-        'name', 'slug', 'description', 'logo', 'website', 'is_active',
-        'meta_title', 'meta_description',
+        'name', 'slug', 'description', 'logo', 'is_active',
+        'meta_title', 'meta_description', 'project_id', 'tenant_id',
     ];
 
     protected $casts = [
@@ -27,6 +27,23 @@ class ProjectBrand extends Model
     protected $hidden = [
         'project_id',
     ];
+
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        static::creating(function ($brand) {
+            if (empty($brand->slug)) {
+                $brand->slug = \Illuminate\Support\Str::slug($brand->name);
+            }
+        });
+
+        static::updating(function ($brand) {
+            if (empty($brand->slug)) {
+                $brand->slug = \Illuminate\Support\Str::slug($brand->name);
+            }
+        });
+    }
 
     // Relationships
     public function products()

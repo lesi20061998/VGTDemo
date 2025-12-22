@@ -10,11 +10,14 @@ use App\Http\Requests\AttributeValueRequest;
 use App\Models\AttributeGroup;
 use App\Models\ProductAttribute;
 use App\Models\ProductAttributeValue;
+use App\Traits\HasCrudAlerts;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class AttributeController extends Controller
 {
+    use HasCrudAlerts;
+
     // ===== ATTRIBUTE GROUPS =====
     public function indexGroups($projectCode, Request $request)
     {
@@ -37,10 +40,11 @@ class AttributeController extends Controller
 
         AttributeGroup::create($data);
 
+        $this->alertCreated('nhóm thuộc tính', "Nhóm '{$data['name']}' đã được thêm vào hệ thống.");
+
         $projectCode = request()->route('projectCode');
 
-        return redirect()->route('project.admin.attributes.index', $projectCode)
-            ->with('success', 'Nhóm thuộc tính đã được tạo thành công.');
+        return redirect()->route('project.admin.attributes.index', $projectCode);
     }
 
     public function editGroup($projectCode, AttributeGroup $group)
@@ -56,7 +60,11 @@ class AttributeController extends Controller
         $group->update($data);
 
         return redirect()->route('project.admin.attributes.index', $projectCode)
-            ->with('success', 'Nhóm thuộc tính đã được cập nhật thành công.');
+            ->with('alert', [
+                'type' => 'success',
+                'message' => 'Nhóm thuộc tính đã được cập nhật thành công!',
+                'details' => "Nhóm '{$data['name']}' đã được cập nhật.",
+            ]);
     }
 
     public function destroyGroup($projectCode, AttributeGroup $group)
@@ -64,7 +72,11 @@ class AttributeController extends Controller
         $group->delete();
 
         return redirect()->route('project.admin.attributes.index', $projectCode)
-            ->with('success', 'Nhóm thuộc tính đã được xóa thành công.');
+            ->with('alert', [
+                'type' => 'success',
+                'message' => 'Nhóm thuộc tính đã được xóa thành công!',
+                'details' => "Nhóm '{$group->name}' đã được xóa khỏi hệ thống.",
+            ]);
     }
 
     // ===== PRODUCT ATTRIBUTES =====
@@ -97,11 +109,30 @@ class AttributeController extends Controller
 
         // Create attribute values if provided
         if ($request->has('values')) {
+            $usedValues = [];
+            $usedSlugs = [];
+
             foreach ($request->values as $index => $valueData) {
                 if (! empty($valueData['value'])) {
+                    $value = trim($valueData['value']);
+                    $slug = Str::slug($value);
+
+                    // Check for duplicates within the same request
+                    if (in_array($value, $usedValues)) {
+                        return back()->withErrors(['values' => "Giá trị '{$value}' bị trùng lặp trong danh sách."])->withInput();
+                    }
+
+                    if (in_array($slug, $usedSlugs)) {
+                        return back()->withErrors(['values' => "Giá trị '{$value}' tạo ra slug trùng lặp."])->withInput();
+                    }
+
+                    $usedValues[] = $value;
+                    $usedSlugs[] = $slug;
+
                     ProductAttributeValue::create([
                         'product_attribute_id' => $attribute->id,
-                        'value' => $valueData['value'],
+                        'value' => $value,
+                        'slug' => $slug,
                         'display_value' => $valueData['display_value'] ?? null,
                         'color_code' => $valueData['color_code'] ?? null,
                         'sort_order' => $index,
@@ -111,7 +142,11 @@ class AttributeController extends Controller
         }
 
         return redirect()->route('project.admin.attributes.index', $projectCode)
-            ->with('success', 'Thuộc tính đã được tạo thành công.');
+            ->with('alert', [
+                'type' => 'success',
+                'message' => 'Thuộc tính đã được tạo thành công!',
+                'details' => "Thuộc tính '{$data['name']}' với ".count($request->values ?? []).' giá trị đã được thêm.',
+            ]);
     }
 
     public function show($projectCode, $id)
@@ -143,12 +178,31 @@ class AttributeController extends Controller
             // Delete existing values
             $attribute->values()->delete();
 
-            // Create new values
+            // Create new values with duplicate checking
+            $usedValues = [];
+            $usedSlugs = [];
+
             foreach ($request->values as $index => $valueData) {
                 if (! empty($valueData['value'])) {
+                    $value = trim($valueData['value']);
+                    $slug = Str::slug($value);
+
+                    // Check for duplicates within the same request
+                    if (in_array($value, $usedValues)) {
+                        return back()->withErrors(['values' => "Giá trị '{$value}' bị trùng lặp trong danh sách."])->withInput();
+                    }
+
+                    if (in_array($slug, $usedSlugs)) {
+                        return back()->withErrors(['values' => "Giá trị '{$value}' tạo ra slug trùng lặp."])->withInput();
+                    }
+
+                    $usedValues[] = $value;
+                    $usedSlugs[] = $slug;
+
                     ProductAttributeValue::create([
                         'product_attribute_id' => $attribute->id,
-                        'value' => $valueData['value'],
+                        'value' => $value,
+                        'slug' => $slug,
                         'display_value' => $valueData['display_value'] ?? null,
                         'color_code' => $valueData['color_code'] ?? null,
                         'sort_order' => $index,
@@ -158,7 +212,11 @@ class AttributeController extends Controller
         }
 
         return redirect()->route('project.admin.attributes.index', $projectCode)
-            ->with('success', 'Thuộc tính đã được cập nhật thành công.');
+            ->with('alert', [
+                'type' => 'success',
+                'message' => 'Thuộc tính đã được cập nhật thành công!',
+                'details' => "Thuộc tính '{$data['name']}' với ".count($request->values ?? []).' giá trị đã được cập nhật.',
+            ]);
     }
 
     public function destroy($projectCode, $id)
@@ -167,7 +225,11 @@ class AttributeController extends Controller
         $attribute->delete();
 
         return redirect()->route('project.admin.attributes.index', $projectCode)
-            ->with('success', 'Thuộc tính đã được xóa thành công.');
+            ->with('alert', [
+                'type' => 'success',
+                'message' => 'Thuộc tính đã được xóa thành công!',
+                'details' => "Thuộc tính '{$attribute->name}' đã được xóa khỏi hệ thống.",
+            ]);
     }
 
     // ===== ATTRIBUTE VALUES =====
@@ -190,7 +252,16 @@ class AttributeController extends Controller
     {
         $data = $request->validated();
         $data['slug'] = Str::slug($data['value']);
-        $data['product_attribute_id'] = $attributeId; // Ensure the attribute ID is set
+        $data['product_attribute_id'] = $attributeId;
+
+        // Check if slug is unique within the same attribute
+        $existingSlug = ProductAttributeValue::where('product_attribute_id', $attributeId)
+            ->where('slug', $data['slug'])
+            ->exists();
+
+        if ($existingSlug) {
+            return back()->withErrors(['value' => 'Giá trị này tạo ra slug trùng lặp trong thuộc tính.'])->withInput();
+        }
 
         ProductAttributeValue::create($data);
 
@@ -213,6 +284,16 @@ class AttributeController extends Controller
 
         $data = $request->validated();
         $data['slug'] = Str::slug($data['value']);
+
+        // Check if slug is unique within the same attribute (excluding current record)
+        $existingSlug = ProductAttributeValue::where('product_attribute_id', $attributeId)
+            ->where('slug', $data['slug'])
+            ->where('id', '!=', $valueId)
+            ->exists();
+
+        if ($existingSlug) {
+            return back()->withErrors(['value' => 'Giá trị này tạo ra slug trùng lặp trong thuộc tính.'])->withInput();
+        }
 
         $value->update($data);
 

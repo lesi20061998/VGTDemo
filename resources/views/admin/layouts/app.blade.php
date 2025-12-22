@@ -57,7 +57,7 @@
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
                         <div class="sidebar-text">
-                            <img src="https://vgt.vnglobaltech.com/wp-content/uploads/2025/11/logo_header.png" alt="VGT" class="h-10">
+                            <img src="https://vnglobaltech.com/wp-content/uploads/2025/11/logo_header.png" alt="VGT" class="h-10">
                         </div>
                     </div>
                     <button id="sidebarToggle" class="p-2 text-slate-400 hover:text-white transition-colors">
@@ -143,11 +143,17 @@
                             </svg>
                         </button>
                         <div class="dropdown-menu ml-4 space-y-1 max-h-0 overflow-hidden transition-all duration-300">
-                            <a href="#" class="flex items-center px-4 py-2 text-slate-400 hover:bg-[#98191F] hover:text-white rounded-lg transition-all duration-200">
+                            <a href="{{ route('project.admin.posts.index', request()->route('projectCode')) }}" class="flex items-center px-4 py-2 text-slate-400 hover:bg-[#98191F] hover:text-white rounded-lg transition-all duration-200 {{ request()->routeIs('project.admin.posts.*') ? 'bg-[#98191F] text-white' : '' }}">
                                 <svg class="h-4 w-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
                                 </svg>
                                 <span class="text-sm nav-text">Bài viết</span>
+                            </a>
+                            <a href="{{ route('project.admin.pages.index', request()->route('projectCode')) }}" class="flex items-center px-4 py-2 text-slate-400 hover:bg-[#98191F] hover:text-white rounded-lg transition-all duration-200 {{ request()->routeIs('project.admin.pages.*') ? 'bg-[#98191F] text-white' : '' }}">
+                                <svg class="h-4 w-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                <span class="text-sm nav-text">Trang</span>
                             </a>
                             <a href="#" class="flex items-center px-4 py-2 text-slate-400 hover:bg-[#98191F] hover:text-white rounded-lg transition-all duration-200">
                                 <svg class="h-4 w-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -155,7 +161,7 @@
                                 </svg>
                                 <span class="text-sm nav-text">FAQ</span>
                             </a>
-                            <a href="#" class="flex items-center px-4 py-2 text-slate-400 hover:bg-[#98191F] hover:text-white rounded-lg transition-all duration-200">
+                            <a href="{{ route('project.admin.media.list', request()->route('projectCode')) }}" class="flex items-center px-4 py-2 text-slate-400 hover:bg-[#98191F] hover:text-white rounded-lg transition-all duration-200 {{ request()->routeIs('project.admin.media.*') ? 'bg-[#98191F] text-white' : '' }}">
                                 <svg class="h-4 w-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                                 </svg>
