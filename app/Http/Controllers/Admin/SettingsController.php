@@ -97,8 +97,6 @@ class SettingsController extends Controller
             $project = $request->attributes->get('project');
 
             foreach ($request->except('_token', '_method', 'page') as $key => $value) {
-                \Log::info('Processing setting:', ['key' => $key, 'value' => $value, 'type' => gettype($value)]);
-
                 // Xử lý đặc biệt cho checkbox
                 if ($key === 'watermark' && is_array($value)) {
                     // Đảm bảo enabled được xử lý đúng
@@ -107,7 +105,6 @@ class SettingsController extends Controller
                     } else {
                         $value['enabled'] = $value['enabled'] === '1' || $value['enabled'] === 1 || $value['enabled'] === true;
                     }
-                    \Log::info('Processed watermark enabled:', ['enabled' => $value['enabled'], 'type' => gettype($value['enabled'])]);
                 }
 
                 if (is_string($value)) {
@@ -120,10 +117,8 @@ class SettingsController extends Controller
                 // Sử dụng model phù hợp dựa trên context
                 if ($project) {
                     \App\Models\ProjectSettingModel::set($key, $value);
-                    \Log::info('Saved to ProjectSettingModel:', ['key' => $key, 'value' => $value]);
                 } else {
                     \App\Models\Setting::set($key, $value);
-                    \Log::info('Saved to Setting:', ['key' => $key, 'value' => $value]);
                 }
             }
 

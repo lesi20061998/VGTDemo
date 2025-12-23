@@ -83,28 +83,19 @@ class SettingsService
         $this->loadSettings();
 
         if (! isset($this->settings[$key])) {
-            \Log::info("SettingsService: Key '{$key}' not found, returning default", ['default' => $default]);
-
             return $default;
         }
 
         $value = $this->settings[$key];
-        \Log::info("SettingsService: Found key '{$key}'", ['raw_value' => $value, 'type' => gettype($value)]);
 
         // Nếu là array và có key 'value', trả về giá trị đó
         if (\is_array($value)) {
             if (isset($value['value'])) {
-                \Log::info("SettingsService: Returning nested 'value' for key '{$key}'", ['nested_value' => $value['value']]);
-
                 return $value['value'];
             }
 
-            \Log::info("SettingsService: Returning full array for key '{$key}'", ['array_value' => $value]);
-
             return $value;
         }
-
-        \Log::info("SettingsService: Returning direct value for key '{$key}'", ['direct_value' => $value]);
 
         return $value;
     }

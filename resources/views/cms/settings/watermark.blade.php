@@ -40,25 +40,7 @@
                         $offsetY = $watermark['offset_y'] ?? 10;
                         $scale = $watermark['scale'] ?? 20;
                         $opacity = $watermark['opacity'] ?? 80;
-                        
-                        // Debug: Log current watermark settings
-                        \Log::info('Watermark view data:', [
-                            'watermark_raw' => $watermark,
-                            'enabled' => $enabled,
-                            'enabled_type' => gettype($enabled),
-                            'image' => $image,
-                        ]);
                     @endphp
-
-                    <!-- Debug Panel (Temporary) -->
-                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-                        <h4 class="font-semibold text-yellow-800 mb-2">Debug Info:</h4>
-                        <div class="text-sm text-yellow-700">
-                            <p><strong>Watermark Data:</strong> {{ json_encode($watermark) }}</p>
-                            <p><strong>Enabled:</strong> {{ var_export($enabled, true) }} ({{ gettype($enabled) }})</p>
-                            <p><strong>Image:</strong> {{ $image }}</p>
-                        </div>
-                    </div>
 
                     <!-- Enable Watermark -->
                     <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200">

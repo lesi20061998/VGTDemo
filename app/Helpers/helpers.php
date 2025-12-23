@@ -17,9 +17,9 @@ if (! function_exists('setting')) {
 
         $value = get_config($key, $default);
 
-        // Ensure string output for blade templates
+        // Return arrays for complex settings like watermark
         if (is_array($value)) {
-            return $default;
+            return $value;
         }
 
         return $value;
