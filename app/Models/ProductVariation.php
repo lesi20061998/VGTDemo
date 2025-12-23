@@ -1,23 +1,25 @@
 <?php
+
 // MODIFIED: 2025-01-21
 
 namespace App\Models;
 
+use App\Traits\ProjectScoped;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Traits\ProjectScoped;
 
 class ProductVariation extends Model
 {
     use HasFactory, ProjectScoped;
 
     protected $fillable = [
-        'product_id', 'sku', 'price', 'sale_price', 'stock_quantity', 
-        'attributes', 'is_active'
+        'product_id', 'sku', 'price', 'sale_price', 'stock_quantity',
+        'attributes', 'is_active', 'image', 'gallery',
     ];
 
     protected $casts = [
         'attributes' => 'array',
+        'gallery' => 'array',
         'is_active' => 'boolean',
         'price' => 'decimal:2',
         'sale_price' => 'decimal:2',
@@ -26,7 +28,7 @@ class ProductVariation extends Model
     // Relationships
     public function product()
     {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(ProjectProduct::class, 'product_id');
     }
 
     // Accessors
@@ -37,16 +39,19 @@ class ProductVariation extends Model
 
     public function getAttributeNamesAttribute()
     {
-        if (!$this->attributes) return '';
-        
+        if (! $this->attributes) {
+            return '';
+        }
+
         $names = [];
         foreach ($this->attributes as $attrId => $valueId) {
             $attribute = ProductAttribute::find($attrId);
             $value = ProductAttributeValue::find($valueId);
             if ($attribute && $value) {
-                $names[] = $attribute->name . ': ' . $value->display_name;
+                $names[] = $attribute->name.': '.$value->display_name;
             }
         }
+
         return implode(', ', $names);
     }
 }

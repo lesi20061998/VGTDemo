@@ -138,11 +138,6 @@ class ProductCategory extends Model
         }
     }
 
-    /**
-     * Validate that the category hierarchy is consistent
-     * Ensures levels follow proper sequence: 0 → 1 → 2 → 3...
-     * And doesn't exceed maximum depth
-     */
     public function validateHierarchyConsistency(): bool
     {
         // Check if level exceeds maximum depth

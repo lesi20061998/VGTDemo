@@ -128,6 +128,14 @@ class ProjectProduct extends Model
     }
 
     /**
+     * Product variations for variable products
+     */
+    public function variations()
+    {
+        return $this->hasMany(ProductVariation::class, 'product_id');
+    }
+
+    /**
      * Lấy các giá trị của 1 thuộc tính cụ thể
      * Ví dụ: getAttributeValues('color') → [Red, Blue]
      */

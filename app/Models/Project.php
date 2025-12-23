@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Project extends Model
 {
+    use HasFactory;
+
     protected $fillable = ['contract_id', 'name', 'code', 'subdomain', 'remote_url', 'api_token', 'client_name', 'start_date', 'deadline', 'status', 'contract_value', 'contract_file', 'technical_requirements', 'features', 'environment', 'notes', 'admin_id', 'employee_ids', 'created_by', 'project_admin_username', 'project_admin_password', 'approved_at', 'initialized_at'];
 
     protected $casts = [
@@ -36,12 +39,13 @@ class Project extends Model
 
     public static function generateSubdomain($employeeCode, $contractCode)
     {
-        return strtoupper($employeeCode) . '.domain.com/' . $contractCode;
+        return strtoupper($employeeCode).'.domain.com/'.$contractCode;
     }
 
     public static function generateProjectAdminPassword()
     {
         $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
+
         return substr(str_shuffle(str_repeat($chars, 12)), 0, 12);
     }
 
@@ -63,19 +67,20 @@ class Project extends Model
     public function hasPermission($module, $action = 'view')
     {
         $permission = $this->permissions()->where('module', $module)->first();
-        
-        if (!$permission) {
+
+        if (! $permission) {
             return false;
         }
-        
-        return $permission->{'can_' . $action} ?? false;
+
+        return $permission->{'can_'.$action} ?? false;
     }
 
     public function employees()
     {
-        if (!$this->employee_ids) {
+        if (! $this->employee_ids) {
             return collect([]);
         }
+
         return Employee::whereIn('id', $this->employee_ids)->get();
     }
 
@@ -84,4 +89,3 @@ class Project extends Model
         return $this->employee_ids && in_array($employeeId, $this->employee_ids);
     }
 }
-

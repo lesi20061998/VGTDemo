@@ -5,8 +5,11 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\ProductAttribute;
+use App\Models\ProductAttributeValue;
+use App\Models\ProductVariation;
 use App\Models\ProjectBrand;
 use App\Models\ProjectProduct;
+use App\Models\ProjectProductAttributeValueMapping;
 use App\Models\ProjectProductCategory;
 use App\Traits\HasCrudAlerts;
 use Illuminate\Http\Request;
@@ -98,11 +101,95 @@ class ProductController extends Controller
     {
         $projectCode = request()->route('projectCode');
 
-        // Validation đơn giản - chỉ 2 trường bắt buộc
+        // Enhanced validation với thông báo lỗi chi tiết
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'sku' => 'required|string|max:100',
+            'sku' => [
+                'required',
+                'string',
+                'max:100',
+                \Illuminate\Validation\Rule::unique('products_enhanced', 'sku')->using('project'),
+            ],
+            'product_type' => 'required|in:simple,variable',
+            'status' => 'required|in:draft,published,archived',
+        ], [
+            'name.required' => 'Tên sản phẩm là bắt buộc',
+            'name.max' => 'Tên sản phẩm không được vượt quá 255 ký tự',
+            'sku.required' => 'SKU là bắt buộc',
+            'sku.max' => 'SKU không được vượt quá 100 ký tự',
+            'sku.unique' => 'SKU này đã tồn tại, vui lòng chọn SKU khác',
+            'product_type.required' => 'Loại sản phẩm là bắt buộc',
+            'product_type.in' => 'Loại sản phẩm phải là simple hoặc variable',
+            'status.required' => 'Trạng thái sản phẩm là bắt buộc',
+            'status.in' => 'Trạng thái không hợp lệ',
         ]);
+
+        // Validation bổ sung cho variable products
+        if ($request->input('product_type') === 'variable') {
+            // Kiểm tra có chọn attributes không
+            if (! $request->has('attributes') || empty($request->input('attributes'))) {
+                return back()
+                    ->withInput()
+                    ->with('alert', [
+                        'type' => 'error',
+                        'message' => 'Sản phẩm biến thể phải chọn ít nhất một thuộc tính!',
+                    ]);
+            }
+
+            // Kiểm tra có tạo variations không
+            if (! $request->has('variations') || empty($request->input('variations'))) {
+                return back()
+                    ->withInput()
+                    ->with('alert', [
+                        'type' => 'error',
+                        'message' => 'Sản phẩm biến thể phải có ít nhất một biến thể!',
+                    ]);
+            }
+
+            // Validate từng variation
+            $variations = $request->input('variations', []);
+            foreach ($variations as $index => $variation) {
+                if (empty($variation['sku'])) {
+                    return back()
+                        ->withInput()
+                        ->with('alert', [
+                            'type' => 'error',
+                            'message' => 'Biến thể thứ '.($index + 1).' thiếu SKU!',
+                        ]);
+                }
+
+                if (! isset($variation['price']) || $variation['price'] < 0) {
+                    return back()
+                        ->withInput()
+                        ->with('alert', [
+                            'type' => 'error',
+                            'message' => 'Biến thể thứ '.($index + 1).' thiếu giá hoặc giá không hợp lệ!',
+                        ]);
+                }
+            }
+        }
+
+        // Validation cho price nếu có
+        if ($request->filled('price')) {
+            $request->validate([
+                'price' => 'numeric|min:0|max:9999999999999.99',
+            ], [
+                'price.numeric' => 'Giá phải là số',
+                'price.min' => 'Giá không được âm',
+                'price.max' => 'Giá không được vượt quá 9,999,999,999,999.99',
+            ]);
+        }
+
+        if ($request->filled('sale_price')) {
+            $request->validate([
+                'sale_price' => 'numeric|min:0|max:9999999999999.99|lt:price',
+            ], [
+                'sale_price.numeric' => 'Giá khuyến mãi phải là số',
+                'sale_price.min' => 'Giá khuyến mãi không được âm',
+                'sale_price.max' => 'Giá khuyến mãi không được vượt quá 9,999,999,999,999.99',
+                'sale_price.lt' => 'Giá khuyến mãi phải nhỏ hơn giá gốc',
+            ]);
+        }
 
         // Lấy tất cả dữ liệu từ form và set defaults
         $validated['slug'] = $request->input('slug') ?: Str::slug($validated['name']);
@@ -112,10 +199,20 @@ class ProductController extends Controller
         $validated['language_id'] = 1;
         $validated['stock_quantity'] = $request->input('stock_quantity', 0);
         $validated['stock_status'] = $request->input('stock_status', 'in_stock');
-        $validated['product_type'] = 'simple';
+        $validated['product_type'] = $request->input('product_type', 'simple');
         $validated['views'] = 0;
         $validated['rating_average'] = 0.00;
         $validated['rating_count'] = 0;
+
+        // Validation cho categories (khuyến khích chọn ít nhất 1 category)
+        if (! $request->has('categories') || empty($request->input('categories'))) {
+            return back()
+                ->withInput()
+                ->with('alert', [
+                    'type' => 'warning',
+                    'message' => 'Khuyến khích chọn ít nhất một danh mục cho sản phẩm để dễ quản lý!',
+                ]);
+        }
 
         // Boolean fields
         $validated['is_featured'] = $request->has('is_featured');
@@ -179,7 +276,60 @@ class ProductController extends Controller
                 $this->syncProductAttributes($product, $request->input('attributes', []));
             }
 
-            $this->alertCreated('sản phẩm', "Sản phẩm '{$product->name}' đã được thêm vào hệ thống.");
+            // Handle variations - lưu variations khi product type là variable
+            if ($request->input('product_type') === 'variable' && $request->has('variations')) {
+                // Debug for CREATE
+                \Log::info('CREATE - Processing variations:', [
+                    'product_id' => $product->id,
+                    'variations_count' => count($request->input('variations', [])),
+                    'variations_data' => $request->input('variations', []),
+                ]);
+
+                try {
+                    $this->syncProductVariations($product, $request->input('variations', []));
+
+                    // Verify variations were saved
+                    $savedVariations = $product->fresh()->variations;
+                    \Log::info('CREATE - Variations saved successfully:', [
+                        'product_id' => $product->id,
+                        'saved_count' => $savedVariations->count(),
+                        'saved_variations' => $savedVariations->toArray(),
+                    ]);
+
+                    if ($savedVariations->count() === 0) {
+                        throw new \Exception('No variations were saved to database');
+                    }
+
+                } catch (\Exception $e) {
+                    \Log::error('CREATE - Failed to save variations:', [
+                        'product_id' => $product->id,
+                        'error' => $e->getMessage(),
+                        'variations_data' => $request->input('variations', []),
+                    ]);
+
+                    return back()
+                        ->withInput()
+                        ->with('alert', [
+                            'type' => 'error',
+                            'message' => 'Lỗi khi lưu biến thể: '.$e->getMessage(),
+                        ]);
+                }
+            }
+
+            // Thông báo thành công với thông tin chi tiết
+            $successMessage = "Sản phẩm '{$product->name}' đã được thêm vào hệ thống.";
+
+            if ($request->input('product_type') === 'variable') {
+                $variationsCount = $product->variations()->count();
+                $successMessage .= " Đã tạo {$variationsCount} biến thể.";
+            }
+
+            if ($request->has('categories')) {
+                $categoriesCount = count($request->input('categories', []));
+                $successMessage .= " Đã gán {$categoriesCount} danh mục.";
+            }
+
+            $this->alertCreated('sản phẩm', $successMessage);
 
             return redirect()->route('project.admin.products.index', $projectCode);
 
@@ -393,7 +543,7 @@ class ProductController extends Controller
             abort(404, 'Project context required');
         }
 
-        $product = ProjectProduct::with(['categories', 'brands', 'attributeMappings.attribute', 'attributeMappings.attributeValue'])->findOrFail($id);
+        $product = ProjectProduct::with(['categories', 'brands', 'attributeMappings.attribute', 'attributeMappings.attributeValue', 'variations'])->findOrFail($id);
 
         // Get all categories for multi-select
         $categories = ProjectProductCategory::orderBy('sort_order')->get();
@@ -401,21 +551,125 @@ class ProductController extends Controller
         $parentCategories = ProjectProductCategory::whereNull('parent_id')->with('children')->get();
         $brands = ProjectBrand::orderBy('name')->get();
 
+        // Get all attributes with their values for variable products
+        $attributes = ProductAttribute::with('values')->orderBy('name')->get();
+
         // Get current language (default to Vietnamese)
         $currentLang = $request->get('lang', 'vi');
 
-        return view('cms.products.edit', compact('product', 'categories', 'categoriesTree', 'parentCategories', 'brands', 'currentLang'));
+        // Prepare variations data for JavaScript
+        $variationsData = $product->variations->map(function ($variation) {
+            $attributeDetails = [];
+            $attributeValueIds = [];
+
+            if ($variation->attributes) {
+                foreach ($variation->attributes as $attrId => $valueId) {
+                    $attribute = ProductAttribute::find($attrId);
+                    $value = ProductAttributeValue::find($valueId);
+                    if ($attribute && $value) {
+                        $attributeDetails[$attrId] = [
+                            'name' => $attribute->name,
+                            'value' => $value->value,
+                        ];
+                        $attributeValueIds[] = $valueId; // Collect value IDs for frontend
+                    }
+                }
+            }
+
+            return [
+                'id' => $variation->id,
+                'name' => $variation->attribute_names ?: 'Variation '.$variation->id,
+                'sku' => $variation->sku,
+                'price' => $variation->price,
+                'sale_price' => $variation->sale_price,
+                'stock_quantity' => $variation->stock_quantity,
+                'image' => $variation->image,
+                'gallery' => $variation->gallery ?: [],
+                'attributes' => $attributeValueIds, // Array of value IDs for form submission
+                'attributeDetails' => $attributeDetails, // Detailed info for display
+            ];
+        })->toArray();
+
+        // Ensure gallery is properly formatted as array for JavaScript
+        $product->gallery = $product->gallery ?: [];
+
+        return view('cms.products.edit', compact('product', 'categories', 'categoriesTree', 'parentCategories', 'brands', 'attributes', 'currentLang', 'variationsData'));
     }
 
     public function update(Request $request, $projectCode, $id)
     {
         $product = ProjectProduct::findOrFail($id);
 
-        // Validation đơn giản - chỉ 2 trường bắt buộc (giống store)
+        // Debug: Log variations data to file instead of dd()
+        \Log::info('Update Product - Request Data:', [
+            'product_id' => $id,
+            'product_type' => $request->input('product_type'),
+            'has_variations' => $request->has('variations'),
+            'variations_count' => $request->has('variations') ? count($request->input('variations', [])) : 0,
+            'variations_data' => $request->input('variations', []),
+            'all_request_keys' => array_keys($request->all()),
+        ]);
+
+        // Also write to a simple text file for easier debugging
+        file_put_contents(storage_path('logs/variations_debug.txt'),
+            date('Y-m-d H:i:s')." - Product ID: $id\n".
+            'Product Type: '.$request->input('product_type')."\n".
+            'Has Variations: '.($request->has('variations') ? 'YES' : 'NO')."\n".
+            'Variations Count: '.($request->has('variations') ? count($request->input('variations', [])) : 0)."\n".
+            'Variations Data: '.json_encode($request->input('variations', []), JSON_PRETTY_PRINT)."\n".
+            'All Request Keys: '.implode(', ', array_keys($request->all()))."\n".
+            "---\n\n",
+            FILE_APPEND
+        );
+
+        // Enhanced validation với thông báo lỗi chi tiết (giống store)
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'sku' => 'required|string|max:100',
+            'sku' => [
+                'required',
+                'string',
+                'max:100',
+                \Illuminate\Validation\Rule::unique('products_enhanced', 'sku')->using('project')->ignore($id),
+            ],
+            'product_type' => 'required|in:simple,variable',
+            'status' => 'required|in:draft,published,archived',
+        ], [
+            'name.required' => 'Tên sản phẩm là bắt buộc',
+            'name.max' => 'Tên sản phẩm không được vượt quá 255 ký tự',
+            'sku.required' => 'SKU là bắt buộc',
+            'sku.max' => 'SKU không được vượt quá 100 ký tự',
+            'sku.unique' => 'SKU này đã tồn tại, vui lòng chọn SKU khác',
+            'product_type.required' => 'Loại sản phẩm là bắt buộc',
+            'product_type.in' => 'Loại sản phẩm phải là simple hoặc variable',
+            'status.required' => 'Trạng thái sản phẩm là bắt buộc',
+            'status.in' => 'Trạng thái không hợp lệ',
         ]);
+
+        // Validation bổ sung cho variable products
+        if ($request->input('product_type') === 'variable') {
+            // Kiểm tra có variations không
+            if (! $request->has('variations') || empty($request->input('variations'))) {
+                return back()
+                    ->withInput()
+                    ->with('alert', [
+                        'type' => 'error',
+                        'message' => 'Sản phẩm biến thể phải có ít nhất một biến thể!',
+                    ]);
+            }
+
+            // Validate từng variation
+            $variations = $request->input('variations', []);
+            foreach ($variations as $index => $variation) {
+                if (empty($variation['sku'])) {
+                    return back()
+                        ->withInput()
+                        ->with('alert', [
+                            'type' => 'error',
+                            'message' => 'Biến thể thứ '.($index + 1).' thiếu SKU!',
+                        ]);
+                }
+            }
+        }
 
         // Lấy tất cả dữ liệu từ form và set defaults
         $validated['slug'] = $request->input('slug') ?: Str::slug($validated['name']);
@@ -496,6 +750,14 @@ class ProductController extends Controller
                 $product->attributeMappings()->delete();
             }
 
+            // Handle variations - lưu variations khi product type là variable
+            if ($request->input('product_type') === 'variable' && $request->has('variations')) {
+                $this->syncProductVariations($product, $request->input('variations', []));
+            } elseif ($request->input('product_type') === 'simple') {
+                // Xóa tất cả variations khi chuyển về simple product
+                $product->variations()->delete();
+            }
+
             $this->alertUpdated('sản phẩm', "Sản phẩm '{$product->name}' đã được cập nhật.");
 
             return redirect()->route('project.admin.products.index', $projectCode);
@@ -545,6 +807,7 @@ class ProductController extends Controller
             }
 
             foreach ($valueIds as $valueId) {
+                // dd($valueId);
                 ProjectProductAttributeValueMapping::create([
                     'product_id' => $product->id,
                     'product_attribute_id' => $attributeId,
@@ -552,6 +815,87 @@ class ProductController extends Controller
                 ]);
             }
         }
+    }
+
+    /**
+     * Sync product variations when product type is variable
+     */
+    private function syncProductVariations(ProjectProduct $product, array $variations): void
+    {
+        // Debug: Log sync process
+        \Log::info('Syncing Product Variations:', [
+            'product_id' => $product->id,
+            'variations_count' => count($variations),
+            'variations_data' => $variations,
+        ]);
+
+        // Xóa tất cả variations cũ
+        $deletedCount = $product->variations()->count();
+        $product->variations()->delete();
+        \Log::info('Deleted old variations:', ['count' => $deletedCount]);
+
+        // Tạo variations mới
+        $createdCount = 0;
+        foreach ($variations as $index => $variationData) {
+            if (empty($variationData['sku'])) {
+                \Log::warning('Skipping variation without SKU:', ['index' => $index, 'data' => $variationData]);
+
+                continue; // Skip variations without SKU
+            }
+
+            // Prepare variation data
+            $data = [
+                'product_id' => $product->id,
+                'sku' => $variationData['sku'],
+                'price' => $variationData['price'] ?? 0,
+                'sale_price' => $variationData['sale_price'] ?? null,
+                'stock_quantity' => $variationData['stock_quantity'] ?? 0,
+                'image' => $variationData['image'] ?? null,
+                'gallery' => isset($variationData['gallery']) ? (is_string($variationData['gallery']) ? json_decode($variationData['gallery'], true) : $variationData['gallery']) : [],
+                'is_active' => true,
+            ];
+
+            // Handle attributes - convert from array to proper format
+            if (isset($variationData['attributes'])) {
+                $attributes = [];
+                $attributeIds = [];
+
+                if (is_string($variationData['attributes'])) {
+                    $attributeIds = json_decode($variationData['attributes'], true);
+                } else {
+                    $attributeIds = $variationData['attributes'];
+                }
+
+                \Log::info('Processing attributes for variation:', [
+                    'raw_attributes' => $variationData['attributes'],
+                    'parsed_attributes' => $attributeIds,
+                ]);
+
+                if (is_array($attributeIds)) {
+                    foreach ($attributeIds as $valueId) {
+                        $attributeValue = ProductAttributeValue::find($valueId);
+                        if ($attributeValue) {
+                            $attributes[$attributeValue->product_attribute_id] = $valueId;
+                            \Log::info('Added attribute mapping:', [
+                                'attribute_id' => $attributeValue->product_attribute_id,
+                                'value_id' => $valueId,
+                                'value_name' => $attributeValue->value,
+                            ]);
+                        } else {
+                            \Log::warning('Attribute value not found:', ['value_id' => $valueId]);
+                        }
+                    }
+                }
+                $data['attributes'] = $attributes;
+            }
+
+            \Log::info('Creating variation:', ['data' => $data]);
+            $variation = ProductVariation::create($data);
+            $createdCount++;
+            \Log::info('Created variation:', ['id' => $variation->id, 'sku' => $variation->sku]);
+        }
+
+        \Log::info('Sync completed:', ['created_count' => $createdCount]);
     }
 
     private function updateSingle(Request $request, $product)

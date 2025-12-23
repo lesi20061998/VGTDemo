@@ -493,70 +493,69 @@
                     <input type="hidden" name="featured_image" x-model="featuredImage">
                     <div @click="currentGalleryMode = false">
                         @include('cms.components.media-manager')
-                    </div>
-                </div>
-            </div>
-
-            <!-- Danh mục -->
-            <div class="bg-white rounded-lg shadow-sm p-6">
-                <h2 class="font-semibold text-gray-900 mb-4">Danh mục sản phẩm</h2>
-                <div class="max-h-64 overflow-y-auto border rounded-lg p-3 space-y-2">
-                    @php
-                        $selectedCategories = old('categories', $product->categories->pluck('id')->toArray());
-                    @endphp
-                    @foreach($categories ?? [] as $cat)
-                    <label class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer">
-                        <input type="checkbox" name="categories[]" value="{{ $cat->id }}" 
-                               {{ in_array($cat->id, $selectedCategories) ? 'checked' : '' }}
-                               class="rounded border-gray-300 text-blue-600 mr-2">
-                        <span class="text-sm">{{ $cat->name }}</span>
-                    </label>
-                    @endforeach
-                </div>
-            </div>
-
-            <!-- Thương hiệu -->
-            <div class="bg-white rounded-lg shadow-sm p-6">
-                <h2 class="font-semibold text-gray-900 mb-4">Thương hiệu</h2>
-                <div class="max-h-64 overflow-y-auto border rounded-lg p-3 space-y-2">
-                    @php
-                        $selectedBrands = old('brands', $product->brands->pluck('id')->toArray());
-                    @endphp
-                    @foreach($brands ?? [] as $brand)
-                    <label class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer">
-                        <input type="checkbox" name="brands[]" value="{{ $brand->id }}"
-                               {{ in_array($brand->id, $selectedBrands) ? 'checked' : '' }}
-                               class="rounded border-gray-300 text-blue-600 mr-2">
-                        <span class="text-sm">{{ $brand->name }}</span>
-                    </label>
-                    @endforeach
-                </div>
-            </div>
-
-            <!-- Gallery sản phẩm -->
-            <div class="bg-white rounded-lg shadow-sm p-6">
-                <h2 class="font-semibold text-gray-900 mb-4">Gallery sản phẩm</h2>
-                <div class="space-y-3">
-                    <div class="grid grid-cols-3 gap-2" x-show="gallery.length > 0">
-                        <template x-for="(img, index) in gallery" :key="index">
-                            <div class="relative aspect-square border rounded-lg overflow-hidden group">
-                                <img :src="img" class="w-full h-full object-cover">
-                                <input type="hidden" name="gallery[]" :value="img">
-                                <button type="button" @click="removeGalleryImage(index)" 
-                                        class="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                    </svg>
-                                </button>
-                            </div>
-                        </template>
-                    </div>
-                    <div @click="currentGalleryMode = true">
-                        @include('cms.components.media-manager', ['slot' => '+ Thêm ảnh gallery'])
-                    </div>
-                </div>
-            </div>
-        </div>
+                                    </div>
+                                </div>
+                    
+                                <!-- Danh mục -->
+                                <div class="bg-white rounded-lg shadow-sm p-6">
+                                    <h2 class="font-semibold text-gray-900 mb-4">Danh mục sản phẩm</h2>
+                                    <div class="max-h-64 overflow-y-auto border rounded-lg p-3 space-y-2">
+                                        @php
+                                            $selectedCategories = old('categories', $product->categories->pluck('id')->toArray());
+                                        @endphp
+                                        @foreach($categories ?? [] as $cat)
+                                        <label class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer">
+                                            <input type="checkbox" name="categories[]" value="{{ $cat->id }}" 
+                                                   {{ in_array($cat->id, $selectedCategories) ? 'checked' : '' }}
+                                                   class="rounded border-gray-300 text-blue-600 mr-2">
+                                            <span class="text-sm">{{ $cat->name }}</span>
+                                        </label>
+                                        @endforeach
+                                    </div>
+                                </div>
+                    
+                                <!-- Thương hiệu -->
+                                <div class="bg-white rounded-lg shadow-sm p-6">
+                                    <h2 class="font-semibold text-gray-900 mb-4">Thương hiệu</h2>
+                                    <div class="max-h-64 overflow-y-auto border rounded-lg p-3 space-y-2">
+                                        @php
+                                            $selectedBrands = old('brands', $product->brands->pluck('id')->toArray());
+                                        @endphp
+                                        @foreach($brands ?? [] as $brand)
+                                        <label class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer">
+                                            <input type="checkbox" name="brands[]" value="{{ $brand->id }}"
+                                                   {{ in_array($brand->id, $selectedBrands) ? 'checked' : '' }}
+                                                   class="rounded border-gray-300 text-blue-600 mr-2">
+                                            <span class="text-sm">{{ $brand->name }}</span>
+                                        </label>
+                                        @endforeach
+                                    </div>
+                                </div>
+                    
+                                <!-- Gallery sản phẩm -->
+                                <div class="bg-white rounded-lg shadow-sm p-6">
+                                    <h2 class="font-semibold text-gray-900 mb-4">Gallery sản phẩm</h2>
+                                    <div class="space-y-3">
+                                        <div class="grid grid-cols-3 gap-2" x-show="gallery.length > 0">
+                                            <template x-for="(img, index) in gallery" :key="index">
+                                                <div class="relative aspect-square border rounded-lg overflow-hidden group">
+                                                    <img :src="img" class="w-full h-full object-cover">
+                                                    <input type="hidden" name="gallery[]" :value="img">
+                                                    <button type="button" @click="removeGalleryImage(index)" 
+                                                            class="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                            </template>
+                                        </div>
+                                        <div @click="currentGalleryMode = true">
+                                            @include('cms.components.media-manager', ['slot' => '+ Thêm ảnh gallery'])
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>        </div>
     </div>
 </form>
 

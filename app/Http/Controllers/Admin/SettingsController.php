@@ -86,9 +86,30 @@ class SettingsController extends Controller
     public function save(Request $request)
     {
         try {
+            // Debug: Log all request data
+            \Log::info('Settings save - Request data:', [
+                'all_data' => $request->all(),
+                'watermark_data' => $request->input('watermark'),
+                'url' => $request->url(),
+                'method' => $request->method(),
+            ]);
+
             $project = $request->attributes->get('project');
 
             foreach ($request->except('_token', '_method', 'page') as $key => $value) {
+                \Log::info('Processing setting:', ['key' => $key, 'value' => $value, 'type' => gettype($value)]);
+
+                // Xử lý đặc biệt cho checkbox
+                if ($key === 'watermark' && is_array($value)) {
+                    // Đảm bảo enabled được xử lý đúng
+                    if (! isset($value['enabled'])) {
+                        $value['enabled'] = false;
+                    } else {
+                        $value['enabled'] = $value['enabled'] === '1' || $value['enabled'] === 1 || $value['enabled'] === true;
+                    }
+                    \Log::info('Processed watermark enabled:', ['enabled' => $value['enabled'], 'type' => gettype($value['enabled'])]);
+                }
+
                 if (is_string($value)) {
                     $decoded = json_decode($value, true);
                     if (json_last_error() === JSON_ERROR_NONE) {
@@ -99,8 +120,10 @@ class SettingsController extends Controller
                 // Sử dụng model phù hợp dựa trên context
                 if ($project) {
                     \App\Models\ProjectSettingModel::set($key, $value);
+                    \Log::info('Saved to ProjectSettingModel:', ['key' => $key, 'value' => $value]);
                 } else {
                     \App\Models\Setting::set($key, $value);
+                    \Log::info('Saved to Setting:', ['key' => $key, 'value' => $value]);
                 }
             }
 
@@ -108,10 +131,13 @@ class SettingsController extends Controller
 
             return back()->with('alert', [
                 'type' => 'success',
-                'message' => 'Lưu cấu hình thành công!',
+                'message' => 'Lưu cấu hình thành công! Đã lưu '.count($request->except('_token', '_method', 'page')).' cài đặt.',
             ]);
         } catch (\Exception $e) {
-            \Log::error('Settings save error: '.$e->getMessage());
+            \Log::error('Settings save error: '.$e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'request_data' => $request->all(),
+            ]);
 
             return back()->with('alert', [
                 'type' => 'error',
