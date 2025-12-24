@@ -54,11 +54,6 @@ try {
     
     echo "\n3. Testing Authentication Middleware...\n";
     
-    // Test auth middleware behavior
-    $authMiddleware = new App\Http\Middleware\Authenticate();
-    
-    echo "   Auth middleware class: " . get_class($authMiddleware) . "\n";
-    
     // Check auth guards
     $guards = config('auth.guards');
     echo "   Available guards:\n";
