@@ -7,21 +7,34 @@ $app = require_once 'bootstrap/app.php';
 $app->make('Illuminate\Contracts\Console\Kernel')->bootstrap();
 
 // 1. Fix storage symlink
-echo "1. Fixing storage symlink...\n";
+echo "1. Fixing storage directory...\n";
 $publicStorage = public_path('storage');
 $targetStorage = storage_path('app/public');
 
 if (!file_exists($publicStorage)) {
-    if (symlink($targetStorage, $publicStorage)) {
-        echo "   ✓ Created storage symlink\n";
-    } else {
-        // Fallback: copy directory
-        mkdir($publicStorage, 0755, true);
-        shell_exec("cp -r {$targetStorage}/* {$publicStorage}/");
-        echo "   ✓ Copied storage files\n";
+    // Create directory and copy files (no symlink needed)
+    mkdir($publicStorage, 0755, true);
+    
+    // Copy all files from storage/app/public to public/storage
+    function copyDirectory($src, $dst) {
+        $dir = opendir($src);
+        @mkdir($dst);
+        while (false !== ($file = readdir($dir))) {
+            if (($file != '.') && ($file != '..')) {
+                if (is_dir($src . '/' . $file)) {
+                    copyDirectory($src . '/' . $file, $dst . '/' . $file);
+                } else {
+                    copy($src . '/' . $file, $dst . '/' . $file);
+                }
+            }
+        }
+        closedir($dir);
     }
+    
+    copyDirectory($targetStorage, $publicStorage);
+    echo "   ✓ Created storage directory and copied files\n";
 } else {
-    echo "   ✓ Storage already exists\n";
+    echo "   ✓ Storage directory already exists\n";
 }
 
 // 2. Auto-login admin user
