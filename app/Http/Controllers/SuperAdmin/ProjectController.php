@@ -122,8 +122,15 @@ class ProjectController extends Controller
         }
 
         try {
-            $this->createProjectDatabase($project);
-            $this->syncAllProjectTables($project);
+            // Check if multisite mode is enabled
+            if (env('MULTISITE_ENABLED', false)) {
+                $this->setupMultisiteProject($project);
+            } else {
+                // Legacy mode: separate database per project
+                $this->createProjectDatabase($project);
+                $this->syncAllProjectTables($project);
+            }
+            
             $this->copyDefaultData($project);
             $this->createProjectAdmin($project);
 
@@ -133,8 +140,6 @@ class ProjectController extends Controller
             $password = Project::generateProjectAdminPassword();
             $username = $project->code;
             $email = strtolower($project->code).'@project.local';
-
-            // User admin is created in project database during createProjectDatabase()
 
             // Create default permissions from settings
             $defaultPermissions = \App\Models\ProjectPermission::getDefaultPermissions();
@@ -155,9 +160,10 @@ class ProjectController extends Controller
                 'initialized_at' => now(),
             ]);
 
+            $mode = env('MULTISITE_ENABLED', false) ? 'multisite' : 'legacy';
             return back()->with('alert', [
                 'type' => 'success',
-                'message' => 'Khởi tạo website thành công! Database đã được kết nối và tài khoản quản trị đã được tạo.',
+                'message' => "Khởi tạo website thành công! Chế độ: {$mode}. Database đã được kết nối và tài khoản quản trị đã được tạo.",
             ]);
         } catch (\Exception $e) {
             // Switch back to main database before updating project
@@ -168,6 +174,104 @@ class ProjectController extends Controller
                 'type' => 'error',
                 'message' => 'Lỗi khởi tạo website: '.$e->getMessage(),
             ]);
+        }
+    }
+
+    /**
+     * Setup project in multisite mode (shared database)
+     */
+    private function setupMultisiteProject(Project $project)
+    {
+        \Log::info("Setting up project in multisite mode: {$project->code} (ID: {$project->id})");
+
+        // Test connection to multisite database
+        $multisiteDbName = env('MULTISITE_DB_DATABASE', 'multisite_db');
+        $mainDb = config('database.connections.mysql.database');
+
+        try {
+            // Configure multisite database connection
+            \Config::set('database.connections.multisite', [
+                'driver' => 'mysql',
+                'host' => env('MULTISITE_DB_HOST', env('DB_HOST', '127.0.0.1')),
+                'port' => env('MULTISITE_DB_PORT', env('DB_PORT', '3306')),
+                'database' => $multisiteDbName,
+                'username' => env('MULTISITE_DB_USERNAME', env('DB_USERNAME', 'root')),
+                'password' => env('MULTISITE_DB_PASSWORD', env('DB_PASSWORD', '')),
+                'charset' => 'utf8mb4',
+                'collation' => 'utf8mb4_unicode_ci',
+                'prefix' => '',
+                'strict' => true,
+                'engine' => null,
+            ]);
+
+            // Test connection
+            \DB::connection('multisite')->getPdo();
+            
+            // Switch to multisite database
+            \DB::setDefaultConnection('multisite');
+            
+            \Log::info("✅ Successfully connected to multisite database: {$multisiteDbName}");
+            
+            // Ensure tables exist in multisite database
+            $this->ensureMultisiteTables();
+            
+        } catch (\Exception $e) {
+            \Log::error("❌ Cannot connect to multisite database: {$multisiteDbName}. Error: " . $e->getMessage());
+            
+            // Switch back to main database
+            \DB::setDefaultConnection('mysql');
+            
+            throw new \Exception("Multisite database '{$multisiteDbName}' không tồn tại hoặc không có quyền truy cập. Vui lòng kiểm tra cấu hình MULTISITE_DB_* trong .env");
+        }
+    }
+
+    /**
+     * Ensure all necessary tables exist in multisite database
+     */
+    private function ensureMultisiteTables()
+    {
+        $mainDb = config('database.connections.mysql.database');
+        
+        // Get list of tables from main database
+        $allTables = \DB::connection('mysql')->select("SELECT table_name FROM information_schema.tables WHERE table_schema = '{$mainDb}' AND table_type = 'BASE TABLE'");
+
+        $skipTables = ['migrations', 'password_reset_tokens', 'personal_access_tokens', 'tenants', 'projects', 'contracts', 'employees', 'project_settings', 'project_permissions', 'project_tickets', 'activity_logs'];
+
+        foreach ($allTables as $tableObj) {
+            $table = $tableObj->table_name;
+
+            if (in_array($table, $skipTables)) {
+                continue;
+            }
+
+            try {
+                // Check if table exists in multisite database
+                $exists = \DB::select("SHOW TABLES LIKE '{$table}'");
+                
+                if (empty($exists)) {
+                    // Create table structure from main database
+                    $result = \DB::connection('mysql')->select("SHOW CREATE TABLE `{$mainDb}`.`{$table}`");
+                    if (!empty($result)) {
+                        $sql = $result[0]->{'Create Table'};
+                        
+                        // Remove foreign key constraints for simplicity
+                        $lines = explode("\n", $sql);
+                        $filtered = [];
+                        foreach ($lines as $line) {
+                            if (stripos($line, 'CONSTRAINT') === false && stripos($line, 'FOREIGN KEY') === false) {
+                                $filtered[] = $line;
+                            }
+                        }
+                        $sql = implode("\n", $filtered);
+                        $sql = preg_replace('/,\s*\)/', ')', $sql);
+                        
+                        \DB::statement($sql);
+                        \Log::info("Created table {$table} in multisite database");
+                    }
+                }
+            } catch (\Exception $e) {
+                \Log::warning("Skip creating table {$table} in multisite database: ".$e->getMessage());
+            }
         }
     }
 
@@ -267,28 +371,49 @@ class ProjectController extends Controller
 
     private function createProjectAdmin(Project $project)
     {
-        $dbName = $this->getProjectDatabaseName($project);
-
         $mainDb = config('database.connections.mysql.database');
-
-        \DB::statement("USE `{$dbName}`");
-
+        
         $password = \App\Models\Project::generateProjectAdminPassword();
         $username = $project->code;
         $email = strtolower($project->code).'@project.local';
 
-        \DB::statement("
-            INSERT INTO users (name, username, email, password, role, level, email_verified_at) 
-            VALUES (?, ?, ?, ?, 'cms', 2, NOW())
-            ON DUPLICATE KEY UPDATE password = VALUES(password)
-        ", [
-            'CMS Admin - '.$project->code,
-            $username,
-            $email,
-            bcrypt($password),
-        ]);
+        if (env('MULTISITE_ENABLED', false)) {
+            // Multisite mode: create user with project_id
+            \DB::table('users')->updateOrInsert(
+                [
+                    'username' => $username,
+                    'project_id' => $project->id
+                ],
+                [
+                    'name' => 'CMS Admin - '.$project->code,
+                    'email' => $email,
+                    'password' => bcrypt($password),
+                    'role' => 'cms',
+                    'level' => 2,
+                    'project_id' => $project->id,
+                    'email_verified_at' => now(),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]
+            );
+        } else {
+            // Legacy mode: create user in project database
+            $dbName = $this->getProjectDatabaseName($project);
+            \DB::statement("USE `{$dbName}`");
 
-        \DB::statement("USE `{$mainDb}`");
+            \DB::statement("
+                INSERT INTO users (name, username, email, password, role, level, email_verified_at) 
+                VALUES (?, ?, ?, ?, 'cms', 2, NOW())
+                ON DUPLICATE KEY UPDATE password = VALUES(password)
+            ", [
+                'CMS Admin - '.$project->code,
+                $username,
+                $email,
+                bcrypt($password),
+            ]);
+
+            \DB::statement("USE `{$mainDb}`");
+        }
 
         $project->project_admin_username = $username;
         $project->project_admin_password = $password;
@@ -296,15 +421,13 @@ class ProjectController extends Controller
 
     private function copyDefaultData(Project $project)
     {
-        $dbName = $this->getProjectDatabaseName($project);
-
         $mainDb = config('database.connections.mysql.database');
-
         $tablesToCopy = ['settings', 'menus', 'menu_items', 'widgets', 'widget_templates'];
 
         foreach ($tablesToCopy as $table) {
             try {
-                $data = \DB::table($table)
+                // Get default data from main database
+                $data = \DB::connection('mysql')->table($table)
                     ->where(function ($q) {
                         $q->whereNull('tenant_id')
                             ->orWhere('tenant_id', 0);
@@ -316,18 +439,45 @@ class ProjectController extends Controller
                     ->get();
 
                 if ($data->count() > 0) {
-                    \DB::statement("USE `{$dbName}`");
+                    if (env('MULTISITE_ENABLED', false)) {
+                        // Multisite mode: insert with project_id
+                        foreach ($data as $row) {
+                            $rowArray = (array) $row;
+                            unset($rowArray['id']);
+                            $rowArray['project_id'] = $project->id;
+                            $rowArray['tenant_id'] = null;
 
-                    foreach ($data as $row) {
-                        $rowArray = (array) $row;
-                        unset($rowArray['id']);
-                        $rowArray['project_id'] = $project->id;
-                        $rowArray['tenant_id'] = null;
+                            // Check if record already exists for this project
+                            $exists = \DB::table($table)
+                                ->where('project_id', $project->id);
+                            
+                            // Add unique field check if available
+                            if (isset($rowArray['key'])) {
+                                $exists->where('key', $rowArray['key']);
+                            } elseif (isset($rowArray['name'])) {
+                                $exists->where('name', $rowArray['name']);
+                            }
+                            
+                            if (!$exists->exists()) {
+                                \DB::table($table)->insert($rowArray);
+                            }
+                        }
+                    } else {
+                        // Legacy mode: switch to project database
+                        $dbName = $this->getProjectDatabaseName($project);
+                        \DB::statement("USE `{$dbName}`");
 
-                        \DB::table($table)->insert($rowArray);
+                        foreach ($data as $row) {
+                            $rowArray = (array) $row;
+                            unset($rowArray['id']);
+                            $rowArray['project_id'] = $project->id;
+                            $rowArray['tenant_id'] = null;
+
+                            \DB::table($table)->insert($rowArray);
+                        }
+
+                        \DB::statement("USE `{$mainDb}`");
                     }
-
-                    \DB::statement("USE `{$mainDb}`");
                 }
             } catch (\Exception $e) {
                 \Log::warning("Skip copying data for {$table}: ".$e->getMessage());

@@ -124,19 +124,136 @@ class MultisiteManager extends Command
             return 0;
         }
 
-        // Instructions for manual migration
-        $this->info('To complete the migration:');
-        $this->info('1. Create a new database for multisite');
-        $this->info('2. Update your .env file with multisite configuration:');
-        $this->info('   MULTISITE_ENABLED=true');
-        $this->info('   MULTISITE_DB_HOST=your_host');
-        $this->info('   MULTISITE_DB_DATABASE=your_multisite_db');
-        $this->info('   MULTISITE_DB_USERNAME=your_username');
-        $this->info('   MULTISITE_DB_PASSWORD=your_password');
-        $this->info('3. Run migrations on the multisite database');
-        $this->info('4. Import existing project data with project_id scoping');
+        // Check if multisite database is configured
+        if (!env('MULTISITE_DB_DATABASE')) {
+            $this->error('Please configure MULTISITE_DB_* variables in .env first!');
+            return 1;
+        }
+
+        // Test multisite database connection
+        try {
+            Config::set('database.connections.multisite_test', [
+                'driver' => 'mysql',
+                'host' => env('MULTISITE_DB_HOST', env('DB_HOST', '127.0.0.1')),
+                'port' => env('MULTISITE_DB_PORT', env('DB_PORT', '3306')),
+                'database' => env('MULTISITE_DB_DATABASE', 'multisite_db'),
+                'username' => env('MULTISITE_DB_USERNAME', env('DB_USERNAME', 'root')),
+                'password' => env('MULTISITE_DB_PASSWORD', env('DB_PASSWORD', '')),
+                'charset' => 'utf8mb4',
+                'collation' => 'utf8mb4_unicode_ci',
+            ]);
+
+            DB::connection('multisite_test')->getPdo();
+            $this->info('✓ Multisite database connection: OK');
+            
+        } catch (\Exception $e) {
+            $this->error('✗ Cannot connect to multisite database: ' . $e->getMessage());
+            return 1;
+        }
+
+        // Get list of projects
+        $projects = \App\Models\Project::where('status', 'active')->get();
+        
+        if ($projects->isEmpty()) {
+            $this->info('No active projects found to migrate.');
+            return 0;
+        }
+
+        $this->info("Found {$projects->count()} active projects to migrate:");
+        foreach ($projects as $project) {
+            $this->line("- {$project->code} ({$project->name})");
+        }
+
+        if (!$this->confirm('Proceed with data migration?')) {
+            $this->info('Migration cancelled.');
+            return 0;
+        }
+
+        // Perform migration
+        $this->info('Starting migration...');
+        
+        foreach ($projects as $project) {
+            $this->info("Migrating project: {$project->code}");
+            
+            try {
+                $this->migrateProjectData($project);
+                $this->info("✓ Successfully migrated: {$project->code}");
+            } catch (\Exception $e) {
+                $this->error("✗ Failed to migrate {$project->code}: " . $e->getMessage());
+            }
+        }
+
+        $this->info('Migration completed!');
+        $this->info('Next steps:');
+        $this->info('1. Set MULTISITE_ENABLED=true in .env');
+        $this->info('2. Test your projects');
+        $this->info('3. Remove old project databases if everything works');
 
         return 0;
+    }
+
+    private function migrateProjectData($project): void
+    {
+        // Get project database name
+        $projectDbName = $this->getProjectDatabaseName($project);
+        
+        // Tables to migrate
+        $tablesToMigrate = ['users', 'settings', 'menus', 'menu_items', 'widgets', 'widget_templates', 'posts', 'products', 'categories'];
+        
+        foreach ($tablesToMigrate as $table) {
+            try {
+                // Check if table exists in project database
+                $exists = DB::select("SELECT 1 FROM information_schema.tables WHERE table_schema = ? AND table_name = ?", [$projectDbName, $table]);
+                
+                if (empty($exists)) {
+                    continue;
+                }
+                
+                // Get data from project database
+                $data = DB::select("SELECT * FROM `{$projectDbName}`.`{$table}`");
+                
+                if (empty($data)) {
+                    continue;
+                }
+                
+                // Insert into multisite database with project_id
+                DB::connection('multisite_test')->transaction(function() use ($table, $data, $project) {
+                    foreach ($data as $row) {
+                        $rowArray = (array) $row;
+                        $rowArray['project_id'] = $project->id;
+                        
+                        // Remove id to let auto-increment handle it
+                        unset($rowArray['id']);
+                        
+                        DB::connection('multisite_test')->table($table)->insert($rowArray);
+                    }
+                });
+                
+                $this->line("  ✓ Migrated {$table}: " . count($data) . " records");
+                
+            } catch (\Exception $e) {
+                $this->line("  ✗ Failed to migrate {$table}: " . $e->getMessage());
+            }
+        }
+    }
+
+    private function getProjectDatabaseName($project): string
+    {
+        $code = $project->code;
+        
+        if (empty($code)) {
+            $code = 'project_'.$project->id;
+        }
+        
+        if (app()->environment('production')) {
+            $username = env('DB_USERNAME', '');
+            if (preg_match('/^(u\d+)_/', $username, $matches)) {
+                $userPrefix = $matches[1];
+                return $userPrefix . '_' . strtolower($code);
+            }
+        }
+        
+        return 'project_'.strtolower($code);
     }
 
     private function setupMultisiteDatabase(): int
