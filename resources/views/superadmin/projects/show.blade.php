@@ -13,6 +13,7 @@
                 Chờ duyệt
             </span>
             @elseif($project->status == 'assigned')
+            @can('create-websites')
             <form method="POST" action="{{ route('superadmin.projects.create-website', $project) }}">
                 @csrf
                 <button type="submit" onclick="return confirm('Tạo website cho dự án này?')"
@@ -20,6 +21,11 @@
                     Tạo Website
                 </button>
             </form>
+            @else
+            <span class="px-4 py-2 bg-gray-300 text-gray-500 rounded-lg cursor-not-allowed">
+                Tạo Website (Không có quyền)
+            </span>
+            @endcan
             @endif
             <a href="{{ route('superadmin.projects.edit', $project) }}" 
                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Sửa</a>

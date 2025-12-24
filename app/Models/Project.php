@@ -9,7 +9,7 @@ class Project extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['contract_id', 'name', 'code', 'subdomain', 'remote_url', 'api_token', 'client_name', 'start_date', 'deadline', 'status', 'contract_value', 'contract_file', 'technical_requirements', 'features', 'environment', 'notes', 'admin_id', 'employee_ids', 'created_by', 'project_admin_username', 'project_admin_password', 'approved_at', 'initialized_at'];
+    protected $fillable = ['contract_id', 'name', 'code', 'subdomain', 'remote_url', 'api_token', 'client_name', 'start_date', 'deadline', 'status', 'contract_value', 'contract_file', 'technical_requirements', 'features', 'environment', 'notes', 'admin_id', 'employee_ids', 'created_by', 'project_admin_username', 'project_admin_password', 'project_admin_password_plain', 'password_updated_at', 'password_updated_by', 'approved_at', 'initialized_at'];
 
     protected $casts = [
         'start_date' => 'date',
@@ -17,10 +17,11 @@ class Project extends Model
         'contract_value' => 'decimal:2',
         'approved_at' => 'datetime',
         'initialized_at' => 'datetime',
+        'password_updated_at' => 'datetime',
         'employee_ids' => 'array',
     ];
 
-    protected $hidden = ['project_admin_password'];
+    protected $hidden = ['project_admin_password', 'project_admin_password_plain'];
 
     public function contract()
     {
@@ -35,6 +36,16 @@ class Project extends Model
     public function createdBy()
     {
         return $this->belongsTo(Employee::class, 'created_by');
+    }
+
+    public function passwordUpdatedBy()
+    {
+        return $this->belongsTo(User::class, 'password_updated_by');
+    }
+
+    public function passwordAudits()
+    {
+        return $this->hasMany(ProjectPasswordAudit::class);
     }
 
     public static function generateSubdomain($employeeCode, $contractCode)
@@ -87,5 +98,30 @@ class Project extends Model
     public function hasEmployee($employeeId)
     {
         return $this->employee_ids && in_array($employeeId, $this->employee_ids);
+    }
+
+    /**
+     * Get the decrypted plain password
+     */
+    public function getDecryptedPassword(): ?string
+    {
+        if (!$this->project_admin_password_plain) {
+            return null;
+        }
+
+        try {
+            return decrypt($this->project_admin_password_plain);
+        } catch (\Exception $e) {
+            \Log::error('Failed to decrypt password for project ' . $this->id . ': ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Set the encrypted plain password
+     */
+    public function setEncryptedPassword(string $password): void
+    {
+        $this->project_admin_password_plain = encrypt($password);
     }
 }

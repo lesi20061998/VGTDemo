@@ -55,6 +55,13 @@ class SetProjectDatabase
         // Multi-site: Each project has its own database
         $projectDbName = 'project_'.strtolower($code);
 
+        // HOSTINGER FIX: Use full database name with user prefix
+        if (app()->environment('production')) {
+            // On Hostinger, database names need user prefix
+            $userPrefix = explode('_', env('DB_USERNAME'))[0] ?? 'u712054581';
+            $projectDbName = $userPrefix . '_' . strtolower($code);
+        }
+
         Config::set('database.connections.project', [
             'driver' => 'mysql',
             'host' => env('DB_HOST', '127.0.0.1'),
@@ -69,11 +76,32 @@ class SetProjectDatabase
             'engine' => null,
         ]);
 
-        DB::purge('project');
-
-        // Set default connection to project for this request
-        DB::setDefaultConnection('project');
-        Config::set('database.default', 'project');
+        try {
+            DB::purge('project');
+            
+            // Test connection before switching
+            DB::connection('project')->getPdo();
+            
+            // Set default connection to project for this request
+            DB::setDefaultConnection('project');
+            Config::set('database.default', 'project');
+            
+            Log::info("Successfully connected to project database: {$projectDbName}");
+            
+        } catch (\Exception $e) {
+            Log::error("Failed to connect to project database {$projectDbName}: " . $e->getMessage());
+            
+            // Fallback to main database with project scoping
+            Log::warning("Falling back to main database with project scoping for project: {$code}");
+            
+            // Use main database but set project context
+            Config::set('database.connections.project', config('database.connections.mysql'));
+            DB::purge('project');
+            
+            // Set project ID for scoping queries
+            app()->instance('current_project_id', $project->id);
+            session(['fallback_project_id' => $project->id]);
+        }
     }
 
     private function resetToMainDatabase()

@@ -157,7 +157,7 @@ class ProjectController extends Controller
 
             return back()->with('alert', [
                 'type' => 'success',
-                'message' => 'Tạo website và database thành công! Tài khoản quản trị đã được tạo.',
+                'message' => 'Khởi tạo website thành công! Database đã được kết nối và tài khoản quản trị đã được tạo.',
             ]);
         } catch (\Exception $e) {
             // Switch back to main database before updating project
@@ -166,7 +166,7 @@ class ProjectController extends Controller
 
             return back()->with('alert', [
                 'type' => 'error',
-                'message' => 'Lỗi tạo website: '.$e->getMessage(),
+                'message' => 'Lỗi khởi tạo website: '.$e->getMessage(),
             ]);
         }
     }
@@ -183,19 +183,40 @@ class ProjectController extends Controller
             $code = 'project_'.$project->id;
         }
 
+        // HOSTINGER FIX: Add user prefix for production
+        if (app()->environment('production')) {
+            // Extract user prefix from DB_USERNAME (e.g., u712054581_VGTApp -> u712054581)
+            $username = env('DB_USERNAME', '');
+            if (preg_match('/^(u\d+)_/', $username, $matches)) {
+                $userPrefix = $matches[1];
+                return $userPrefix . '_' . strtolower($code);
+            }
+        }
+
         return 'project_'.strtolower($code);
     }
 
     private function createProjectDatabase(Project $project)
     {
         $dbName = $this->getProjectDatabaseName($project);
-
         $mainDb = config('database.connections.mysql.database');
 
-        \Log::info("Creating database: {$dbName} for project: {$project->code} (ID: {$project->id})");
+        \Log::info("Checking database connection: {$dbName} for project: {$project->code} (ID: {$project->id})");
 
-        \DB::statement("CREATE DATABASE IF NOT EXISTS `{$dbName}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
-        \DB::statement("USE `{$dbName}`");
+        // MANUAL DATABASE SETUP: Don't create database automatically
+        // Instead, just check if database exists and is accessible
+        try {
+            // Test connection to project database
+            \DB::statement("USE `{$dbName}`");
+            \Log::info("✅ Successfully connected to existing database: {$dbName}");
+        } catch (\Exception $e) {
+            \Log::error("❌ Cannot connect to database: {$dbName}. Error: " . $e->getMessage());
+            
+            // Switch back to main database
+            \DB::statement("USE `{$mainDb}`");
+            
+            throw new \Exception("Database '{$dbName}' không tồn tại hoặc không có quyền truy cập. Vui lòng tạo database thủ công trong Hostinger hPanel và gán quyền cho user.");
+        }
     }
 
     private function syncAllProjectTables(Project $project)
