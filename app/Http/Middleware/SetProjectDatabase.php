@@ -52,6 +52,58 @@ class SetProjectDatabase
             \App\Services\SettingsService::getInstance()->clearCache();
         }
 
+        // Check if multisite is enabled
+        if (env('MULTISITE_ENABLED', false)) {
+            // Use dedicated multisite database
+            $this->setupMultisiteDatabase($project, $code);
+        } else {
+            // Use separate database per project (legacy mode)
+            $this->setupProjectDatabase($project, $code);
+        }
+    }
+
+    private function setupMultisiteDatabase($project, $code)
+    {
+        Log::info("Using multisite database for project: {$code}");
+
+        Config::set('database.connections.project', [
+            'driver' => 'mysql',
+            'host' => env('MULTISITE_DB_HOST', env('DB_HOST', '127.0.0.1')),
+            'port' => env('MULTISITE_DB_PORT', env('DB_PORT', '3306')),
+            'database' => env('MULTISITE_DB_DATABASE', 'multisite_db'),
+            'username' => env('MULTISITE_DB_USERNAME', env('DB_USERNAME', 'root')),
+            'password' => env('MULTISITE_DB_PASSWORD', env('DB_PASSWORD', '')),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ]);
+
+        try {
+            DB::purge('project');
+            
+            // Test connection before switching
+            DB::connection('project')->getPdo();
+            
+            // Set default connection to project for this request
+            DB::setDefaultConnection('project');
+            Config::set('database.default', 'project');
+            
+            // Set project context for multisite queries
+            app()->instance('current_project_id', $project->id);
+            session(['current_project_id' => $project->id]);
+            
+            Log::info("Successfully connected to multisite database for project: {$code}");
+            
+        } catch (\Exception $e) {
+            Log::error("Failed to connect to multisite database for project {$code}: " . $e->getMessage());
+            $this->fallbackToMainDatabase($project);
+        }
+    }
+
+    private function setupProjectDatabase($project, $code)
+    {
         // Multi-site: Each project has its own database
         $projectDbName = 'project_'.strtolower($code);
 
@@ -90,18 +142,21 @@ class SetProjectDatabase
             
         } catch (\Exception $e) {
             Log::error("Failed to connect to project database {$projectDbName}: " . $e->getMessage());
-            
-            // Fallback to main database with project scoping
-            Log::warning("Falling back to main database with project scoping for project: {$code}");
-            
-            // Use main database but set project context
-            Config::set('database.connections.project', config('database.connections.mysql'));
-            DB::purge('project');
-            
-            // Set project ID for scoping queries
-            app()->instance('current_project_id', $project->id);
-            session(['fallback_project_id' => $project->id]);
+            $this->fallbackToMainDatabase($project);
         }
+    }
+
+    private function fallbackToMainDatabase($project)
+    {
+        Log::warning("Falling back to main database with project scoping for project: {$project->code}");
+        
+        // Use main database but set project context
+        Config::set('database.connections.project', config('database.connections.mysql'));
+        DB::purge('project');
+        
+        // Set project ID for scoping queries
+        app()->instance('current_project_id', $project->id);
+        session(['fallback_project_id' => $project->id]);
     }
 
     private function resetToMainDatabase()
