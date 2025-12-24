@@ -25,8 +25,8 @@ Route::middleware([
     Route::post('contracts/{contract}/reject', [ContractController::class, 'reject'])->name('contracts.reject');
     Route::resource('projects', \App\Http\Controllers\SuperAdmin\ProjectController::class)->middleware('can:manage-projects');
     Route::post('projects/{project}/create-website', [\App\Http\Controllers\SuperAdmin\ProjectController::class, 'createWebsite'])
-        ->name('projects.create-website')
-        ->middleware('can:create-websites'); // Thêm middleware role
+        ->name('projects.create-website');
+        // ->middleware('can:create-websites'); // Tạm thời tắt để de
     Route::get('projects/{project}/config', [\App\Http\Controllers\SuperAdmin\ProjectController::class, 'config'])->name('projects.config');
     Route::post('projects/{project}/config', [\App\Http\Controllers\SuperAdmin\ProjectController::class, 'updateConfig']);
     Route::resource('tenants', TenantController::class);

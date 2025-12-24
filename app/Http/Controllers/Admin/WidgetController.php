@@ -26,7 +26,15 @@ class WidgetController extends Controller
 
         $availableWidgets = WidgetRegistry::getByCategory();
 
-        return view('cms.widgets.builder', compact('existingWidgets', 'availableWidgets'));
+        // Check if we're in project context
+        $projectCode = request()->route('projectCode');
+        $currentProject = null;
+        
+        if ($projectCode) {
+            $currentProject = (object) ['code' => $projectCode];
+        }
+
+        return view('cms.widgets.builder', compact('existingWidgets', 'availableWidgets', 'currentProject'));
     }
 
     public function create()
@@ -115,5 +123,129 @@ class WidgetController extends Controller
             : route('cms.widgets.index');
 
         return redirect($route)->with('success', 'Widget deleted successfully');
+    }
+
+    /**
+     * Save multiple widgets at once
+     */
+    public function saveWidgets(Request $request)
+    {
+        try {
+            $widgets = $request->input('widgets', []);
+            $successCount = 0;
+            $errorCount = 0;
+            $errors = [];
+
+            // Clear existing widgets for the areas being updated
+            $areas = collect($widgets)->pluck('area')->unique();
+            foreach ($areas as $area) {
+                Widget::where('area', $area)->delete();
+            }
+
+            // Save new widgets
+            foreach ($widgets as $widgetData) {
+                try {
+                    $validated = $this->validateWidgetData($widgetData);
+                    Widget::create($validated);
+                    $successCount++;
+                } catch (\Exception $e) {
+                    $errorCount++;
+                    $errors[] = "Widget '{$widgetData['name']}': " . $e->getMessage();
+                }
+            }
+
+            // Clear cache for all affected areas
+            foreach ($areas as $area) {
+                clear_widget_cache($area);
+            }
+
+            if ($errorCount === 0) {
+                return response()->json([
+                    'success' => true,
+                    'message' => "Successfully saved {$successCount} widgets",
+                    'saved' => $successCount
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Saved {$successCount} widgets, {$errorCount} failed",
+                    'saved' => $successCount,
+                    'failed' => $errorCount,
+                    'errors' => $errors
+                ], 422);
+            }
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error saving widgets: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Clear widgets in a specific area
+     */
+    public function clearArea(Request $request)
+    {
+        $area = $request->input('area', 'homepage-main');
+        
+        $count = Widget::where('area', $area)->count();
+        Widget::where('area', $area)->delete();
+        clear_widget_cache($area);
+
+        return response()->json([
+            'success' => true,
+            'message' => "Cleared {$count} widgets from {$area}"
+        ]);
+    }
+
+    /**
+     * Clear widget cache
+     */
+    public function clearCache()
+    {
+        clear_widget_cache();
+        return response()->json(['success' => true, 'message' => 'Widget cache cleared']);
+    }
+
+    /**
+     * Validate widget data
+     */
+    private function validateWidgetData($data)
+    {
+        $rules = [
+            'name' => 'required|string|max:255',
+            'type' => 'required|string',
+            'area' => 'required|string',
+            'settings' => 'nullable',
+            'sort_order' => 'nullable|integer',
+            'is_active' => 'nullable|boolean'
+        ];
+
+        $validator = \Validator::make($data, $rules);
+        
+        if ($validator->fails()) {
+            throw new \Exception('Validation failed: ' . implode(', ', $validator->errors()->all()));
+        }
+
+        $validated = $validator->validated();
+
+        // Process settings
+        if (isset($validated['settings']) && is_string($validated['settings'])) {
+            $validated['settings'] = json_decode($validated['settings'], true);
+        }
+
+        // Set defaults
+        $validated['is_active'] = $validated['is_active'] ?? true;
+        $validated['sort_order'] = $validated['sort_order'] ?? 0;
+
+        // Set tenant_id for project context
+        $projectCode = request()->route('projectCode');
+        if ($projectCode && session('current_tenant_id')) {
+            $validated['tenant_id'] = session('current_tenant_id');
+        }
+
+        return $validated;
     }
 }

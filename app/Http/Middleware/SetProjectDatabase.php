@@ -16,16 +16,23 @@ class SetProjectDatabase
         $project = $request->attributes->get('project');
 
         if ($project) {
-            // Set database connection for this project
-            $this->setProjectDatabase($project, $request);
+            // DISABLED: Multisite functionality temporarily disabled for demo
+            // $this->setProjectDatabase($project, $request);
+            
+            // Just set basic project context without database switching
+            session(['current_tenant_id' => $project->id]);
+            session(['current_project_id' => $project->id]);
+            app()->instance('current_project_id', $project->id);
+            
+            Log::debug("Project context set for demo mode: {$project->code}");
         }
 
         $response = $next($request);
 
-        // Reset to main database after request
-        if ($project) {
-            $this->resetToMainDatabase();
-        }
+        // DISABLED: No database reset needed
+        // if ($project) {
+        //     $this->resetToMainDatabase();
+        // }
 
         return $response;
     }
@@ -52,10 +59,45 @@ class SetProjectDatabase
             \App\Services\SettingsService::getInstance()->clearCache();
         }
 
-        // Always use multisite database (no more legacy mode)
-        $this->setupMultisiteDatabase($project, $code);
+        // SHARED HOSTING MODE: Always use main database with project_id scoping
+        $this->setupSharedDatabase($project, $code);
     }
 
+    /**
+     * Setup project using shared database (single database for all projects)
+     */
+    private function setupSharedDatabase($project, $code)
+    {
+        Log::info("Using shared database for project: {$code}");
+
+        // Use the main database (same as application)
+        Config::set('database.connections.project', config('database.connections.mysql'));
+
+        try {
+            DB::purge('project');
+            
+            // Test connection before switching
+            DB::connection('project')->getPdo();
+            
+            // Set default connection to project for this request
+            DB::setDefaultConnection('project');
+            Config::set('database.default', 'project');
+            
+            // Set project context for scoped queries
+            app()->instance('current_project_id', $project->id);
+            session(['current_project_id' => $project->id]);
+            
+            Log::info("Successfully using shared database for project: {$code}");
+            
+        } catch (\Exception $e) {
+            Log::error("Failed to setup shared database for project {$code}: " . $e->getMessage());
+            $this->fallbackToMainDatabase($project);
+        }
+    }
+
+    // COMMENTED OUT: Legacy multisite database setup
+    // This was trying to create separate databases which doesn't work on shared hosting
+    /*
     private function setupMultisiteDatabase($project, $code)
     {
         Log::info("Using multisite database for project: {$code}");
@@ -96,50 +138,7 @@ class SetProjectDatabase
             $this->fallbackToMainDatabase($project);
         }
     }
-
-    private function setupProjectDatabase($project, $code)
-    {
-        // Multi-site: Each project has its own database
-        $projectDbName = 'project_'.strtolower($code);
-
-        // HOSTINGER FIX: Use full database name with user prefix
-        if (app()->environment('production')) {
-            // On Hostinger, database names need user prefix
-            $userPrefix = explode('_', env('DB_USERNAME'))[0] ?? 'u712054581';
-            $projectDbName = $userPrefix . '_' . strtolower($code);
-        }
-
-        Config::set('database.connections.project', [
-            'driver' => 'mysql',
-            'host' => env('DB_HOST', '127.0.0.1'),
-            'port' => env('DB_PORT', '3306'),
-            'database' => $projectDbName, // Separate database for each project
-            'username' => env('DB_USERNAME', 'root'),
-            'password' => env('DB_PASSWORD', ''),
-            'charset' => 'utf8mb4',
-            'collation' => 'utf8mb4_unicode_ci',
-            'prefix' => '',
-            'strict' => true,
-            'engine' => null,
-        ]);
-
-        try {
-            DB::purge('project');
-            
-            // Test connection before switching
-            DB::connection('project')->getPdo();
-            
-            // Set default connection to project for this request
-            DB::setDefaultConnection('project');
-            Config::set('database.default', 'project');
-            
-            Log::info("Successfully connected to project database: {$projectDbName}");
-            
-        } catch (\Exception $e) {
-            Log::error("Failed to connect to project database {$projectDbName}: " . $e->getMessage());
-            $this->fallbackToMainDatabase($project);
-        }
-    }
+    */
 
     private function fallbackToMainDatabase($project)
     {

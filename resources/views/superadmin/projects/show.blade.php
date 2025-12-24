@@ -12,20 +12,24 @@
             <span class="px-4 py-2 bg-yellow-100 text-yellow-800 rounded-lg">
                 Chờ duyệt
             </span>
-            @elseif($project->status == 'assigned')
-            @can('create-websites')
+            @elseif($project->status == 'assigned' || ($project->status == 'active' && empty($project->project_admin_username)))
+            {{-- DEMO MODE: Show create website button for assigned projects or active projects without username --}}
             <form method="POST" action="{{ route('superadmin.projects.create-website', $project) }}">
                 @csrf
                 <button type="submit" onclick="return confirm('Tạo website cho dự án này?')"
                         class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
-                    Tạo Website
+                    {{ empty($project->project_admin_username) ? 'Tạo Website' : 'Tạo lại Website' }} (Demo Mode)
                 </button>
             </form>
-            @else
-            <span class="px-4 py-2 bg-gray-300 text-gray-500 rounded-lg cursor-not-allowed">
-                Tạo Website (Không có quyền)
-            </span>
-            @endcan
+            @elseif($project->status == 'active' && !empty($project->project_admin_username))
+            {{-- Show recreate button for active projects with existing username --}}
+            <form method="POST" action="{{ route('superadmin.projects.create-website', $project) }}">
+                @csrf
+                <button type="submit" onclick="return confirm('Tạo lại website cho dự án này? Username và password cũ sẽ bị thay đổi!')"
+                        class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700">
+                    Tạo lại Website (Demo Mode)
+                </button>
+            </form>
             @endif
             <a href="{{ route('superadmin.projects.edit', $project) }}" 
                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Sửa</a>

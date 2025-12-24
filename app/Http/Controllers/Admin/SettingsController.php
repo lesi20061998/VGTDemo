@@ -95,38 +95,59 @@ class SettingsController extends Controller
             ]);
 
             $project = $request->attributes->get('project');
+            $savedCount = 0;
 
-            foreach ($request->except('_token', '_method', 'page') as $key => $value) {
-                // Xử lý đặc biệt cho checkbox
-                if ($key === 'watermark' && is_array($value)) {
-                    // Đảm bảo enabled được xử lý đúng
-                    if (! isset($value['enabled'])) {
-                        $value['enabled'] = false;
+            // Sử dụng transaction để tránh duplicate
+            \DB::transaction(function () use ($request, $project, &$savedCount) {
+                foreach ($request->except('_token', '_method', 'page') as $key => $value) {
+                    // Xử lý đặc biệt cho checkbox
+                    if ($key === 'watermark' && is_array($value)) {
+                        // Đảm bảo enabled được xử lý đúng
+                        if (! isset($value['enabled'])) {
+                            $value['enabled'] = false;
+                        } else {
+                            $value['enabled'] = $value['enabled'] === '1' || $value['enabled'] === 1 || $value['enabled'] === true;
+                        }
+                    }
+
+                    if (is_string($value)) {
+                        $decoded = json_decode($value, true);
+                        if (json_last_error() === JSON_ERROR_NONE) {
+                            $value = $decoded;
+                        }
+                    }
+
+                    // DEMO MODE: Sử dụng shared database với project scoping
+                    if ($project) {
+                        // Xóa setting cũ trước (nếu có) để tránh duplicate
+                        \DB::table('settings')
+                            ->where('key', $key)
+                            ->where('project_id', $project->id)
+                            ->delete();
+
+                        // Insert setting mới
+                        \DB::table('settings')->insert([
+                            'key' => $key,
+                            'payload' => json_encode(is_array($value) ? $value : ['value' => $value]),
+                            'group' => 'general',
+                            'project_id' => $project->id,
+                            'tenant_id' => null,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ]);
                     } else {
-                        $value['enabled'] = $value['enabled'] === '1' || $value['enabled'] === 1 || $value['enabled'] === true;
+                        \App\Models\Setting::set($key, $value);
                     }
+                    
+                    $savedCount++;
                 }
-
-                if (is_string($value)) {
-                    $decoded = json_decode($value, true);
-                    if (json_last_error() === JSON_ERROR_NONE) {
-                        $value = $decoded;
-                    }
-                }
-
-                // Sử dụng model phù hợp dựa trên context
-                if ($project) {
-                    \App\Models\ProjectSettingModel::set($key, $value);
-                } else {
-                    \App\Models\Setting::set($key, $value);
-                }
-            }
+            });
 
             \App\Services\SettingsService::getInstance()->clearCache();
 
             return back()->with('alert', [
                 'type' => 'success',
-                'message' => 'Lưu cấu hình thành công! Đã lưu '.count($request->except('_token', '_method', 'page')).' cài đặt.',
+                'message' => "Lưu cấu hình thành công! Đã lưu {$savedCount} cài đặt.",
             ]);
         } catch (\Exception $e) {
             \Log::error('Settings save error: '.$e->getMessage(), [

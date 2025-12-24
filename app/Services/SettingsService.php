@@ -63,11 +63,23 @@ class SettingsService
 
         if ($this->isProjectContext()) {
             try {
-                $this->settings = DB::connection('project')
-                    ->table('settings')
-                    ->pluck('payload', 'key')
-                    ->map(fn ($payload) => json_decode($payload, true))
-                    ->toArray();
+                // DEMO MODE: Đọc từ main database với project scoping
+                $project = request()->attributes->get('project');
+                if ($project) {
+                    $this->settings = DB::connection('mysql')
+                        ->table('settings')
+                        ->where('project_id', $project->id)
+                        ->pluck('payload', 'key')
+                        ->map(fn ($payload) => json_decode($payload, true))
+                        ->toArray();
+                } else {
+                    // Fallback: thử đọc từ project database
+                    $this->settings = DB::connection('project')
+                        ->table('settings')
+                        ->pluck('payload', 'key')
+                        ->map(fn ($payload) => json_decode($payload, true))
+                        ->toArray();
+                }
             } catch (\Exception $e) {
                 \Log::warning("Failed to load project settings for {$currentProject}: ".$e->getMessage());
                 $this->settings = [];

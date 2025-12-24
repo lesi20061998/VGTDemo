@@ -182,20 +182,13 @@ Route::prefix('{projectCode}/admin')
             return view('cms.debug.csrf');
         })->name('debug.csrf');
 
-        // Page Builder
+        // Page Builder & Widgets
         Route::get('widgets', [\App\Http\Controllers\Admin\WidgetController::class, 'index'])->name('widgets.index');
-
-        // Page Config
-        Route::get('page-config', [\App\Http\Controllers\Admin\PageConfigController::class, 'index'])->name('page-config.index');
-        Route::get('page-config/{page}', [\App\Http\Controllers\Admin\PageConfigController::class, 'edit'])->name('page-config.edit');
-        Route::put('page-config/{page}', [\App\Http\Controllers\Admin\PageConfigController::class, 'update'])->name('page-config.update');
-
-        // Theme Options
-        Route::get('theme-options', [\App\Http\Controllers\Admin\ThemeOptionController::class, 'index'])->name('theme-options.index');
-        Route::put('theme-options', [\App\Http\Controllers\Admin\ThemeOptionController::class, 'update'])->name('theme-options.update');
         Route::post('widgets', [\App\Http\Controllers\Admin\WidgetController::class, 'store'])->name('widgets.store');
-        Route::post('widgets/clear', fn () => \App\Models\Widget::where('area', 'homepage-main')->delete());
+        Route::post('widgets/save-all', [\App\Http\Controllers\Admin\WidgetController::class, 'saveWidgets'])->name('widgets.save-all');
+        Route::post('widgets/clear', [\App\Http\Controllers\Admin\WidgetController::class, 'clearArea'])->name('widgets.clear');
         Route::delete('widgets/{widget}', [\App\Http\Controllers\Admin\WidgetController::class, 'destroy'])->name('widgets.destroy');
+        Route::post('widgets/clear-cache', [\App\Http\Controllers\Admin\WidgetController::class, 'clearCache'])->name('widgets.clear-cache');
 
         // Widget Templates
         Route::get('widget-templates', function () {

@@ -28,6 +28,16 @@ require __DIR__.'/frontend.php';
 // Include CMS Routes (Content Management)
 require __DIR__.'/backend.php';
 
+// CMS Widget Routes (Non-project context)
+Route::prefix('admin')->name('cms.')->middleware(['auth'])->group(function () {
+    Route::get('widgets', [\App\Http\Controllers\Admin\WidgetController::class, 'index'])->name('widgets.index');
+    Route::post('widgets', [\App\Http\Controllers\Admin\WidgetController::class, 'store'])->name('widgets.store');
+    Route::post('widgets/save-all', [\App\Http\Controllers\Admin\WidgetController::class, 'saveWidgets'])->name('widgets.save-all');
+    Route::post('widgets/clear', [\App\Http\Controllers\Admin\WidgetController::class, 'clearArea'])->name('widgets.clear');
+    Route::delete('widgets/{widget}', [\App\Http\Controllers\Admin\WidgetController::class, 'destroy'])->name('widgets.destroy');
+    Route::post('widgets/clear-cache', [\App\Http\Controllers\Admin\WidgetController::class, 'clearCache'])->name('widgets.clear-cache');
+});
+
 // Include SuperAdmin Routes (Project Management)
 require __DIR__.'/superadmin.php';
 

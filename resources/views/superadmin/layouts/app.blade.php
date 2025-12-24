@@ -123,7 +123,7 @@
             <main class="flex-1 p-6 bg-gray-50">
                 @if(session('alert'))
                 <div class="mb-6 p-4 rounded-lg {{ session('alert.type') === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                    {{ session('alert.message') }}
+                    {!! nl2br(e(session('alert.message'))) !!}
                 </div>
                 @endif
                 @yield('content')

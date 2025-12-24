@@ -555,50 +555,75 @@ async function saveWidgets() {
     btn.disabled = true;
     btn.textContent = 'Saving...';
     
-    const baseUrl = '{{ isset($currentProject) ? route("project.admin.widgets.store", $currentProject->code) : "#" }}';
+    const baseUrl = '{{ isset($currentProject) ? route("project.admin.widgets.save-all", $currentProject->code) : route("cms.widgets.save-all") }}';
     
-    let successCount = 0;
-    let errorCount = 0;
-    
-    // Save widgets
-    for (const widget of widgets) {
-        try {
-            const response = await fetch(baseUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify(widget)
-            });
+    try {
+        const response = await fetch(baseUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                widgets: widgets
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            btn.textContent = 'Saved!';
+            btn.className = btn.className.replace('bg-[#98191F]', 'bg-green-600');
             
-            if (response.ok) {
-                successCount++;
-            } else {
-                errorCount++;
-                const errorData = await response.json();
-                console.error('Error saving widget:', errorData);
+            // Show success message
+            if (result.message) {
+                showAlert(result.message, 'success');
             }
-        } catch (error) {
-            errorCount++;
-            console.error('Error saving widget:', error);
+        } else {
+            btn.textContent = 'Save Failed';
+            btn.className = btn.className.replace('bg-[#98191F]', 'bg-red-600');
+            
+            // Show error message
+            showAlert(result.message || 'Failed to save widgets', 'error');
+            
+            if (result.errors) {
+                console.error('Widget save errors:', result.errors);
+            }
         }
-    }
-    
-    if (errorCount === 0) {
-        btn.textContent = 'Saved!';
-        btn.className = btn.className.replace('bg-[#98191F]', 'bg-green-600');
-    } else {
-        btn.textContent = `Saved ${successCount}, Failed ${errorCount}`;
-        btn.className = btn.className.replace('bg-[#98191F]', 'bg-yellow-600');
+    } catch (error) {
+        console.error('Error saving widgets:', error);
+        btn.textContent = 'Save Failed';
+        btn.className = btn.className.replace('bg-[#98191F]', 'bg-red-600');
+        showAlert('Network error while saving widgets', 'error');
     }
     
     setTimeout(() => {
         btn.disabled = false;
         btn.textContent = 'Save All';
-        btn.className = btn.className.replace('bg-green-600', 'bg-[#98191F]').replace('bg-yellow-600', 'bg-[#98191F]');
+        btn.className = btn.className.replace('bg-green-600', 'bg-[#98191F]').replace('bg-red-600', 'bg-[#98191F]');
         isSaving = false;
+    }, 2000);
+}
+
+// Simple alert function
+function showAlert(message, type = 'info') {
+    // Create alert element
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
+        type === 'success' ? 'bg-green-100 text-green-800 border border-green-200' :
+        type === 'error' ? 'bg-red-100 text-red-800 border border-red-200' :
+        'bg-blue-100 text-blue-800 border border-blue-200'
+    }`;
+    alertDiv.textContent = message;
+    
+    document.body.appendChild(alertDiv);
+    
+    // Auto remove after 3 seconds
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.parentNode.removeChild(alertDiv);
+        }
     }, 3000);
 }
 </script>
