@@ -40,6 +40,30 @@ Route::prefix('admin')->name('cms.')->middleware(['auth'])->group(function () {
     // Theme Options
     Route::get('theme-options', [\App\Http\Controllers\Admin\ThemeOptionController::class, 'index'])->name('theme-options.index');
     Route::put('theme-options', [\App\Http\Controllers\Admin\ThemeOptionController::class, 'update'])->name('theme-options.update');
+    
+    // Media Management
+    Route::get('media/list', [\App\Http\Controllers\Admin\MediaController::class, 'list'])->name('media.list');
+    Route::post('media/upload', [\App\Http\Controllers\Admin\MediaController::class, 'upload'])->name('media.upload');
+    Route::post('media/folder', [\App\Http\Controllers\Admin\MediaController::class, 'createFolder'])->name('media.folder.create');
+    Route::delete('media/folder', [\App\Http\Controllers\Admin\MediaController::class, 'deleteFolder'])->name('media.folder.delete');
+    Route::post('media/move', [\App\Http\Controllers\Admin\MediaController::class, 'move'])->name('media.move');
+    Route::delete('media/{id}', [\App\Http\Controllers\Admin\MediaController::class, 'destroy'])->name('media.destroy');
+    
+    // Debug endpoint for media authentication
+    Route::get('debug/auth', function() {
+        return response()->json([
+            'authenticated' => auth()->check(),
+            'user' => auth()->user() ? [
+                'id' => auth()->user()->id,
+                'username' => auth()->user()->username ?? 'N/A',
+                'role' => auth()->user()->role ?? 'N/A',
+                'level' => auth()->user()->level ?? 'N/A'
+            ] : null,
+            'session_id' => session()->getId(),
+            'csrf_token' => csrf_token(),
+            'session_data' => session()->all()
+        ]);
+    })->name('debug.auth');
 });
 
 // Include SuperAdmin Routes (Project Management)

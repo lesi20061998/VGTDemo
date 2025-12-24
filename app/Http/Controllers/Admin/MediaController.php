@@ -44,7 +44,7 @@ class MediaController extends Controller
 
         // Ensure base directory exists
         if (! Storage::disk('public')->exists($basePath)) {
-            Storage::disk('public')->makeDirectory($basePath, 0755, true);
+            Storage::disk('public')->makeDirectory($basePath);
         }
 
         // Get folders
@@ -87,7 +87,7 @@ class MediaController extends Controller
 
         // Ensure directory exists
         if (! Storage::disk('public')->exists($fullPath)) {
-            Storage::disk('public')->makeDirectory($fullPath, 0755, true);
+            Storage::disk('public')->makeDirectory($fullPath);
         }
 
         $uploaded = [];
