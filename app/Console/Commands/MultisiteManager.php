@@ -49,16 +49,12 @@ class MultisiteManager extends Command
     {
         $this->info('=== Multisite Configuration Status ===');
         
-        $multisiteEnabled = env('MULTISITE_ENABLED', false);
-        $this->info("Multisite Enabled: " . ($multisiteEnabled ? 'YES' : 'NO'));
+        $this->info("Multisite Mode: ALWAYS ENABLED (Fixed Configuration)");
+        $this->info("Target Database: " . env('MULTISITE_DB_DATABASE', 'u712054581_Database_01'));
+        $this->info("Database Host: " . env('MULTISITE_DB_HOST', '127.0.0.1'));
+        $this->info("Database Username: " . env('MULTISITE_DB_USERNAME', 'u712054581_Database_01'));
         
-        if ($multisiteEnabled) {
-            $this->info("Multisite DB Host: " . env('MULTISITE_DB_HOST', 'Not set'));
-            $this->info("Multisite DB Database: " . env('MULTISITE_DB_DATABASE', 'Not set'));
-            $this->info("Multisite DB Username: " . env('MULTISITE_DB_USERNAME', 'Not set'));
-        } else {
-            $this->warn("Using legacy mode (separate database per project)");
-        }
+        $this->warn("All projects will use the same database with project_id scoping");
 
         return 0;
     }
@@ -77,31 +73,30 @@ class MultisiteManager extends Command
             return 1;
         }
 
-        // Test multisite database if enabled
-        if (env('MULTISITE_ENABLED', false)) {
-            try {
-                Config::set('database.connections.multisite_test', [
-                    'driver' => 'mysql',
-                    'host' => env('MULTISITE_DB_HOST', env('DB_HOST', '127.0.0.1')),
-                    'port' => env('MULTISITE_DB_PORT', env('DB_PORT', '3306')),
-                    'database' => env('MULTISITE_DB_DATABASE', 'multisite_db'),
-                    'username' => env('MULTISITE_DB_USERNAME', env('DB_USERNAME', 'root')),
-                    'password' => env('MULTISITE_DB_PASSWORD', env('DB_PASSWORD', '')),
-                    'charset' => 'utf8mb4',
-                    'collation' => 'utf8mb4_unicode_ci',
-                ]);
+        // Test multisite database (always enabled now)
+        try {
+            Config::set('database.connections.multisite_test', [
+                'driver' => 'mysql',
+                'host' => env('MULTISITE_DB_HOST', '127.0.0.1'),
+                'port' => env('MULTISITE_DB_PORT', '3306'),
+                'database' => env('MULTISITE_DB_DATABASE', 'u712054581_Database_01'),
+                'username' => env('MULTISITE_DB_USERNAME', 'u712054581_Database_01'),
+                'password' => env('MULTISITE_DB_PASSWORD', ''),
+                'charset' => 'utf8mb4',
+                'collation' => 'utf8mb4_unicode_ci',
+            ]);
 
-                DB::connection('multisite_test')->getPdo();
-                $this->info('✓ Multisite database connection: OK');
-                
-                // Clean up test connection
-                DB::purge('multisite_test');
-                
-            } catch (\Exception $e) {
-                $this->error('✗ Multisite database connection: FAILED');
-                $this->error($e->getMessage());
-                return 1;
-            }
+            DB::connection('multisite_test')->getPdo();
+            $this->info('✓ Multisite database connection: OK');
+            $this->info('  Database: ' . env('MULTISITE_DB_DATABASE', 'u712054581_Database_01'));
+            
+            // Clean up test connection
+            DB::purge('multisite_test');
+            
+        } catch (\Exception $e) {
+            $this->error('✗ Multisite database connection: FAILED');
+            $this->error($e->getMessage());
+            return 1;
         }
 
         return 0;

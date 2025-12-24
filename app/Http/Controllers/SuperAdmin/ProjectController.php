@@ -122,15 +122,8 @@ class ProjectController extends Controller
         }
 
         try {
-            // Check if multisite mode is enabled
-            if (env('MULTISITE_ENABLED', false)) {
-                $this->setupMultisiteProject($project);
-            } else {
-                // Legacy mode: separate database per project
-                $this->createProjectDatabase($project);
-                $this->syncAllProjectTables($project);
-            }
-            
+            // Always use multisite database (no more legacy mode)
+            $this->setupMultisiteProject($project);
             $this->copyDefaultData($project);
             $this->createProjectAdmin($project);
 
@@ -160,10 +153,9 @@ class ProjectController extends Controller
                 'initialized_at' => now(),
             ]);
 
-            $mode = env('MULTISITE_ENABLED', false) ? 'multisite' : 'legacy';
             return back()->with('alert', [
                 'type' => 'success',
-                'message' => "Khởi tạo website thành công! Chế độ: {$mode}. Database đã được kết nối và tài khoản quản trị đã được tạo.",
+                'message' => "Khởi tạo website thành công! Dữ liệu đã được đổ vào database: " . env('MULTISITE_DB_DATABASE', 'u712054581_Database_01'),
             ]);
         } catch (\Exception $e) {
             // Switch back to main database before updating project
@@ -184,19 +176,19 @@ class ProjectController extends Controller
     {
         \Log::info("Setting up project in multisite mode: {$project->code} (ID: {$project->id})");
 
-        // Test connection to multisite database
-        $multisiteDbName = env('MULTISITE_DB_DATABASE', 'multisite_db');
+        // Use fixed multisite database configuration
+        $multisiteDbName = env('MULTISITE_DB_DATABASE', 'u712054581_Database_01');
         $mainDb = config('database.connections.mysql.database');
 
         try {
             // Configure multisite database connection
             \Config::set('database.connections.multisite', [
                 'driver' => 'mysql',
-                'host' => env('MULTISITE_DB_HOST', env('DB_HOST', '127.0.0.1')),
-                'port' => env('MULTISITE_DB_PORT', env('DB_PORT', '3306')),
+                'host' => env('MULTISITE_DB_HOST', '127.0.0.1'),
+                'port' => env('MULTISITE_DB_PORT', '3306'),
                 'database' => $multisiteDbName,
-                'username' => env('MULTISITE_DB_USERNAME', env('DB_USERNAME', 'root')),
-                'password' => env('MULTISITE_DB_PASSWORD', env('DB_PASSWORD', '')),
+                'username' => env('MULTISITE_DB_USERNAME', 'u712054581_Database_01'),
+                'password' => env('MULTISITE_DB_PASSWORD', ''),
                 'charset' => 'utf8mb4',
                 'collation' => 'utf8mb4_unicode_ci',
                 'prefix' => '',
@@ -377,43 +369,24 @@ class ProjectController extends Controller
         $username = $project->code;
         $email = strtolower($project->code).'@project.local';
 
-        if (env('MULTISITE_ENABLED', false)) {
-            // Multisite mode: create user with project_id
-            \DB::table('users')->updateOrInsert(
-                [
-                    'username' => $username,
-                    'project_id' => $project->id
-                ],
-                [
-                    'name' => 'CMS Admin - '.$project->code,
-                    'email' => $email,
-                    'password' => bcrypt($password),
-                    'role' => 'cms',
-                    'level' => 2,
-                    'project_id' => $project->id,
-                    'email_verified_at' => now(),
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]
-            );
-        } else {
-            // Legacy mode: create user in project database
-            $dbName = $this->getProjectDatabaseName($project);
-            \DB::statement("USE `{$dbName}`");
-
-            \DB::statement("
-                INSERT INTO users (name, username, email, password, role, level, email_verified_at) 
-                VALUES (?, ?, ?, ?, 'cms', 2, NOW())
-                ON DUPLICATE KEY UPDATE password = VALUES(password)
-            ", [
-                'CMS Admin - '.$project->code,
-                $username,
-                $email,
-                bcrypt($password),
-            ]);
-
-            \DB::statement("USE `{$mainDb}`");
-        }
+        // Always use multisite mode: create user with project_id
+        \DB::table('users')->updateOrInsert(
+            [
+                'username' => $username,
+                'project_id' => $project->id
+            ],
+            [
+                'name' => 'CMS Admin - '.$project->code,
+                'email' => $email,
+                'password' => bcrypt($password),
+                'role' => 'cms',
+                'level' => 2,
+                'project_id' => $project->id,
+                'email_verified_at' => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
+        );
 
         $project->project_admin_username = $username;
         $project->project_admin_password = $password;
@@ -439,44 +412,27 @@ class ProjectController extends Controller
                     ->get();
 
                 if ($data->count() > 0) {
-                    if (env('MULTISITE_ENABLED', false)) {
-                        // Multisite mode: insert with project_id
-                        foreach ($data as $row) {
-                            $rowArray = (array) $row;
-                            unset($rowArray['id']);
-                            $rowArray['project_id'] = $project->id;
-                            $rowArray['tenant_id'] = null;
+                    // Always use multisite mode: insert with project_id
+                    foreach ($data as $row) {
+                        $rowArray = (array) $row;
+                        unset($rowArray['id']);
+                        $rowArray['project_id'] = $project->id;
+                        $rowArray['tenant_id'] = null;
 
-                            // Check if record already exists for this project
-                            $exists = \DB::table($table)
-                                ->where('project_id', $project->id);
-                            
-                            // Add unique field check if available
-                            if (isset($rowArray['key'])) {
-                                $exists->where('key', $rowArray['key']);
-                            } elseif (isset($rowArray['name'])) {
-                                $exists->where('name', $rowArray['name']);
-                            }
-                            
-                            if (!$exists->exists()) {
-                                \DB::table($table)->insert($rowArray);
-                            }
+                        // Check if record already exists for this project
+                        $exists = \DB::table($table)
+                            ->where('project_id', $project->id);
+                        
+                        // Add unique field check if available
+                        if (isset($rowArray['key'])) {
+                            $exists->where('key', $rowArray['key']);
+                        } elseif (isset($rowArray['name'])) {
+                            $exists->where('name', $rowArray['name']);
                         }
-                    } else {
-                        // Legacy mode: switch to project database
-                        $dbName = $this->getProjectDatabaseName($project);
-                        \DB::statement("USE `{$dbName}`");
-
-                        foreach ($data as $row) {
-                            $rowArray = (array) $row;
-                            unset($rowArray['id']);
-                            $rowArray['project_id'] = $project->id;
-                            $rowArray['tenant_id'] = null;
-
+                        
+                        if (!$exists->exists()) {
                             \DB::table($table)->insert($rowArray);
                         }
-
-                        \DB::statement("USE `{$mainDb}`");
                     }
                 }
             } catch (\Exception $e) {

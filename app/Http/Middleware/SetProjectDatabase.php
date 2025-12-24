@@ -52,27 +52,22 @@ class SetProjectDatabase
             \App\Services\SettingsService::getInstance()->clearCache();
         }
 
-        // Check if multisite is enabled
-        if (env('MULTISITE_ENABLED', false)) {
-            // Use dedicated multisite database
-            $this->setupMultisiteDatabase($project, $code);
-        } else {
-            // Use separate database per project (legacy mode)
-            $this->setupProjectDatabase($project, $code);
-        }
+        // Always use multisite database (no more legacy mode)
+        $this->setupMultisiteDatabase($project, $code);
     }
 
     private function setupMultisiteDatabase($project, $code)
     {
         Log::info("Using multisite database for project: {$code}");
 
+        // Use fixed multisite database configuration
         Config::set('database.connections.project', [
             'driver' => 'mysql',
-            'host' => env('MULTISITE_DB_HOST', env('DB_HOST', '127.0.0.1')),
-            'port' => env('MULTISITE_DB_PORT', env('DB_PORT', '3306')),
-            'database' => env('MULTISITE_DB_DATABASE', 'multisite_db'),
-            'username' => env('MULTISITE_DB_USERNAME', env('DB_USERNAME', 'root')),
-            'password' => env('MULTISITE_DB_PASSWORD', env('DB_PASSWORD', '')),
+            'host' => env('MULTISITE_DB_HOST', '127.0.0.1'),
+            'port' => env('MULTISITE_DB_PORT', '3306'),
+            'database' => env('MULTISITE_DB_DATABASE', 'u712054581_Database_01'),
+            'username' => env('MULTISITE_DB_USERNAME', 'u712054581_Database_01'),
+            'password' => env('MULTISITE_DB_PASSWORD', ''),
             'charset' => 'utf8mb4',
             'collation' => 'utf8mb4_unicode_ci',
             'prefix' => '',
