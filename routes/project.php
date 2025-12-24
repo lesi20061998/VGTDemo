@@ -205,6 +205,10 @@ Route::prefix('{projectCode}/admin')
         Route::get('website-config', [\App\Http\Controllers\Admin\WebsiteConfigController::class, 'index'])->name('website-config.index');
         Route::post('website-config/save', [\App\Http\Controllers\Admin\WebsiteConfigController::class, 'save'])->name('website-config.save');
         Route::get('website-config/preview', [\App\Http\Controllers\Admin\WebsiteConfigController::class, 'preview'])->name('website-config.preview');
+        
+        // Theme Options
+        Route::get('theme-options', [\App\Http\Controllers\Admin\ThemeOptionController::class, 'index'])->name('theme-options.index');
+        Route::put('theme-options', [\App\Http\Controllers\Admin\ThemeOptionController::class, 'update'])->name('theme-options.update');
         Route::get('theme/dynamic-css', [\App\Http\Controllers\ThemeController::class, 'dynamicCss'])->name('theme.css');
         Route::post('widgets/clear-cache', function () {
             clear_widget_cache();
