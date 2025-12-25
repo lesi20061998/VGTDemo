@@ -3,27 +3,40 @@
 @section('page-title', $product->name ?? 'Chi tiết sản phẩm')
 
 @section('product-content')
-<?php dd($product->price) ?>
 <div class="grid md:grid-cols-2 gap-8">
-    <div>
-        <img src="{{ $product->featured_image ?? $product->image ?? '' }}" alt="{{ $product->name ?? '' }}" class="w-full rounded-lg shadow">
+    {{-- Product Images with Watermark --}}
+    <div class="product-gallery">
+        <x-watermark-image 
+            :src="$product->featured_image ?? $product->image ?? ''" 
+            :alt="$product->name ?? ''" 
+            class="w-full rounded-lg shadow product-image-protected"
+            img-class="w-full rounded-lg" />
         
         @if(!empty($product->gallery) && is_array($product->gallery))
         <div class="grid grid-cols-4 gap-2 mt-4">
             @foreach($product->gallery as $img)
-            <img src="{{ $img }}" alt="" class="w-full h-20 object-cover rounded cursor-pointer hover:opacity-75">
+            <x-watermark-image 
+                :src="$img" 
+                alt="Gallery image" 
+                class="product-image-protected cursor-pointer hover:opacity-75"
+                img-class="w-full h-20 object-cover rounded" />
             @endforeach
         </div>
         @endif
     </div>
+    
+    {{-- Product Info --}}
     <div>
         <h1 class="text-3xl font-bold mb-4">{{ $product->name ?? '' }}</h1>
         
         @if($product->sale_price && $product->sale_price < $product->price)
-       
         <div class="mb-6">
             <span class="text-3xl font-bold text-red-600">{{ number_format($product->sale_price) }}đ</span>
             <span class="text-xl text-gray-400 line-through ml-2">{{ number_format($product->price) }}đ</span>
+            @php
+                $discount = round((($product->price - $product->sale_price) / $product->price) * 100);
+            @endphp
+            <span class="ml-2 px-2 py-1 bg-red-100 text-red-600 text-sm font-medium rounded">-{{ $discount }}%</span>
         </div>
         @else
         <div class="text-3xl font-bold text-blue-600 mb-6">{{ number_format($product->price ?? 0) }}đ</div>
@@ -77,7 +90,11 @@
         <div class="space-y-3">
             @foreach($relatedProducts as $related)
             <a href="/{{ request()->route('projectCode') }}/product/{{ $related->slug }}" class="flex gap-3 hover:bg-gray-100 p-2 rounded">
-                <img src="{{ $related->featured_image ?? $related->image }}" alt="{{ $related->name }}" class="w-16 h-16 object-cover rounded">
+                <x-watermark-image 
+                    :src="$related->featured_image ?? $related->image" 
+                    :alt="$related->name" 
+                    class="product-image-protected"
+                    img-class="w-16 h-16 object-cover rounded" />
                 <div>
                     <h4 class="font-medium text-sm">{{ $related->name }}</h4>
                     <span class="text-blue-600 font-bold text-sm">{{ number_format($related->price) }}đ</span>

@@ -36,6 +36,9 @@
     <!-- Footer -->
     @include('frontend.partials.footer')
     
+    <!-- Image Protection (Watermark) -->
+    @include('frontend.partials.image-protection')
+    
     <!-- Popup -->
     @include('frontend.partials.popup')
     

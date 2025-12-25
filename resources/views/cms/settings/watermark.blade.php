@@ -34,7 +34,11 @@
                     @php
                         $watermark = setting('watermark', []);
                         $enabled = $watermark['enabled'] ?? false;
+                        $type = $watermark['type'] ?? 'image';
                         $image = $watermark['image'] ?? '';
+                        $text = $watermark['text'] ?? config('app.name', 'Watermark');
+                        $fontSize = $watermark['font_size'] ?? 24;
+                        $fontColor = $watermark['font_color'] ?? 'rgba(255, 255, 255, 0.7)';
                         $position = $watermark['position'] ?? 'bottom-right';
                         $offsetX = $watermark['offset_x'] ?? 10;
                         $offsetY = $watermark['offset_y'] ?? 10;
@@ -49,14 +53,112 @@
                             <input type="checkbox" name="watermark[enabled]" value="1" {{ $enabled ? 'checked' : '' }} 
                                    class="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2">
                             <div class="ml-3">
-                                <span class="font-semibold text-gray-900">Bật đóng dấu ảnh tự động</span>
-                                <p class="text-sm text-gray-600">Tự động thêm watermark cho tất cả ảnh mới upload</p>
+                                <span class="font-semibold text-gray-900">Bật đóng dấu ảnh</span>
+                                <p class="text-sm text-gray-600">Hiển thị watermark trên hình ảnh sản phẩm</p>
                             </div>
                         </label>
                     </div>
 
+                    <!-- Watermark Type Selection -->
+                    <div class="space-y-3">
+                        <label class="block text-sm font-semibold text-gray-900">Loại Watermark</label>
+                        <div class="grid grid-cols-2 gap-4">
+                            <label class="relative flex items-center p-4 border-2 rounded-lg cursor-pointer hover:border-blue-300 transition-colors {{ $type === 'text' ? 'border-blue-500 bg-blue-50' : 'border-gray-200' }}">
+                                <input type="radio" name="watermark[type]" value="text" {{ $type === 'text' ? 'checked' : '' }} 
+                                       class="w-4 h-4 text-blue-600" onchange="toggleWatermarkType('text')">
+                                <div class="ml-3">
+                                    <span class="font-medium text-gray-900">Text</span>
+                                    <p class="text-xs text-gray-500">Chữ đóng dấu</p>
+                                </div>
+                            </label>
+                            <label class="relative flex items-center p-4 border-2 rounded-lg cursor-pointer hover:border-blue-300 transition-colors {{ $type === 'image' ? 'border-blue-500 bg-blue-50' : 'border-gray-200' }}">
+                                <input type="radio" name="watermark[type]" value="image" {{ $type === 'image' ? 'checked' : '' }} 
+                                       class="w-4 h-4 text-blue-600" onchange="toggleWatermarkType('image')">
+                                <div class="ml-3">
+                                    <span class="font-medium text-gray-900">Hình ảnh</span>
+                                    <p class="text-xs text-gray-500">Logo/Ảnh PNG</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Text Watermark Settings -->
+                    <div id="textWatermarkSettings" class="space-y-4 {{ $type === 'text' ? '' : 'hidden' }}">
+                        <div class="bg-purple-50 rounded-lg p-4 border border-purple-200">
+                            <h4 class="font-semibold text-purple-900 mb-3">Cấu hình Text Watermark</h4>
+                            
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Nội dung text</label>
+                                    <input type="text" name="watermark[text]" value="{{ $text }}" 
+                                           placeholder="VD: © {{ config('app.name') }}"
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                                </div>
+                                
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Cỡ chữ (px)</label>
+                                        <input type="number" name="watermark[font_size]" value="{{ $fontSize }}" min="10" max="100"
+                                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Màu chữ</label>
+                                        <select name="watermark[font_color]" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                                            <option value="rgba(255, 255, 255, 0.7)" {{ $fontColor === 'rgba(255, 255, 255, 0.7)' ? 'selected' : '' }}>Trắng mờ</option>
+                                            <option value="rgba(255, 255, 255, 1)" {{ $fontColor === 'rgba(255, 255, 255, 1)' ? 'selected' : '' }}>Trắng</option>
+                                            <option value="rgba(0, 0, 0, 0.5)" {{ $fontColor === 'rgba(0, 0, 0, 0.5)' ? 'selected' : '' }}>Đen mờ</option>
+                                            <option value="rgba(0, 0, 0, 1)" {{ $fontColor === 'rgba(0, 0, 0, 1)' ? 'selected' : '' }}>Đen</option>
+                                            <option value="rgba(255, 0, 0, 0.7)" {{ $fontColor === 'rgba(255, 0, 0, 0.7)' ? 'selected' : '' }}>Đỏ mờ</option>
+                                            <option value="rgba(59, 130, 246, 0.8)" {{ $fontColor === 'rgba(59, 130, 246, 0.8)' ? 'selected' : '' }}>Xanh dương</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Server-side Watermark Info -->
+                    <div class="bg-green-50 rounded-lg p-4 border border-green-200">
+                        <div class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                            </svg>
+                            <div>
+                                <h4 class="font-semibold text-green-900">Watermark Server-side đã bật</h4>
+                                <p class="text-sm text-green-800 mt-1">
+                                    Khi người dùng truy cập trực tiếp vào URL ảnh (VD: <code class="bg-green-100 px-1 rounded">/storage/media/...</code>), 
+                                    watermark sẽ được đóng dấu trực tiếp vào ảnh trước khi trả về.
+                                </p>
+                                <p class="text-xs text-green-700 mt-2">
+                                    ⚡ Ảnh được cache 24h để tối ưu hiệu suất
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Protection Options -->
+                    <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                        <h4 class="font-medium text-gray-900 mb-3">Tùy chọn bảo vệ bổ sung</h4>
+                        <div class="space-y-3">
+                            <label class="flex items-center cursor-pointer">
+                                <input type="hidden" name="watermark[disable_right_click]" value="0">
+                                <input type="checkbox" name="watermark[disable_right_click]" value="1" 
+                                       {{ ($watermark['disable_right_click'] ?? true) ? 'checked' : '' }}
+                                       class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500">
+                                <span class="ml-2 text-sm text-gray-700">Chặn click chuột phải trên ảnh (CSS overlay)</span>
+                            </label>
+                            <label class="flex items-center cursor-pointer">
+                                <input type="hidden" name="watermark[disable_drag]" value="0">
+                                <input type="checkbox" name="watermark[disable_drag]" value="1" 
+                                       {{ ($watermark['disable_drag'] ?? true) ? 'checked' : '' }}
+                                       class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500">
+                                <span class="ml-2 text-sm text-gray-700">Chặn kéo thả ảnh</span>
+                            </label>
+                        </div>
+                    </div>
+
                     <!-- Upload Watermark -->
-                    <div x-data="{ 
+                    <div id="imageWatermarkSettings" class="{{ $type === 'image' ? '' : 'hidden' }}" x-data="{ 
                         watermarkImage: '{{ $image }}',
                         updateWatermarkImage(event) {
                             if (event.detail.files && event.detail.files.length > 0) {
@@ -263,6 +365,19 @@
 </style>
 
 <script>
+function toggleWatermarkType(type) {
+    const textSettings = document.getElementById('textWatermarkSettings');
+    const imageSettings = document.getElementById('imageWatermarkSettings');
+    
+    if (type === 'text') {
+        textSettings.classList.remove('hidden');
+        imageSettings.classList.add('hidden');
+    } else {
+        textSettings.classList.add('hidden');
+        imageSettings.classList.remove('hidden');
+    }
+}
+
 function updatePreview() {
     const position = document.querySelector('[name="watermark[position]"]').value;
     const offsetX = document.querySelector('[name="watermark[offset_x]"]').value;

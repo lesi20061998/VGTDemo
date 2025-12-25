@@ -6,9 +6,6 @@
     // Kiểm tra popup có được bật không
     $enabled = !empty($popup['enabled']);
     
-    // Debug - có thể bỏ sau khi test xong
-    // dd(['popup_setting' => $popupSetting, 'popup' => $popup, 'enabled' => $enabled]);
-    
     // Nếu không enabled thì không hiển thị
     if (!$enabled) {
         return;
@@ -41,10 +38,10 @@
     // Position classes
     $positionClasses = match($position) {
         'center' => 'items-center justify-center',
-        'bottom-left' => 'items-end justify-start',
-        'bottom-right' => 'items-end justify-end',
-        'top-left' => 'items-start justify-start pt-20',
-        'top-right' => 'items-start justify-end pt-20',
+        'bottom-left' => 'items-end justify-start pb-4 pl-4',
+        'bottom-right' => 'items-end justify-end pb-4 pr-4',
+        'top-left' => 'items-start justify-start pt-20 pl-4',
+        'top-right' => 'items-start justify-end pt-20 pr-4',
         default => 'items-center justify-center'
     };
     
@@ -61,22 +58,27 @@
     $popupKey = 'popup_shown_' . md5(json_encode($popup));
 @endphp
 
+<style>
+[x-cloak] { display: none !important; }
+</style>
+
 <!-- Popup Container -->
 <div id="popup-container" 
-     class="fixed inset-0 bg-black/50 z-[9999] flex {{ $positionClasses }} {{ $responsiveClasses }} p-4"
-     style="display: none;"
+     class="fixed inset-0 bg-black/50 z-[9999] flex {{ $positionClasses }} {{ $responsiveClasses }}"
      x-data="popupController()"
      x-show="isVisible"
+     x-cloak
      x-transition:enter="transition ease-out duration-300"
      x-transition:enter-start="opacity-0"
      x-transition:enter-end="opacity-100"
      x-transition:leave="transition ease-in duration-200"
      x-transition:leave-start="opacity-100"
      x-transition:leave-end="opacity-0"
-     @keydown.escape.window="close()">
+     @keydown.escape.window="close()"
+     @click.self="close()">
     
     <!-- Popup Box -->
-    <div class="relative w-full max-w-md rounded-2xl shadow-2xl overflow-hidden"
+    <div class="relative w-full max-w-md rounded-2xl shadow-2xl overflow-hidden m-4"
          style="background-color: {{ $bgColor }};"
          x-show="isVisible"
          x-transition:enter="transition ease-out duration-300 delay-100"
@@ -102,7 +104,6 @@
             </div>
         @else
             {{-- Default Content --}}
-            
             @if($image)
                 <img src="{{ $image }}" alt="{{ $title }}" class="w-full h-40 object-cover">
             @endif
@@ -212,45 +213,34 @@ document.addEventListener('alpine:init', () => {
         delay: {{ $delay * 1000 }},
         
         init() {
-            // Kiểm tra có nên hiển thị không
+            console.log('Popup init - frequency:', this.frequency, 'delay:', this.delay);
+            
             if (!this.shouldShow()) {
+                console.log('Popup should not show');
                 return;
             }
             
-            // Hiển thị sau delay
-            setTimeout(() => {
-                this.show();
-            }, this.delay);
+            console.log('Popup will show after', this.delay, 'ms');
+            setTimeout(() => this.show(), this.delay);
         },
         
         shouldShow() {
-            if (this.frequency === 'always') {
-                return true;
-            }
-            
-            if (this.frequency === 'once') {
-                return !localStorage.getItem(this.popupKey);
-            }
-            
+            if (this.frequency === 'always') return true;
+            if (this.frequency === 'once') return !localStorage.getItem(this.popupKey);
             if (this.frequency === 'daily') {
                 const lastShown = localStorage.getItem(this.popupKey + '_date');
-                const today = new Date().toDateString();
-                return lastShown !== today;
+                return lastShown !== new Date().toDateString();
             }
-            
             return true;
         },
         
-        markAsShown() {
-            if (this.frequency === 'once') {
-                localStorage.setItem(this.popupKey, '1');
-            }
-            if (this.frequency === 'daily') {
-                localStorage.setItem(this.popupKey + '_date', new Date().toDateString());
-            }
+        markAsShown() {}
+            if (this.frequency === 'once') localStorage.setItem(this.popupKey, '1');
+            if (this.frequency === 'daily') localStorage.setItem(this.popupKey + '_date', new Date().toDateString());
         },
         
         show() {
+            console.log('Popup showing now');
             this.isVisible = true;
             document.body.style.overflow = 'hidden';
             this.markAsShown();
@@ -263,10 +253,8 @@ document.addEventListener('alpine:init', () => {
         
         async submitForm(event) {
             this.isSubmitting = true;
-            
             try {
                 const formData = new FormData(event.target);
-                
                 const response = await fetch('/api/form-submit', {
                     method: 'POST',
                     body: formData,
@@ -279,10 +267,7 @@ document.addEventListener('alpine:init', () => {
                 if (response.ok) {
                     this.isSubmitted = true;
                     event.target.style.display = 'none';
-                    
-                    setTimeout(() => {
-                        this.close();
-                    }, 2000);
+                    setTimeout(() => this.close(), 2000);
                 } else {
                     alert('Có lỗi xảy ra, vui lòng thử lại.');
                 }
@@ -296,7 +281,3 @@ document.addEventListener('alpine:init', () => {
     }));
 });
 </script>
-
-<style>
-[x-cloak] { display: none !important; }
-</style>

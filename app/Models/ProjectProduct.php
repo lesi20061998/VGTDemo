@@ -17,8 +17,8 @@ class ProjectProduct extends Model
     protected $fillable = [
         'name', 'slug', 'description', 'short_description', 'sku', 'price', 'sale_price',
         'stock_quantity', 'manage_stock', 'stock_status', 'weight', 'dimensions',
-        'product_category_id', 'brand_id', 'status', 'is_featured', 'gallery', 'meta_title',
-        'meta_description', 'has_price', 'featured_image', 'badges',
+        'product_category_id', 'brand_id', 'status', 'is_featured', 'is_favorite', 'is_bestseller',
+        'gallery', 'meta_title', 'meta_description', 'has_price', 'featured_image', 'badges',
         'focus_keyword', 'schema_type', 'canonical_url', 'noindex', 'settings', 'views',
         'rating_average', 'rating_count', 'product_type', 'language_id',
     ];
@@ -29,6 +29,8 @@ class ProjectProduct extends Model
         'weight' => 'decimal:2',
         'manage_stock' => 'boolean',
         'is_featured' => 'boolean',
+        'is_favorite' => 'boolean',
+        'is_bestseller' => 'boolean',
         'has_price' => 'boolean',
         'noindex' => 'boolean',
         'gallery' => 'array',
@@ -44,6 +46,8 @@ class ProjectProduct extends Model
         'manage_stock' => false,
         'stock_status' => 'in_stock',
         'is_featured' => false,
+        'is_favorite' => false,
+        'is_bestseller' => false,
         'noindex' => false,
         'views' => 0,
         'rating_average' => 0.00,

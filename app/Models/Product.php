@@ -71,9 +71,35 @@ class Product extends Model implements HasMedia
         return $this->belongsTo(ProductCategory::class, 'product_category_id');
     }
 
+    /**
+     * Many-to-many relationship for multiple categories
+     */
+    public function categories()
+    {
+        return $this->belongsToMany(
+            ProductCategory::class,
+            'product_category_product',
+            'product_id',
+            'product_category_id'
+        );
+    }
+
     public function brand()
     {
         return $this->belongsTo(Brand::class);
+    }
+
+    /**
+     * Many-to-many relationship for multiple brands
+     */
+    public function brands()
+    {
+        return $this->belongsToMany(
+            Brand::class,
+            'brand_product',
+            'product_id',
+            'brand_id'
+        );
     }
 
     /**

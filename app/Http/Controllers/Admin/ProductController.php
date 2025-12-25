@@ -763,6 +763,12 @@ class ProductController extends Controller
             return redirect()->route('project.admin.products.index', $projectCode);
 
         } catch (\Illuminate\Database\QueryException $e) {
+            \Log::error('Product update DB error: ' . $e->getMessage(), [
+                'product_id' => $product->id,
+                'sql' => $e->getSql() ?? 'N/A',
+                'bindings' => $e->getBindings() ?? [],
+            ]);
+            
             // Xử lý lỗi database (như numeric overflow)
             if (str_contains($e->getMessage(), 'Out of range value')) {
                 return back()
@@ -778,16 +784,21 @@ class ProductController extends Controller
                 ->withInput()
                 ->with('alert', [
                     'type' => 'error',
-                    'message' => 'Có lỗi xảy ra khi cập nhật sản phẩm. Vui lòng kiểm tra lại dữ liệu và thử lại.',
+                    'message' => 'Lỗi Database: ' . $e->getMessage(),
                 ]);
 
         } catch (\Exception $e) {
+            \Log::error('Product update error: ' . $e->getMessage(), [
+                'product_id' => $product->id,
+                'trace' => $e->getTraceAsString(),
+            ]);
+            
             // Xử lý các lỗi khác
             return back()
                 ->withInput()
                 ->with('alert', [
                     'type' => 'error',
-                    'message' => 'Có lỗi không mong muốn xảy ra. Vui lòng thử lại sau.',
+                    'message' => 'Lỗi: ' . $e->getMessage(),
                 ]);
         }
     }

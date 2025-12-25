@@ -6,6 +6,11 @@ Route::get('/', function () {
     return redirect('/login');
 })->name('home');
 
+// Protected Media with Watermark - Use /media/* instead of /storage/media/* to avoid symlink conflict
+Route::get('/media/{path}', [App\Http\Controllers\WatermarkImageController::class, 'serve'])
+    ->where('path', '.*')
+    ->name('watermark.image');
+
 // API Routes - MUST BE FIRST
 Route::prefix('api')->name('api.')->middleware('api')->group(function () {
     Route::post('/bridge', [App\Http\Controllers\Api\ProjectBridgeController::class, 'handle'])->name('bridge');
