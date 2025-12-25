@@ -1,0 +1,83 @@
+{
+  "name": "Hero Section",
+  "description": "Large banner with call-to-action button and customizable background",
+  "category": "hero",
+  "version": "1.0.0",
+  "author": "Development Team",
+  "icon": "heroicon-outline-photograph",
+  "preview_image": "preview.jpg",
+  "variants": {
+    "default": "Default Layout",
+    "compact": "Compact Layout",
+    "featured": "Featured Layout"
+  },
+  "fields": [
+    {
+      "name": "title",
+      "label": "Title",
+      "type": "text",
+      "required": true,
+      "default": "Welcome to Our Website",
+      "validation": "required|string|max:100",
+      "help": "Main heading text displayed prominently",
+      "placeholder": "Enter your hero title"
+    },
+    {
+      "name": "subtitle",
+      "label": "Subtitle",
+      "type": "textarea",
+      "required": false,
+      "default": "Build amazing things with our platform",
+      "validation": "string|max:255",
+      "help": "Supporting text that appears below the title",
+      "placeholder": "Enter subtitle or description"
+    },
+    {
+      "name": "button_text",
+      "label": "Button Text",
+      "type": "text",
+      "required": false,
+      "default": "Get Started",
+      "validation": "string|max:50",
+      "help": "Text displayed on the call-to-action button"
+    },
+    {
+      "name": "button_link",
+      "label": "Button Link",
+      "type": "url",
+      "required": false,
+      "default": "#",
+      "validation": "url",
+      "help": "URL where the button should link to"
+    },
+    {
+      "name": "bg_color",
+      "label": "Background Color",
+      "type": "select",
+      "required": false,
+      "default": "bg-gradient-to-r from-blue-600 to-purple-600",
+      "options": {
+        "bg-gradient-to-r from-blue-600 to-purple-600": "Blue to Purple",
+        "bg-gradient-to-r from-green-600 to-blue-600": "Green to Blue",
+        "bg-gradient-to-r from-purple-600 to-pink-600": "Purple to Pink",
+        "bg-gray-900": "Dark Gray",
+        "bg-white": "White"
+      },
+      "help": "Background color or gradient for the hero section"
+    },
+    {
+      "name": "background_image",
+      "label": "Background Image",
+      "type": "image",
+      "required": false,
+      "validation": "string",
+      "help": "Optional background image (will overlay with background color)"
+    }
+  ],
+  "settings": {
+    "cacheable": true,
+    "cache_duration": 3600,
+    "permissions": ["admin", "editor"],
+    "dependencies": []
+  }
+}

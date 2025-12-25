@@ -30,12 +30,100 @@ require __DIR__.'/backend.php';
 
 // CMS Widget Routes (Non-project context)
 Route::prefix('admin')->name('cms.')->middleware(['auth'])->group(function () {
-    Route::get('widgets', [\App\Http\Controllers\Admin\WidgetController::class, 'index'])->name('widgets.index');
-    Route::post('widgets', [\App\Http\Controllers\Admin\WidgetController::class, 'store'])->name('widgets.store');
-    Route::post('widgets/save-all', [\App\Http\Controllers\Admin\WidgetController::class, 'saveWidgets'])->name('widgets.save-all');
-    Route::post('widgets/clear', [\App\Http\Controllers\Admin\WidgetController::class, 'clearArea'])->name('widgets.clear');
-    Route::delete('widgets/{widget}', [\App\Http\Controllers\Admin\WidgetController::class, 'destroy'])->name('widgets.destroy');
-    Route::post('widgets/clear-cache', [\App\Http\Controllers\Admin\WidgetController::class, 'clearCache'])->name('widgets.clear-cache');
+    // Apply bypass middleware for widget routes in local environment
+    $middlewares = [];
+    if (config('app.env') === 'local') {
+        $middlewares[] = 'widget.bypass';
+    }
+    
+    Route::middleware($middlewares)->group(function () {
+        Route::get('widgets', [\App\Http\Controllers\Admin\WidgetController::class, 'index'])->name('widgets.index');
+        Route::post('widgets', [\App\Http\Controllers\Admin\WidgetController::class, 'store'])->name('widgets.store');
+        Route::post('widgets/save-all', [\App\Http\Controllers\Admin\WidgetController::class, 'saveWidgets'])->name('widgets.save-all');
+        Route::post('widgets/clear', [\App\Http\Controllers\Admin\WidgetController::class, 'clearArea'])->name('widgets.clear');
+        Route::delete('widgets/{widget}', [\App\Http\Controllers\Admin\WidgetController::class, 'destroy'])->name('widgets.destroy');
+        Route::post('widgets/clear-cache', [\App\Http\Controllers\Admin\WidgetController::class, 'clearCache'])->name('widgets.clear-cache');
+        Route::post('widgets/preview', [\App\Http\Controllers\Admin\WidgetController::class, 'preview'])->name('widgets.preview');
+        Route::get('widgets/discover', [\App\Http\Controllers\Admin\WidgetController::class, 'discover'])->name('widgets.discover');
+        Route::get('widgets/fields', [\App\Http\Controllers\Admin\WidgetController::class, 'getFields'])->name('widgets.fields');
+        Route::post('widgets/toggle', [\App\Http\Controllers\Admin\WidgetController::class, 'toggleWidget'])->name('widgets.toggle');
+        Route::get('widgets/permissions', [\App\Http\Controllers\Admin\WidgetController::class, 'getPermissions'])->name('widgets.permissions');
+        Route::get('widgets/export', [\App\Http\Controllers\Admin\WidgetController::class, 'export'])->name('widgets.export');
+        Route::post('widgets/import', [\App\Http\Controllers\Admin\WidgetController::class, 'import'])->name('widgets.import');
+        Route::post('widgets/backup', [\App\Http\Controllers\Admin\WidgetController::class, 'createBackup'])->name('widgets.backup');
+        Route::get('widgets/backups', [\App\Http\Controllers\Admin\WidgetController::class, 'getBackups'])->name('widgets.backups');
+    });
+    
+    // Development helper route (only in local environment)
+    if (config('app.env') === 'local') {
+        Route::get('widgets/debug-permission', function() {
+            $permissionService = new \App\Services\WidgetPermissionService();
+            $allWidgets = \App\Widgets\WidgetRegistry::all();
+            
+            return response()->json([
+                'success' => true,
+                'environment' => config('app.env'),
+                'debug' => config('app.debug'),
+                'user' => auth()->user() ? [
+                    'id' => auth()->user()->id,
+                    'email' => auth()->user()->email ?? 'N/A',
+                    'role' => auth()->user()->role ?? 'N/A',
+                    'level' => auth()->user()->level ?? 'N/A'
+                ] : 'Not authenticated',
+                'permissions' => [
+                    'can_manage_widgets' => $permissionService->canManageWidgets(),
+                    'can_toggle_widgets' => $permissionService->canToggleWidgets(),
+                ],
+                'widgets' => [
+                    'total_available' => count($allWidgets),
+                    'accessible_count' => count($permissionService->getAccessibleWidgets()),
+                    'by_category' => $permissionService->getAccessibleWidgetsByCategory()
+                ]
+            ]);
+        })->name('widgets.debug-permission');
+        
+        Route::get('widgets/test-access', function() {
+            return response()->json([
+                'success' => true,
+                'message' => 'Widget access test successful',
+                'environment' => config('app.env'),
+                'debug' => config('app.debug'),
+                'user' => auth()->user() ? [
+                    'id' => auth()->user()->id,
+                    'email' => auth()->user()->email ?? 'N/A',
+                    'role' => auth()->user()->role ?? 'N/A',
+                    'level' => auth()->user()->level ?? 'N/A'
+                ] : 'Not authenticated',
+                'session' => [
+                    'widget_dev_access' => session('widget_dev_access'),
+                    'session_id' => session()->getId()
+                ]
+            ]);
+        })->name('widgets.test-access');
+        
+        Route::get('widgets/dev-access', function() {
+            session(['widget_dev_access' => true]);
+            return redirect()->route('cms.widgets.index')->with('success', 'Development access granted for this session');
+        })->name('widgets.dev-access');
+        
+        Route::get('widgets/debug/permissions', [\App\Http\Controllers\Admin\WidgetDebugController::class, 'permissions'])->name('widgets.debug.permissions');
+        Route::post('widgets/debug/grant-access', [\App\Http\Controllers\Admin\WidgetDebugController::class, 'grantAccess'])->name('widgets.debug.grant-access');
+    }
+    
+    // Page Builder Routes
+    Route::prefix('page-builder')->name('page-builder.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\PageBuilderController::class, 'index'])->name('index');
+        Route::get('pages/{page}/edit', [\App\Http\Controllers\Admin\PageBuilderController::class, 'edit'])->name('edit');
+        Route::post('pages/{page}/sections', [\App\Http\Controllers\Admin\PageBuilderController::class, 'addSection'])->name('sections.store');
+        Route::put('sections/{section}', [\App\Http\Controllers\Admin\PageBuilderController::class, 'updateSection'])->name('sections.update');
+        Route::delete('sections/{section}', [\App\Http\Controllers\Admin\PageBuilderController::class, 'deleteSection'])->name('sections.destroy');
+        Route::post('pages/{page}/sections/reorder', [\App\Http\Controllers\Admin\PageBuilderController::class, 'reorderSections'])->name('sections.reorder');
+        Route::post('sections/{section}/move-up', [\App\Http\Controllers\Admin\PageBuilderController::class, 'moveSectionUp'])->name('sections.move-up');
+        Route::post('sections/{section}/move-down', [\App\Http\Controllers\Admin\PageBuilderController::class, 'moveSectionDown'])->name('sections.move-down');
+        Route::get('pages/{page}/preview', [\App\Http\Controllers\Admin\PageBuilderController::class, 'preview'])->name('preview');
+        Route::post('sections/preview', [\App\Http\Controllers\Admin\PageBuilderController::class, 'previewSection'])->name('sections.preview');
+        Route::post('sections/{section}/duplicate', [\App\Http\Controllers\Admin\PageBuilderController::class, 'duplicateSection'])->name('sections.duplicate');
+    });
     
     // Theme Options
     Route::get('theme-options', [\App\Http\Controllers\Admin\ThemeOptionController::class, 'index'])->name('theme-options.index');
@@ -100,10 +188,6 @@ Route::get('/test-lang', function () {
     return view('test-lang');
 })->name('test.lang');
 
-// Test Media Manager
-Route::get('/test-media', function () {
-    return view('test-media');
-})->name('test.media')->middleware('auth');
 
 // Auth Routes
 Route::get('/login', [App\Http\Controllers\Auth\LoginController::class, 'showLoginForm'])->name('login');

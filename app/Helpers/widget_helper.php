@@ -1,62 +1,101 @@
 <?php
 
 use App\Models\Widget;
+use App\Widgets\WidgetRegistry;
+use App\Services\WidgetRenderingService;
 use Illuminate\Support\Facades\Cache;
 
 if (!function_exists('render_widget_area')) {
-    function render_widget_area($areaKey)
+    function render_widget_area($areaKey, $context = [])
     {
-        return Cache::remember("widget_area_{$areaKey}", 3600, function () use ($areaKey) {
-            $widgets = Widget::where('area_key', $areaKey)
-                ->where('active', true)
-                ->orderBy('order')
-                ->get();
-            
-            $html = '';
-            
-            foreach ($widgets as $widget) {
-                try {
-                    $widgetClass = $widget->widget_class;
-                    
-                    if (class_exists($widgetClass)) {
-                        $widgetInstance = new $widgetClass($widget->config ?? []);
-                        $html .= $widgetInstance->render();
-                    }
-                } catch (\Exception $e) {
-                    \Log::error("Widget render error: " . $e->getMessage());
-                }
-            }
-            
-            return $html;
-        });
+        $renderingService = new WidgetRenderingService();
+        return $renderingService->renderArea($areaKey, $context);
     }
 }
 
 if (!function_exists('clear_widget_cache')) {
     function clear_widget_cache($areaKey = null)
     {
+        $renderingService = new WidgetRenderingService();
+        
         if ($areaKey) {
             Cache::forget("widget_area_{$areaKey}");
         } else {
-            Cache::flush();
+            // Clear all widget area caches
+            $areas = ['homepage-main', 'sidebar', 'footer', 'header'];
+            foreach ($areas as $area) {
+                Cache::forget("widget_area_{$area}");
+            }
+            
+            // Clear widget discovery cache
+            WidgetRegistry::clearCache();
+            $renderingService->clearCache();
         }
     }
 }
 
 if (!function_exists('render_widgets')) {
-    function render_widgets($area)
+    function render_widgets($area, $context = [])
     {
-        $widgets = Widget::where('area', $area)
-            ->where('is_active', true)
-            ->orderBy('sort_order')
-            ->get();
-        
-        $html = '';
-        foreach ($widgets as $widget) {
-            $html .= \App\Widgets\WidgetRegistry::render($widget->type, $widget->settings ?? []);
+        $renderingService = new WidgetRenderingService();
+        return $renderingService->renderArea($area, $context);
+    }
+}
+
+if (!function_exists('render_widget')) {
+    function render_widget($type, $settings = [], $variant = 'default', $context = [])
+    {
+        $renderingService = new WidgetRenderingService();
+        return $renderingService->render($type, $settings, $variant, $context);
+    }
+}
+
+if (!function_exists('render_widget_with_template')) {
+    function render_widget_with_template($type, $settings = [], $variant = 'default', $template = null)
+    {
+        $renderingService = new WidgetRenderingService();
+        return $renderingService->renderWithTemplate($type, $settings, $variant, $template);
+    }
+}
+
+if (!function_exists('get_widget_preview')) {
+    function get_widget_preview($type, $settings = [], $variant = 'default')
+    {
+        try {
+            return WidgetRegistry::getPreview($type, $settings, $variant);
+        } catch (\Exception $e) {
+            return '<div class="widget-error">Preview Error: ' . htmlspecialchars($e->getMessage()) . '</div>';
         }
-        
-        return $html;
+    }
+}
+
+if (!function_exists('get_available_widgets')) {
+    function get_available_widgets()
+    {
+        return WidgetRegistry::getByCategory();
+    }
+}
+
+if (!function_exists('widget_exists')) {
+    function widget_exists($type)
+    {
+        return WidgetRegistry::exists($type);
+    }
+}
+
+if (!function_exists('batch_render_widgets')) {
+    function batch_render_widgets($widgetConfigs)
+    {
+        $renderingService = new WidgetRenderingService();
+        return $renderingService->batchRender($widgetConfigs);
+    }
+}
+
+if (!function_exists('render_widget_isolated')) {
+    function render_widget_isolated($type, $settings = [], $variant = 'default')
+    {
+        $renderingService = new WidgetRenderingService();
+        return $renderingService->renderIsolated($type, $settings, $variant);
     }
 }
 

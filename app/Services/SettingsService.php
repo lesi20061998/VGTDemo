@@ -34,6 +34,12 @@ class SettingsService
      */
     private function isProjectContext(): bool
     {
+        // Check if project is set in request attributes (frontend routes)
+        $project = request()->attributes->get('project');
+        if ($project) {
+            return true;
+        }
+        
         return config('database.default') === 'project';
     }
 
@@ -117,10 +123,8 @@ class SettingsService
         if ($this->isProjectContext()) {
             ProjectSettingModel::set($key, $value, $group);
         } else {
-            $tenantId = session('current_tenant_id');
-
             Setting::updateOrCreate(
-                ['key' => $key, 'tenant_id' => $tenantId],
+                ['key' => $key, 'project_id' => null],
                 [
                     'payload' => $value,
                     'group' => $group,

@@ -3,6 +3,7 @@
 @section('page-title', $product->name ?? 'Chi tiết sản phẩm')
 
 @section('product-content')
+<?php dd($product->price) ?>
 <div class="grid md:grid-cols-2 gap-8">
     <div>
         <img src="{{ $product->featured_image ?? $product->image ?? '' }}" alt="{{ $product->name ?? '' }}" class="w-full rounded-lg shadow">
@@ -19,6 +20,7 @@
         <h1 class="text-3xl font-bold mb-4">{{ $product->name ?? '' }}</h1>
         
         @if($product->sale_price && $product->sale_price < $product->price)
+       
         <div class="mb-6">
             <span class="text-3xl font-bold text-red-600">{{ number_format($product->sale_price) }}đ</span>
             <span class="text-xl text-gray-400 line-through ml-2">{{ number_format($product->price) }}đ</span>

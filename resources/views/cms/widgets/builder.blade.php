@@ -11,17 +11,35 @@
         
         @foreach($availableWidgets as $category => $widgets)
         <div class="mb-6">
-            <h4 class="font-semibold text-lg mb-3 capitalize text-gray-700">{{ ucfirst($category) }}</h4>
+            <h4 class="font-semibold text-lg mb-3 capitalize text-gray-700 flex items-center">
+                <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs mr-2">{{ count($widgets) }}</span>
+                {{ ucfirst(str_replace('_', ' ', $category)) }}
+            </h4>
             <div class="grid grid-cols-2 gap-4">
                 @foreach($widgets as $widget)
-                <div class="widget-template border-2 border-dashed border-gray-300 rounded-lg p-4 cursor-move hover:border-blue-500 hover:bg-blue-50 transition" draggable="true" data-type="{{ $widget['type'] }}">
+                <div class="widget-template border-2 border-dashed border-gray-300 rounded-lg p-4 cursor-move hover:border-blue-500 hover:bg-blue-50 transition" 
+                     draggable="true" 
+                     data-type="{{ $widget['type'] }}"
+                     data-category="{{ $category }}"
+                     title="{{ $widget['metadata']['description'] ?? $widget['description'] ?? 'No description available' }}">
                     <div class="flex items-center gap-3">
-                        <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            {!! $widget['icon'] ?? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>' !!}
-                        </svg>
-                        <div>
-                            <h4 class="font-semibold">{{ $widget['name'] }}</h4>
-                            <p class="text-xs text-gray-500">{{ $widget['description'] ?? $widget['type'] }}</p>
+                        <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                            @if(isset($widget['metadata']['icon']) && str_contains($widget['metadata']['icon'], 'heroicon'))
+                                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    {!! $widget['icon'] ?? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>' !!}
+                                </svg>
+                            @else
+                                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    {!! $widget['icon'] ?? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>' !!}
+                                </svg>
+                            @endif
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-sm">{{ $widget['metadata']['name'] ?? $widget['name'] }}</h4>
+                            <p class="text-xs text-gray-500 line-clamp-2">{{ Str::limit($widget['metadata']['description'] ?? $widget['description'] ?? $widget['type'], 50) }}</p>
+                            @if(isset($widget['metadata']['version']))
+                                <span class="inline-block bg-gray-100 text-gray-600 text-xs px-1 rounded mt-1">v{{ $widget['metadata']['version'] }}</span>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -91,6 +109,7 @@
         <div id="configForm"></div>
         <div class="flex justify-end gap-3 mt-6">
             <button onclick="closeConfig()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">Cancel</button>
+            <button onclick="previewWidget()" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">Preview</button>
             <button onclick="saveConfig()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Save</button>
         </div>
     </div>
@@ -410,11 +429,147 @@ function editWidget(index) {
     const modal = document.getElementById('configModal');
     const form = document.getElementById('configForm');
     
-    form.innerHTML = renderConfigForm(widget);
+    // Show loading state
+    form.innerHTML = '<div class="text-center py-4">Loading widget configuration...</div>';
     modal.classList.remove('hidden');
+    
+    renderConfigForm(widget);
+}
+
+function previewWidget() {
+    if (currentEditIndex === null) return;
+    
+    const widget = widgets[currentEditIndex];
+    const form = document.getElementById('configForm');
+    const formData = new FormData(form);
+    
+    // Collect current form data
+    const settings = {};
+    for (let [key, value] of formData.entries()) {
+        settings[key] = value;
+    }
+    
+    // Get variant
+    const variantSelect = document.getElementById('cfg_variant');
+    const variant = variantSelect ? variantSelect.value : 'default';
+    
+    // Request preview from server
+    fetch('{{ route("cms.widgets.preview") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            type: widget.type,
+            settings: settings,
+            variant: variant
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showPreviewModal(data.preview);
+        } else {
+            alert('Preview failed: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Preview error:', error);
+        alert('Preview failed: Network error');
+    });
+}
+
+function showPreviewModal(previewHtml) {
+    // Create preview modal
+    const previewModal = document.createElement('div');
+    previewModal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+    previewModal.innerHTML = `
+        <div class="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold">Widget Preview</h3>
+                <button onclick="closePreviewModal()" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="border rounded-lg p-4 bg-gray-50">
+                ${previewHtml}
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(previewModal);
+    window.currentPreviewModal = previewModal;
+}
+
+function closePreviewModal() {
+    if (window.currentPreviewModal) {
+        document.body.removeChild(window.currentPreviewModal);
+        window.currentPreviewModal = null;
+    }
 }
 
 function renderConfigForm(widget) {
+    const widgetType = widget.type;
+    
+    // Use AJAX to get form fields from server
+    fetch(`{{ route('cms.widgets.fields') }}?type=${widgetType}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                let formHtml = data.form_html;
+                
+                // Populate form with current values
+                const form = document.getElementById('configForm');
+                form.innerHTML = formHtml;
+                
+                // Set current values
+                const fields = data.fields || [];
+                fields.forEach(field => {
+                    const fieldName = field.name;
+                    const fieldValue = widget.settings[fieldName];
+                    const fieldElement = form.querySelector(`[name="${fieldName}"]`);
+                    
+                    if (fieldElement && fieldValue !== undefined) {
+                        if (fieldElement.type === 'checkbox') {
+                            fieldElement.checked = fieldValue;
+                        } else if (fieldElement.tagName === 'SELECT') {
+                            fieldElement.value = fieldValue;
+                        } else {
+                            fieldElement.value = fieldValue;
+                        }
+                    }
+                });
+                
+                // Add variant selector if available
+                if (data.variants && Object.keys(data.variants).length > 1) {
+                    const variantHtml = `
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Widget Variant</label>
+                            <select id="cfg_variant" class="w-full px-3 py-2 border rounded-lg">
+                                ${Object.entries(data.variants).map(([key, label]) => 
+                                    `<option value="${key}" ${widget.variant === key ? 'selected' : ''}>${label}</option>`
+                                ).join('')}
+                            </select>
+                        </div>
+                    `;
+                    form.insertAdjacentHTML('afterbegin', variantHtml);
+                }
+            } else {
+                // Fallback to legacy form rendering
+                return renderLegacyConfigForm(widget);
+            }
+        })
+        .catch(error => {
+            console.error('Error loading widget fields:', error);
+            return renderLegacyConfigForm(widget);
+        });
+}
+
+function renderLegacyConfigForm(widget) {
     if (widget.type === 'hero') {
         return `
             <div class="space-y-4">
@@ -509,24 +664,56 @@ function renderConfigForm(widget) {
 
 function saveConfig() {
     const widget = widgets[currentEditIndex];
+    const form = document.getElementById('configForm');
+    const formData = new FormData(form);
     
-    if (widget.type === 'hero' || widget.type === 'cta') {
-        widget.settings.title = document.getElementById('cfg_title').value;
-        widget.settings.subtitle = document.getElementById('cfg_subtitle').value;
-        widget.settings.button_text = document.getElementById('cfg_button_text').value;
-        widget.settings.button_link = document.getElementById('cfg_button_link').value;
-    } else if (widget.type === 'features') {
-        widget.settings.title = document.getElementById('cfg_title').value;
-        widget.settings.features = widget.settings.features.map((f, i) => ({
-            ...f,
-            title: document.getElementById(`cfg_f${i}_title`).value,
-            desc: document.getElementById(`cfg_f${i}_desc`).value
-        }));
-    } else if (widget.type === 'analytics') {
-        widget.settings.title = document.getElementById('cfg_title').value;
-        widget.settings.show_title = document.getElementById('cfg_show_title').checked;
-        widget.settings.style = document.getElementById('cfg_style').value;
-        widget.settings.columns = document.getElementById('cfg_columns').value;
+    // Update widget settings from form
+    for (let [key, value] of formData.entries()) {
+        // Handle array fields (like repeatable fields)
+        if (key.includes('[')) {
+            // Parse array notation like "social_links[0][platform]"
+            const matches = key.match(/^([^[]+)(\[.+\])$/);
+            if (matches) {
+                const fieldName = matches[1];
+                const arrayPath = matches[2];
+                
+                if (!widget.settings[fieldName]) {
+                    widget.settings[fieldName] = [];
+                }
+                
+                // Simple array handling - could be improved for nested arrays
+                const arrayIndex = arrayPath.match(/\[(\d+)\]/);
+                if (arrayIndex) {
+                    const index = parseInt(arrayIndex[1]);
+                    const subField = arrayPath.match(/\[(\d+)\]\[([^\]]+)\]/);
+                    
+                    if (subField) {
+                        if (!widget.settings[fieldName][index]) {
+                            widget.settings[fieldName][index] = {};
+                        }
+                        widget.settings[fieldName][index][subField[2]] = value;
+                    }
+                }
+            }
+        } else {
+            widget.settings[key] = value;
+        }
+    }
+    
+    // Handle checkboxes (they don't appear in FormData if unchecked)
+    const checkboxes = form.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+        if (!formData.has(checkbox.name)) {
+            widget.settings[checkbox.name] = false;
+        } else {
+            widget.settings[checkbox.name] = true;
+        }
+    });
+    
+    // Update variant if available
+    const variantSelect = document.getElementById('cfg_variant');
+    if (variantSelect) {
+        widget.variant = variantSelect.value;
     }
     
     closeConfig();
@@ -556,7 +743,7 @@ async function saveWidgets() {
     btn.textContent = 'Saving...';
     
     const baseUrl = '{{ isset($currentProject) ? route("project.admin.widgets.save-all", $currentProject->code) : route("cms.widgets.save-all") }}';
-    
+    //console.log(baseUrl);
     try {
         const response = await fetch(baseUrl, {
             method: 'POST',

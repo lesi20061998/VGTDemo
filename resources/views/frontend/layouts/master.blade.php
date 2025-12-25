@@ -16,6 +16,7 @@
     />
     
     <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     @stack('styles')
 </head>
 <body class="bg-gray-50">
@@ -34,6 +35,12 @@
     
     <!-- Footer -->
     @include('frontend.partials.footer')
+    
+    <!-- Popup -->
+    @include('frontend.partials.popup')
+    
+    <!-- Fake Notifications -->
+    @include('frontend.partials.fake-notifications')
     
     @stack('scripts')
     

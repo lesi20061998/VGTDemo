@@ -1,0 +1,177 @@
+{
+  "name": "Field Types Demo",
+  "description": "Demonstrates all available field types in the widget engine",
+  "category": "examples",
+  "version": "1.0.0",
+  "author": "Widget Engine Team",
+  "icon": "heroicon-outline-beaker",
+  "preview_image": "demo-preview.jpg",
+  "variants": {
+    "default": "Default Layout",
+    "showcase": "Showcase Layout",
+    "minimal": "Minimal Layout"
+  },
+  "fields": [
+    {
+      "name": "text_field",
+      "label": "Text Field",
+      "type": "text",
+      "required": true,
+      "default": "Sample text",
+      "validation": "required|string|max:100",
+      "help": "Basic text input field",
+      "placeholder": "Enter some text"
+    },
+    {
+      "name": "textarea_field",
+      "label": "Textarea Field",
+      "type": "textarea",
+      "required": false,
+      "default": "Sample description text",
+      "validation": "string|max:500",
+      "help": "Multi-line text input",
+      "rows": 4,
+      "placeholder": "Enter description"
+    },
+    {
+      "name": "select_field",
+      "label": "Select Field",
+      "type": "select",
+      "required": false,
+      "default": "option2",
+      "options": {
+        "option1": "First Option",
+        "option2": "Second Option",
+        "option3": "Third Option"
+      },
+      "help": "Dropdown selection field"
+    },
+    {
+      "name": "checkbox_field",
+      "label": "Checkbox Field",
+      "type": "checkbox",
+      "required": false,
+      "default": true,
+      "help": "Boolean checkbox field"
+    },
+    {
+      "name": "email_field",
+      "label": "Email Field",
+      "type": "email",
+      "required": false,
+      "default": "example@domain.com",
+      "validation": "email",
+      "help": "Email input with validation"
+    },
+    {
+      "name": "url_field",
+      "label": "URL Field",
+      "type": "url",
+      "required": false,
+      "default": "https://example.com",
+      "validation": "url",
+      "help": "URL input with validation"
+    },
+    {
+      "name": "number_field",
+      "label": "Number Field",
+      "type": "number",
+      "required": false,
+      "default": 42,
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "help": "Numeric input with constraints"
+    },
+    {
+      "name": "date_field",
+      "label": "Date Field",
+      "type": "date",
+      "required": false,
+      "help": "Date picker field"
+    },
+    {
+      "name": "color_field",
+      "label": "Color Field",
+      "type": "color",
+      "required": false,
+      "default": "#3B82F6",
+      "help": "Color picker field"
+    },
+    {
+      "name": "range_field",
+      "label": "Range Field",
+      "type": "range",
+      "required": false,
+      "default": 50,
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "help": "Range slider field"
+    },
+    {
+      "name": "image_field",
+      "label": "Image Field",
+      "type": "image",
+      "required": false,
+      "validation": "string",
+      "help": "Image upload field"
+    },
+    {
+      "name": "gallery_field",
+      "label": "Gallery Field",
+      "type": "gallery",
+      "required": false,
+      "max_items": 3,
+      "help": "Multiple image gallery"
+    },
+    {
+      "name": "repeatable_field",
+      "label": "Repeatable Field",
+      "type": "repeatable",
+      "required": false,
+      "max_items": 5,
+      "min_items": 1,
+      "help": "Repeatable group of fields",
+      "fields": [
+        {
+          "name": "item_title",
+          "label": "Item Title",
+          "type": "text",
+          "required": true,
+          "validation": "required|string|max:50"
+        },
+        {
+          "name": "item_description",
+          "label": "Item Description",
+          "type": "textarea",
+          "required": false,
+          "rows": 2
+        },
+        {
+          "name": "item_active",
+          "label": "Item Active",
+          "type": "checkbox",
+          "default": true
+        },
+        {
+          "name": "item_priority",
+          "label": "Priority",
+          "type": "select",
+          "options": {
+            "low": "Low Priority",
+            "medium": "Medium Priority",
+            "high": "High Priority"
+          },
+          "default": "medium"
+        }
+      ]
+    }
+  ],
+  "settings": {
+    "cacheable": true,
+    "cache_duration": 1800,
+    "permissions": ["admin", "editor"],
+    "dependencies": []
+  }
+}

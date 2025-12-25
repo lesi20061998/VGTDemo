@@ -532,7 +532,7 @@ class ProductController extends Controller
     public function show($projectCode, $id)
     {
         $product = ProjectProduct::findOrFail($id);
-
+       
         return view('admin.products.show', compact('product'));
     }
 

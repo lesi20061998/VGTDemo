@@ -49,6 +49,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'cms' => \App\Http\Middleware\CMSMiddleware::class,
             'panel.session' => \App\Http\Middleware\PanelSessionMiddleware::class,
             'project.session' => \App\Http\Middleware\ProjectSession::class,
+            'widget.bypass' => \App\Http\Middleware\BypassWidgetPermission::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

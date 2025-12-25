@@ -1,0 +1,154 @@
+{
+  "name": "Contact Form",
+  "description": "Contact form with customizable fields and styling",
+  "category": "marketing",
+  "version": "1.0.0",
+  "author": "Development Team",
+  "icon": "heroicon-outline-mail",
+  "preview_image": "contact-form-preview.jpg",
+  "variants": {
+    "default": "Default Layout",
+    "compact": "Compact Layout",
+    "modern": "Modern Layout"
+  },
+  "fields": [
+    {
+      "name": "title",
+      "label": "Form Title",
+      "type": "text",
+      "required": true,
+      "default": "Contact Us",
+      "validation": "required|string|max:100",
+      "help": "Title displayed above the form"
+    },
+    {
+      "name": "description",
+      "label": "Form Description",
+      "type": "textarea",
+      "required": false,
+      "default": "Get in touch with us",
+      "validation": "string|max:500",
+      "help": "Optional description text",
+      "rows": 3
+    },
+    {
+      "name": "show_phone",
+      "label": "Show Phone Field",
+      "type": "checkbox",
+      "required": false,
+      "default": true,
+      "help": "Include phone number field in the form"
+    },
+    {
+      "name": "form_style",
+      "label": "Form Style",
+      "type": "select",
+      "required": false,
+      "default": "modern",
+      "options": {
+        "classic": "Classic Style",
+        "modern": "Modern Style",
+        "minimal": "Minimal Style",
+        "bordered": "Bordered Style"
+      },
+      "help": "Choose the visual style for the form"
+    },
+    {
+      "name": "button_color",
+      "label": "Button Color",
+      "type": "color",
+      "required": false,
+      "default": "#3B82F6",
+      "help": "Color for the submit button"
+    },
+    {
+      "name": "max_message_length",
+      "label": "Max Message Length",
+      "type": "number",
+      "required": false,
+      "default": 500,
+      "min": 100,
+      "max": 2000,
+      "help": "Maximum characters allowed in message field"
+    },
+    {
+      "name": "priority_level",
+      "label": "Priority Level",
+      "type": "range",
+      "required": false,
+      "default": 5,
+      "min": 1,
+      "max": 10,
+      "step": 1,
+      "help": "Set the priority level for form submissions"
+    },
+    {
+      "name": "notification_email",
+      "label": "Notification Email",
+      "type": "email",
+      "required": false,
+      "default": "admin@example.com",
+      "validation": "email",
+      "help": "Email address to receive form submissions"
+    },
+    {
+      "name": "redirect_url",
+      "label": "Success Redirect URL",
+      "type": "url",
+      "required": false,
+      "default": "/thank-you",
+      "validation": "url",
+      "help": "URL to redirect after successful submission"
+    },
+    {
+      "name": "deadline",
+      "label": "Form Deadline",
+      "type": "date",
+      "required": false,
+      "help": "Optional deadline for form submissions"
+    },
+    {
+      "name": "social_links",
+      "label": "Social Media Links",
+      "type": "repeatable",
+      "required": false,
+      "max_items": 5,
+      "min_items": 0,
+      "help": "Add social media links to display with the form",
+      "fields": [
+        {
+          "name": "platform",
+          "label": "Platform",
+          "type": "select",
+          "required": true,
+          "options": {
+            "facebook": "Facebook",
+            "twitter": "Twitter",
+            "instagram": "Instagram",
+            "linkedin": "LinkedIn",
+            "youtube": "YouTube"
+          }
+        },
+        {
+          "name": "url",
+          "label": "URL",
+          "type": "url",
+          "required": true,
+          "validation": "required|url"
+        },
+        {
+          "name": "show_icon",
+          "label": "Show Icon",
+          "type": "checkbox",
+          "default": true
+        }
+      ]
+    }
+  ],
+  "settings": {
+    "cacheable": false,
+    "cache_duration": 0,
+    "permissions": ["admin", "editor"],
+    "dependencies": []
+  }
+}

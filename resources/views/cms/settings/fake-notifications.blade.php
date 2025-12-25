@@ -30,6 +30,34 @@
                     <option value="top-right">Trên phải</option>
                 </select>
             </div>
+
+            <div class="grid grid-cols-2 gap-4 pt-4 border-t">
+                <div>
+                    <label class="block font-medium mb-2">Thời gian hiển thị mỗi thông báo (giây)</label>
+                    <input type="number" x-model="config.display_time" min="1" max="30" class="border rounded px-3 py-2 w-full" placeholder="5">
+                    <p class="text-sm text-gray-500 mt-1">Mặc định: 5 giây</p>
+                </div>
+                <div>
+                    <label class="block font-medium mb-2">Khoảng cách giữa các thông báo (giây)</label>
+                    <input type="number" x-model="config.interval_time" min="5" max="60" class="border rounded px-3 py-2 w-full" placeholder="10">
+                    <p class="text-sm text-gray-500 mt-1">Mặc định: 8-15 giây ngẫu nhiên</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block font-medium mb-2">Delay ban đầu (giây)</label>
+                    <input type="number" x-model="config.initial_delay" min="0" max="30" class="border rounded px-3 py-2 w-full" placeholder="3">
+                    <p class="text-sm text-gray-500 mt-1">Thời gian chờ trước khi hiển thị thông báo đầu tiên</p>
+                </div>
+                <div>
+                    <label class="flex items-center gap-2 mt-8">
+                        <input type="checkbox" x-model="config.random_interval" class="rounded">
+                        <span>Khoảng cách ngẫu nhiên</span>
+                    </label>
+                    <p class="text-sm text-gray-500 mt-1">Nếu bật, thời gian sẽ dao động ±50%</p>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -82,12 +110,21 @@
 
 <script>
 function fakeNotifications() {
-    const defaultConfig = {enabled: true, show_desktop: true, show_mobile: true, position: 'bottom-left'};
+    const defaultConfig = {
+        enabled: true, 
+        show_desktop: true, 
+        show_mobile: true, 
+        position: 'bottom-left',
+        display_time: 5,
+        interval_time: 10,
+        initial_delay: 3,
+        random_interval: true
+    };
     const savedConfig = @json(setting('fake_notifications_config'));
     
     return {
         notifications: @json(setting('fake_notifications', [])),
-        config: savedConfig || defaultConfig,
+        config: {...defaultConfig, ...savedConfig},
 
         addNotification() {
             this.notifications.push({

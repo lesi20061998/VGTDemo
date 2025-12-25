@@ -55,7 +55,7 @@ class CtaWidget extends BaseWidget
                 ['name' => 'title', 'label' => 'Title', 'type' => 'text', 'default' => 'Ready to get started?'],
                 ['name' => 'subtitle', 'label' => 'Subtitle', 'type' => 'text', 'default' => 'Join thousands of satisfied customers'],
                 ['name' => 'button_text', 'label' => 'Button Text', 'type' => 'text', 'default' => 'Sign Up Now'],
-                ['name' => 'button_link', 'label' => 'Button Link', 'type' => 'text', 'default' => '#'],
+                ['name' => 'button_link', 'label' => 'Button Link', 'type' => 'url', 'default' => '#'],
             ]
         ];
     }

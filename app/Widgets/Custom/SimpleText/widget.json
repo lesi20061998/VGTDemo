@@ -1,0 +1,51 @@
+{
+    "name": "Simple Text Widget",
+    "description": "Widget hiển thị văn bản đơn giản với tùy chỉnh màu sắc",
+    "category": "content",
+    "icon": "fas fa-text",
+    "version": "1.0.0",
+    "author": "Your Name",
+    "tags": ["text", "content", "simple"],
+    "variants": {
+        "default": "Mặc định",
+        "centered": "Căn giữa",
+        "bordered": "Có viền"
+    },
+    "fields": [
+        {
+            "name": "title",
+            "type": "text",
+            "label": "Tiêu đề",
+            "required": true,
+            "default": "Tiêu đề mặc định",
+            "placeholder": "Nhập tiêu đề..."
+        },
+        {
+            "name": "content",
+            "type": "textarea",
+            "label": "Nội dung",
+            "required": true,
+            "default": "Nội dung mặc định",
+            "placeholder": "Nhập nội dung...",
+            "rows": 4
+        },
+        {
+            "name": "text_color",
+            "type": "color",
+            "label": "Màu chữ",
+            "default": "#000000"
+        },
+        {
+            "name": "background_color",
+            "type": "color",
+            "label": "Màu nền",
+            "default": "#ffffff"
+        }
+    ],
+    "settings": {
+        "cacheable": true,
+        "cache_duration": 3600,
+        "permissions": [],
+        "dependencies": []
+    }
+}

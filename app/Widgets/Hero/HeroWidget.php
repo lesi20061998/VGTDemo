@@ -13,9 +13,15 @@ class HeroWidget extends BaseWidget
         $btnText = $this->get('button_text', 'Khám phá ngay');
         $btnLink = $this->get('button_link', '/products');
         $bgColor = $this->get('bg_color', 'bg-gradient-to-r from-blue-600 to-purple-600');
+        $backgroundImage = $this->get('background_image', '');
+        
+        $backgroundStyle = '';
+        if ($backgroundImage) {
+            $backgroundStyle = "background-image: url('{$backgroundImage}'); background-size: cover; background-position: center;";
+        }
         
         return "
-        <section class=\"hero-section {$bgColor} text-white py-20\">
+        <section class=\"hero-section {$bgColor} text-white py-20\" style=\"{$backgroundStyle}\">
             <div class=\"container mx-auto px-4 text-center\">
                 <h1 class=\"text-5xl font-bold mb-4\">{$title}</h1>
                 <p class=\"text-xl mb-8 opacity-90\">{$subtitle}</p>
@@ -44,6 +50,9 @@ class HeroWidget extends BaseWidget
         </script>';
     }
 
+    /**
+     * Legacy method for backward compatibility
+     */
     public static function getConfig(): array
     {
         return [
@@ -55,7 +64,7 @@ class HeroWidget extends BaseWidget
                 ['name' => 'title', 'label' => 'Title', 'type' => 'text', 'default' => 'Welcome to Our Website'],
                 ['name' => 'subtitle', 'label' => 'Subtitle', 'type' => 'text', 'default' => 'Build amazing things with our platform'],
                 ['name' => 'button_text', 'label' => 'Button Text', 'type' => 'text', 'default' => 'Get Started'],
-                ['name' => 'button_link', 'label' => 'Button Link', 'type' => 'text', 'default' => '#'],
+                ['name' => 'button_link', 'label' => 'Button Link', 'type' => 'url', 'default' => '#'],
             ]
         ];
     }

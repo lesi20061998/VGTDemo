@@ -102,8 +102,18 @@
 <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 <script>
 function formManager() {
+    @php
+        $formsData = setting('forms', []);
+        if (is_string($formsData)) {
+            $formsData = json_decode($formsData, true) ?: [];
+        }
+        if (!is_array($formsData)) {
+            $formsData = [];
+        }
+    @endphp
+    
     return {
-        forms: @json(is_array(setting('forms', [])) ? setting('forms', []) : json_decode(setting('forms', '[]'), true) ?? []),
+        forms: @json($formsData),
         showEditor: false,
         showFieldSelector: false,
         editIndex: null,
