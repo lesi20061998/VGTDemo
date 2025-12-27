@@ -202,6 +202,24 @@ class WidgetRegistry implements WidgetRegistryInterface
             $allWidgets[$type] = $widget;
         }
         
+        // Add custom templates from database
+        $customTemplates = self::getCustomTemplates();
+        foreach ($customTemplates as $template) {
+            $allWidgets[$template['type']] = [
+                'type' => $template['type'],
+                'class' => null,
+                'metadata' => [
+                    'name' => $template['name'],
+                    'description' => $template['description'] ?? '',
+                    'category' => $template['category'] ?? 'custom',
+                    'icon' => $template['icon'] ?? 'cube',
+                    'fields' => $template['config_schema']['fields'] ?? [],
+                    'is_custom' => true,
+                    'template_id' => $template['id'],
+                ],
+            ];
+        }
+        
         return array_values($allWidgets);
     }
 
@@ -218,7 +236,122 @@ class WidgetRegistry implements WidgetRegistryInterface
             $categories[$category][] = $widget;
         }
 
+        // Add custom templates from database
+        $customTemplates = self::getCustomTemplates();
+        foreach ($customTemplates as $template) {
+            $category = $template['category'] ?? 'custom';
+            $categories[$category][] = [
+                'type' => $template['type'],
+                'class' => null, // No class for custom templates
+                'metadata' => [
+                    'name' => $template['name'],
+                    'description' => $template['description'] ?? '',
+                    'category' => $category,
+                    'icon' => $template['icon'] ?? 'cube',
+                    'fields' => $template['config_schema']['fields'] ?? [],
+                    'is_custom' => true,
+                    'template_id' => $template['id'],
+                ],
+            ];
+        }
+
         return $categories;
+    }
+
+    /**
+     * Get custom widget templates from database
+     */
+    public static function getCustomTemplates(): array
+    {
+        try {
+            // Use withoutGlobalScope to get all active templates
+            return \App\Models\WidgetTemplate::withoutGlobalScope('tenant')
+                ->where('is_active', true)
+                ->when(session('current_tenant_id'), function ($query) {
+                    $query->where('tenant_id', session('current_tenant_id'));
+                })
+                ->orderBy('category')
+                ->orderBy('sort_order')
+                ->get()
+                ->toArray();
+        } catch (\Exception $e) {
+            \Log::error('Error loading custom templates: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Check if a widget type exists (including custom templates)
+     */
+    public static function exists(string $type): bool
+    {
+        // Check code-based widgets
+        if (isset(self::$widgets[$type])) {
+            return true;
+        }
+        
+        // Check discovered widgets
+        $discovered = self::discover();
+        if (isset($discovered[$type])) {
+            return true;
+        }
+        
+        // Check custom templates
+        try {
+            return \App\Models\WidgetTemplate::withoutGlobalScope('tenant')
+                ->where('type', $type)
+                ->where('is_active', true)
+                ->exists();
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Get widget configuration by type (including custom templates)
+     */
+    public static function getConfig(string $type): ?array
+    {
+        // First check code-based widgets
+        $class = self::get($type);
+        if ($class) {
+            try {
+                $metadata = self::loadWidgetMetadata($class);
+                $metadata['type'] = $type;
+                $metadata['class'] = $class;
+                return $metadata;
+            } catch (\Exception $e) {
+                \Log::error("Error loading config for widget {$type}: " . $e->getMessage());
+                return null;
+            }
+        }
+        
+        // Check custom templates from database
+        try {
+            $template = \App\Models\WidgetTemplate::withoutGlobalScope('tenant')
+                ->where('type', $type)
+                ->where('is_active', true)
+                ->first();
+                
+            if ($template) {
+                return [
+                    'type' => $template->type,
+                    'name' => $template->name,
+                    'description' => $template->description,
+                    'category' => $template->category,
+                    'icon' => $template->icon,
+                    'fields' => $template->config_schema['fields'] ?? [],
+                    'variants' => ['default' => 'Default'],
+                    'is_custom' => true,
+                    'template_id' => $template->id,
+                    'class' => null,
+                ];
+            }
+        } catch (\Exception $e) {
+            \Log::error("Error loading custom template {$type}: " . $e->getMessage());
+        }
+        
+        return null;
     }
 
     /**
@@ -241,43 +374,60 @@ class WidgetRegistry implements WidgetRegistryInterface
     }
 
     /**
-     * Get widget configuration by type
-     */
-    public static function getConfig(string $type): ?array
-    {
-        $class = self::get($type);
-        if (!$class) {
-            return null;
-        }
-
-        try {
-            $metadata = self::loadWidgetMetadata($class);
-            $metadata['type'] = $type;
-            $metadata['class'] = $class;
-            return $metadata;
-        } catch (\Exception $e) {
-            \Log::error("Error loading config for widget {$type}: " . $e->getMessage());
-            return null;
-        }
-    }
-
-    /**
      * Render widget with settings and variant
      */
     public static function render(string $type, array $settings = [], string $variant = 'default'): string
     {
         $class = self::get($type);
-        if (!$class) {
-            return '';
+        
+        // If code-based widget exists
+        if ($class) {
+            try {
+                $widget = new $class($settings, $variant);
+                return $widget->css() . $widget->render() . $widget->js();
+            } catch (\Exception $e) {
+                \Log::error("Error rendering widget {$type}: " . $e->getMessage());
+                return '<div class="widget-error">Widget rendering failed</div>';
+            }
         }
-
+        
+        // Try custom template from database
         try {
-            $widget = new $class($settings, $variant);
-            return $widget->css() . $widget->render() . $widget->js();
+            $template = \App\Models\WidgetTemplate::withoutGlobalScope('tenant')
+                ->where('type', $type)
+                ->where('is_active', true)
+                ->first();
+                
+            if ($template) {
+                return self::renderCustomTemplate($template, $settings);
+            }
         } catch (\Exception $e) {
-            \Log::error("Error rendering widget {$type}: " . $e->getMessage());
-            return '<div class="widget-error">Widget rendering failed</div>';
+            \Log::error("Error rendering custom widget {$type}: " . $e->getMessage());
         }
+        
+        return '';
+    }
+
+    /**
+     * Render a custom template widget
+     */
+    protected static function renderCustomTemplate(\App\Models\WidgetTemplate $template, array $settings): string
+    {
+        $fields = $template->config_schema['fields'] ?? [];
+        
+        // Check if custom view exists
+        $customView = 'widgets.custom.' . $template->type;
+        if (view()->exists($customView)) {
+            return view($customView, [
+                'settings' => $settings,
+                'fields' => $fields,
+                'template' => $template,
+            ])->render();
+        }
+        
+        // Fallback: render using DynamicWidgetRenderer
+        $renderer = app(\App\Services\DynamicWidgetRenderer::class);
+        return $renderer->renderCustomWidget($template, $settings);
     }
 
     /**
@@ -303,14 +453,6 @@ class WidgetRegistry implements WidgetRegistryInterface
     {
         $widgets = self::all();
         return array_column($widgets, 'type');
-    }
-
-    /**
-     * Check if widget type exists
-     */
-    public static function exists(string $type): bool
-    {
-        return self::get($type) !== null;
     }
 
     /**

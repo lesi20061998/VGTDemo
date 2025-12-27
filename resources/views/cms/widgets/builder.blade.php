@@ -4,94 +4,171 @@
 @section('page-title', 'Widget Builder - Drag & Drop')
 
 @section('content')
-<div class="flex gap-6">
-    <!-- Widget Templates Sidebar -->
-    <div class="w-2/3 bg-white rounded-lg shadow-sm p-6">
-        <h3 class="font-bold text-2xl mb-6">Widget Templates ({{ array_sum(array_map('count', $availableWidgets)) }} widgets)</h3>
+{{-- Media Picker Modal --}}
+<x-media-picker-modal />
+
+<div class="flex gap-4 h-[calc(100vh-180px)]">
+    <!-- Widget Templates Sidebar - Fixed Left -->
+    <div class="w-80 flex-shrink-0 bg-white rounded-lg shadow-sm flex flex-col overflow-hidden">
+        <div class="p-4 border-b bg-gray-50">
+            <h3 class="font-bold text-lg flex items-center justify-between">
+                <span>Widget Templates</span>
+                <span class="bg-blue-500 text-white text-xs px-2 py-1 rounded-full">{{ array_sum(array_map('count', $availableWidgets)) }}</span>
+            </h3>
+            <input type="text" id="widgetSearch" placeholder="Tìm widget..." 
+                   class="mt-3 w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500"
+                   onkeyup="filterWidgets(this.value)">
+        </div>
         
-        @foreach($availableWidgets as $category => $widgets)
-        <div class="mb-6">
-            <h4 class="font-semibold text-lg mb-3 capitalize text-gray-700 flex items-center">
-                <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs mr-2">{{ count($widgets) }}</span>
-                {{ ucfirst(str_replace('_', ' ', $category)) }}
-            </h4>
-            <div class="grid grid-cols-2 gap-4">
-                @foreach($widgets as $widget)
-                <div class="widget-template border-2 border-dashed border-gray-300 rounded-lg p-4 cursor-move hover:border-blue-500 hover:bg-blue-50 transition" 
-                     draggable="true" 
-                     data-type="{{ $widget['type'] }}"
-                     data-category="{{ $category }}"
-                     title="{{ $widget['metadata']['description'] ?? $widget['description'] ?? 'No description available' }}">
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                            @if(isset($widget['metadata']['icon']) && str_contains($widget['metadata']['icon'], 'heroicon'))
-                                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="flex-1 overflow-y-auto p-3 space-y-3" id="widgetTemplatesList">
+            @foreach($availableWidgets as $category => $widgets)
+            <div class="widget-category" data-category="{{ $category }}">
+                <button type="button" onclick="toggleCategory('{{ $category }}')" 
+                        class="w-full flex items-center justify-between p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition">
+                    <span class="font-medium text-sm flex items-center gap-2">
+                        <svg class="w-4 h-4 transition-transform category-arrow" id="arrow-{{ $category }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                        {{ ucfirst(str_replace('_', ' ', $category)) }}
+                    </span>
+                    <span class="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full">{{ count($widgets) }}</span>
+                </button>
+                
+                <div class="category-content mt-2 space-y-2" id="category-{{ $category }}">
+                    @foreach($widgets as $widget)
+                    <div class="widget-template border border-gray-200 rounded-lg p-3 cursor-move hover:border-blue-400 hover:bg-blue-50 hover:shadow-sm transition-all" 
+                         draggable="true" 
+                         data-type="{{ $widget['type'] }}"
+                         data-name="{{ $widget['metadata']['name'] ?? $widget['name'] }}"
+                         data-category="{{ $category }}"
+                         title="{{ $widget['metadata']['description'] ?? $widget['description'] ?? 'No description' }}">
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     {!! $widget['icon'] ?? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>' !!}
                                 </svg>
-                            @else
-                                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    {!! $widget['icon'] ?? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>' !!}
-                                </svg>
-                            @endif
-                        </div>
-                        <div class="flex-1">
-                            <h4 class="font-semibold text-sm">{{ $widget['metadata']['name'] ?? $widget['name'] }}</h4>
-                            <p class="text-xs text-gray-500 line-clamp-2">{{ Str::limit($widget['metadata']['description'] ?? $widget['description'] ?? $widget['type'], 50) }}</p>
-                            @if(isset($widget['metadata']['version']))
-                                <span class="inline-block bg-gray-100 text-gray-600 text-xs px-1 rounded mt-1">v{{ $widget['metadata']['version'] }}</span>
-                            @endif
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <h4 class="font-medium text-sm truncate">{{ $widget['metadata']['name'] ?? $widget['name'] }}</h4>
+                                <p class="text-xs text-gray-500 truncate">{{ $widget['type'] }}</p>
+                            </div>
+                            <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/>
+                            </svg>
                         </div>
                     </div>
+                    @endforeach
                 </div>
-                @endforeach
             </div>
+            @endforeach
         </div>
-        @endforeach
     </div>
 
-    <!-- Drop Zone -->
-    <div class="w-1/3">
-        <!-- Homepage Main -->
-        <div class="bg-white rounded-lg shadow-sm p-6 mb-4">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="font-bold text-lg">Homepage Main</h3>
-                <button onclick="saveWidgets()" class="px-4 py-2 bg-[#98191F] text-white rounded-lg hover:bg-[#7a1419]">Save All</button>
+    <!-- Drop Zones - Right Side with Tabs -->
+    <div class="flex-1 flex flex-col min-w-0">
+        <!-- Header with Save Button -->
+        <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-2">
+                <!-- Area Tabs -->
+                <button onclick="switchArea('homepage-main')" id="tab-homepage-main" 
+                        class="area-tab px-4 py-2 rounded-lg font-medium transition-all bg-blue-500 text-white">
+                    <span class="flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                        </svg>
+                        Homepage
+                        <span class="bg-white/20 text-xs px-1.5 py-0.5 rounded" id="count-homepage-main">0</span>
+                    </span>
+                </button>
+                <button onclick="switchArea('sidebar')" id="tab-sidebar" 
+                        class="area-tab px-4 py-2 rounded-lg font-medium transition-all bg-gray-200 text-gray-700 ">
+                    <span class="flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+                        </svg>
+                        Sidebar
+                        <span class="bg-gray-300 text-xs px-1.5 py-0.5 rounded" id="count-sidebar">0</span>
+                    </span>
+                </button>
+                <button onclick="switchArea('footer')" id="tab-footer" 
+                        class="area-tab px-4 py-2 rounded-lg font-medium transition-all bg-gray-200 text-gray-700 ">
+                    <span class="flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                        </svg>
+                        Footer
+                        <span class="bg-gray-300 text-xs px-1.5 py-0.5 rounded" id="count-footer">0</span>
+                    </span>
+                </button>
             </div>
-
-            <div id="dropZone" class="min-h-[300px] border-2 border-dashed border-gray-300 rounded-lg p-4" data-area="homepage-main">
-                <p class="text-gray-400 text-center py-20">
-                    <svg class="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+            
+            <div class="flex items-center gap-2">
+                <button onclick="clearCurrentArea()" class="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                     </svg>
-                    Drag widgets here to build your page<br>
-                    <small class="text-xs">You can reorder widgets by dragging them</small>
-                </p>
+                    Xóa tất cả
+                </button>
+                <button onclick="saveWidgets(event)" class="px-4 py-2 bg-[#98191F] text-white rounded-lg hover:bg-[#7a1419] transition flex items-center gap-2 font-medium">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
+                    </svg>
+                    Lưu tất cả
+                </button>
             </div>
         </div>
 
-        <!-- Sidebar -->
-        <div class="bg-white rounded-lg shadow-sm p-6 mb-4">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="font-bold text-lg">Sidebar</h3>
+        <!-- Drop Zone Container -->
+        <div class="flex-1 bg-white rounded-lg shadow-sm overflow-hidden flex flex-col">
+            <!-- Homepage Main Zone -->
+            <div id="zone-homepage-main" class="drop-zone-container flex-1 flex flex-col" data-area="homepage-main">
+                <div class="p-4 border-b bg-gray-50 flex items-center justify-between">
+                    <h3 class="font-semibold text-gray-700">Homepage Main Content</h3>
+                    <span class="text-sm text-gray-500">Kéo widget vào đây</span>
+                </div>
+                <div id="dropZone" class="flex-1 overflow-y-auto p-4 min-h-[300px] border-2 border-dashed border-gray-200 m-4 rounded-lg transition-colors" data-area="homepage-main">
+                    <p class="empty-message text-gray-400 text-center py-16">
+                        <svg class="w-16 h-16 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                        </svg>
+                        Kéo widget từ bên trái vào đây<br>
+                        <small class="text-xs">Có thể sắp xếp lại bằng cách kéo thả</small>
+                    </p>
+                </div>
             </div>
 
-            <div id="sidebarZone" class="min-h-[200px] border-2 border-dashed border-gray-300 rounded-lg p-4" data-area="sidebar">
-                <p class="text-gray-400 text-center py-12">Drag widgets here for sidebar</p>
+            <!-- Sidebar Zone (Hidden by default) -->
+            <div id="zone-sidebar" class="drop-zone-container flex-1 flex-col hidden" data-area="sidebar">
+                <div class="p-4 border-b bg-gray-50 flex items-center justify-between">
+                    <h3 class="font-semibold text-gray-700">Sidebar Widgets</h3>
+                    <span class="text-sm text-gray-500">Kéo widget vào đây</span>
+                </div>
+                <div id="sidebarZone" class="flex-1 overflow-y-auto p-4 min-h-[300px] border-2 border-dashed border-gray-200 m-4 rounded-lg transition-colors" data-area="sidebar">
+                    <p class="empty-message text-gray-400 text-center py-16">
+                        <svg class="w-16 h-16 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                        </svg>
+                        Kéo widget cho Sidebar vào đây
+                    </p>
+                </div>
+            </div>
+
+            <!-- Footer Zone (Hidden by default) -->
+            <div id="zone-footer" class="drop-zone-container flex-1 flex-col hidden" data-area="footer">
+                <div class="p-4 border-b bg-gray-50 flex items-center justify-between">
+                    <h3 class="font-semibold text-gray-700">Footer Widgets</h3>
+                    <span class="text-sm text-gray-500">Kéo widget vào đây</span>
+                </div>
+                <div id="footerZone" class="flex-1 overflow-y-auto p-4 min-h-[300px] border-2 border-dashed border-gray-200 m-4 rounded-lg transition-colors" data-area="footer">
+                    <p class="empty-message text-gray-400 text-center py-16">
+                        <svg class="w-16 h-16 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                        </svg>
+                        Kéo widget cho Footer vào đây
+                    </p>
+                </div>
             </div>
         </div>
-
-        <!-- Footer -->
-        <div class="bg-white rounded-lg shadow-sm p-6">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="font-bold text-lg">Footer</h3>
-            </div>
-
-            <div id="footerZone" class="min-h-[200px] border-2 border-dashed border-gray-300 rounded-lg p-4" data-area="footer">
-                <p class="text-gray-400 text-center py-12">Drag widgets here for footer</p>
-            </div>
-        </div>
-
-
     </div>
 </div>
 
@@ -106,11 +183,11 @@
                 </svg>
             </button>
         </div>
-        <div id="configForm"></div>
+        <form id="configForm"></form>
         <div class="flex justify-end gap-3 mt-6">
-            <button onclick="closeConfig()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">Cancel</button>
-            <button onclick="previewWidget()" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">Preview</button>
-            <button onclick="saveConfig()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Save</button>
+            <button type="button" onclick="closeConfig()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">Cancel</button>
+            <button type="button" onclick="previewWidget()" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">Preview</button>
+            <button type="button" onclick="saveConfig()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Save</button>
         </div>
     </div>
 </div>
@@ -119,6 +196,14 @@
 .widget-dragging { 
     opacity: 0.5; 
     transform: scale(0.95); 
+}
+
+.widget-template {
+    transition: all 0.2s ease;
+}
+
+.widget-template:hover {
+    transform: translateX(4px);
 }
 
 .widget-item {
@@ -156,13 +241,39 @@
 .widget-item[draggable="true"]:active {
     cursor: grabbing;
 }
+
+.category-arrow {
+    transition: transform 0.2s ease;
+}
+
+.category-arrow.collapsed {
+    transform: rotate(-90deg);
+}
+
+.category-content.collapsed {
+    display: none;
+}
+
+.area-tab.active {
+    background-color: #3b82f6;
+    color: white;
+}
+
+.drop-zone-container {
+    display: none;
+}
+
+.drop-zone-container.active {
+    display: flex;
+}
 </style>
 
 <script>
 let draggedElement = null;
 let existingWidgetsGrouped = @json($existingWidgets ?? []);
 let widgets = [];
-let draggedWidgetItem = null; // For reordering widgets within areas
+let draggedWidgetItem = null;
+let currentArea = 'homepage-main';
 
 // Flatten grouped widgets
 Object.values(existingWidgetsGrouped).forEach(group => {
@@ -171,9 +282,104 @@ Object.values(existingWidgetsGrouped).forEach(group => {
 
 const usedWidgets = new Set();
 
+// Initialize area tabs
+function switchArea(area) {
+    currentArea = area;
+    
+    // Update tabs
+    document.querySelectorAll('.area-tab').forEach(tab => {
+        tab.classList.remove('bg-blue-500', 'text-white');
+        tab.classList.add('bg-gray-200', 'text-gray-700');
+        tab.querySelector('span:last-child')?.classList.remove('bg-white/20');
+        tab.querySelector('span:last-child')?.classList.add('bg-gray-300');
+    });
+    
+    const activeTab = document.getElementById('tab-' + area);
+    if (activeTab) {
+        activeTab.classList.remove('bg-gray-200', 'text-gray-700');
+        activeTab.classList.add('bg-blue-500', 'text-white');
+        activeTab.querySelector('span:last-child')?.classList.remove('bg-gray-300');
+        activeTab.querySelector('span:last-child')?.classList.add('bg-white/20');
+    }
+    
+    // Update zones
+    document.querySelectorAll('.drop-zone-container').forEach(zone => {
+        zone.classList.remove('active');
+        zone.classList.add('hidden');
+    });
+    
+    const activeZone = document.getElementById('zone-' + area);
+    if (activeZone) {
+        activeZone.classList.remove('hidden');
+        activeZone.classList.add('active');
+    }
+}
+
+// Toggle category collapse
+function toggleCategory(category) {
+    const content = document.getElementById('category-' + category);
+    const arrow = document.getElementById('arrow-' + category);
+    
+    if (content && arrow) {
+        content.classList.toggle('collapsed');
+        arrow.classList.toggle('collapsed');
+    }
+}
+
+// Filter widgets by search
+function filterWidgets(query) {
+    const templates = document.querySelectorAll('.widget-template');
+    const categories = document.querySelectorAll('.widget-category');
+    query = query.toLowerCase();
+    
+    templates.forEach(template => {
+        const name = template.dataset.name?.toLowerCase() || '';
+        const type = template.dataset.type?.toLowerCase() || '';
+        const matches = name.includes(query) || type.includes(query);
+        template.style.display = matches ? '' : 'none';
+    });
+    
+    // Show/hide categories based on visible widgets
+    categories.forEach(category => {
+        const visibleWidgets = category.querySelectorAll('.widget-template:not([style*="display: none"])');
+        category.style.display = visibleWidgets.length > 0 ? '' : 'none';
+        
+        // Expand categories when searching
+        if (query && visibleWidgets.length > 0) {
+            const content = category.querySelector('.category-content');
+            const arrow = category.querySelector('.category-arrow');
+            content?.classList.remove('collapsed');
+            arrow?.classList.remove('collapsed');
+        }
+    });
+}
+
+// Clear current area widgets
+function clearCurrentArea() {
+    if (!confirm('Xóa tất cả widget trong khu vực này?')) return;
+    
+    widgets = widgets.filter(w => w.area !== currentArea);
+    renderWidgets();
+    updateWidgetCounts();
+}
+
+// Update widget counts in tabs
+function updateWidgetCounts() {
+    const counts = {
+        'homepage-main': widgets.filter(w => w.area === 'homepage-main').length,
+        'sidebar': widgets.filter(w => w.area === 'sidebar').length,
+        'footer': widgets.filter(w => w.area === 'footer').length
+    };
+    
+    Object.entries(counts).forEach(([area, count]) => {
+        const countEl = document.getElementById('count-' + area);
+        if (countEl) countEl.textContent = count;
+    });
+}
+
 document.querySelectorAll('.widget-template').forEach(template => {
     template.addEventListener('dragstart', (e) => {
-        draggedElement = e.target;
+        draggedElement = e.target.closest('.widget-template');
         e.target.classList.add('widget-dragging');
     });
     
@@ -187,6 +393,8 @@ const sidebarZone = document.getElementById('sidebarZone');
 const footerZone = document.getElementById('footerZone');
 
 [dropZone, sidebarZone, footerZone].forEach(zone => {
+    if (!zone) return;
+    
     zone.addEventListener('dragover', (e) => {
         e.preventDefault();
         zone.classList.add('bg-blue-50', 'border-blue-500');
@@ -205,11 +413,15 @@ const footerZone = document.getElementById('footerZone');
             const area = zone.dataset.area;
             addWidget(type, area);
             draggedElement = null;
+            updateWidgetCounts();
         }
     });
 });
 
 function addWidget(type, area = 'homepage-main') {
+    // Switch to the target area tab
+    switchArea(area);
+    
     const widget = {
         type: type,
         name: type.charAt(0).toUpperCase() + type.slice(1) + ' Widget',
@@ -283,68 +495,89 @@ function renderWidgets() {
     const sidebarWidgets = widgets.filter(w => w.area === 'sidebar');
     const footerWidgets = widgets.filter(w => w.area === 'footer');
     
+    const emptyHtml = (text) => `
+        <p class="empty-message text-gray-400 text-center py-16">
+            <svg class="w-16 h-16 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+            </svg>
+            ${text}
+        </p>
+    `;
+    
     // Render homepage widgets with sortable functionality
     if (homepageWidgets.length === 0) {
-        dropZone.innerHTML = '<p class="text-gray-400 text-center py-20">Drag widgets here to build your page</p>';
+        dropZone.innerHTML = emptyHtml('Kéo widget từ bên trái vào đây<br><small class="text-xs">Có thể sắp xếp lại bằng cách kéo thả</small>');
     } else {
         dropZone.innerHTML = homepageWidgets.map((widget) => {
             const globalIndex = widgets.indexOf(widget);
-            return renderWidgetItem(widget, globalIndex, true); // true for sortable
+            return renderWidgetItem(widget, globalIndex, true);
         }).join('');
-        
-        // Make homepage widgets sortable
         makeSortable(dropZone, 'homepage-main');
     }
     
     // Render sidebar widgets with sortable functionality
     if (sidebarWidgets.length === 0) {
-        sidebarZone.innerHTML = '<p class="text-gray-400 text-center py-12">Drag widgets here for sidebar</p>';
+        sidebarZone.innerHTML = emptyHtml('Kéo widget cho Sidebar vào đây');
     } else {
         sidebarZone.innerHTML = sidebarWidgets.map((widget) => {
             const globalIndex = widgets.indexOf(widget);
-            return renderWidgetItem(widget, globalIndex, true); // true for sortable
+            return renderWidgetItem(widget, globalIndex, true);
         }).join('');
-        
-        // Make sidebar widgets sortable
         makeSortable(sidebarZone, 'sidebar');
     }
   
     // Render footer widgets with sortable functionality
     if (footerWidgets.length === 0) {
-        footerZone.innerHTML = '<p class="text-gray-400 text-center py-12">Drag widgets here for footer</p>';
+        footerZone.innerHTML = emptyHtml('Kéo widget cho Footer vào đây');
     } else {
         footerZone.innerHTML = footerWidgets.map((widget) => {
             const globalIndex = widgets.indexOf(widget);
-            return renderWidgetItem(widget, globalIndex, true); // true for sortable
+            return renderWidgetItem(widget, globalIndex, true);
         }).join('');
-        
-        // Make footer widgets sortable
         makeSortable(footerZone, 'footer');
     }
+    
+    // Update counts
+    updateWidgetCounts();
 }
 
 function renderWidgetItem(widget, globalIndex, sortable = false) {
     const dragHandle = sortable ? `
-        <div class="drag-handle cursor-move text-gray-400 hover:text-gray-600 mr-2" title="Drag to reorder">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="drag-handle cursor-move text-gray-400 hover:text-gray-600 mr-2" title="Kéo để sắp xếp">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path>
             </svg>
         </div>
     ` : '';
     
     return `
-        <div class="widget-item mb-4 border rounded-lg p-4 bg-blue-50" data-widget-index="${globalIndex}" ${sortable ? 'draggable="true"' : ''}>
-            <div class="flex justify-between items-center mb-2">
-                <div class="flex items-center">
+        <div class="widget-item mb-3 border border-gray-200 rounded-lg p-4 bg-white hover:shadow-md transition-shadow" data-widget-index="${globalIndex}" ${sortable ? 'draggable="true"' : ''}>
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-2">
                     ${dragHandle}
-                    <span class="font-semibold">${widget.name}</span>
+                    <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <span class="font-medium text-gray-800">${widget.name}</span>
+                        <p class="text-xs text-gray-500">${widget.type}</p>
+                    </div>
                 </div>
-                <div class="flex gap-2">
-                    <button onclick="editWidget(${globalIndex})" class="text-blue-600 hover:text-blue-800 text-sm px-2 py-1 rounded">Edit</button>
-                    <button onclick="removeWidget(${globalIndex})" class="text-red-600 hover:text-red-800 text-sm px-2 py-1 rounded">Remove</button>
+                <div class="flex items-center gap-1">
+                    <button onclick="editWidget(${globalIndex})" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition" title="Chỉnh sửa">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                        </svg>
+                    </button>
+                    <button onclick="removeWidget(${globalIndex})" class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition" title="Xóa">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                    </button>
                 </div>
             </div>
-            <div class="text-sm text-gray-600">Type: ${widget.type} | Area: ${widget.area} | Order: ${widget.sort_order}</div>
         </div>
     `;
 }
@@ -416,7 +649,9 @@ function updateSortOrder(area) {
     // Re-render to reflect new order
     renderWidgets();
 }
+
 function removeWidget(index) {
+    if (!confirm('Xóa widget này?')) return;
     widgets.splice(index, 1);
     renderWidgets();
 }
@@ -514,23 +749,49 @@ function closePreviewModal() {
 
 function renderConfigForm(widget) {
     const widgetType = widget.type;
+    const form = document.getElementById('configForm');
+    const currentSettings = widget.settings || {};
     
-    // Use AJAX to get form fields from server
-    fetch(`{{ route('cms.widgets.fields') }}?type=${widgetType}`)
-        .then(response => response.json())
+    // Use POST to send settings (avoid URL length limits and encoding issues)
+    const fieldsUrl = '{{ isset($currentProject) ? route("project.admin.widgets.fields", $currentProject->code) : route("cms.widgets.fields") }}';
+    
+    console.log('Loading fields from:', fieldsUrl, 'for type:', widgetType);
+    
+    fetch(fieldsUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            type: widgetType,
+            settings: currentSettings
+        })
+    })
+        .then(response => {
+            console.log('Response status:', response.status);
+            return response.json();
+        })
         .then(data => {
+            console.log('Fields response:', data);
+            
             if (data.success) {
                 let formHtml = data.form_html;
                 
-                // Populate form with current values
-                const form = document.getElementById('configForm');
+                // Populate form with HTML from server (already has values)
                 form.innerHTML = formHtml;
                 
-                // Set current values
+                // Initialize Alpine.js on dynamically added content
+                if (window.Alpine) {
+                    Alpine.initTree(form);
+                }
+                
+                // Set values for standard form fields (backup)
                 const fields = data.fields || [];
                 fields.forEach(field => {
                     const fieldName = field.name;
-                    const fieldValue = widget.settings[fieldName];
+                    const fieldValue = currentSettings[fieldName];
                     const fieldElement = form.querySelector(`[name="${fieldName}"]`);
                     
                     if (fieldElement && fieldValue !== undefined) {
@@ -538,7 +799,7 @@ function renderConfigForm(widget) {
                             fieldElement.checked = fieldValue;
                         } else if (fieldElement.tagName === 'SELECT') {
                             fieldElement.value = fieldValue;
-                        } else {
+                        } else if (typeof fieldValue === 'string') {
                             fieldElement.value = fieldValue;
                         }
                     }
@@ -549,7 +810,7 @@ function renderConfigForm(widget) {
                     const variantHtml = `
                         <div class="mb-4">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Widget Variant</label>
-                            <select id="cfg_variant" class="w-full px-3 py-2 border rounded-lg">
+                            <select id="cfg_variant" name="variant" class="w-full px-3 py-2 border rounded-lg">
                                 ${Object.entries(data.variants).map(([key, label]) => 
                                     `<option value="${key}" ${widget.variant === key ? 'selected' : ''}>${label}</option>`
                                 ).join('')}
@@ -559,89 +820,93 @@ function renderConfigForm(widget) {
                     form.insertAdjacentHTML('afterbegin', variantHtml);
                 }
             } else {
+                console.error('Fields API error:', data.message);
                 // Fallback to legacy form rendering
-                return renderLegacyConfigForm(widget);
+                renderLegacyConfigForm(widget);
             }
         })
         .catch(error => {
             console.error('Error loading widget fields:', error);
-            return renderLegacyConfigForm(widget);
+            renderLegacyConfigForm(widget);
         });
 }
 
 function renderLegacyConfigForm(widget) {
+    const form = document.getElementById('configForm');
+    let html = '';
+    
     if (widget.type === 'hero') {
-        return `
+        html = `
             <div class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium mb-1">Title</label>
-                    <input type="text" id="cfg_title" value="${widget.settings.title}" class="w-full px-3 py-2 border rounded-lg">
+                    <input type="text" name="title" value="${widget.settings.title || ''}" class="w-full px-3 py-2 border rounded-lg">
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1">Subtitle</label>
-                    <input type="text" id="cfg_subtitle" value="${widget.settings.subtitle}" class="w-full px-3 py-2 border rounded-lg">
+                    <input type="text" name="subtitle" value="${widget.settings.subtitle || ''}" class="w-full px-3 py-2 border rounded-lg">
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1">Button Text</label>
-                    <input type="text" id="cfg_button_text" value="${widget.settings.button_text}" class="w-full px-3 py-2 border rounded-lg">
+                    <input type="text" name="button_text" value="${widget.settings.button_text || ''}" class="w-full px-3 py-2 border rounded-lg">
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1">Button Link</label>
-                    <input type="text" id="cfg_button_link" value="${widget.settings.button_link}" class="w-full px-3 py-2 border rounded-lg">
+                    <input type="text" name="button_link" value="${widget.settings.button_link || ''}" class="w-full px-3 py-2 border rounded-lg">
                 </div>
             </div>
         `;
     } else if (widget.type === 'features') {
-        return `
+        html = `
             <div class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium mb-1">Title</label>
-                    <input type="text" id="cfg_title" value="${widget.settings.title}" class="w-full px-3 py-2 border rounded-lg">
+                    <input type="text" name="title" value="${widget.settings.title || ''}" class="w-full px-3 py-2 border rounded-lg">
                 </div>
-                ${widget.settings.features.map((f, i) => `
+                ${(widget.settings.features || []).map((f, i) => `
                     <div class="border-t pt-3">
                         <h4 class="font-medium mb-2">Feature ${i + 1}</h4>
-                        <input type="text" id="cfg_f${i}_title" value="${f.title}" placeholder="Title" class="w-full px-3 py-2 border rounded-lg mb-2">
-                        <input type="text" id="cfg_f${i}_desc" value="${f.desc}" placeholder="Description" class="w-full px-3 py-2 border rounded-lg">
+                        <input type="text" name="features[${i}][title]" value="${f.title || ''}" placeholder="Title" class="w-full px-3 py-2 border rounded-lg mb-2">
+                        <input type="text" name="features[${i}][desc]" value="${f.desc || ''}" placeholder="Description" class="w-full px-3 py-2 border rounded-lg">
                     </div>
                 `).join('')}
             </div>
         `;
     } else if (widget.type === 'cta') {
-        return `
+        html = `
             <div class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium mb-1">Title</label>
-                    <input type="text" id="cfg_title" value="${widget.settings.title}" class="w-full px-3 py-2 border rounded-lg">
+                    <input type="text" name="title" value="${widget.settings.title || ''}" class="w-full px-3 py-2 border rounded-lg">
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1">Subtitle</label>
-                    <input type="text" id="cfg_subtitle" value="${widget.settings.subtitle}" class="w-full px-3 py-2 border rounded-lg">
+                    <input type="text" name="subtitle" value="${widget.settings.subtitle || ''}" class="w-full px-3 py-2 border rounded-lg">
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1">Button Text</label>
-                    <input type="text" id="cfg_button_text" value="${widget.settings.button_text}" class="w-full px-3 py-2 border rounded-lg">
+                    <input type="text" name="button_text" value="${widget.settings.button_text || ''}" class="w-full px-3 py-2 border rounded-lg">
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1">Button Link</label>
-                    <input type="text" id="cfg_button_link" value="${widget.settings.button_link}" class="w-full px-3 py-2 border rounded-lg">
+                    <input type="text" name="button_link" value="${widget.settings.button_link || ''}" class="w-full px-3 py-2 border rounded-lg">
                 </div>
             </div>
         `;
     } else if (widget.type === 'analytics') {
-        return `
+        html = `
             <div class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium mb-1">Title</label>
-                    <input type="text" id="cfg_title" value="${widget.settings.title || 'Thống kê truy cập'}" class="w-full px-3 py-2 border rounded-lg">
+                    <input type="text" name="title" value="${widget.settings.title || 'Thống kê truy cập'}" class="w-full px-3 py-2 border rounded-lg">
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1">Show Title</label>
-                    <input type="checkbox" id="cfg_show_title" ${widget.settings.show_title !== false ? 'checked' : ''} class="rounded">
+                    <input type="checkbox" name="show_title" ${widget.settings.show_title !== false ? 'checked' : ''} class="rounded">
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1">Style</label>
-                    <select id="cfg_style" class="w-full px-3 py-2 border rounded-lg">
+                    <select name="style" class="w-full px-3 py-2 border rounded-lg">
                         <option value="default" ${widget.settings.style === 'default' ? 'selected' : ''}>Mặc định</option>
                         <option value="cards" ${widget.settings.style === 'cards' ? 'selected' : ''}>Thẻ card</option>
                         <option value="compact" ${widget.settings.style === 'compact' ? 'selected' : ''}>Gọn gàng</option>
@@ -650,7 +915,7 @@ function renderLegacyConfigForm(widget) {
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1">Columns</label>
-                    <select id="cfg_columns" class="w-full px-3 py-2 border rounded-lg">
+                    <select name="columns" class="w-full px-3 py-2 border rounded-lg">
                         <option value="1" ${widget.settings.columns === '1' ? 'selected' : ''}>1 cột</option>
                         <option value="2" ${widget.settings.columns === '2' ? 'selected' : ''}>2 cột</option>
                         <option value="3" ${widget.settings.columns === '3' ? 'selected' : ''}>3 cột</option>
@@ -659,7 +924,11 @@ function renderLegacyConfigForm(widget) {
                 </div>
             </div>
         `;
+    } else {
+        html = `<div class="text-gray-500 text-center py-4">No configuration available for this widget type.</div>`;
     }
+    
+    form.innerHTML = html;
 }
 
 function saveConfig() {
@@ -667,46 +936,100 @@ function saveConfig() {
     const form = document.getElementById('configForm');
     const formData = new FormData(form);
     
-    // Update widget settings from form
+    // Reset settings to avoid stale data
+    const newSettings = {};
+    
+    // First, collect all array field names to initialize them
+    const arrayFields = new Set();
     for (let [key, value] of formData.entries()) {
-        // Handle array fields (like repeatable fields)
         if (key.includes('[')) {
-            // Parse array notation like "social_links[0][platform]"
-            const matches = key.match(/^([^[]+)(\[.+\])$/);
-            if (matches) {
-                const fieldName = matches[1];
-                const arrayPath = matches[2];
-                
-                if (!widget.settings[fieldName]) {
-                    widget.settings[fieldName] = [];
-                }
-                
-                // Simple array handling - could be improved for nested arrays
-                const arrayIndex = arrayPath.match(/\[(\d+)\]/);
-                if (arrayIndex) {
-                    const index = parseInt(arrayIndex[1]);
-                    const subField = arrayPath.match(/\[(\d+)\]\[([^\]]+)\]/);
-                    
-                    if (subField) {
-                        if (!widget.settings[fieldName][index]) {
-                            widget.settings[fieldName][index] = {};
-                        }
-                        widget.settings[fieldName][index][subField[2]] = value;
-                    }
-                }
-            }
-        } else {
-            widget.settings[key] = value;
+            const fieldName = key.match(/^([^\[]+)/)[1];
+            arrayFields.add(fieldName);
         }
     }
+    
+    // Initialize array fields
+    arrayFields.forEach(fieldName => {
+        newSettings[fieldName] = [];
+    });
+    
+    // Process form data
+    for (let [key, value] of formData.entries()) {
+        if (key.includes('[')) {
+            // Handle array fields
+            // Pattern 1: gallery[0] - simple array
+            // Pattern 2: social_links[0][platform] - array of objects
+            const simpleArrayMatch = key.match(/^([^\[]+)\[(\d+)\]$/);
+            const nestedArrayMatch = key.match(/^([^\[]+)\[(\d+)\]\[([^\]]+)\]$/);
+            
+            if (nestedArrayMatch) {
+                // Array of objects: social_links[0][platform]
+                const fieldName = nestedArrayMatch[1];
+                const index = parseInt(nestedArrayMatch[2]);
+                const subField = nestedArrayMatch[3];
+                
+                if (!newSettings[fieldName]) {
+                    newSettings[fieldName] = [];
+                }
+                if (!newSettings[fieldName][index]) {
+                    newSettings[fieldName][index] = {};
+                }
+                newSettings[fieldName][index][subField] = value;
+            } else if (simpleArrayMatch) {
+                // Simple array: gallery[0]
+                const fieldName = simpleArrayMatch[1];
+                const index = parseInt(simpleArrayMatch[2]);
+                
+                if (!newSettings[fieldName]) {
+                    newSettings[fieldName] = [];
+                }
+                newSettings[fieldName][index] = value;
+            }
+        } else {
+            // Simple field
+            newSettings[key] = value;
+        }
+    }
+    
+    // Clean up arrays - remove undefined/null entries and convert sparse arrays to dense
+    for (let key in newSettings) {
+        if (Array.isArray(newSettings[key])) {
+            newSettings[key] = newSettings[key].filter(item => item !== undefined && item !== null);
+        }
+    }
+    
+    // Also get data from Alpine.js components (for gallery/image fields that use x-data)
+    const alpineComponents = form.querySelectorAll('[x-data]');
+    alpineComponents.forEach(el => {
+        if (el._x_dataStack && el._x_dataStack[0]) {
+            const data = el._x_dataStack[0];
+            
+            // Handle image field
+            if (typeof data.imageUrl !== 'undefined' && data.fieldName) {
+                newSettings[data.fieldName] = data.imageUrl;
+            }
+            
+            // Handle gallery field
+            if (typeof data.images !== 'undefined' && data.fieldName) {
+                newSettings[data.fieldName] = data.images;
+            }
+        }
+    });
+    
+    // Merge with existing settings (keep fields not in form)
+    widget.settings = { ...widget.settings, ...newSettings };
     
     // Handle checkboxes (they don't appear in FormData if unchecked)
     const checkboxes = form.querySelectorAll('input[type="checkbox"]');
     checkboxes.forEach(checkbox => {
-        if (!formData.has(checkbox.name)) {
-            widget.settings[checkbox.name] = false;
-        } else {
-            widget.settings[checkbox.name] = true;
+        const name = checkbox.name;
+        if (!name.includes('[')) {
+            // Only handle simple checkbox fields, not array ones
+            if (!formData.has(name)) {
+                widget.settings[name] = false;
+            } else {
+                widget.settings[name] = true;
+            }
         }
     });
     
@@ -715,6 +1038,11 @@ function saveConfig() {
     if (variantSelect) {
         widget.variant = variantSelect.value;
     }
+    
+    console.log('=== SAVE CONFIG DEBUG ===');
+    console.log('Widget type:', widget.type);
+    console.log('Final widget.settings:', JSON.stringify(widget.settings, null, 2));
+    console.log('=========================');
     
     closeConfig();
     renderWidgets();
@@ -727,29 +1055,50 @@ function closeConfig() {
 
 // Load existing widgets on page load
 window.addEventListener('DOMContentLoaded', () => {
+    // Initialize first tab as active
+    switchArea('homepage-main');
+    
+    // Render widgets if any exist
     if (widgets.length > 0) {
         renderWidgets();
     }
+    
+    // Update counts
+    updateWidgetCounts();
 });
 
 let isSaving = false;
 
-async function saveWidgets() {
+async function saveWidgets(e) {
     if (isSaving) return;
     isSaving = true;
     
-    const btn = event.target;
-    btn.disabled = true;
-    btn.textContent = 'Saving...';
+    // Get button element - handle both event and direct call
+    const btn = e?.target || document.querySelector('button[onclick*="saveWidgets"]');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `
+            <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Đang lưu...
+        `;
+    }
+    
+    console.log('=== SAVE WIDGETS DEBUG ===');
+    console.log('Widgets to save:', JSON.stringify(widgets, null, 2));
+    console.log('==========================');
     
     const baseUrl = '{{ isset($currentProject) ? route("project.admin.widgets.save-all", $currentProject->code) : route("cms.widgets.save-all") }}';
-    //console.log(baseUrl);
+    console.log('Save URL:', baseUrl);
+    
     try {
         const response = await fetch(baseUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}',
                 'Accept': 'application/json'
             },
             body: JSON.stringify({
@@ -757,22 +1106,42 @@ async function saveWidgets() {
             })
         });
         
+        console.log('Response status:', response.status);
+        
+        // Check if response is OK
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Response error:', errorText);
+            throw new Error(`HTTP ${response.status}: ${errorText.substring(0, 200)}`);
+        }
+        
         const result = await response.json();
+        console.log('Save result:', result);
         
         if (result.success) {
-            btn.textContent = 'Saved!';
-            btn.className = btn.className.replace('bg-[#98191F]', 'bg-green-600');
-            
-            // Show success message
-            if (result.message) {
-                showAlert(result.message, 'success');
+            if (btn) {
+                btn.innerHTML = `
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    Đã lưu!
+                `;
+                btn.classList.remove('bg-[#98191F]');
+                btn.classList.add('bg-green-600');
             }
+            showAlert(result.message || 'Lưu thành công!', 'success');
         } else {
-            btn.textContent = 'Save Failed';
-            btn.className = btn.className.replace('bg-[#98191F]', 'bg-red-600');
-            
-            // Show error message
-            showAlert(result.message || 'Failed to save widgets', 'error');
+            if (btn) {
+                btn.innerHTML = `
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                    Lỗi!
+                `;
+                btn.classList.remove('bg-[#98191F]');
+                btn.classList.add('bg-red-600');
+            }
+            showAlert(result.message || 'Lưu thất bại', 'error');
             
             if (result.errors) {
                 console.error('Widget save errors:', result.errors);
@@ -780,15 +1149,31 @@ async function saveWidgets() {
         }
     } catch (error) {
         console.error('Error saving widgets:', error);
-        btn.textContent = 'Save Failed';
-        btn.className = btn.className.replace('bg-[#98191F]', 'bg-red-600');
-        showAlert('Network error while saving widgets', 'error');
+        if (btn) {
+            btn.innerHTML = `
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+                Lỗi!
+            `;
+            btn.classList.remove('bg-[#98191F]');
+            btn.classList.add('bg-red-600');
+        }
+        showAlert('Lỗi kết nối: ' + error.message, 'error');
     }
     
     setTimeout(() => {
-        btn.disabled = false;
-        btn.textContent = 'Save All';
-        btn.className = btn.className.replace('bg-green-600', 'bg-[#98191F]').replace('bg-red-600', 'bg-[#98191F]');
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = `
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
+                </svg>
+                Lưu tất cả
+            `;
+            btn.classList.remove('bg-green-600', 'bg-red-600');
+            btn.classList.add('bg-[#98191F]');
+        }
         isSaving = false;
     }, 2000);
 }
@@ -813,5 +1198,39 @@ function showAlert(message, type = 'info') {
         }
     }, 3000);
 }
+
+// Global media selection handler for widget config forms
+window.addEventListener('media-selected', function(e) {
+    const { field, urls } = e.detail;
+    if (!field) return;
+    
+    // Find the input field in the config form
+    const form = document.getElementById('configForm');
+    if (!form) return;
+    
+    // Try to find input by name
+    let input = form.querySelector(`[name="${field}"]`);
+    
+    // Also try to find by x-model if using Alpine
+    if (!input) {
+        input = form.querySelector(`[x-model="imageUrl"]`);
+    }
+    
+    if (input) {
+        const url = Array.isArray(urls) ? urls[0] : urls;
+        input.value = url;
+        // Trigger input event for Alpine.js reactivity
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    
+    // Also update Alpine data if available
+    const alpineEl = form.querySelector('[x-data]');
+    if (alpineEl && alpineEl._x_dataStack) {
+        const data = alpineEl._x_dataStack[0];
+        if (data && typeof data.imageUrl !== 'undefined') {
+            data.imageUrl = Array.isArray(urls) ? urls[0] : urls;
+        }
+    }
+});
 </script>
 @endsection

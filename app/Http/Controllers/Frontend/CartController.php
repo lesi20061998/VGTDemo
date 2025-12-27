@@ -73,21 +73,56 @@ class CartController extends Controller
         ]);
         
         $cart = session('cart', []);
+        if (empty($cart)) {
+            return back()->with('error', 'Giỏ hàng trống!');
+        }
+        
         $total = array_sum(array_map(fn($item) => $item['price'] * $item['quantity'], $cart));
         
-        // Tạo đơn hàng
-        $orderId = 'ORD' . time();
+        // Tạo đơn hàng trong database
+        $order = \App\Models\Order::create([
+            'order_number' => 'ORD' . time() . rand(100, 999),
+            'customer_name' => $request->name,
+            'customer_email' => $request->email,
+            'customer_phone' => $request->phone,
+            'shipping_address' => $request->address,
+            'shipping_city' => $request->city ?? '',
+            'shipping_district' => $request->district ?? '',
+            'shipping_ward' => $request->ward ?? '',
+            'note' => $request->note ?? '',
+            'payment_method' => $request->payment_method,
+            'subtotal' => $total,
+            'shipping_fee' => 0,
+            'discount' => 0,
+            'total' => $total,
+            'status' => 'pending',
+            'payment_status' => 'pending',
+        ]);
+        
+        // Lưu chi tiết đơn hàng
+        foreach ($cart as $item) {
+            $order->items()->create([
+                'product_id' => $item['id'] ?? null,
+                'product_name' => $item['name'],
+                'product_sku' => $item['sku'] ?? '',
+                'quantity' => $item['quantity'],
+                'price' => $item['price'],
+                'total' => $item['price'] * $item['quantity'],
+            ]);
+        }
         
         // Xử lý payment
         if ($request->payment_method === 'vnpay') {
-            return $this->vnpayPayment($orderId, $total, $request);
+            return $this->vnpayPayment($order->order_number, $total, $request);
         } elseif ($request->payment_method === 'momo') {
-            return $this->momoPayment($orderId, $total, $request);
+            return $this->momoPayment($order->order_number, $total, $request);
         }
         
-        // COD
+        // COD - Clear cart và redirect
         session()->forget('cart');
-        return redirect()->route('project.order.success', request()->route('projectCode'))->with('orderId', $orderId);
+        return redirect()->route('project.order.success', request()->route('projectCode'))
+            ->with('orderId', $order->order_number)
+            ->with('success', 'Đặt hàng thành công!');
     }
     
     private function vnpayPayment($orderId, $amount, $request)

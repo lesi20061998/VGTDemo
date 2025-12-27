@@ -19,11 +19,40 @@ if (!function_exists('set_config')) {
 if (!function_exists('get_theme_layout')) {
     function get_theme_layout($type = 'page')
     {
-        $settings = \App\Models\Setting::where('key', 'theme_option_layout')->first();
-        $data = $settings ? $settings->payload : [];
+        // Use setting() helper which respects project context
+        $data = setting('theme_option_layout', []);
+        
+        // Ensure $data is an array
+        if (!is_array($data)) {
+            $data = [];
+        }
         
         $layoutKey = $type . '_layout';
         return $data[$layoutKey] ?? 'full-width';
+    }
+}
+
+if (!function_exists('get_theme_option')) {
+    /**
+     * Get theme option value from specific tab
+     * @param string $tab Tab name (header, topbar, navigation, layout, etc.)
+     * @param string|null $key Specific key within the tab, or null to get all
+     * @param mixed $default Default value if not found
+     * @return mixed
+     */
+    function get_theme_option($tab, $key = null, $default = null)
+    {
+        $data = setting("theme_option_{$tab}", []);
+        
+        if (!is_array($data)) {
+            return $default;
+        }
+        
+        if ($key === null) {
+            return $data;
+        }
+        
+        return $data[$key] ?? $default;
     }
 }
 

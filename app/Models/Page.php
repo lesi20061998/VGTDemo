@@ -5,25 +5,59 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Builder;
 
 class Page extends Model
 {
     use HasFactory;
 
+    /**
+     * The table associated with the model.
+     * Pages are stored in posts table with post_type = 'page'
+     */
+    protected $table = 'posts';
+
     protected $fillable = [
         'title',
         'slug',
         'content',
+        'excerpt',
+        'featured_image',
+        'post_type',
+        'grapes_data',
+        'custom_css',
         'template',
         'status',
         'meta_title',
         'meta_description',
-        'seo_data'
+        'seo_data',
+        'views',
+        'published_at',
+        'author_id',
     ];
 
     protected $casts = [
-        'seo_data' => 'array'
+        'seo_data' => 'array',
+        'published_at' => 'datetime',
     ];
+
+    protected $attributes = [
+        'post_type' => 'page',
+    ];
+
+    /**
+     * Boot the model - auto filter by post_type = 'page'
+     */
+    protected static function booted(): void
+    {
+        static::addGlobalScope('page', function (Builder $builder) {
+            $builder->where('posts.post_type', 'page');
+        });
+
+        static::creating(function ($page) {
+            $page->post_type = 'page';
+        });
+    }
 
     /**
      * Get the sections for the page
@@ -50,25 +84,43 @@ class Page extends Model
     }
 
     /**
-     * Get rendered page content with sections
+     * Get rendered page content (GrapesJS or legacy)
      */
     public function getRenderedContent(): string
     {
-        $content = $this->content ?? '';
-        
-        // Add rendered sections
-        $sectionsHtml = '';
-        foreach ($this->activeSections as $section) {
-            $sectionsHtml .= $section->getRenderedContent();
+        // If has GrapesJS data, use it
+        if ($this->grapes_data) {
+            $grapesData = json_decode($this->grapes_data, true);
+            return $grapesData['html'] ?? $this->content ?? '';
         }
         
-        return $content . $sectionsHtml;
+        // Legacy: content + sections
+        $content = $this->content ?? '';
+        
+        foreach ($this->activeSections as $section) {
+            $content .= $section->getRenderedContent();
+        }
+        
+        return $content;
     }
 
     /**
-     * Add a section to the page
+     * Get custom CSS (GrapesJS or legacy)
      */
-    public function addSection(string $type, array $settings = [], int $order = null): PageSection
+    public function getCustomCss(): string
+    {
+        if ($this->grapes_data) {
+            $grapesData = json_decode($this->grapes_data, true);
+            return $grapesData['css'] ?? $this->custom_css ?? '';
+        }
+        
+        return $this->custom_css ?? '';
+    }
+
+    /**
+     * Add a section to the page (legacy support)
+     */
+    public function addSection(string $type, array $settings = [], ?int $order = null): PageSection
     {
         if ($order === null) {
             $order = $this->sections()->max('order') + 1;

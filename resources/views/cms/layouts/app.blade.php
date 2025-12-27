@@ -7,6 +7,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Admin Dashboard')</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    @livewireStyles
     @stack('styles')
 </head>
 <body class="bg-gray-100" x-data="{ showAlert: false, alertMessage: '', alertType: 'success' }">
@@ -94,31 +95,31 @@
                             </svg>
                         </button>
                         <div class="dropdown-menu ml-4 space-y-1 max-h-0 overflow-hidden transition-all duration-300">
-                            <a href="{{ isset($currentProject) && $currentProject ? route('project.admin.products.index', $currentProject->code) : route('cms.products.index') }}" class="flex items-center px-4 py-2 text-slate-400 hover:bg-[#98191F] hover:text-white rounded-lg transition-all duration-200 {{ request()->routeIs('project.admin.products.*') || request()->routeIs('admin.products.*') ? 'bg-[#98191F] text-white' : '' }}">
+                            <a href="{{ isset($currentProject) && $currentProject ? route('project.admin.products.index', $currentProject->code) : '#' }}" class="flex items-center px-4 py-2 text-slate-400 hover:bg-[#98191F] hover:text-white rounded-lg transition-all duration-200 {{ request()->routeIs('project.admin.products.*') || request()->routeIs('admin.products.*') ? 'bg-[#98191F] text-white' : '' }}">
                                 <svg class="h-4 w-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
                                 </svg>
                                 <span class="text-sm nav-text">Sản phẩm</span>
                             </a>
-                            <a href="{{ isset($currentProject) ? route('project.admin.categories.index', $currentProject->code) : route('cms.categories.index') }}" class="flex items-center px-4 py-2 text-slate-400 hover:bg-[#98191F] hover:text-white rounded-lg transition-all duration-200">
+                            <a href="{{ isset($currentProject) && $currentProject ? route('project.admin.categories.index', $currentProject->code) : '#' }}" class="flex items-center px-4 py-2 text-slate-400 hover:bg-[#98191F] hover:text-white rounded-lg transition-all duration-200">
                                 <svg class="h-4 w-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
                                 </svg>
                                 <span class="text-sm nav-text">Danh mục</span>
                             </a>
-                            <a href="{{ isset($currentProject) ? route('project.admin.brands.index', $currentProject->code) : route('cms.brands.index') }}" class="flex items-center px-4 py-2 text-slate-400 hover:bg-[#98191F] hover:text-white rounded-lg transition-all duration-200">
+                            <a href="{{ isset($currentProject) && $currentProject ? route('project.admin.brands.index', $currentProject->code) : '#' }}" class="flex items-center px-4 py-2 text-slate-400 hover:bg-[#98191F] hover:text-white rounded-lg transition-all duration-200">
                                 <svg class="h-4 w-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
                                 </svg>
                                 <span class="text-sm nav-text">Thương hiệu</span>
                             </a>
-                            <a href="{{ isset($currentProject) && $currentProject ? route('project.admin.attributes.index', $currentProject->code) : route('cms.attributes.index') }}" class="flex items-center px-4 py-2 text-slate-400 hover:bg-[#98191F] hover:text-white rounded-lg transition-all duration-200 {{ request()->routeIs('project.admin.attributes.*') || request()->routeIs('admin.attributes.*') ? 'bg-[#98191F] text-white' : '' }}">
+                            <a href="{{ isset($currentProject) && $currentProject ? route('project.admin.attributes.index', $currentProject->code) : '#' }}" class="flex items-center px-4 py-2 text-slate-400 hover:bg-[#98191F] hover:text-white rounded-lg transition-all duration-200 {{ request()->routeIs('project.admin.attributes.*') || request()->routeIs('admin.attributes.*') ? 'bg-[#98191F] text-white' : '' }}">
                                 <svg class="h-4 w-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16"></path>
                                 </svg>
                                 <span class="text-sm nav-text">Thuộc tính</span>
                             </a>
-                            <a href="{{ isset($currentProject) ? route('project.admin.orders.index', $currentProject->code) : route('cms.orders.index') }}" class="flex items-center px-4 py-2 text-slate-400 hover:bg-[#98191F] hover:text-white rounded-lg transition-all duration-200 {{ request()->routeIs('project.admin.orders.*') || request()->routeIs('admin.orders.*') ? 'bg-[#98191F] text-white' : '' }}">
+                            <a href="{{ isset($currentProject) && $currentProject ? route('project.admin.orders.index', $currentProject->code) : '#' }}" class="flex items-center px-4 py-2 text-slate-400 hover:bg-[#98191F] hover:text-white rounded-lg transition-all duration-200 {{ request()->routeIs('project.admin.orders.*') || request()->routeIs('admin.orders.*') ? 'bg-[#98191F] text-white' : '' }}">
                                 <svg class="h-4 w-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
                                 </svg>
@@ -186,26 +187,32 @@
                             </svg>
                         </button>
                         <div class="dropdown-menu ml-4 space-y-1 max-h-0 overflow-hidden transition-all duration-300">
-                            <a href="{{ isset($currentProject) ? route('project.admin.widgets.index', $currentProject->code) : route('cms.widgets.index') }}" class="flex items-center px-4 py-2 text-slate-400 hover:bg-[#98191F] hover:text-white rounded-lg transition-all duration-200 {{ request()->routeIs('project.admin.widgets.*') || request()->routeIs('cms.widgets.*') ? 'bg-[#98191F] text-white' : '' }}">
+                            <a href="{{ isset($currentProject) && $currentProject ? route('project.admin.widgets.index', $currentProject->code) : route('cms.widgets.index') }}" class="flex items-center px-4 py-2 text-slate-400 hover:bg-[#98191F] hover:text-white rounded-lg transition-all duration-200 {{ request()->routeIs('project.admin.widgets.*') || request()->routeIs('cms.widgets.*') ? 'bg-[#98191F] text-white' : '' }}">
                                 <svg class="h-4 w-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
                                 </svg>
                                 <span class="text-sm nav-text">Widgets</span>
                             </a>
-                            <a href="{{ isset($currentProject) ? route('project.admin.menus.index', $currentProject->code) : route('cms.menus.index') }}" class="flex items-center px-4 py-2 text-slate-400 hover:bg-[#98191F] hover:text-white rounded-lg transition-all duration-200 {{ request()->routeIs('project.admin.menus.*') || request()->routeIs('cms.menus.*') ? 'bg-[#98191F] text-white' : '' }}">
+                            <a href="{{ isset($currentProject) && $currentProject ? route('project.admin.widget-templates.index', $currentProject->code) : route('cms.widget-templates.index') }}" class="flex items-center px-4 py-2 text-slate-400 hover:bg-[#98191F] hover:text-white rounded-lg transition-all duration-200 {{ request()->routeIs('project.admin.widget-templates.*') || request()->routeIs('cms.widget-templates.*') ? 'bg-[#98191F] text-white' : '' }}">
+                                <svg class="h-4 w-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"></path>
+                                </svg>
+                                <span class="text-sm nav-text">Widget Templates</span>
+                            </a>
+                            <a href="{{ isset($currentProject) && $currentProject ? route('project.admin.menus.index', $currentProject->code) : '#' }}" class="flex items-center px-4 py-2 text-slate-400 hover:bg-[#98191F] hover:text-white rounded-lg transition-all duration-200 {{ request()->routeIs('project.admin.menus.*') || request()->routeIs('cms.menus.*') ? 'bg-[#98191F] text-white' : '' }}">
                                 <svg class="h-4 w-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                                 </svg>
                                 <span class="text-sm nav-text">Menus</span>
                             </a>
 
-                            <a href="{{ isset($currentProject) ? route('project.admin.website-config.index', $currentProject->code) : route('cms.website-config.index') }}" class="flex items-center px-4 py-2 text-slate-400 hover:bg-[#98191F] hover:text-white rounded-lg transition-all duration-200 {{ request()->routeIs('project.admin.website-config.*') || request()->routeIs('cms.website-config.*') ? 'bg-[#98191F] text-white' : '' }}">
+                            <a href="{{ isset($currentProject) && $currentProject ? route('project.admin.website-config.index', $currentProject->code) : '#' }}" class="flex items-center px-4 py-2 text-slate-400 hover:bg-[#98191F] hover:text-white rounded-lg transition-all duration-200 {{ request()->routeIs('project.admin.website-config.*') || request()->routeIs('cms.website-config.*') ? 'bg-[#98191F] text-white' : '' }}">
                                 <svg class="h-4 w-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
                                 </svg>
                                 <span class="text-sm nav-text">Cấu hình Website</span>
                             </a>
-                             <a href="{{ isset($currentProject) ? route('project.admin.theme-options.index', $currentProject->code) : route('cms.theme-options.index') }}" class="flex items-center px-4 py-2 text-slate-400 hover:bg-[#98191F] hover:text-white rounded-lg transition-all duration-200 {{ request()->routeIs('project.admin.theme-options.*') || request()->routeIs('cms.theme-options.*') ? 'bg-[#98191F] text-white' : '' }}">
+                             <a href="{{ isset($currentProject) && $currentProject ? route('project.admin.theme-options.index', $currentProject->code) : route('cms.theme-options.index') }}" class="flex items-center px-4 py-2 text-slate-400 hover:bg-[#98191F] hover:text-white rounded-lg transition-all duration-200 {{ request()->routeIs('project.admin.theme-options.*') || request()->routeIs('cms.theme-options.*') ? 'bg-[#98191F] text-white' : '' }}">
                                 <svg class="h-4 w-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
                                 </svg>
@@ -248,7 +255,7 @@
                 </div>
 
                 <!-- Cài đặt -->
-                <a href="{{ isset($currentProject) ? route('project.admin.settings.index', $currentProject->code) : route('cms.settings.index') }}" class="nav-item flex items-center px-4 py-3 mb-2 text-slate-300 hover:bg-[#98191F] hover:text-white rounded-lg transition-all duration-200 {{ request()->routeIs('project.admin.settings.*') || request()->routeIs('admin.settings.*') ? 'bg-[#98191F] text-white shadow-lg' : '' }}">
+                <a href="{{ isset($currentProject) && $currentProject ? route('project.admin.settings.index', $currentProject->code) : '#' }}" class="nav-item flex items-center px-4 py-3 mb-2 text-slate-300 hover:bg-[#98191F] hover:text-white rounded-lg transition-all duration-200 {{ request()->routeIs('project.admin.settings.*') || request()->routeIs('admin.settings.*') ? 'bg-[#98191F] text-white shadow-lg' : '' }}">
                     <svg class="h-5 w-5 nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
@@ -301,7 +308,7 @@
                             <div class="h-8 w-8 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full flex items-center justify-center">
                                 <span class="text-white text-sm font-medium">{{ substr($currentUser->name ?? 'U', 0, 1) }}</span>
                             </div>
-                            <form method="POST" action="{{ isset($currentProject) ? route('project.logout', $currentProject->code) : route('logout') }}"></form>
+                            <form method="POST" action="{{ isset($currentProject) && $currentProject ? route('project.logout', $currentProject->code) : route('logout') }}">
                                 @csrf
                                 <button type="submit" class="text-sm text-gray-500 hover:text-red-600 transition-colors">
                                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -427,12 +434,110 @@ document.querySelectorAll('.dropdown-parent').forEach(parent => {
         }
     });
 });
+
+// Global Repeatable Field Functions (for widget field rendering)
+function addRepeatableItem(fieldId, fieldName) {
+    const container = document.getElementById(fieldId + '_container');
+    if (!container) {
+        console.error('Container not found:', fieldId + '_container');
+        return;
+    }
+    
+    const maxItems = parseInt(container.parentElement?.dataset?.maxItems || 10);
+    const currentItems = container.children.length;
+
+    if (currentItems >= maxItems) {
+        alert('Tối đa ' + maxItems + ' mục');
+        return;
+    }
+
+    // Get template from data attribute or create basic one
+    const template = container.dataset.template || '';
+    if (!template) {
+        console.error('No template found for repeatable field');
+        return;
+    }
+    
+    const index = currentItems;
+    let itemHtml = template.replace(/__INDEX__/g, index);
+    // Fix the display text
+    itemHtml = itemHtml.replace(/Muc __INDEX__/g, 'Mục ' + (index + 1));
+    itemHtml = itemHtml.replace(/Mục __INDEX__/g, 'Mục ' + (index + 1));
+
+    container.insertAdjacentHTML('beforeend', itemHtml);
+    
+    // Initialize Alpine.js on new content if available
+    if (window.Alpine) {
+        const newItem = container.lastElementChild;
+        Alpine.initTree(newItem);
+    }
+    
+    // Re-index all items
+    reindexRepeatableItems(container, fieldName);
+}
+
+function removeRepeatableItem(button) {
+    const item = button.closest('.repeatable-item');
+    const container = button.closest('.repeatable-field');
+    
+    if (!container) {
+        item?.remove();
+        return;
+    }
+    
+    const minItems = parseInt(container.dataset?.minItems || 0);
+    const currentItems = container.querySelectorAll('.repeatable-item').length;
+
+    if (currentItems <= minItems) {
+        alert('Tối thiểu ' + minItems + ' mục');
+        return;
+    }
+
+    // Get field name from container's data or first input
+    const firstInput = container.querySelector('input[name], select[name], textarea[name]');
+    let fieldName = '';
+    if (firstInput) {
+        const match = firstInput.name.match(/^([^\[]+)/);
+        if (match) fieldName = match[1];
+    }
+
+    item.remove();
+    
+    // Re-index remaining items
+    const itemsContainer = container.querySelector('[id$="_container"]');
+    if (itemsContainer && fieldName) {
+        reindexRepeatableItems(itemsContainer, fieldName);
+    }
+}
+
+function reindexRepeatableItems(container, fieldName) {
+    const items = container.querySelectorAll('.repeatable-item');
+    items.forEach((item, index) => {
+        // Update header text
+        const header = item.querySelector('h4');
+        if (header) {
+            header.textContent = 'Mục ' + (index + 1);
+        }
+        
+        // Update all input names
+        const inputs = item.querySelectorAll('input[name], select[name], textarea[name]');
+        inputs.forEach(input => {
+            const currentName = input.name;
+            // Replace the index in the name: fieldName[oldIndex][subField] -> fieldName[newIndex][subField]
+            const newName = currentName.replace(
+                new RegExp(`^${fieldName}\\[\\d+\\]`),
+                `${fieldName}[${index}]`
+            );
+            input.name = newName;
+        });
+    });
+}
 </script>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+@livewireScripts
 @stack('scripts')
-<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </body>
 </html>
 

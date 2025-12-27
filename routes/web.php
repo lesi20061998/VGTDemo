@@ -25,6 +25,11 @@ Route::prefix('api')->name('api.')->middleware('api')->group(function () {
         Route::get('districts/{provinceCode}', [App\Http\Controllers\Api\LocationController::class, 'districts'])->name('districts');
         Route::get('wards/{districtCode}', [App\Http\Controllers\Api\LocationController::class, 'wards'])->name('wards');
     });
+    
+    // ACF-like Field APIs
+    Route::get('/relationship-field/search', [App\Http\Controllers\Api\RelationshipFieldController::class, 'search'])->name('relationship.search');
+    Route::get('/relationship-field/items', [App\Http\Controllers\Api\RelationshipFieldController::class, 'getItems'])->name('relationship.items');
+    Route::get('/taxonomy-field/list', [App\Http\Controllers\Api\TaxonomyFieldController::class, 'list'])->name('taxonomy.list');
 });
 
 // Include Frontend Routes
@@ -41,6 +46,20 @@ Route::prefix('admin')->name('cms.')->middleware(['auth'])->group(function () {
         $middlewares[] = 'widget.bypass';
     }
     
+    // Widget Templates (ACF-style builder)
+    Route::get('widget-templates', [\App\Http\Controllers\Admin\WidgetTemplateController::class, 'index'])->name('widget-templates.index');
+    Route::get('widget-templates/create', \App\Livewire\Admin\WidgetTemplateBuilder::class)->name('widget-templates.create');
+    Route::get('widget-templates/export-all', [\App\Http\Controllers\Admin\WidgetTemplateController::class, 'exportAll'])->name('widget-templates.export-all');
+    Route::get('widget-templates/{id}/export', [\App\Http\Controllers\Admin\WidgetTemplateController::class, 'export'])->name('widget-templates.export');
+    Route::post('widget-templates/import', [\App\Http\Controllers\Admin\WidgetTemplateController::class, 'import'])->name('widget-templates.import');
+    Route::get('widget-templates/{id}/edit', \App\Livewire\Admin\WidgetTemplateBuilder::class)->name('widget-templates.edit');
+    Route::delete('widget-templates/{id}', [\App\Http\Controllers\Admin\WidgetTemplateController::class, 'destroy'])->name('widget-templates.destroy');
+    Route::post('widget-templates/{type}/preview', [\App\Http\Controllers\Admin\WidgetTemplateController::class, 'preview'])->name('widget-templates.preview');
+    
+    // Widget Editor (Livewire)
+    Route::get('widgets/create', \App\Livewire\Admin\WidgetEditor::class)->name('widgets.create');
+    Route::get('widgets/{id}/edit-livewire', \App\Livewire\Admin\WidgetEditor::class)->name('widgets.edit-livewire');
+    
     Route::middleware($middlewares)->group(function () {
         Route::get('widgets', [\App\Http\Controllers\Admin\WidgetController::class, 'index'])->name('widgets.index');
         Route::post('widgets', [\App\Http\Controllers\Admin\WidgetController::class, 'store'])->name('widgets.store');
@@ -50,7 +69,7 @@ Route::prefix('admin')->name('cms.')->middleware(['auth'])->group(function () {
         Route::post('widgets/clear-cache', [\App\Http\Controllers\Admin\WidgetController::class, 'clearCache'])->name('widgets.clear-cache');
         Route::post('widgets/preview', [\App\Http\Controllers\Admin\WidgetController::class, 'preview'])->name('widgets.preview');
         Route::get('widgets/discover', [\App\Http\Controllers\Admin\WidgetController::class, 'discover'])->name('widgets.discover');
-        Route::get('widgets/fields', [\App\Http\Controllers\Admin\WidgetController::class, 'getFields'])->name('widgets.fields');
+        Route::match(['get', 'post'], 'widgets/fields', [\App\Http\Controllers\Admin\WidgetController::class, 'getFields'])->name('widgets.fields');
         Route::post('widgets/toggle', [\App\Http\Controllers\Admin\WidgetController::class, 'toggleWidget'])->name('widgets.toggle');
         Route::get('widgets/permissions', [\App\Http\Controllers\Admin\WidgetController::class, 'getPermissions'])->name('widgets.permissions');
         Route::get('widgets/export', [\App\Http\Controllers\Admin\WidgetController::class, 'export'])->name('widgets.export');

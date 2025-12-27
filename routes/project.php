@@ -24,13 +24,21 @@ Route::prefix('{projectCode}')
     ->group(function () {
         // Default routes (no locale prefix - uses default language)
         Route::get('/', [HomeController::class, 'index'])->name('project.home');
-        Route::get('/products', [\App\Http\Controllers\Frontend\ProductController::class, 'index'])->name('project.products.index');
-        Route::get('/product/{slug}', [\App\Http\Controllers\Frontend\ProductController::class, 'show'])->name('project.products.show');
+        Route::get('/san-pham', [\App\Http\Controllers\Frontend\ProductController::class, 'index'])->name('project.products.index');
+        Route::get('/san-pham/{slug}', [\App\Http\Controllers\Frontend\ProductController::class, 'show'])->name('project.products.show');
+        Route::get('/danh-muc/{slug}', [\App\Http\Controllers\Frontend\ProductController::class, 'category'])->name('project.products.category');
+        Route::get('/products', [\App\Http\Controllers\Frontend\ProductController::class, 'index'])->name('project.products.index.en');
+        Route::get('/product/{slug}', [\App\Http\Controllers\Frontend\ProductController::class, 'show'])->name('project.products.show.en');
+        Route::get('/category/{slug}', [\App\Http\Controllers\Frontend\ProductController::class, 'category'])->name('project.products.category.en');
         Route::get('/blog', [\App\Http\Controllers\Frontend\PostController::class, 'index'])->name('project.posts.index');
         Route::get('/blog/{slug}', [\App\Http\Controllers\Frontend\PostController::class, 'show'])->name('project.posts.show');
         Route::get('/contact', [\App\Http\Controllers\Frontend\PageController::class, 'contact'])->name('project.contact');
         Route::post('/contact', [\App\Http\Controllers\Frontend\PageController::class, 'contactSubmit'])->name('project.contact.submit');
-        Route::get('/{slug}', [\App\Http\Controllers\Frontend\PageController::class, 'show'])->name('project.pages.show');
+        
+        // Dynamic page route - exclude admin, login, etc.
+        Route::get('/{slug}', [\App\Http\Controllers\Frontend\PageController::class, 'show'])
+            ->where('slug', '^(?!admin|login|logout|cart|checkout|api).*$')
+            ->name('project.pages.show');
 
         Route::get('/cart', [\App\Http\Controllers\Frontend\CartController::class, 'index'])->name('project.cart');
         Route::post('/cart/add', [\App\Http\Controllers\Frontend\CartController::class, 'add'])->name('project.cart.add');
@@ -182,20 +190,52 @@ Route::prefix('{projectCode}/admin')
             return view('cms.debug.csrf');
         })->name('debug.csrf');
 
-        // Page Builder & Widgets
+        // Widget Templates (ACF-style builder)
+        // Debug route for widget template builder
+        Route::get('widget-templates/debug', function () {
+            return response()->json([
+                'message' => 'Widget Template Builder Debug',
+                'livewire_installed' => class_exists(\Livewire\Livewire::class),
+                'component_exists' => class_exists(\App\Livewire\Admin\WidgetTemplateBuilder::class),
+                'view_exists' => view()->exists('livewire.admin.widget-template-builder'),
+                'layout_exists' => view()->exists('cms.layouts.app'),
+                'current_project' => session('current_project'),
+            ]);
+        })->name('widget-templates.debug');
+        
+        // Simple test without cms layout
+        Route::get('widget-templates/test', function () {
+            return view('livewire.admin.widget-template-test');
+        })->name('widget-templates.test');
+        
+        Route::get('widget-templates', [\App\Http\Controllers\Admin\WidgetTemplateController::class, 'index'])->name('widget-templates.index');
+        Route::get('widget-templates/export-all', [\App\Http\Controllers\Admin\WidgetTemplateController::class, 'exportAll'])->name('widget-templates.export-all');
+        Route::get('widget-templates/{id}/export', [\App\Http\Controllers\Admin\WidgetTemplateController::class, 'export'])->name('widget-templates.export');
+        Route::post('widget-templates/import', [\App\Http\Controllers\Admin\WidgetTemplateController::class, 'import'])->name('widget-templates.import');
+        Route::get('widget-templates/create', function ($projectCode) {
+            $currentProject = \App\Models\Project::where('code', $projectCode)->first();
+            return view('cms.widget-templates.create', compact('currentProject'));
+        })->name('widget-templates.create');
+        
+        Route::get('widget-templates/{id}/edit', function ($projectCode, $id) {
+            return view('cms.widget-templates.edit', ['id' => $id]);
+        })->name('widget-templates.edit');
+        Route::delete('widget-templates/{id}', [\App\Http\Controllers\Admin\WidgetTemplateController::class, 'destroy'])->name('widget-templates.destroy');
+        Route::post('widget-templates/{type}/preview', [\App\Http\Controllers\Admin\WidgetTemplateController::class, 'preview'])->name('widget-templates.preview');
+
+        // Widget Management
         Route::get('widgets', [\App\Http\Controllers\Admin\WidgetController::class, 'index'])->name('widgets.index');
+        Route::get('widgets/create', \App\Livewire\Admin\WidgetEditor::class)->name('widgets.create');
         Route::post('widgets', [\App\Http\Controllers\Admin\WidgetController::class, 'store'])->name('widgets.store');
-        Route::post('widgets/save-all', [\App\Http\Controllers\Admin\WidgetController::class, 'saveWidgets'])->name('widgets.save-all');
-        Route::post('widgets/clear', [\App\Http\Controllers\Admin\WidgetController::class, 'clearArea'])->name('widgets.clear');
+        Route::get('widgets/{id}/edit', \App\Livewire\Admin\WidgetEditor::class)->name('widgets.edit');
+        Route::put('widgets/{widget}', [\App\Http\Controllers\Admin\WidgetController::class, 'update'])->name('widgets.update');
         Route::delete('widgets/{widget}', [\App\Http\Controllers\Admin\WidgetController::class, 'destroy'])->name('widgets.destroy');
+        Route::post('widgets/save-all', [\App\Http\Controllers\Admin\WidgetController::class, 'saveWidgets'])->name('widgets.save-all');
+        Route::post('widgets/preview', [\App\Http\Controllers\Admin\WidgetController::class, 'preview'])->name('widgets.preview');
+        Route::post('widgets/toggle', [\App\Http\Controllers\Admin\WidgetController::class, 'toggleWidget'])->name('widgets.toggle');
         Route::post('widgets/clear-cache', [\App\Http\Controllers\Admin\WidgetController::class, 'clearCache'])->name('widgets.clear-cache');
+        Route::match(['get', 'post'], 'widgets/fields', [\App\Http\Controllers\Admin\WidgetController::class, 'getFields'])->name('widgets.fields');
 
-        // Widget Templates
-        Route::get('widget-templates', function () {
-            $widgets = \App\Widgets\WidgetRegistry::getByCategory();
-
-            return view('cms.widget-templates.index', compact('widgets'));
-        })->name('widget-templates.index');
         Route::resource('menus', \App\Http\Controllers\Admin\MenuController::class);
         Route::post('menus/{menu}/items', [\App\Http\Controllers\Admin\MenuController::class, 'storeItem'])->name('menus.items.store');
         Route::put('menus/items/{item}', [\App\Http\Controllers\Admin\MenuController::class, 'updateItem'])->name('menus.items.update');
@@ -249,4 +289,23 @@ Route::prefix('{projectCode}/admin')
         // Reviews Fake Data
         Route::get('reviews/fake', fn () => view('cms.reviews.fake'))->name('reviews.fake');
 
+    });
+
+// ============================================
+// PROJECT API ROUTES (ACF-like Field APIs)
+// URL: /{projectCode}/api/*
+// ============================================
+Route::prefix('{projectCode}/api')
+    ->name('project.api.')
+    ->middleware([
+        \App\Http\Middleware\ProjectSubdomainMiddleware::class,
+        \App\Http\Middleware\SetProjectDatabase::class,
+    ])
+    ->group(function () {
+        // Relationship Field API
+        Route::get('relationship-field/search', [\App\Http\Controllers\Api\RelationshipFieldController::class, 'search'])->name('relationship.search');
+        Route::get('relationship-field/items', [\App\Http\Controllers\Api\RelationshipFieldController::class, 'getItems'])->name('relationship.items');
+        
+        // Taxonomy Field API
+        Route::get('taxonomy-field/list', [\App\Http\Controllers\Api\TaxonomyFieldController::class, 'list'])->name('taxonomy.list');
     });

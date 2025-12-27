@@ -83,7 +83,7 @@ class WidgetController extends Controller
             'variant' => 'nullable|string',
         ]);
 
-        // Validate widget type exists in registry
+        // Validate widget type exists in registry or custom templates
         if (!WidgetRegistry::exists($validated['type'])) {
             return response()->json([
                 'success' => false,
@@ -373,9 +373,15 @@ class WidgetController extends Controller
      */
     public function getFields(Request $request)
     {
-        $type = $request->get('type');
+        $type = $request->input('type') ?? $request->get('type');
+        $settings = $request->input('settings') ?? $request->get('settings', []);
         
-        if (!WidgetRegistry::exists($type)) {
+        // Parse settings if it's a JSON string
+        if (is_string($settings)) {
+            $settings = json_decode($settings, true) ?? [];
+        }
+        
+        if (!$type || !WidgetRegistry::exists($type)) {
             return response()->json([
                 'success' => false,
                 'message' => "Widget type '{$type}' not found"
@@ -387,7 +393,7 @@ class WidgetController extends Controller
             $fields = $config['fields'] ?? [];
             
             $fieldTypeService = new FieldTypeService();
-            $formHtml = $fieldTypeService->renderForm($fields);
+            $formHtml = $fieldTypeService->renderForm($fields, $settings);
 
             return response()->json([
                 'success' => true,

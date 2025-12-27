@@ -16,6 +16,10 @@ use App\Services\FieldTypes\EmailField;
 use App\Services\FieldTypes\DateField;
 use App\Services\FieldTypes\ColorField;
 use App\Services\FieldTypes\RangeField;
+use App\Services\FieldTypes\RelationshipField;
+use App\Services\FieldTypes\PostObjectField;
+use App\Services\FieldTypes\TaxonomyField;
+use App\Services\FieldTypes\WysiwygField;
 
 class FieldTypeService
 {
@@ -31,18 +35,31 @@ class FieldTypeService
      */
     protected function registerDefaultFieldTypes(): void
     {
+        // Basic fields
         $this->register(new TextField());
         $this->register(new TextareaField());
-        $this->register(new SelectField());
-        $this->register(new CheckboxField());
-        $this->register(new ImageField());
-        $this->register(new GalleryField());
-        $this->register(new RepeatableField());
-        $this->register(new UrlField());
+        $this->register(new WysiwygField());
         $this->register(new NumberField());
         $this->register(new EmailField());
+        $this->register(new UrlField());
         $this->register(new DateField());
+        
+        // Choice fields
+        $this->register(new SelectField());
+        $this->register(new CheckboxField());
+        
+        // Media fields
+        $this->register(new ImageField());
+        $this->register(new GalleryField());
         $this->register(new ColorField());
+        
+        // Relational fields (ACF-like)
+        $this->register(new RelationshipField());
+        $this->register(new PostObjectField());
+        $this->register(new TaxonomyField());
+        
+        // Layout fields
+        $this->register(new RepeatableField());
         $this->register(new RangeField());
     }
 
@@ -232,6 +249,7 @@ class FieldTypeService
         $descriptions = [
             'text' => 'Single line text input',
             'textarea' => 'Multi-line text input',
+            'wysiwyg' => 'Rich text editor (WYSIWYG)',
             'select' => 'Dropdown selection',
             'checkbox' => 'Boolean checkbox',
             'image' => 'Image file upload',
@@ -242,7 +260,10 @@ class FieldTypeService
             'email' => 'Email input with validation',
             'date' => 'Date picker',
             'color' => 'Color picker',
-            'range' => 'Range slider'
+            'range' => 'Range slider',
+            'relationship' => 'Link to Products/Posts (multiple)',
+            'post_object' => 'Link to single Product/Post',
+            'taxonomy' => 'Select Category/Brand',
         ];
 
         return $descriptions[$type] ?? 'Custom field type';

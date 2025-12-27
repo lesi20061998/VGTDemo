@@ -22,7 +22,24 @@ class ProjectSession
         $projectCode = $segments[0] ?? null;
 
         // Only apply if this looks like a project route (not superadmin, admin, login, etc.)
-        $reservedPrefixes = ['superadmin', 'admin', 'login', 'logout', 'api', 'employee', 'lang', 'sitemap'];
+        $reservedPrefixes = ['superadmin', 'admin', 'login', 'logout', 'api', 'employee', 'lang', 'sitemap', 'livewire'];
+
+        // For Livewire requests, get projectCode from referer
+        if ($projectCode === 'livewire') {
+            $referer = $request->headers->get('referer');
+            if ($referer) {
+                $refererPath = parse_url($referer, PHP_URL_PATH);
+                $refererSegments = explode('/', trim($refererPath, '/'));
+                $projectCode = $refererSegments[0] ?? null;
+                
+                // Check if referer projectCode is valid (not reserved)
+                if ($projectCode && !in_array($projectCode, $reservedPrefixes)) {
+                    $cookieName = 'project_'.strtolower($projectCode).'_session';
+                    Config::set('session.cookie', $cookieName);
+                }
+            }
+            return $next($request);
+        }
 
         if ($projectCode && ! in_array($projectCode, $reservedPrefixes)) {
             // Set unique session cookie name for this project

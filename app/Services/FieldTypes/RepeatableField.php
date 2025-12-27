@@ -12,10 +12,15 @@ class RepeatableField extends BaseFieldType
         $minItems = $config['min_items'] ?? 0;
         $subFields = $config['fields'] ?? [];
 
+        // Generate template for JavaScript
+        $templateHtml = $this->renderRepeatableItem($config['name'], '__INDEX__', [], $subFields);
+        $templateHtml = str_replace(["\n", "\r", "'"], ['', '', "\\'"], $templateHtml);
+        $templateEncoded = htmlspecialchars($templateHtml, ENT_QUOTES, 'UTF-8');
+
         $fieldHtml = "<div class=\"repeatable-field\" data-max-items=\"{$maxItems}\" data-min-items=\"{$minItems}\">";
 
-        // Items container
-        $fieldHtml .= "<div id=\"{$fieldId}_container\" class=\"space-y-4 mb-4\">";
+        // Items container with template stored in data attribute
+        $fieldHtml .= "<div id=\"{$fieldId}_container\" class=\"space-y-4 mb-4\" data-template=\"{$templateEncoded}\">";
 
         foreach ($items as $index => $item) {
             $fieldHtml .= $this->renderRepeatableItem($config['name'], $index, $item, $subFields);
@@ -30,16 +35,13 @@ class RepeatableField extends BaseFieldType
 
         $fieldHtml .= "</div>";
 
-        // Add button
+        // Add button - uses global function defined in layout
         $fieldHtml .= "<button type=\"button\" onclick=\"addRepeatableItem('{$fieldId}', '{$config['name']}')\" class=\"inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors\">";
         $fieldHtml .= "<svg class=\"w-4 h-4\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M12 4v16m8-8H4\"></path></svg>";
-        $fieldHtml .= "Them muc";
+        $fieldHtml .= "Thêm mục";
         $fieldHtml .= "</button>";
 
         $fieldHtml .= "</div>";
-
-        // Add JavaScript and field template
-        $fieldHtml .= $this->renderRepeatableScript($config['name'], $subFields);
 
         return $this->renderFieldWrapper($config, $fieldHtml);
     }
@@ -86,47 +88,6 @@ class RepeatableField extends BaseFieldType
             'checkbox' => (new CheckboxField())->render($fieldConfig, $value),
             default => (new TextField())->render($fieldConfig, $value),
         };
-    }
-
-    protected function renderRepeatableScript(string $fieldName, array $subFields): string
-    {
-        $templateHtml = $this->renderRepeatableItem($fieldName, '__INDEX__', [], $subFields);
-        $templateHtml = str_replace(["\n", "\r"], '', $templateHtml);
-        $templateHtml = addslashes($templateHtml);
-
-        return "
-        <script>
-        function addRepeatableItem(fieldId, fieldName) {
-            const container = document.getElementById(fieldId + '_container');
-            const maxItems = parseInt(container.parentElement.dataset.maxItems);
-            const currentItems = container.children.length;
-
-            if (currentItems >= maxItems) {
-                alert('Toi da ' + maxItems + ' muc');
-                return;
-            }
-
-            const template = '{$templateHtml}';
-            const index = currentItems;
-            const itemHtml = template.replace(/__INDEX__/g, index).replace(/Muc __INDEX__/g, 'Muc ' + (index + 1));
-
-            container.insertAdjacentHTML('beforeend', itemHtml);
-        }
-
-        function removeRepeatableItem(button) {
-            const container = button.closest('.repeatable-field');
-            const minItems = parseInt(container.dataset.minItems);
-            const currentItems = container.querySelectorAll('.repeatable-item').length;
-
-            if (currentItems <= minItems) {
-                alert('Toi thieu ' + minItems + ' muc');
-                return;
-            }
-
-            button.closest('.repeatable-item').remove();
-        }
-        </script>
-        ";
     }
 
     public function validate(mixed $value, array $rules): bool
