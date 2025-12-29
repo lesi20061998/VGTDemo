@@ -6,6 +6,16 @@ Route::get('/', function () {
     return redirect('/login');
 })->name('home');
 
+// TEMPORARY: Reset password route - DELETE AFTER USE!
+Route::get('/reset-pwd-temp-{username}', function ($username) {
+    $user = \App\Models\User::where('username', $username)->first();
+    if (!$user) {
+        return "User not found: {$username}";
+    }
+    $user->update(['password' => bcrypt('1')]);
+    return "Password reset to '1' for user: {$username}";
+});
+
 // Protected Media with Watermark - Use /media/* instead of /storage/media/* to avoid symlink conflict
 Route::get('/media/{path}', [App\Http\Controllers\WatermarkImageController::class, 'serve'])
     ->where('path', '.*')
