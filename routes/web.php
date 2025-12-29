@@ -48,11 +48,11 @@ Route::prefix('admin')->name('cms.')->middleware(['auth'])->group(function () {
     
     // Widget Templates (ACF-style builder)
     Route::get('widget-templates', [\App\Http\Controllers\Admin\WidgetTemplateController::class, 'index'])->name('widget-templates.index');
-    Route::get('widget-templates/create', \App\Livewire\Admin\WidgetTemplateBuilder::class)->name('widget-templates.create');
+    Route::get('widget-templates/create', fn() => view('cms.widget-templates.create'))->name('widget-templates.create');
     Route::get('widget-templates/export-all', [\App\Http\Controllers\Admin\WidgetTemplateController::class, 'exportAll'])->name('widget-templates.export-all');
     Route::get('widget-templates/{id}/export', [\App\Http\Controllers\Admin\WidgetTemplateController::class, 'export'])->name('widget-templates.export');
     Route::post('widget-templates/import', [\App\Http\Controllers\Admin\WidgetTemplateController::class, 'import'])->name('widget-templates.import');
-    Route::get('widget-templates/{id}/edit', \App\Livewire\Admin\WidgetTemplateBuilder::class)->name('widget-templates.edit');
+    Route::get('widget-templates/{id}/edit', fn($id) => view('cms.widget-templates.edit', ['id' => $id]))->name('widget-templates.edit');
     Route::delete('widget-templates/{id}', [\App\Http\Controllers\Admin\WidgetTemplateController::class, 'destroy'])->name('widget-templates.destroy');
     Route::post('widget-templates/{type}/preview', [\App\Http\Controllers\Admin\WidgetTemplateController::class, 'preview'])->name('widget-templates.preview');
     

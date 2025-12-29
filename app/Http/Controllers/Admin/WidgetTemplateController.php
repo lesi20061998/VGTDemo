@@ -61,15 +61,60 @@ class WidgetTemplateController extends Controller
         }
         
         $template = WidgetTemplate::findOrFail($id);
+        
+        // Delete all associated files
+        $this->deleteWidgetFiles($template->type);
+        
         $template->delete();
+        
+        // Clear widget cache
+        WidgetRegistry::clearCache();
         
         if ($projectCode) {
             return redirect()->route('project.admin.widget-templates.index', $projectCode)
-                ->with('success', 'Widget template đã được xóa!');
+                ->with('success', 'Widget template và tất cả file liên quan đã được xóa!');
         }
         
         return redirect()->route('cms.widget-templates.index')
-            ->with('success', 'Widget template đã được xóa!');
+            ->with('success', 'Widget template và tất cả file liên quan đã được xóa!');
+    }
+
+    /**
+     * Delete all widget files (entire widget folder)
+     */
+    protected function deleteWidgetFiles(string $type): void
+    {
+        // Delete widget folder (resources/views/widgets/custom/{type}/)
+        $widgetDir = resource_path("views/widgets/custom/{$type}");
+        if (\File::isDirectory($widgetDir)) {
+            \File::deleteDirectory($widgetDir);
+        }
+        
+        // Cleanup legacy files if exist
+        // Old blade file
+        $oldBladePath = resource_path("views/widgets/custom/{$type}.blade.php");
+        if (\File::exists($oldBladePath)) {
+            \File::delete($oldBladePath);
+        }
+        
+        // Old CSS file
+        $oldCssPath = public_path("css/widgets/{$type}.css");
+        if (\File::exists($oldCssPath)) {
+            \File::delete($oldCssPath);
+        }
+        
+        // Old JS file
+        $oldJsPath = public_path("js/widgets/{$type}.js");
+        if (\File::exists($oldJsPath)) {
+            \File::delete($oldJsPath);
+        }
+        
+        // Old PHP class directory
+        $className = str_replace(' ', '', ucwords(str_replace('_', ' ', $type)));
+        $oldClassDir = app_path("Widgets/Custom/{$className}");
+        if (\File::isDirectory($oldClassDir)) {
+            \File::deleteDirectory($oldClassDir);
+        }
     }
 
     /**

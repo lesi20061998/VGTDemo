@@ -1,7 +1,7 @@
 <div class="max-w-6xl mx-auto" x-data="{ showModal: @entangle('showFieldModal').live, activeTab: @entangle('activeTab').live }">
     <div class="mb-6">
         <h1 class="text-2xl font-bold text-gray-900">
-            {{ $template ? 'Sửa Widget Template' : 'Tạo Widget Template' }}
+            {{ isset($template) && $template ? 'Sửa Widget Template' : 'Tạo Widget Template' }}
         </h1>
         <p class="text-gray-600 mt-1">Định nghĩa fields và code template cho widget</p>
     </div>
@@ -20,7 +20,7 @@
                 <div class="col-span-2 md:col-span-1">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tên Widget *</label>
                     <input type="text" wire:model.live="name" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
-                    @if($type)
+                    @if(isset($type) && $type)
                         <p class="text-xs text-gray-500 mt-1">Slug: <code class="bg-gray-100 px-1 rounded">{{ $type }}</code></p>
                     @endif
                     @error('name') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
@@ -28,7 +28,7 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Danh mục</label>
                     <select wire:model="category" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
-                        @foreach($categories as $catValue => $catLabel)
+                        @foreach($categories ?? [] as $catValue => $catLabel)
                             <option value="{{ $catValue }}">{{ $catLabel }}</option>
                         @endforeach
                     </select>
@@ -56,7 +56,7 @@
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                         </svg>
-                        Fields ({{ count($fields) }})
+                        Fields ({{ count($fields ?? []) }})
                     </span>
                 </button>
                 <button type="button" @click="activeTab = 'code'; $wire.setActiveTab('code')" 
@@ -100,7 +100,7 @@
                     </button>
                 </div>
 
-                @if(empty($fields))
+                @if(empty($fields ?? []))
                     <div class="text-center py-12 text-gray-500 border-2 border-dashed border-gray-200 rounded-lg">
                         <svg class="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -109,11 +109,11 @@
                     </div>
                 @else
                     <div class="space-y-2">
-                        @foreach($fields as $idx => $fld)
+                        @foreach($fields ?? [] as $idx => $fld)
                             <div class="flex items-center gap-3 p-4 bg-gray-50 rounded-lg border hover:border-blue-300 transition" wire:key="field-{{ $idx }}">
                                 <div class="flex flex-col gap-1">
                                     <button type="button" wire:click="moveFieldUp({{ $idx }})" class="p-1 text-gray-400 hover:text-gray-600 {{ $idx === 0 ? 'opacity-30' : '' }}" {{ $idx === 0 ? 'disabled' : '' }}>▲</button>
-                                    <button type="button" wire:click="moveFieldDown({{ $idx }})" class="p-1 text-gray-400 hover:text-gray-600 {{ $idx === count($fields) - 1 ? 'opacity-30' : '' }}" {{ $idx === count($fields) - 1 ? 'disabled' : '' }}>▼</button>
+                                    <button type="button" wire:click="moveFieldDown({{ $idx }})" class="p-1 text-gray-400 hover:text-gray-600 {{ $idx === count($fields ?? []) - 1 ? 'opacity-30' : '' }}" {{ $idx === count($fields ?? []) - 1 ? 'disabled' : '' }}>▼</button>
                                 </div>
                                 <div class="flex-1">
                                     <div class="flex items-center gap-2">
@@ -195,7 +195,7 @@
         <div class="flex justify-end gap-3">
             <a href="{{ url()->previous() }}" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">Hủy</a>
             <button type="submit" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-                {{ $template ? 'Cập nhật' : 'Tạo Widget Template' }}
+                {{ isset($template) && $template ? 'Cập nhật' : 'Tạo Widget Template' }}
             </button>
         </div>
     </form>
@@ -207,7 +207,7 @@
             <div class="relative bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
                 <div class="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between">
                     <h3 class="text-lg font-semibold">
-                        {{ $editingFieldIndex >= 0 ? 'Sửa Field' : 'Thêm Field mới' }}
+                        {{ ($editingFieldIndex ?? -1) >= 0 ? 'Sửa Field' : 'Thêm Field mới' }}
                     </h3>
                     <button type="button" @click="showModal = false; $wire.closeFieldModal()" class="text-gray-400 hover:text-gray-600">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -221,12 +221,12 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Loại Field *</label>
                         <select wire:model.live="currentField.type" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
-                            @foreach($fieldTypes as $typeKey => $typeInfo)
+                            @foreach($fieldTypes ?? [] as $typeKey => $typeInfo)
                                 <option value="{{ $typeKey }}">{{ ucfirst($typeInfo['name'] ?? $typeKey) }}</option>
                             @endforeach
                         </select>
-                        @if(isset($fieldTypes[$currentField['type']]['description']))
-                            <p class="text-xs text-gray-500 mt-1">{{ $fieldTypes[$currentField['type']]['description'] }}</p>
+                        @if(isset($fieldTypes[($currentField['type'] ?? '')]['description']))
+                            <p class="text-xs text-gray-500 mt-1">{{ $fieldTypes[($currentField['type'] ?? '')]['description'] }}</p>
                         @endif
                     </div>
 
@@ -267,21 +267,21 @@
                     </div>
 
                     {{-- Type-specific settings --}}
-                    @if(in_array($currentField['type'], ['text', 'email', 'url', 'textarea', 'number', 'select']))
+                    @if(in_array(($currentField['type'] ?? ''), ['text', 'email', 'url', 'textarea', 'number', 'select']))
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Placeholder</label>
                             <input type="text" wire:model="currentField.placeholder" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
                         </div>
                     @endif
 
-                    @if($currentField['type'] === 'textarea')
+                    @if(($currentField['type'] ?? '') === 'textarea')
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Số dòng</label>
                             <input type="number" wire:model="currentField.rows" min="2" max="20" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
                         </div>
                     @endif
 
-                    @if($currentField['type'] === 'wysiwyg')
+                    @if(($currentField['type'] ?? '') === 'wysiwyg')
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Toolbar</label>
@@ -297,7 +297,7 @@
                         </div>
                     @endif
 
-                    @if(in_array($currentField['type'], ['number', 'range', 'gallery', 'relationship', 'repeatable', 'repeater']))
+                    @if(in_array(($currentField['type'] ?? ''), ['number', 'range', 'gallery', 'relationship', 'repeatable', 'repeater']))
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Giá trị tối thiểu</label>
@@ -310,7 +310,7 @@
                         </div>
                     @endif
 
-                    @if($currentField['type'] === 'range')
+                    @if(($currentField['type'] ?? '') === 'range')
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Bước nhảy</label>
                             <input type="number" wire:model="currentField.step" min="1" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
@@ -318,7 +318,7 @@
                     @endif
 
                     {{-- Select/Radio Options --}}
-                    @if(in_array($currentField['type'], ['select', 'radio']))
+                    @if(in_array(($currentField['type'] ?? ''), ['select', 'radio']))
                         <div>
                             <div class="flex items-center justify-between mb-2">
                                 <label class="block text-sm font-medium text-gray-700">Các lựa chọn</label>
@@ -333,7 +333,7 @@
                                     </div>
                                 @endforeach
                             </div>
-                            @if($currentField['type'] === 'select')
+                            @if(($currentField['type'] ?? '') === 'select')
                                 <label class="flex items-center gap-2 mt-2">
                                     <input type="checkbox" wire:model="currentField.multiple" class="rounded border-gray-300">
                                     <span class="text-sm text-gray-600">Cho phép chọn nhiều</span>
@@ -343,7 +343,7 @@
                     @endif
 
                     {{-- Image/Gallery settings --}}
-                    @if(in_array($currentField['type'], ['image', 'gallery']))
+                    @if(in_array(($currentField['type'] ?? ''), ['image', 'gallery']))
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Định dạng trả về</label>
@@ -353,7 +353,7 @@
                                     <option value="array">Array</option>
                                 </select>
                             </div>
-                            @if($currentField['type'] === 'image')
+                            @if(($currentField['type'] ?? '') === 'image')
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Kích thước preview</label>
                                     <select wire:model="currentField.preview_size" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
@@ -367,7 +367,7 @@
                     @endif
 
                     {{-- Relationship/Post Object settings --}}
-                    @if(in_array($currentField['type'], ['relationship', 'post_object']))
+                    @if(in_array(($currentField['type'] ?? ''), ['relationship', 'post_object']))
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Loại Post</label>
@@ -385,7 +385,7 @@
                                 </select>
                             </div>
                         </div>
-                        @if($currentField['type'] === 'post_object')
+                        @if(($currentField['type'] ?? '') === 'post_object')
                             <label class="flex items-center gap-2">
                                 <input type="checkbox" wire:model="currentField.multiple" class="rounded border-gray-300">
                                 <span class="text-sm text-gray-600">Cho phép chọn nhiều</span>
@@ -394,7 +394,7 @@
                     @endif
 
                     {{-- Taxonomy settings --}}
-                    @if($currentField['type'] === 'taxonomy')
+                    @if(($currentField['type'] ?? '') === 'taxonomy')
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Taxonomy</label>
@@ -420,7 +420,7 @@
                     @endif
 
                     {{-- Repeatable/Repeater settings --}}
-                    @if(in_array($currentField['type'], ['repeatable', 'repeater']))
+                    @if(in_array(($currentField['type'] ?? ''), ['repeatable', 'repeater']))
                         <div>
                             <div class="flex items-center justify-between mb-2">
                                 <label class="block text-sm font-medium text-gray-700">Sub-fields</label>
@@ -463,7 +463,7 @@
                     @endif
 
                     {{-- Date settings --}}
-                    @if($currentField['type'] === 'date')
+                    @if(($currentField['type'] ?? '') === 'date')
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Định dạng hiển thị</label>
                             <select wire:model="currentField.display_format" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
