@@ -223,9 +223,11 @@ Route::prefix('{projectCode}/admin')
         Route::delete('widget-templates/{id}', [\App\Http\Controllers\Admin\WidgetTemplateController::class, 'destroy'])->name('widget-templates.destroy');
         Route::post('widget-templates/{type}/preview', [\App\Http\Controllers\Admin\WidgetTemplateController::class, 'preview'])->name('widget-templates.preview');
 
-        // Code-based Widget Editor
+        // Code-based Widget Editor - use WidgetTemplateBuilder with codeType parameter
         Route::get('code-widgets', \App\Livewire\Admin\CodeWidgetList::class)->name('code-widgets.index');
-        Route::get('code-widgets/{type}/edit', \App\Livewire\Admin\CodeWidgetEditor::class)->name('code-widgets.edit');
+        Route::get('code-widgets/export-all', [\App\Http\Controllers\Admin\CodeWidgetController::class, 'exportAll'])->name('code-widgets.export-all');
+        Route::get('code-widgets/{codeType}/edit', \App\Livewire\Admin\WidgetTemplateBuilder::class)->name('code-widgets.edit');
+        Route::get('code-widgets/{type}/export', [\App\Http\Controllers\Admin\CodeWidgetController::class, 'export'])->name('code-widgets.export');
 
         // Widget Management
         Route::get('widgets', [\App\Http\Controllers\Admin\WidgetController::class, 'index'])->name('widgets.index');

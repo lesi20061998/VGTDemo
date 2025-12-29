@@ -4,6 +4,8 @@ namespace App\Livewire\Admin;
 
 use App\Models\WidgetTemplate;
 use App\Services\FieldTypeService;
+use App\Widgets\WidgetRegistry;
+use Illuminate\Support\Facades\File;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -13,16 +15,28 @@ class WidgetTemplateBuilder extends Component
     public ?WidgetTemplate $template = null;
     public ?string $projectCode = null;
     
+    // Mode: 'custom' for database templates, 'code' for code-based widgets
+    public string $mode = 'custom';
+    public ?string $codeWidgetType = null;
+    public ?string $codeWidgetClass = null;
+    
     public string $name = '';
     public string $type = '';
     public string $category = 'general';
     public string $description = '';
     public string $icon = 'cube';
+    public string $version = '1.0.0';
     public bool $is_active = true;
     
     public string $template_code = '';
     public string $template_css = '';
     public string $template_js = '';
+    
+    // For code-based widgets
+    public string $phpPath = '';
+    public string $viewPath = '';
+    public string $jsonPath = '';
+    public bool $hasJsonMetadata = false;
     
     public array $fields = [];
     public array $fieldTypes = [];
@@ -39,6 +53,7 @@ class WidgetTemplateBuilder extends Component
         'product' => 'Sản phẩm',
         'marketing' => 'Marketing',
         'layout' => 'Layout',
+        'victorious' => 'Victorious Theme',
     ];
 
     protected $rules = [
@@ -76,12 +91,31 @@ class WidgetTemplateBuilder extends Component
         return strtr($str, $map);
     }
 
-    public function mount(?int $id = null): void
+    public function mount(?int $id = null, ?string $codeType = null): void
     {
         $this->projectCode = request()->route('projectCode');
         $this->loadFieldTypes();
         
-        if ($id) {
+        // Get codeType from route parameter if not passed directly
+        // Livewire doesn't auto-inject route parameters, so we need to get them manually
+        $codeType = $codeType ?? request()->route('codeType');
+        
+        // Debug logging
+        \Log::info('WidgetTemplateBuilder mount', [
+            'id' => $id,
+            'codeType' => $codeType,
+            'projectCode' => $this->projectCode,
+            'route_codeType' => request()->route('codeType'),
+            'full_url' => request()->fullUrl(),
+        ]);
+        
+        // Check if editing a code-based widget
+        if ($codeType) {
+            $this->mode = 'code';
+            $this->codeWidgetType = $codeType;
+            $this->loadCodeBasedWidget($codeType);
+        } elseif ($id) {
+            $this->mode = 'custom';
             $this->template = WidgetTemplate::findOrFail($id);
             $this->name = $this->template->name;
             $this->type = $this->template->type;
@@ -92,23 +126,89 @@ class WidgetTemplateBuilder extends Component
             $this->fields = $this->template->config_schema['fields'] ?? [];
             $this->loadCodeFromFiles();
         } else {
+            $this->mode = 'custom';
             $this->template_code = $this->getDefaultTemplateCode();
         }
         
         $this->resetCurrentField();
     }
+    
+    protected function loadCodeBasedWidget(string $type): void
+    {
+        \Log::info('loadCodeBasedWidget called', ['type' => $type]);
+        
+        $this->codeWidgetClass = WidgetRegistry::get($type);
+        
+        \Log::info('Widget class found', ['class' => $this->codeWidgetClass]);
+        
+        if (!$this->codeWidgetClass || !class_exists($this->codeWidgetClass)) {
+            \Log::error('Widget class not found', ['type' => $type, 'class' => $this->codeWidgetClass]);
+            session()->flash('error', "Widget type '{$type}' không tồn tại");
+            return;
+        }
+        
+        // Get paths
+        $reflection = new \ReflectionClass($this->codeWidgetClass);
+        $classDir = dirname($reflection->getFileName());
+        $this->phpPath = $reflection->getFileName();
+        $this->jsonPath = "{$classDir}/widget.json";
+        
+        // Check for widget.json metadata
+        $this->hasJsonMetadata = File::exists($this->jsonPath);
+        
+        // Load metadata from registry
+        $config = WidgetRegistry::getConfig($type);
+        if ($config) {
+            $this->name = $config['name'] ?? '';
+            $this->description = $config['description'] ?? '';
+            $this->category = $config['category'] ?? 'general';
+            $this->version = $config['version'] ?? '1.0.0';
+            $this->icon = $config['icon'] ?? 'cube';
+            $this->fields = $config['fields'] ?? [];
+            $this->type = $type;
+        }
+        
+        // Load view code
+        $phpContent = File::get($this->phpPath);
+        if (preg_match("/view\(['\"]([^'\"]+)['\"]/", $phpContent, $matches)) {
+            $viewName = $matches[1];
+            $this->viewPath = resource_path('views/' . str_replace('.', '/', $viewName) . '.blade.php');
+            if (File::exists($this->viewPath)) {
+                $this->template_code = File::get($this->viewPath);
+            }
+        }
+        
+        // Load CSS/JS from view directory or class directory
+        $viewDir = $this->viewPath ? dirname($this->viewPath) : $classDir;
+        
+        $cssPaths = ["{$viewDir}/style.css", "{$classDir}/style.css"];
+        foreach ($cssPaths as $path) {
+            if (File::exists($path)) {
+                $this->template_css = File::get($path);
+                break;
+            }
+        }
+        
+        $jsPaths = ["{$viewDir}/script.js", "{$classDir}/script.js"];
+        foreach ($jsPaths as $path) {
+            if (File::exists($path)) {
+                $this->template_js = File::get($path);
+                break;
+            }
+        }
+    }
 
     protected function loadCodeFromFiles(): void
     {
         $dir = resource_path("views/widgets/custom/{$this->type}");
-        if (\File::exists("{$dir}/view.blade.php")) {
-            $this->template_code = \File::get("{$dir}/view.blade.php");
+        if (File::exists("{$dir}/view.blade.php")) {
+            $this->template_code = File::get("{$dir}/view.blade.php");
         }
-        if (\File::exists("{$dir}/style.css")) {
-            $this->template_css = \File::get("{$dir}/style.css");
+        if (File::exists("{$dir}/style.css")) {
+            $this->template_css = File::get("{$dir}/style.css");
         }
-        if (\File::exists("{$dir}/script.js")) {
-            $this->template_js = \File::get("{$dir}/script.js");
+        if (File::exists("{$dir}/script.js")) {
+            $this->template_js = File::get("{$dir}/script.js");
         }
     }
 
@@ -240,15 +340,70 @@ class WidgetTemplateBuilder extends Component
     {
         $this->validate();
         
-        // Create widget folder with files
-        $dir = resource_path("views/widgets/custom/{$this->type}");
-        if (!\File::isDirectory($dir)) {
-            \File::makeDirectory($dir, 0755, true);
+        if ($this->mode === 'code') {
+            $this->saveCodeBasedWidget();
+        } else {
+            $this->saveCustomTemplate();
+        }
+    }
+    
+    protected function saveCodeBasedWidget(): void
+    {
+        // Save view code
+        if (!empty($this->viewPath) && !empty($this->template_code)) {
+            File::put($this->viewPath, $this->template_code);
         }
         
-        \File::put("{$dir}/view.blade.php", $this->template_code ?: $this->getDefaultTemplateCode());
-        \File::put("{$dir}/style.css", "/* Widget: {$this->name} */\n\n" . $this->template_css);
-        \File::put("{$dir}/script.js", "/* Widget: {$this->name} */\n\n" . $this->template_js);
+        // Save CSS
+        if (!empty($this->template_css)) {
+            $viewDir = $this->viewPath ? dirname($this->viewPath) : dirname($this->phpPath);
+            $cssPath = "{$viewDir}/style.css";
+            File::put($cssPath, $this->template_css);
+        }
+        
+        // Save JS
+        if (!empty($this->template_js)) {
+            $viewDir = $this->viewPath ? dirname($this->viewPath) : dirname($this->phpPath);
+            $jsPath = "{$viewDir}/script.js";
+            File::put($jsPath, $this->template_js);
+        }
+        
+        // Save metadata to widget.json
+        $metadata = [
+            'name' => $this->name,
+            'description' => $this->description,
+            'category' => $this->category,
+            'version' => $this->version,
+            'icon' => $this->icon,
+            'fields' => $this->fields,
+            'variants' => ['default' => 'Default'],
+        ];
+        
+        $jsonPath = $this->jsonPath ?: dirname($this->phpPath) . '/widget.json';
+        File::put($jsonPath, json_encode($metadata, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        
+        WidgetRegistry::clearCache();
+        
+        session()->flash('success', 'Code-based Widget đã được cập nhật!');
+        
+        if ($this->projectCode) {
+            $this->redirect(route('project.admin.widget-templates.index', ['projectCode' => $this->projectCode]));
+        } else {
+            $this->redirect(route('cms.widget-templates.index'));
+        }
+    }
+    
+    protected function saveCustomTemplate(): void
+    {
+        // Create widget folder with files
+        $dir = resource_path("views/widgets/custom/{$this->type}");
+        if (!File::isDirectory($dir)) {
+            File::makeDirectory($dir, 0755, true);
+        }
+        
+        File::put("{$dir}/view.blade.php", $this->template_code ?: $this->getDefaultTemplateCode());
+        File::put("{$dir}/style.css", "/* Widget: {$this->name} */\n\n" . $this->template_css);
+        File::put("{$dir}/script.js", "/* Widget: {$this->name} */\n\n" . $this->template_js);
 
         $data = [
             'name' => $this->name,
@@ -269,7 +424,7 @@ class WidgetTemplateBuilder extends Component
             session()->flash('success', 'Widget đã được tạo!');
         }
 
-        \App\Widgets\WidgetRegistry::clearCache();
+        WidgetRegistry::clearCache();
 
         if ($this->projectCode) {
             $this->redirect(route('project.admin.widget-templates.index', ['projectCode' => $this->projectCode]));

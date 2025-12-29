@@ -16,23 +16,18 @@ class SetProjectDatabase
         $project = $request->attributes->get('project');
 
         if ($project) {
-            // DISABLED: Multisite functionality temporarily disabled for demo
-            // $this->setProjectDatabase($project, $request);
+            // Enable database switching for project context
+            $this->setProjectDatabase($project, $request);
             
-            // Just set basic project context without database switching
-            session(['current_tenant_id' => $project->id]);
-            session(['current_project_id' => $project->id]);
-            app()->instance('current_project_id', $project->id);
-            
-            Log::debug("Project context set for demo mode: {$project->code}");
+            Log::debug("Project database context set for: {$project->code}");
         }
 
         $response = $next($request);
 
-        // DISABLED: No database reset needed
-        // if ($project) {
-        //     $this->resetToMainDatabase();
-        // }
+        // Reset database after request
+        if ($project) {
+            $this->resetToMainDatabase();
+        }
 
         return $response;
     }
@@ -46,13 +41,18 @@ class SetProjectDatabase
             $code = 'project_'.$project->id;
         }
 
-        Log::debug("SetProjectDatabase: Setting up project context for {$code}");
+        Log::debug("SetProjectDatabase: Setting up project context for {$code}, project_id: {$project->id}");
 
         // Store main database name for later reset
         $request->attributes->set('main_database', config('database.default'));
 
-        // Set tenant ID cho SettingsService
+        // Set tenant ID và project ID cho session TRƯỚC KHI query
+        // Trong shared database mode, sử dụng project_id làm tenant_id
+        // để đảm bảo BelongsToTenant trait filter đúng dữ liệu
         session(['current_tenant_id' => $project->id]);
+        session(['current_project_id' => $project->id]);
+        app()->instance('current_project_id', $project->id);
+        app()->instance('current_tenant_id', $project->id);
 
         // Clear settings cache để load lại từ project database
         if (class_exists('\App\Services\SettingsService')) {

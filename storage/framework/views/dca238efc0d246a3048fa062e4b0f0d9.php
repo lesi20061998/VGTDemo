@@ -1,15 +1,47 @@
 <div class="max-w-6xl mx-auto" x-data="{ showModal: <?php if ((object) ('showFieldModal') instanceof \Livewire\WireDirective) : ?>window.Livewire.find('<?php echo e($__livewire->getId()); ?>').entangle('<?php echo e('showFieldModal'->value()); ?>')<?php echo e('showFieldModal'->hasModifier('live') ? '.live' : ''); ?><?php else : ?>window.Livewire.find('<?php echo e($__livewire->getId()); ?>').entangle('<?php echo e('showFieldModal'); ?>')<?php endif; ?>.live, activeTab: <?php if ((object) ('activeTab') instanceof \Livewire\WireDirective) : ?>window.Livewire.find('<?php echo e($__livewire->getId()); ?>').entangle('<?php echo e('activeTab'->value()); ?>')<?php echo e('activeTab'->hasModifier('live') ? '.live' : ''); ?><?php else : ?>window.Livewire.find('<?php echo e($__livewire->getId()); ?>').entangle('<?php echo e('activeTab'); ?>')<?php endif; ?>.live }">
     <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-900">
-            <?php echo e(isset($template) && $template ? 'Sửa Widget Template' : 'Tạo Widget Template'); ?>
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($mode === 'code'): ?>
+                        Sửa Code-based Widget: <?php echo e($name); ?>
 
-        </h1>
-        <p class="text-gray-600 mt-1">Định nghĩa fields và code template cho widget</p>
+                    <?php elseif(isset($template) && $template): ?>
+                        Sửa Widget Template
+                    <?php else: ?>
+                        Tạo Widget Template
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                </h1>
+                <p class="text-gray-600 mt-1">
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($mode === 'code'): ?>
+                        <span class="font-mono text-sm bg-blue-100 text-blue-700 px-2 py-1 rounded"><?php echo e($codeWidgetClass); ?></span>
+                    <?php else: ?>
+                        Định nghĩa fields và code template cho widget
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                </p>
+            </div>
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($mode === 'code'): ?>
+                <div class="flex items-center gap-2">
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($hasJsonMetadata): ?>
+                        <span class="px-3 py-1 text-xs bg-green-100 text-green-700 rounded-full">JSON Metadata</span>
+                    <?php else: ?>
+                        <span class="px-3 py-1 text-xs bg-yellow-100 text-yellow-700 rounded-full">PHP Config</span>
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                </div>
+            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+        </div>
     </div>
 
     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session()->has('success')): ?>
         <div class="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
             <?php echo e(session('success')); ?>
+
+        </div>
+    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+    
+    <?php if(session()->has('error')): ?>
+        <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+            <?php echo e(session('error')); ?>
 
         </div>
     <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
@@ -21,7 +53,7 @@
             <div class="grid grid-cols-2 gap-4">
                 <div class="col-span-2 md:col-span-1">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tên Widget *</label>
-                    <input type="text" wire:model.live="name" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                    <input type="text" wire:model.live="name" class="w-full px-3 py-2 border border-gray-300 rounded-lg" <?php echo e($mode === 'code' ? '' : ''); ?>>
                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($type) && $type): ?>
                         <p class="text-xs text-gray-500 mt-1">Slug: <code class="bg-gray-100 px-1 rounded"><?php echo e($type); ?></code></p>
                     <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
@@ -42,17 +74,34 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                     </select>
                 </div>
-                <div class="col-span-2">
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($mode === 'code'): ?>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Version</label>
+                    <input type="text" wire:model="version" class="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="1.0.0">
+                </div>
+                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                <div class="<?php echo e($mode === 'code' ? '' : 'col-span-2'); ?>">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Mô tả</label>
                     <textarea wire:model="description" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg"></textarea>
                 </div>
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($mode !== 'code'): ?>
                 <div class="col-span-2">
                     <label class="flex items-center gap-2">
                         <input type="checkbox" wire:model="is_active" class="rounded border-gray-300">
                         <span class="text-sm font-medium text-gray-700">Kích hoạt</span>
                     </label>
                 </div>
+                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
             </div>
+            
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($mode === 'code' && $viewPath): ?>
+            <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm">
+                <p><strong>View Path:</strong> <code class="bg-blue-100 px-1 rounded"><?php echo e($viewPath); ?></code></p>
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($phpPath): ?>
+                <p class="mt-1"><strong>PHP Class:</strong> <code class="bg-blue-100 px-1 rounded"><?php echo e($phpPath); ?></code></p>
+                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+            </div>
+            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
         </div>
 
         

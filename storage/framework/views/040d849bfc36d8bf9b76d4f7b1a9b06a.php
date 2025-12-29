@@ -128,8 +128,8 @@
 
 
 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(!empty($codeWidgets)): ?>
-<div class="bg-white rounded-lg shadow-sm" x-data="{ expanded: false }">
-    <div class="p-4 border-b flex justify-between items-center cursor-pointer" @click="expanded = !expanded">
+<div class="bg-white rounded-lg shadow-sm">
+    <div class="p-4 border-b bg-gradient-to-r from-blue-50 to-cyan-50 flex justify-between items-center">
         <div>
             <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
                 <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -137,38 +137,61 @@
                 </svg>
                 Code-based Widgets
             </h2>
-            <p class="text-gray-600 text-sm">Widgets định nghĩa trong code</p>
+            <p class="text-gray-600 text-sm">Widgets định nghĩa trong code (app/Widgets)</p>
         </div>
         <div class="flex items-center gap-3">
+            <a href="<?php echo e(isset($currentProject) ? route('project.admin.code-widgets.export-all', $currentProject->code) : route('cms.code-widgets.export-all')); ?>" 
+               class="px-3 py-1.5 border border-green-300 text-green-700 rounded-lg hover:bg-green-50 text-sm">
+                Export All
+            </a>
             <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
                 <?php echo e(array_sum(array_map('count', $codeWidgets))); ?> widgets
             </span>
-            <svg class="w-5 h-5 text-gray-400 transition-transform" :class="expanded ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-            </svg>
         </div>
     </div>
 
-    <div class="p-4" x-show="expanded" x-collapse>
+    <div class="p-4">
         <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__currentLoopData = $codeWidgets; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $category => $categoryWidgets): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-        <div class="mb-4 last:mb-0">
-            <h3 class="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                <span class="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
+        <div class="mb-6 last:mb-0">
+            <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
                 <?php echo e(ucfirst($category)); ?> (<?php echo e(count($categoryWidgets)); ?>)
             </h3>
-            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__currentLoopData = $categoryWidgets; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $widget): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                <div class="border rounded p-2 hover:shadow-sm hover:border-blue-300 transition text-center">
-                    <div class="w-8 h-8 bg-blue-50 rounded mx-auto mb-1 flex items-center justify-center">
-                        <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-                        </svg>
-                    </div>
-                    <p class="text-xs font-medium text-gray-900 truncate" title="<?php echo e($widget['metadata']['name'] ?? $widget['type']); ?>">
-                        <?php echo e($widget['metadata']['name'] ?? $widget['type']); ?>
+                <div class="border border-gray-200 rounded-lg p-3 hover:shadow-md hover:border-blue-300 transition group relative">
+                    <div class="flex items-center gap-2 mb-2">
+                        <div class="w-8 h-8 bg-blue-100 rounded flex items-center justify-center shrink-0">
+                            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+                            </svg>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <h4 class="font-medium text-gray-900 text-sm truncate" title="<?php echo e($widget['metadata']['name'] ?? $widget['type']); ?>">
+                                <?php echo e($widget['metadata']['name'] ?? $widget['type']); ?>
 
-                    </p>
-                    <p class="text-xs text-gray-500"><?php echo e(count($widget['metadata']['fields'] ?? [])); ?> fields</p>
+                            </h4>
+                            <p class="text-xs text-gray-500 truncate"><?php echo e($widget['type']); ?></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between text-xs text-gray-500 mb-2">
+                        <span class="px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded"><?php echo e(ucfirst($category)); ?></span>
+                        <span><?php echo e(count($widget['metadata']['fields'] ?? [])); ?> fields</span>
+                    </div>
+                    
+                    <div class="flex gap-1">
+                        <a href="<?php echo e(isset($currentProject) ? route('project.admin.code-widgets.edit', [$currentProject->code, $widget['type']]) : route('cms.code-widgets.edit', $widget['type'])); ?>" 
+                           class="flex-1 text-center px-2 py-1.5 bg-blue-600 text-white rounded text-xs hover:bg-blue-700">
+                            Sửa
+                        </a>
+                        <a href="<?php echo e(isset($currentProject) ? route('project.admin.code-widgets.export', [$currentProject->code, $widget['type']]) : route('cms.code-widgets.export', $widget['type'])); ?>" 
+                           class="px-2 py-1.5 border border-gray-300 text-gray-600 rounded text-xs hover:bg-gray-50" title="Export JSON">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                            </svg>
+                        </a>
+                    </div>
                 </div>
                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
             </div>

@@ -1,14 +1,45 @@
 <div class="max-w-6xl mx-auto" x-data="{ showModal: @entangle('showFieldModal').live, activeTab: @entangle('activeTab').live }">
     <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-900">
-            {{ isset($template) && $template ? 'Sửa Widget Template' : 'Tạo Widget Template' }}
-        </h1>
-        <p class="text-gray-600 mt-1">Định nghĩa fields và code template cho widget</p>
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">
+                    @if($mode === 'code')
+                        Sửa Code-based Widget: {{ $name }}
+                    @elseif(isset($template) && $template)
+                        Sửa Widget Template
+                    @else
+                        Tạo Widget Template
+                    @endif
+                </h1>
+                <p class="text-gray-600 mt-1">
+                    @if($mode === 'code')
+                        <span class="font-mono text-sm bg-blue-100 text-blue-700 px-2 py-1 rounded">{{ $codeWidgetClass }}</span>
+                    @else
+                        Định nghĩa fields và code template cho widget
+                    @endif
+                </p>
+            </div>
+            @if($mode === 'code')
+                <div class="flex items-center gap-2">
+                    @if($hasJsonMetadata)
+                        <span class="px-3 py-1 text-xs bg-green-100 text-green-700 rounded-full">JSON Metadata</span>
+                    @else
+                        <span class="px-3 py-1 text-xs bg-yellow-100 text-yellow-700 rounded-full">PHP Config</span>
+                    @endif
+                </div>
+            @endif
+        </div>
     </div>
 
     @if (session()->has('success'))
         <div class="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
             {{ session('success') }}
+        </div>
+    @endif
+    
+    @if (session()->has('error'))
+        <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+            {{ session('error') }}
         </div>
     @endif
 
@@ -19,7 +50,7 @@
             <div class="grid grid-cols-2 gap-4">
                 <div class="col-span-2 md:col-span-1">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tên Widget *</label>
-                    <input type="text" wire:model.live="name" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                    <input type="text" wire:model.live="name" class="w-full px-3 py-2 border border-gray-300 rounded-lg" {{ $mode === 'code' ? '' : '' }}>
                     @if(isset($type) && $type)
                         <p class="text-xs text-gray-500 mt-1">Slug: <code class="bg-gray-100 px-1 rounded">{{ $type }}</code></p>
                     @endif
@@ -33,17 +64,34 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-span-2">
+                @if($mode === 'code')
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Version</label>
+                    <input type="text" wire:model="version" class="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="1.0.0">
+                </div>
+                @endif
+                <div class="{{ $mode === 'code' ? '' : 'col-span-2' }}">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Mô tả</label>
                     <textarea wire:model="description" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg"></textarea>
                 </div>
+                @if($mode !== 'code')
                 <div class="col-span-2">
                     <label class="flex items-center gap-2">
                         <input type="checkbox" wire:model="is_active" class="rounded border-gray-300">
                         <span class="text-sm font-medium text-gray-700">Kích hoạt</span>
                     </label>
                 </div>
+                @endif
             </div>
+            
+            @if($mode === 'code' && $viewPath)
+            <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm">
+                <p><strong>View Path:</strong> <code class="bg-blue-100 px-1 rounded">{{ $viewPath }}</code></p>
+                @if($phpPath)
+                <p class="mt-1"><strong>PHP Class:</strong> <code class="bg-blue-100 px-1 rounded">{{ $phpPath }}</code></p>
+                @endif
+            </div>
+            @endif
         </div>
 
         {{-- Tabs: Fields / Code / CSS / JS --}}
