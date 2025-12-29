@@ -13,18 +13,12 @@ class WidgetController extends Controller
 {
     public function index()
     {
+        // Get user from request attributes (project context) or auth (web context)
+        $user = request()->attributes->get('auth_user') ?? auth()->user();
+        
         // Skip permission check entirely in local environment
         if (config('app.env') !== 'local') {
             $permissionService = new WidgetPermissionService();
-            $user = auth()->user();
-            
-            // Debug: Log permission check
-            \Log::info('Widget permission check', [
-                'user_id' => $user?->id,
-                'username' => $user?->username,
-                'role' => $user?->role,
-                'can_manage' => $permissionService->canManageWidgets($user),
-            ]);
             
             // Check if user can manage widgets
             if (!$permissionService->canManageWidgets($user)) {

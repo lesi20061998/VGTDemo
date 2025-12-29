@@ -49,7 +49,8 @@ class WidgetPermissionService
      */
     public function canManageWidgets($user = null): bool
     {
-        $user = $user ?? auth()->user();
+        // Get user from request attributes (project context) or auth (web context)
+        $user = $user ?? request()->attributes->get('auth_user') ?? auth()->user();
         
         if (!$user) {
             return false;
@@ -74,7 +75,8 @@ class WidgetPermissionService
      */
     public function canToggleWidgets($user = null): bool
     {
-        $user = $user ?? auth()->user();
+        // Get user from request attributes (project context) or auth (web context)
+        $user = $user ?? request()->attributes->get('auth_user') ?? auth()->user();
         
         if (!$user) {
             return false;
