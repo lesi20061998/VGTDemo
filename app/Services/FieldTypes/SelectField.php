@@ -19,8 +19,13 @@ class SelectField extends BaseFieldType
         }
         
         foreach ($options as $optionValue => $optionLabel) {
+            // Support both key-value format and array format
+            if (\is_array($optionLabel)) {
+                $optionValue = $optionLabel['value'] ?? $optionValue;
+                $optionLabel = $optionLabel['label'] ?? $optionValue;
+            }
             $selected = ($optionValue == $selectedValue) ? ' selected' : '';
-            $optionsHtml .= "<option value=\"" . htmlspecialchars($optionValue) . "\"{$selected}>" . htmlspecialchars($optionLabel) . "</option>";
+            $optionsHtml .= "<option value=\"" . htmlspecialchars((string) $optionValue) . "\"{$selected}>" . htmlspecialchars((string) $optionLabel) . "</option>";
         }
 
         $fieldHtml = "<div class=\"relative\">";
@@ -35,11 +40,39 @@ class SelectField extends BaseFieldType
 
     public function validate(mixed $value, array $rules): bool
     {
-        $options = $this->config['options'] ?? [];
-        $validValues = array_keys($options);
+        // If value is empty and not required, it's valid
+        if (empty($value)) {
+            return true;
+        }
         
-        $defaultRules = ['in:' . implode(',', $validValues)];
-        return parent::validate($value, [...$defaultRules, ...$rules]);
+        // Get options from config if available
+        $options = $this->config['options'] ?? [];
+        
+        // Support both key-value format ['100vh' => 'Full Screen'] and array format [['value' => '100vh', 'label' => 'Full Screen']]
+        $validValues = [];
+        foreach ($options as $key => $option) {
+            if (\is_array($option)) {
+                $validValues[] = $option['value'] ?? $key;
+            } else {
+                $validValues[] = $key;
+            }
+        }
+        
+        // If no options defined, skip validation
+        if (empty($validValues)) {
+            return true;
+        }
+        
+        return \in_array($value, $validValues, false);
+    }
+
+    /**
+     * Set config for validation
+     */
+    public function setConfig(array $config): self
+    {
+        $this->config = $config;
+        return $this;
     }
 
     public static function getTypeName(): string

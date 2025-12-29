@@ -122,8 +122,12 @@
                     class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-white"
                     {{ ($field['multiple'] ?? false) ? 'multiple' : '' }}>
                 <option value="">-- Chọn --</option>
-                @foreach($field['options'] ?? [] as $option)
-                    <option value="{{ $option['value'] }}">{{ $option['label'] }}</option>
+                @foreach($field['options'] ?? [] as $key => $option)
+                    @if(is_array($option))
+                        <option value="{{ $option['value'] }}">{{ $option['label'] }}</option>
+                    @else
+                        <option value="{{ $key }}">{{ $option }}</option>
+                    @endif
                 @endforeach
             </select>
             @break
@@ -605,6 +609,39 @@
                     </svg>
                     {{ $buttonLabel }}
                 </button>
+            </div>
+            @break
+
+        {{-- VIDEO --}}
+        @case('video')
+            <div class="space-y-3">
+                @if(!empty($settings[$fieldName]))
+                    <div class="relative inline-block group">
+                        <video src="{{ $settings[$fieldName] }}" class="w-full max-w-md h-auto rounded-lg border-2 border-gray-200 shadow-sm" controls></video>
+                        <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition flex gap-2">
+                            <a href="{{ $settings[$fieldName] }}" target="_blank" class="p-2 bg-white rounded-full hover:bg-gray-100 shadow">
+                                <svg class="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                            </a>
+                            <button type="button" 
+                                    wire:click="$set('settings.{{ $fieldName }}', '')"
+                                    class="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 shadow">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                @endif
+                <div class="flex gap-2">
+                    <input type="text" 
+                        wire:model="settings.{{ $fieldName }}" 
+                        class="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        placeholder="URL video hoặc chọn từ thư viện">
+                    <button type="button" 
+                        @click="$dispatch('open-media-picker', { field: '{{ $fieldName }}', multiple: false, mediaType: 'video' })"
+                        class="px-4 py-2.5 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition flex items-center gap-2 shadow-sm">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                        Chọn video
+                    </button>
+                </div>
             </div>
             @break
 

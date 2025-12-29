@@ -8,8 +8,6 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use App\Widgets\Analytics\AnalyticsWidget;
 use App\Widgets\Category\HomeCateWidget;
-use App\Widgets\Custom\SimpleText\SimpleTextWidget;
-use App\Widgets\Custom\TestWidget\TestWidgetWidget;
 use App\Widgets\Hero\BentoGridHomeWidget;
 use App\Widgets\Hero\FeaturesWidget;
 use App\Widgets\Hero\HeroWidget;
@@ -24,6 +22,14 @@ use App\Widgets\Product\ProductCateWidget;
 use App\Widgets\Product\ProductListWidget;
 use App\Widgets\Product\ProductsWidget;
 use App\Widgets\Slider\PostSliderWidget;
+use App\Widgets\Victorious\HeroVideoWidget;
+use App\Widgets\Victorious\AboutWidget;
+use App\Widgets\Victorious\ServicesWidget;
+use App\Widgets\Victorious\ServiceDetailWidget;
+use App\Widgets\Victorious\ItinerariesWidget;
+use App\Widgets\Victorious\RoomCategoriesWidget;
+use App\Widgets\Victorious\SpecialOffersWidget;
+use App\Widgets\Victorious\EventsWidget;
 
 class WidgetRegistry implements WidgetRegistryInterface
 {
@@ -45,8 +51,16 @@ class WidgetRegistry implements WidgetRegistryInterface
         'news_featured' => NewsFeaturedWidget::class,
         'related_posts' => RelatedPostsWidget::class,
         'analytics' => AnalyticsWidget::class,
-        'simple_text' => SimpleTextWidget::class,
-        'test_widget' => TestWidgetWidget::class,
+        
+        // Victorious Theme Widgets
+        'victorious_hero_video' => HeroVideoWidget::class,
+        'victorious_about' => AboutWidget::class,
+        'victorious_services' => ServicesWidget::class,
+        'victorious_service_detail' => ServiceDetailWidget::class,
+        'victorious_itineraries' => ItinerariesWidget::class,
+        'victorious_room_categories' => RoomCategoriesWidget::class,
+        'victorious_special_offers' => SpecialOffersWidget::class,
+        'victorious_events' => EventsWidget::class,
     ];
 
     protected static array $discoveredWidgets = [];
@@ -296,13 +310,20 @@ class WidgetRegistry implements WidgetRegistryInterface
             return true;
         }
         
-        // Check custom templates
+        // Check custom templates - use same logic as getCustomTemplates
         try {
-            return \App\Models\WidgetTemplate::withoutGlobalScope('tenant')
+            $query = \App\Models\WidgetTemplate::withoutGlobalScope('tenant')
                 ->where('type', $type)
-                ->where('is_active', true)
-                ->exists();
+                ->where('is_active', true);
+            
+            // Only filter by tenant if session has tenant_id
+            if (session('current_tenant_id')) {
+                $query->where('tenant_id', session('current_tenant_id'));
+            }
+            
+            return $query->exists();
         } catch (\Exception $e) {
+            \Log::error("Error checking widget existence for type {$type}: " . $e->getMessage());
             return false;
         }
     }
@@ -328,10 +349,16 @@ class WidgetRegistry implements WidgetRegistryInterface
         
         // Check custom templates from database
         try {
-            $template = \App\Models\WidgetTemplate::withoutGlobalScope('tenant')
+            $query = \App\Models\WidgetTemplate::withoutGlobalScope('tenant')
                 ->where('type', $type)
-                ->where('is_active', true)
-                ->first();
+                ->where('is_active', true);
+            
+            // Only filter by tenant if session has tenant_id
+            if (session('current_tenant_id')) {
+                $query->where('tenant_id', session('current_tenant_id'));
+            }
+            
+            $template = $query->first();
                 
             if ($template) {
                 return [

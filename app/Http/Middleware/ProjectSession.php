@@ -36,6 +36,7 @@ class ProjectSession
                 if ($projectCode && !in_array($projectCode, $reservedPrefixes)) {
                     $cookieName = 'project_'.strtolower($projectCode).'_session';
                     Config::set('session.cookie', $cookieName);
+                
                 }
             }
             return $next($request);
@@ -45,9 +46,6 @@ class ProjectSession
             // Set unique session cookie name for this project
             $cookieName = 'project_'.strtolower($projectCode).'_session';
             Config::set('session.cookie', $cookieName);
-
-            // Don't set session path - it can cause redirect loops
-            // Config::set('session.path', '/' . $projectCode);
         }
 
         return $next($request);

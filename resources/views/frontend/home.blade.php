@@ -10,7 +10,7 @@
 </div>
 
 <div class="mb-8">
-    {!! render_widgets('homepage-main') !!}
+    {!! //render_widgets('homepage-main') !!}
 </div>
 @endsection
 

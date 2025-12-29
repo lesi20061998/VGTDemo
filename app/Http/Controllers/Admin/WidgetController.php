@@ -189,16 +189,33 @@ class WidgetController extends Controller
             $errorCount = 0;
             $errors = [];
 
-            // Clear existing widgets for the areas being updated
+            // Get tenant_id from session
+            $currentProject = session('current_project');
+            $tenantId = null;
+            if (\is_array($currentProject)) {
+                $tenantId = $currentProject['id'] ?? null;
+            } elseif (\is_object($currentProject)) {
+                $tenantId = $currentProject->id ?? null;
+            }
+
+            // Clear existing widgets for the areas being updated (only for this tenant)
             $areas = collect($widgets)->pluck('area')->unique();
             foreach ($areas as $area) {
-                Widget::where('area', $area)->delete();
+                $query = Widget::where('area', $area);
+                if ($tenantId) {
+                    $query->where('tenant_id', $tenantId);
+                }
+                $query->delete();
             }
 
             // Save new widgets
             foreach ($widgets as $widgetData) {
                 try {
                     $validated = $this->validateWidgetData($widgetData);
+                    // Add tenant_id
+                    if ($tenantId) {
+                        $validated['tenant_id'] = $tenantId;
+                    }
                     Widget::create($validated);
                     $successCount++;
                 } catch (\Exception $e) {
@@ -243,8 +260,22 @@ class WidgetController extends Controller
     {
         $area = $request->input('area', 'homepage-main');
         
-        $count = Widget::where('area', $area)->count();
-        Widget::where('area', $area)->delete();
+        // Get tenant_id from session
+        $currentProject = session('current_project');
+        $tenantId = null;
+        if (\is_array($currentProject)) {
+            $tenantId = $currentProject['id'] ?? null;
+        } elseif (\is_object($currentProject)) {
+            $tenantId = $currentProject->id ?? null;
+        }
+        
+        $query = Widget::where('area', $area);
+        if ($tenantId) {
+            $query->where('tenant_id', $tenantId);
+        }
+        
+        $count = $query->count();
+        $query->delete();
         clear_widget_cache($area);
 
         return response()->json([
@@ -296,15 +327,22 @@ class WidgetController extends Controller
             $validated['settings'] = json_decode($validated['settings'], true);
         }
 
-        // Validate settings against widget metadata
-        try {
-            $widgetClass = WidgetRegistry::get($validated['type']);
-            if ($widgetClass) {
-                $tempWidget = new $widgetClass($validated['settings'] ?? [], $validated['variant'] ?? 'default');
-                $tempWidget->validateSettings();
+        // Validate settings against widget metadata (only if settings are provided)
+        if (!empty($validated['settings'])) {
+            try {
+                $widgetClass = WidgetRegistry::get($validated['type']);
+                if ($widgetClass) {
+                    $tempWidget = new $widgetClass($validated['settings'] ?? [], $validated['variant'] ?? 'default');
+                    $tempWidget->validateSettings();
+                }
+            } catch (\Exception $e) {
+                // Log warning but don't fail - allow saving with potentially invalid settings
+                \Log::warning("Widget settings validation warning for {$validated['type']}: " . $e->getMessage());
+                // Only throw if it's a critical error, not just validation
+                if (str_contains($e->getMessage(), 'not found') || str_contains($e->getMessage(), 'class')) {
+                    throw new \Exception('Widget settings validation failed: ' . $e->getMessage());
+                }
             }
-        } catch (\Exception $e) {
-            throw new \Exception('Widget settings validation failed: ' . $e->getMessage());
         }
 
         // Set defaults

@@ -3,6 +3,85 @@
 @section('title', 'Widget Builder')
 @section('page-title', 'Widget Builder - Drag & Drop')
 
+@push('head-scripts')
+<script>
+// Declare functions early so onclick handlers work
+let draggedElement = null;
+let existingWidgetsGrouped = [];
+let widgets = [];
+let draggedWidgetItem = null;
+let currentArea = 'homepage-main';
+const usedWidgets = new Set();
+
+function switchArea(area) {
+    currentArea = area;
+    
+    // Update tabs
+    document.querySelectorAll('.area-tab').forEach(tab => {
+        tab.classList.remove('bg-blue-500', 'text-white');
+        tab.classList.add('bg-gray-200', 'text-gray-700');
+        tab.querySelector('span:last-child')?.classList.remove('bg-white/20');
+        tab.querySelector('span:last-child')?.classList.add('bg-gray-300');
+    });
+    
+    const activeTab = document.getElementById('tab-' + area);
+    if (activeTab) {
+        activeTab.classList.remove('bg-gray-200', 'text-gray-700');
+        activeTab.classList.add('bg-blue-500', 'text-white');
+        activeTab.querySelector('span:last-child')?.classList.remove('bg-gray-300');
+        activeTab.querySelector('span:last-child')?.classList.add('bg-white/20');
+    }
+    
+    // Update zones
+    document.querySelectorAll('.drop-zone-container').forEach(zone => {
+        zone.classList.remove('active');
+        zone.classList.add('hidden');
+    });
+    
+    const activeZone = document.getElementById('zone-' + area);
+    if (activeZone) {
+        activeZone.classList.remove('hidden');
+        activeZone.classList.add('active');
+    }
+}
+
+function toggleCategory(category) {
+    const content = document.getElementById('category-' + category);
+    const arrow = document.getElementById('arrow-' + category);
+    
+    if (content && arrow) {
+        content.classList.toggle('collapsed');
+        arrow.classList.toggle('collapsed');
+    }
+}
+
+function filterWidgets(query) {
+    const templates = document.querySelectorAll('.widget-template');
+    const categories = document.querySelectorAll('.widget-category');
+    query = query.toLowerCase();
+    
+    templates.forEach(template => {
+        const name = template.dataset.name?.toLowerCase() || '';
+        const type = template.dataset.type?.toLowerCase() || '';
+        const matches = name.includes(query) || type.includes(query);
+        template.style.display = matches ? '' : 'none';
+    });
+    
+    categories.forEach(category => {
+        const visibleWidgets = category.querySelectorAll('.widget-template:not([style*="display: none"])');
+        category.style.display = visibleWidgets.length > 0 ? '' : 'none';
+        
+        if (visibleWidgets.length > 0) {
+            const content = category.querySelector('.category-content');
+            const arrow = category.querySelector('.category-arrow');
+            if (content) content.classList.remove('collapsed');
+            if (arrow) arrow.classList.remove('collapsed');
+        }
+    });
+}
+</script>
+@endpush
+
 @section('content')
 {{-- Media Picker Modal --}}
 <x-media-picker-modal />
@@ -269,90 +348,13 @@
 </style>
 
 <script>
-let draggedElement = null;
-let existingWidgetsGrouped = @json($existingWidgets ?? []);
-let widgets = [];
-let draggedWidgetItem = null;
-let currentArea = 'homepage-main';
+// Initialize data from server
+existingWidgetsGrouped = @json($existingWidgets ?? []);
 
 // Flatten grouped widgets
 Object.values(existingWidgetsGrouped).forEach(group => {
     widgets = widgets.concat(group);
 });
-
-const usedWidgets = new Set();
-
-// Initialize area tabs
-function switchArea(area) {
-    currentArea = area;
-    
-    // Update tabs
-    document.querySelectorAll('.area-tab').forEach(tab => {
-        tab.classList.remove('bg-blue-500', 'text-white');
-        tab.classList.add('bg-gray-200', 'text-gray-700');
-        tab.querySelector('span:last-child')?.classList.remove('bg-white/20');
-        tab.querySelector('span:last-child')?.classList.add('bg-gray-300');
-    });
-    
-    const activeTab = document.getElementById('tab-' + area);
-    if (activeTab) {
-        activeTab.classList.remove('bg-gray-200', 'text-gray-700');
-        activeTab.classList.add('bg-blue-500', 'text-white');
-        activeTab.querySelector('span:last-child')?.classList.remove('bg-gray-300');
-        activeTab.querySelector('span:last-child')?.classList.add('bg-white/20');
-    }
-    
-    // Update zones
-    document.querySelectorAll('.drop-zone-container').forEach(zone => {
-        zone.classList.remove('active');
-        zone.classList.add('hidden');
-    });
-    
-    const activeZone = document.getElementById('zone-' + area);
-    if (activeZone) {
-        activeZone.classList.remove('hidden');
-        activeZone.classList.add('active');
-    }
-}
-
-// Toggle category collapse
-function toggleCategory(category) {
-    const content = document.getElementById('category-' + category);
-    const arrow = document.getElementById('arrow-' + category);
-    
-    if (content && arrow) {
-        content.classList.toggle('collapsed');
-        arrow.classList.toggle('collapsed');
-    }
-}
-
-// Filter widgets by search
-function filterWidgets(query) {
-    const templates = document.querySelectorAll('.widget-template');
-    const categories = document.querySelectorAll('.widget-category');
-    query = query.toLowerCase();
-    
-    templates.forEach(template => {
-        const name = template.dataset.name?.toLowerCase() || '';
-        const type = template.dataset.type?.toLowerCase() || '';
-        const matches = name.includes(query) || type.includes(query);
-        template.style.display = matches ? '' : 'none';
-    });
-    
-    // Show/hide categories based on visible widgets
-    categories.forEach(category => {
-        const visibleWidgets = category.querySelectorAll('.widget-template:not([style*="display: none"])');
-        category.style.display = visibleWidgets.length > 0 ? '' : 'none';
-        
-        // Expand categories when searching
-        if (query && visibleWidgets.length > 0) {
-            const content = category.querySelector('.category-content');
-            const arrow = category.querySelector('.category-arrow');
-            content?.classList.remove('collapsed');
-            arrow?.classList.remove('collapsed');
-        }
-    });
-}
 
 // Clear current area widgets
 function clearCurrentArea() {
@@ -688,12 +690,15 @@ function previewWidget() {
     const variantSelect = document.getElementById('cfg_variant');
     const variant = variantSelect ? variantSelect.value : 'default';
     
+    // Get CSRF token from meta tag (more reliable than inline token)
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}';
+    
     // Request preview from server
     fetch('{{ route("cms.widgets.preview") }}', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'X-CSRF-TOKEN': csrfToken,
             'Accept': 'application/json'
         },
         body: JSON.stringify({
@@ -955,34 +960,26 @@ function saveConfig() {
     
     // Process form data
     for (let [key, value] of formData.entries()) {
+        if (key === 'variant') continue; // Skip variant, handled separately
+        
         if (key.includes('[')) {
             // Handle array fields
-            // Pattern 1: gallery[0] - simple array
-            // Pattern 2: social_links[0][platform] - array of objects
             const simpleArrayMatch = key.match(/^([^\[]+)\[(\d+)\]$/);
             const nestedArrayMatch = key.match(/^([^\[]+)\[(\d+)\]\[([^\]]+)\]$/);
             
             if (nestedArrayMatch) {
-                // Array of objects: social_links[0][platform]
                 const fieldName = nestedArrayMatch[1];
                 const index = parseInt(nestedArrayMatch[2]);
                 const subField = nestedArrayMatch[3];
                 
-                if (!newSettings[fieldName]) {
-                    newSettings[fieldName] = [];
-                }
-                if (!newSettings[fieldName][index]) {
-                    newSettings[fieldName][index] = {};
-                }
+                if (!newSettings[fieldName]) newSettings[fieldName] = [];
+                if (!newSettings[fieldName][index]) newSettings[fieldName][index] = {};
                 newSettings[fieldName][index][subField] = value;
             } else if (simpleArrayMatch) {
-                // Simple array: gallery[0]
                 const fieldName = simpleArrayMatch[1];
                 const index = parseInt(simpleArrayMatch[2]);
                 
-                if (!newSettings[fieldName]) {
-                    newSettings[fieldName] = [];
-                }
+                if (!newSettings[fieldName]) newSettings[fieldName] = [];
                 newSettings[fieldName][index] = value;
             }
         } else {
@@ -991,45 +988,55 @@ function saveConfig() {
         }
     }
     
-    // Clean up arrays - remove undefined/null entries and convert sparse arrays to dense
+    // Clean up arrays
     for (let key in newSettings) {
         if (Array.isArray(newSettings[key])) {
             newSettings[key] = newSettings[key].filter(item => item !== undefined && item !== null);
         }
     }
     
-    // Also get data from Alpine.js components (for gallery/image fields that use x-data)
+    // Also get data from Alpine.js components
     const alpineComponents = form.querySelectorAll('[x-data]');
     alpineComponents.forEach(el => {
         if (el._x_dataStack && el._x_dataStack[0]) {
             const data = el._x_dataStack[0];
             
-            // Handle image field
             if (typeof data.imageUrl !== 'undefined' && data.fieldName) {
                 newSettings[data.fieldName] = data.imageUrl;
             }
-            
-            // Handle gallery field
             if (typeof data.images !== 'undefined' && data.fieldName) {
                 newSettings[data.fieldName] = data.images;
             }
         }
     });
     
-    // Merge with existing settings (keep fields not in form)
+    // Get all input values directly (backup for fields not in FormData)
+    const allInputs = form.querySelectorAll('input[name], select[name], textarea[name]');
+    allInputs.forEach(input => {
+        const name = input.name;
+        if (!name || name === 'variant' || name.includes('[')) return;
+        
+        if (input.type === 'checkbox') {
+            newSettings[name] = input.checked;
+        } else if (input.type === 'radio') {
+            if (input.checked) {
+                newSettings[name] = input.value;
+            }
+        } else if (!newSettings.hasOwnProperty(name) || newSettings[name] === '') {
+            // Only set if not already set or empty
+            newSettings[name] = input.value;
+        }
+    });
+    
+    // Merge with existing settings
     widget.settings = { ...widget.settings, ...newSettings };
     
     // Handle checkboxes (they don't appear in FormData if unchecked)
     const checkboxes = form.querySelectorAll('input[type="checkbox"]');
     checkboxes.forEach(checkbox => {
         const name = checkbox.name;
-        if (!name.includes('[')) {
-            // Only handle simple checkbox fields, not array ones
-            if (!formData.has(name)) {
-                widget.settings[name] = false;
-            } else {
-                widget.settings[name] = true;
-            }
+        if (name && !name.includes('[')) {
+            widget.settings[name] = checkbox.checked;
         }
     });
     
@@ -1046,6 +1053,17 @@ function saveConfig() {
     
     closeConfig();
     renderWidgets();
+    
+    // Mark as unsaved - change save button appearance
+    markUnsavedChanges();
+}
+
+function markUnsavedChanges() {
+    const saveBtn = document.querySelector('button[onclick*="saveWidgets"]');
+    if (saveBtn && !saveBtn.classList.contains('ring-2')) {
+        saveBtn.classList.add('ring-2', 'ring-yellow-400', 'ring-offset-2');
+        saveBtn.title = 'Có thay đổi chưa lưu - Click để lưu';
+    }
 }
 
 function closeConfig() {
@@ -1073,25 +1091,16 @@ async function saveWidgets(e) {
     if (isSaving) return;
     isSaving = true;
     
-    // Get button element - handle both event and direct call
     const btn = e?.target || document.querySelector('button[onclick*="saveWidgets"]');
     if (btn) {
         btn.disabled = true;
-        btn.innerHTML = `
-            <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            Đang lưu...
-        `;
+        btn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Đang lưu...';
     }
     
     console.log('=== SAVE WIDGETS DEBUG ===');
     console.log('Widgets to save:', JSON.stringify(widgets, null, 2));
-    console.log('==========================');
     
     const baseUrl = '{{ isset($currentProject) ? route("project.admin.widgets.save-all", $currentProject->code) : route("cms.widgets.save-all") }}';
-    console.log('Save URL:', baseUrl);
     
     try {
         const response = await fetch(baseUrl, {
@@ -1101,77 +1110,56 @@ async function saveWidgets(e) {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}',
                 'Accept': 'application/json'
             },
-            body: JSON.stringify({
-                widgets: widgets
-            })
+            body: JSON.stringify({ widgets: widgets })
         });
         
-        console.log('Response status:', response.status);
-        
-        // Check if response is OK
         if (!response.ok) {
             const errorText = await response.text();
-            console.error('Response error:', errorText);
-            throw new Error(`HTTP ${response.status}: ${errorText.substring(0, 200)}`);
+            let errorMessage = 'HTTP ' + response.status;
+            try {
+                const errorJson = JSON.parse(errorText);
+                errorMessage += ': ' + (errorJson.message || errorText.substring(0, 500));
+            } catch (parseErr) {
+                errorMessage += ': ' + errorText.substring(0, 500);
+            }
+            throw new Error(errorMessage);
         }
         
         const result = await response.json();
-        console.log('Save result:', result);
         
         if (result.success) {
             if (btn) {
-                btn.innerHTML = `
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                    </svg>
-                    Đã lưu!
-                `;
-                btn.classList.remove('bg-[#98191F]');
+                btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Đã lưu!';
+                btn.classList.remove('bg-[#98191F]', 'ring-2', 'ring-yellow-400', 'ring-offset-2');
                 btn.classList.add('bg-green-600');
             }
             showAlert(result.message || 'Lưu thành công!', 'success');
         } else {
             if (btn) {
-                btn.innerHTML = `
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                    Lỗi!
-                `;
+                btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg> Lỗi!';
                 btn.classList.remove('bg-[#98191F]');
                 btn.classList.add('bg-red-600');
             }
             showAlert(result.message || 'Lưu thất bại', 'error');
-            
             if (result.errors) {
-                console.error('Widget save errors:', result.errors);
+                alert('Lỗi:\n' + result.errors.join('\n'));
             }
         }
     } catch (error) {
         console.error('Error saving widgets:', error);
+        alert('Lỗi: ' + error.message);
         if (btn) {
-            btn.innerHTML = `
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
-                Lỗi!
-            `;
+            btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg> Lỗi!';
             btn.classList.remove('bg-[#98191F]');
             btn.classList.add('bg-red-600');
         }
-        showAlert('Lỗi kết nối: ' + error.message, 'error');
     }
     
     setTimeout(() => {
         if (btn) {
             btn.disabled = false;
-            btn.innerHTML = `
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
-                </svg>
-                Lưu tất cả
-            `;
-            btn.classList.remove('bg-green-600', 'bg-red-600');
+            btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg> Lưu tất cả';
+            btn.classList.remove('bg-green-600', 'bg-red-600', 'ring-2', 'ring-yellow-400', 'ring-offset-2');
             btn.classList.add('bg-[#98191F]');
         }
         isSaving = false;
@@ -1208,16 +1196,12 @@ window.addEventListener('media-selected', function(e) {
     const form = document.getElementById('configForm');
     if (!form) return;
     
+    const url = Array.isArray(urls) ? urls[0] : urls;
+    
     // Try to find input by name
     let input = form.querySelector(`[name="${field}"]`);
     
-    // Also try to find by x-model if using Alpine
-    if (!input) {
-        input = form.querySelector(`[x-model="imageUrl"]`);
-    }
-    
     if (input) {
-        const url = Array.isArray(urls) ? urls[0] : urls;
         input.value = url;
         // Trigger input event for Alpine.js reactivity
         input.dispatchEvent(new Event('input', { bubbles: true }));
@@ -1227,10 +1211,22 @@ window.addEventListener('media-selected', function(e) {
     const alpineEl = form.querySelector('[x-data]');
     if (alpineEl && alpineEl._x_dataStack) {
         const data = alpineEl._x_dataStack[0];
-        if (data && typeof data.imageUrl !== 'undefined') {
-            data.imageUrl = Array.isArray(urls) ? urls[0] : urls;
+        // Update the specific field in Alpine data
+        if (data && field) {
+            // Handle nested field names like 'settings.video_url'
+            const fieldParts = field.split('.');
+            let target = data;
+            for (let i = 0; i < fieldParts.length - 1; i++) {
+                if (target[fieldParts[i]] === undefined) {
+                    target[fieldParts[i]] = {};
+                }
+                target = target[fieldParts[i]];
+            }
+            target[fieldParts[fieldParts.length - 1]] = url;
         }
     }
+    
+    console.log('Media selected for field:', field, 'URL:', url);
 });
 </script>
 @endsection

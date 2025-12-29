@@ -77,9 +77,18 @@ class MediaController extends Controller
 
     public function upload(Request $request)
     {
-        $request->validate([
-            'files.*' => 'required|mimes:jpg,jpeg,png,gif,webp,mp4,webm,mov,avi,mkv|max:10240',
-        ]);
+        try {
+            $request->validate([
+                'files' => 'required|array',
+                'files.*' => 'required|file|mimes:jpg,jpeg,png,gif,webp,svg,mp4,webm,mov,avi,mkv|max:1048576',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed: ' . implode(', ', $e->validator->errors()->all()),
+                'errors' => $e->validator->errors()->toArray()
+            ], 422);
+        }
 
         $basePath = $this->getMediaPath($request);
         $path = $request->get('path', '');
@@ -91,16 +100,36 @@ class MediaController extends Controller
         }
 
         $uploaded = [];
-        foreach ($request->file('files') as $file) {
-            $filename = time().'_'.$file->getClientOriginalName();
-            $filePath = $file->storeAs($fullPath, $filename, 'public');
+        $files = $request->file('files');
+        
+        if (empty($files)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No files provided'
+            ], 400);
+        }
+        
+        foreach ($files as $file) {
+            try {
+                $filename = time().'_'.$file->getClientOriginalName();
+                $filePath = $file->storeAs($fullPath, $filename, 'public');
 
-            $uploaded[] = [
-                'id' => md5($filePath),
-                'name' => basename($filePath),
-                'url' => Storage::url($filePath),
-                'path' => $filePath,
-            ];
+                $uploaded[] = [
+                    'id' => md5($filePath),
+                    'name' => basename($filePath),
+                    'url' => Storage::url($filePath),
+                    'path' => $filePath,
+                ];
+            } catch (\Exception $e) {
+                \Log::error('File upload error: ' . $e->getMessage());
+            }
+        }
+
+        if (empty($uploaded)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to upload files'
+            ], 500);
         }
 
         return response()->json(['success' => true, 'files' => $uploaded]);

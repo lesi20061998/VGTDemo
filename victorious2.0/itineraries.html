@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Itineraries | Vite Template</title>
+    <meta name="description" content="Itineraries" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Petrona:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css" />
+    <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://cdn.jsdelivr.net/npm/paper-css@0.4.1/paper.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="./assets/css/style.css">
+  </head>
+
+  <body>
+    <header class="c-header js-header">
+      <div class="c-header__container">
+        <div class="c-header__top">
+          <div class="details l-container">
+            <div class="c-header__mail">
+              <a href="tel:0909999999">
+                <img src="./assets/img/icon/phone-ic.svg" alt="" class="c-header__mailic" /> 0909 999 999 </a>
+              <a href="mailto:info@victorious.com">
+                <img src="./assets/img/icon/email-ic.svg" alt="" class="c-header__mailic" /> info@victorious.com </a>
+            </div>
+            <div class="c-header__social">
+              <p class="c-header__social-title">Contact us</p>
+              <ul class="c-header__social--list">
+                <li class="c-header__social--item">
+                  <a href=""><img src="./assets/img/icon/fb-ic.svg" alt="" /></a>
+                </li>
+                <li class="c-header__social--item">
+                  <a href=""><img src="./assets/img/icon/ins-ic.svg" alt="" /></a>
+                </li>
+                <li class="c-header__social--item">
+                  <a href=""><img src="./assets/img/icon/ytb-ic.svg" alt="" /></a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="c-header__main">
+          <div class="details l-container">
+            <ul class="c-header__main--left">
+              <li><a href="/">Home page</a></li>
+              <li class="flex-ic room-categories__cabin-dropmenu">
+                <a href="#">about victorious</a><img src="./assets/img/icon/down-ic.svg" alt="" />
+                <ul class="cabin-menu">
+                  <li class="cabin-item"><a href="#">About us</a></li>
+                  <li class="cabin-item"><a href="#">News & Events</a></li>
+                </ul>
+              </li>
+              <li class="flex-ic room-categories__cabin-dropmenu">
+                <a href="/room-detail">room categories</a><img src="./assets/img/icon/down-ic.svg" alt="" />
+                <ul class="cabin-menu">
+                  <li class="cabin-item"><a href="#">Deluxe</a></li>
+                  <li class="cabin-item"><a href="#">Executive</a></li>
+                  <li class="cabin-item"><a href="#">Executive Triple</a></li>
+                  <li class="cabin-item"><a href="#">Premium Executive</a></li>
+                  <li class="cabin-item"><a href="#">Junior Suite</a></li>
+                  <li class="cabin-item"><a href="#">Captain Suite</a></li>
+                  <li class="cabin-item"><a href="#">Royal Suite</a></li>
+                  <li class="cabin-item"><a href="#">President Suite</a></li>
+                </ul>
+              </li>
+            </ul>
+            <a href="/" class="c-header__logo"><img src="./assets/img/common/logo-header.svg" alt="VICTORIOUS" /></a>
+            <ul class="c-header__main--right">
+              <li class="flex-ic room-categories__cabin-dropmenu">
+                <a href="/itineraries">itineraries</a><img src="./assets/img/icon/down-ic.svg" alt="" />
+                <ul class="cabin-menu">
+                  <li class="cabin-item"><a href="#">2 days 1 night</a></li>
+                  <li class="cabin-item"><a href="#">3 days 2 night</a></li>
+                </ul>
+              </li>
+              <li><a href="#">special offers</a></li>
+              <li><a href="#">contact</a></li>
+            </ul>
+            <div class="c-header__hamburger">
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </div>
+        </div>
+        <div class="main-header__mobile-menu" id="mobileMenu">
+          <div class="main-header__mobile-menu-overlay"></div>
+          <div class="main-header__mobile-menu-content">
+            <button class="main-header__mobile-close" id="mobileMenuClose">
+              <img src="./assets/img/icon/close-ic.svg" alt="" />
+            </button>
+            <ul class="main-header__mobile-nav">
+              <li class="mobile-nav__item mobile-nav__item--has-sub">
+                <div class="mobile-nav__link-wrap">
+                  <a href="/" class="mobile-nav__link">Home page</a>
+                </div>
+              </li>
+              <li class="mobile-nav__item mobile-nav__item--has-sub">
+                <div class="mobile-nav__link-wrap">
+                  <a href="#" class="mobile-nav__link">About victorious</a>
+                  <button class="mobile-nav__toggle-btn">
+                    <img src="./assets/img/icon/arrow-right-ic.svg" alt="" />
+                  </button>
+                </div>
+                <ul class="mobile-nav__sub-list">
+                  <li class="mobile-nav__sub-item"><a href="#">About us</a></li>
+                  <li class="mobile-nav__sub-item"><a href="#">News & Events</a></li>
+                </ul>
+              </li>
+              <li class="mobile-nav__item mobile-nav__item--has-sub">
+                <div class="mobile-nav__link-wrap">
+                  <a href="#" class="mobile-nav__link">Room catagories</a>
+                  <button class="mobile-nav__toggle-btn">
+                    <img src="./assets/img/icon/arrow-right-ic.svg" alt="" />
+                  </button>
+                </div>
+                <ul class="mobile-nav__sub-list">
+                  <li class="mobile-nav__sub-item"><a href="#">Deluxe</a></li>
+                  <li class="mobile-nav__sub-item"><a href="#">Executive</a></li>
+                  <li class="mobile-nav__sub-item"><a href="#">Executive Triple</a></li>
+                  <li class="mobile-nav__sub-item"><a href="#">Premium Executive</a></li>
+                  <li class="mobile-nav__sub-item"><a href="#">Junior Suite</a></li>
+                  <li class="mobile-nav__sub-item"><a href="#">Captain Suite</a></li>
+                  <li class="mobile-nav__sub-item"><a href="#">Royal Suite</a></li>
+                  <li class="mobile-nav__sub-item"><a href="#">President Suite</a></li>
+                </ul>
+              </li>
+              <li class="mobile-nav__item mobile-nav__item--has-sub">
+                <div class="mobile-nav__link-wrap">
+                  <a href="#" class="mobile-nav__link">Itineraries</a>
+                  <button class="mobile-nav__toggle-btn">
+                    <img src="./assets/img/icon/arrow-right-ic.svg" alt="" />
+                  </button>
+                </div>
+                <ul class="mobile-nav__sub-list">
+                  <li class="mobile-nav__sub-item"><a href="#">2 days 1 night</a></li>
+                  <li class="mobile-nav__sub-item"><a href="#">3 days 2 night</a></li>
+                </ul>
+              </li>
+              <li class="mobile-nav__item mobile-nav__item--has-sub">
+                <div class="mobile-nav__link-wrap">
+                  <a href="#" class="mobile-nav__link">Special offers</a>
+                </div>
+              </li>
+              <li class="mobile-nav__item mobile-nav__item--has-sub">
+                <div class="mobile-nav__link-wrap">
+                  <a href="#" class="mobile-nav__link">Contact</a>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </header>
+    <main class="p-top">
+      <section class="hero-section">
+        <div class="hero-section__img">
+          <img src="./assets/img/common/hero-banner.png" alt="" />
+        </div>
+      </section>
+      <section class="breadcrumb-section">
+        <div class="breadcrumb">
+          <a href="#" class="breadcrumb__item">HOME</a>
+          <span class="breadcrumb__separator">
+            <img src="./assets/img/icon/next-2.svg" alt="" />
+          </span>
+          <a href="#" class="breadcrumb__item breadcrumb__item--active">ITINERARIES</a>
+        </div>
+      </section>
+      <section class="itineraries-detail">
+        <div class="l-container l-pd-0-135px">
+          <div class="itineraries-detail__content">
+            <h1 class="itineraries-detail__title">Discovery HALONG BAY 2 days / 1 night</h1>
+            <div class="itineraries-detail__content-box">
+              <p class="itineraries-detail__text">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to</p>
+            </div>
+            <!-- Slider main container -->
+            <div class="swiper large-swiper">
+              <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                  <img src="./assets/img/common/itineraries-img.png" alt="Honeymoon" class="" />
+                </div>
+                <div class="swiper-slide">
+                  <img src="./assets/img/common/itineraries-img.png" alt="Honeymoon" class="" />
+                </div>
+                <div class="swiper-slide">
+                  <img src="./assets/img/common/itineraries-img.png" alt="Honeymoon" class="" />
+                </div>
+                <div class="swiper-slide">
+                  <img src="./assets/img/common/itineraries-img.png" alt="Honeymoon" class="" />
+                </div>
+              </div>
+              <div class="swiper-counter">
+                <span class="swiper-counter__left">01</span>
+                <span>/</span>
+                <span class="swiper-counter__right">04</span>
+              </div>
+              <div class="swiper-pagination"></div>
+              <div class="swiper-button-prev"></div>
+              <div class="swiper-button-next"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="overview">
+        <div class="l-container l-pd-0-135px">
+          <div class="overview__content">
+            <h2 class="overview__title underline-after-title">Overview</h2>
+            <div class="overview__detail">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</div>
+          </div>
+        </div>
+      </section>
+      <section class="itinerary-detail">
+        <div class="l-container l-pd-0-135px">
+          <div class="itinerary-detail__content">
+            <h2 class="itinerary-detail__title underline-after-title">Itinerary detail</h2>
+            <div class="accordion">
+              <div class="accordion-item">
+                <div class="accordion-header" id="accordion-button-1" aria-expanded="false">
+                  <div class="accordion-date">
+                    <div class="accordion-date__item">
+                      <img src="./assets/img/icon/date-ic.svg" alt="" />
+                    </div>
+                    <span class="accordion-date__title">DAY 1</span>
+                  </div>
+                  <div class="accordion-right">
+                    <span class="accordion-title">PEARL FARM TUNG SAU - TITOP ISLAND – KAYAK</span>
+                    <span class="icon" aria-hidden="true">
+                      <img src="./assets/img/icon/up-ic.svg" alt="" />
+                    </span>
+                  </div>
+                </div>
+                <div class="accordion-content">
+                  <p class="accordion-content__info"><strong>08:00 – 8:30:</strong> Pick up at your hotel in Hanoi Old Quarter. Start 2.5 hours road journey on shuttle limousine bus (for the guests use our transfer service).</p>
+                  <p class="accordion-content__info">If you go to Halong Bay on your own, please be ready at Victorius Cruise’s Waiting area Tuan Chau International Marina, Halong Bay  at 11:30 – 11:45 A.M for check-in. You will be transferred to Victorius Cruise from the tender.</p>
+                  <img class="accordion-content__img" src="./assets/img/common/itinerary-img-1.png" alt="">
+                </div>
+              </div>
+              <div class="accordion-item">
+                <div class="accordion-header" id="accordion-button-2" aria-expanded="false">
+                  <div class="accordion-date">
+                    <div class="accordion-date__item">
+                      <img src="./assets/img/icon/date-ic.svg" alt="" />
+                    </div>
+                    <span class="accordion-date__title">DAY 2</span>
+                  </div>
+                  <div class="accordion-right">
+                    <span class="accordion-title">SURPRISE CAVE</span>
+                    <span class="icon" aria-hidden="true">
+                      <img src="./assets/img/icon/up-ic.svg" alt="" />
+                    </span>
+                  </div>
+                </div>
+                <div class="accordion-content">
+                  <p class="accordion-content__info"><strong>08:00 – 8:30:</strong> Pick up at your hotel in Hanoi Old Quarter. Start 2.5 hours road journey on shuttle limousine bus (for the guests use our transfer service).</p>
+                  <p class="accordion-content__info">If you go to Halong Bay on your own, please be ready at Victorius Cruise’s Waiting area Tuan Chau International Marina, Halong Bay  at 11:30 – 11:45 A.M for check-in. You will be transferred to Victorius Cruise from the tender.</p>
+                  <img class="accordion-content__img" src="./assets/img/common/itinerary-img-1.png" alt="">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="cruise-terms">
+        <div class="l-container l-pd-0-135px">
+          <h2 class="cruise-terms__main-title underline-after-title">INCLUSIONS / EXCLUSIONS</h2>
+          <div class="cruise-terms__grid">
+            <div class="terms-box terms-box--inclusions">
+              <div class="terms-box__name">INCLUSIONS</div>
+              <div class="terms-box__content">
+                <ul>
+                  <li>Luxury accommodation with modern amenities, including a bathtub and a private balcony.</li>
+                  <li>01 lunch / 01 dinner / 01 breakfast / 01 brunch.</li>
+                  <li>Tea, coffee, and two cans of mineral water placed on the table.</li>
+                  <li>Complimentary use of the swimming pool, gym and kayak.</li>
+                  <li>Welcome fresh fruits upon check-in.</li>
+                  <li>Complimentary snacks at Happy Hour.</li>
+                  <li>Activities onboard (cooking class, squid fishing...).</li>
+                  <li>For Captain Suite and above: Complimentary herbal foot bath &amp; 30-minute sauna at the Spa.</li>
+                  <li>For President Suite: Additional 30-minute foot massage &amp; 01 bottle of wine.</li>
+                  <li>Travel insurance and sightseeing fees.</li>
+                  <li>Taxes and service charges.</li>
+                  <li>Shared tour guide.</li>
+                </ul>
+              </div>
+            </div>
+            <div class="terms-box terms-box--exclusions">
+              <div class="terms-box__name">EXCLUSIONS</div>
+              <div class="terms-box__content">
+                <ul>
+                  <li>Flight tickets, transportation, airport transfers.</li>
+                  <li>Visa.</li>
+                  <li>Mainland hotel accommodation.</li>
+                  <li>Transportation Hanoi – Ha Long Bay - Hanoi.</li>
+                  <li>Food and beverage not included in the room rates.</li>
+                  <li>Massage, spa, and beauty services.</li>
+                  <li>Tips for staff and other service charges included in the room rate.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="cruise-terms__note">
+            <p><strong>NOTE:</strong> Itinerary is subject to change due to weather conditions or tides without prior notice. Wi-Fi is available throughout the cruise areas; however, internet connection may be intermittent in some areas within the bay.</p>
+          </div>
+        </div>
+      </section>
+      <section class="special-offers-rd">
+        <div class="l-container l-pd-0-135px">
+          <h2 class="special-offers-rd__title underline-after-title">SPECIAL OFFERS</h2>
+          <div class="special-offers-rd__slider">
+            <div class="swiper special-offers-rd__swiper">
+              <div class="swiper-wrapper">
+                <article class="swiper-slide">
+                  <a href="#" class="special-offers-rd__card">
+                    <div class="special-offers-rd__image-wrapper">
+                      <img src="./assets/img/common/special-offers-8.png" alt="Galaxy View Suite" />
+                    </div>
+                    <div class="special-offers-rd__content">
+                      <h2 class="special-offers-rd__name">GALAXY VIEW SUITE</h2>
+                      <p class="special-offers-rd__detail ug-line-break-3">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut</p>
+                      <div class="special-offers-rd__actions">
+                        <div class="c-btn c-btn--view-more">
+                          <div class="btn-inner">
+                            <span>VIEW MORE</span>
+                            <span class="c-btn__arrow">
+                              <img src="./assets/img/icon/next.svg" alt="" />
+                            </span>
+                          </div>
+                          <div class="btn-hover">
+                            <span>VIEW MORE</span>
+                            <span class="c-btn__arrow">
+                              <img src="./assets/img/icon/next-2.svg" alt="" />
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </a>
+                </article>
+                <article class="swiper-slide">
+                  <a href="#" class="special-offers-rd__card">
+                    <div class="special-offers-rd__image-wrapper">
+                      <img src="./assets/img/common/special-offers-8.png" alt="Galaxy View Suite" />
+                    </div>
+                    <div class="special-offers-rd__content">
+                      <h2 class="special-offers-rd__name">GALAXY VIEW SUITE</h2>
+                      <p class="special-offers-rd__detail ug-line-break-3">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut</p>
+                      <div class="special-offers-rd__actions">
+                        <div class="c-btn c-btn--view-more">
+                          <div class="btn-inner">
+                            <span>VIEW MORE</span>
+                            <span class="c-btn__arrow">
+                              <img src="./assets/img/icon/next.svg" alt="" />
+                            </span>
+                          </div>
+                          <div class="btn-hover">
+                            <span>VIEW MORE</span>
+                            <span class="c-btn__arrow">
+                              <img src="./assets/img/icon/next-2.svg" alt="" />
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </a>
+                </article>
+              </div>
+              <div class="swiper-button-prev"></div>
+              <div class="swiper-button-next"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="gallery">
+        <div class="gallery__content">
+          <div class="gallery__header">
+            <h2 class="gallery__title underline-after-title">GALLERY</h2>
+          </div>
+          <div class="gallery__grid">
+            <div class="gallery__grid-top">
+              <div class="gallery__item gallery__item--large">
+                <div class="image-placeholder">
+                  <img src="./assets/img/common/gallery-2.png" alt="" />
+                  <p class="caption">Cooking</p>
+                </div>
+              </div>
+              <div class="gallery__item gallery__item--large">
+                <div class="image-placeholder">
+                  <img src="./assets/img/common/gallery-2.png" alt="" />
+                  <p class="caption">Cooking</p>
+                </div>
+              </div>
+            </div>
+            <div class="gallery__grid-bottom">
+              <div class="gallery__item gallery__item--small">
+                <div class="image-placeholder">
+                  <img src="./assets/img/common/gallery-2.png" alt="" />
+                  <p class="caption">Karaoke</p>
+                </div>
+              </div>
+              <div class="gallery__item gallery__item--small">
+                <div class="image-placeholder">
+                  <img src="./assets/img/common/gallery-2.png" alt="" />
+                  <p class="caption">Karaoke</p>
+                </div>
+              </div>
+              <div class="gallery__item gallery__item--small">
+                <div class="image-placeholder">
+                  <img src="./assets/img/common/gallery-2.png" alt="" />
+                  <p class="caption">Karaoke</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="other-itinerary">
+        <div class="l-container l-pd-0-135px">
+          <div class="other-itinerary__content">
+            <div class="other-itinerary__header">
+              <h2 class="other-itinerary__title underline-after-title">Other Itinerary</h2>
+            </div>
+            <div class="other-itinerary__list">
+              <a href="#" class="other-itinerary-card">
+                <div class="other-itinerary-card__image-wrapper">
+                  <img src="./assets/img/common/event-1.png" alt="Explore Heritage Bay" />
+                </div>
+                <div class="other-itinerary-card__content">
+                  <h3 class="other-itinerary-card__title ug-line-break-2">Discovery HALONG BAY 3 days / 2 nights</h3>
+                  <p class="other-itinerary-card__desc ug-line-break-3">Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text...</p>
+                  <div class="other-itinerary-card__actions">
+                    <div class="c-btn c-btn--view-more">
+                      <div class="btn-inner">
+                        <span>VIEW MORE</span>
+                        <span class="c-btn__arrow">
+                          <img src="./assets/img/icon/next.svg" alt="" />
+                        </span>
+                      </div>
+                      <div class="btn-hover">
+                        <span>VIEW MORE</span>
+                        <span class="c-btn__arrow">
+                          <img src="./assets/img/icon/next-2.svg" alt="" />
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </a>
+              <a href="#" class="other-itinerary-card">
+                <div class="other-itinerary-card__image-wrapper">
+                  <img src="./assets/img/common/event-1.png" alt="Explore Heritage Bay" />
+                </div>
+                <div class="other-itinerary-card__content">
+                  <h3 class="other-itinerary-card__title ug-line-break-2">Discovery HALONG BAY 3 days / 2 nights</h3>
+                  <p class="other-itinerary-card__desc ug-line-break-3">Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text...</p>
+                  <div class="other-itinerary-card__actions">
+                    <div class="c-btn c-btn--view-more">
+                      <div class="btn-inner">
+                        <span>VIEW MORE</span>
+                        <span class="c-btn__arrow">
+                          <img src="./assets/img/icon/next.svg" alt="" />
+                        </span>
+                      </div>
+                      <div class="btn-hover">
+                        <span>VIEW MORE</span>
+                        <span class="c-btn__arrow">
+                          <img src="./assets/img/icon/next-2.svg" alt="" />
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer class="footer">
+      <div class="footer__inner l-container l-pd-0-135px">
+        <div class="footer-top">
+          <a href="#" class="footer-top__link">About Us</a>
+          <a href="#" class="footer-top__link">Brand Policy</a>
+          <a href="#" class="footer-top__link">Privacy Policy</a>
+          <a href="#" class="footer-top__link">Our Itineraries</a>
+          <a href="#" class="footer-top__link">Our Amenities</a>
+          <a href="#" class="footer-top__link">Our Services</a>
+          <a href="#" class="footer-top__link">News & Event</a>
+          <a href="#" class="footer-top__link">Contact Us</a>
+        </div>
+        <div class="footer-mid">
+          <div class="footer__brand-info">
+            <div class="footer__logo">
+              <img src="./assets/img/common/logo-footer.svg" alt="Victorious Cruise Logo" />
+            </div>
+          </div>
+          <div class="footer__contact-grid">
+            <div class="footer__contact-col">
+              <h3 class="footer__contact-title">HEADQUARER</h3>
+              <p class="footer__contact-detail">Address: 5th Floor, VRP Bank Building, 23 Hang Voi street - Hoan Kiem ward - Ha Noi</p>
+              <p class="footer__contact-detail">Phone: (+84) 24 3939 3555</p>
+              <p class="footer__contact-detail">Hotline: (+84) 983 086 355</p>
+              <p class="footer__contact-detail">Email: info@victoriouscruise.com</p>
+            </div>
+            <div class="footer__contact-col">
+              <h3 class="footer__contact-title">HALONG OFFICE</h3>
+              <p class="footer__contact-detail">Address: No. 26 Tuan Chau Marina, Halong - Quang Ninh</p>
+              <p class="footer__contact-detail">Phone: (+84) 983 730 882</p>
+              <p class="footer__contact-detail">Hotline: (+84) 376 169 787</p>
+            </div>
+          </div>
+        </div>
+        <div class="footer__social-media">
+          <h3 class="footer__social-title">SOCIAL MEDIA</h3>
+          <div class="footer__social-links">
+            <a href="#" class="footer__social-icon" aria-label="Facebook">
+              <img src="./assets/img/icon/fb-ic.svg" alt="" />
+            </a>
+            <a href="#" class="footer__social-icon" aria-label="Instagram">
+              <img src="./assets/img/icon/ins-ic.svg" alt="" />
+            </a>
+            <a href="#" class="footer__social-icon" aria-label="Telegram">
+              <img src="./assets/img/icon/tele-ic.svg" alt="" />
+            </a>
+            <a href="#" class="footer__social-icon" aria-label="Youtube">
+              <img src="./assets/img/icon/ytb-ic.svg" alt="" />
+            </a>
+            <a href="#" class="footer__social-icon" aria-label="X (Twitter)">
+              <img src="./assets/img/icon/x-ic.svg" alt="" />
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="footer__copyright l-container l-pd-0-135px">
+        <p>COPYRIGHT © 2025. VICTORIUS. ALL RIGHTS RESERVED.</p>
+      </div>
+    </footer>
+    <script></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.matchHeight/0.7.2/jquery.matchHeight-min.js" integrity="sha512-/bOVV1DV1AQXcypckRwsR9ThoCj7FqTV2/0Bm79bL3YSyLkVideFLE3MIZkq1u5t28ke1c0n31WYCOrO01dsUg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="./assets/js/main.js"></script>
+    <script src="./assets/js/slider.js"></script>
+  </body>
+
+</html>

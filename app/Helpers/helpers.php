@@ -31,7 +31,19 @@ if (! function_exists('setting_string')) {
     {
         $value = setting($key, $default);
 
-        return is_string($value) ? $value : (string) ($value ?: $default);
+        if (is_string($value)) {
+            return $value;
+        }
+
+        if (is_array($value)) {
+            return $default;
+        }
+
+        if (is_null($value) || $value === '') {
+            return $default;
+        }
+
+        return (string) $value;
     }
 }
 

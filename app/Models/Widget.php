@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Widget extends Model
 {
-    protected $fillable = ['name', 'type', 'area', 'settings', 'sort_order', 'is_active', 'variant', 'metadata'];
+    protected $fillable = ['name', 'type', 'area', 'settings', 'sort_order', 'is_active', 'variant', 'metadata', 'tenant_id'];
 
     protected $casts = [
         'settings' => 'array',

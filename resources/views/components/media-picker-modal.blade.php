@@ -11,13 +11,15 @@
     if ($projectCode) {
         $mediaListUrl = url("/{$projectCode}/admin/media/list");
         $mediaUploadUrl = url("/{$projectCode}/admin/media/upload");
+        $mediaDeleteUrl = url("/{$projectCode}/admin/media");
     } else {
         $mediaListUrl = url('/admin/media/list');
         $mediaUploadUrl = url('/admin/media/upload');
+        $mediaDeleteUrl = url('/admin/media');
     }
 @endphp
 
-<div x-data="mediaPickerModal('{{ $id }}', {{ $multiple ? 'true' : 'false' }}, '{{ $mediaListUrl }}', '{{ $mediaUploadUrl }}')"
+<div x-data="mediaPickerModal('{{ $id }}', {{ $multiple ? 'true' : 'false' }}, '{{ $mediaListUrl }}', '{{ $mediaUploadUrl }}', '{{ $mediaDeleteUrl }}')"
      x-show="isOpen"
      x-cloak
      @open-media-picker.window="openPicker($event.detail)"
@@ -25,12 +27,12 @@
      class="fixed inset-0 z-[9999] overflow-y-auto"
      style="display: none;">
     
-    <div class="flex items-center justify-center min-h-screen px-4 py-8">
+    <div class="flex items-center justify-center min-h-screen px-4 py-4">
         {{-- Backdrop --}}
         <div class="fixed inset-0 bg-black/60 transition-opacity" @click="closePicker()"></div>
         
-        {{-- Modal --}}
-        <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[85vh] overflow-hidden z-10"
+        {{-- Modal - Increased size --}}
+        <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-7xl max-h-[95vh] overflow-hidden z-10"
              x-transition:enter="transition ease-out duration-200"
              x-transition:enter-start="opacity-0 scale-95"
              x-transition:enter-end="opacity-100 scale-100"
@@ -99,13 +101,26 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
                         </svg>
                         Upload
-                        <input type="file" @change="uploadFiles($event)" multiple accept="image/*,video/*" class="hidden">
+                        <input type="file" x-ref="fileInput" @change="uploadFiles($event)" multiple accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml,video/mp4,video/webm,video/quicktime" class="hidden">
                     </label>
                 </div>
             </div>
             
             {{-- Content --}}
-            <div class="p-6 overflow-y-auto" style="max-height: calc(85vh - 200px);">
+            <div class="p-6 overflow-y-auto" style="max-height: calc(95vh - 180px);">
+                {{-- Upload Progress --}}
+                <div x-show="uploadTotal > 0" class="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm font-medium text-blue-700">
+                            Đang upload: <span x-text="uploadCurrent"></span>/<span x-text="uploadTotal"></span> file
+                        </span>
+                        <span class="text-sm text-blue-600" x-text="uploadProgress + '%'"></span>
+                    </div>
+                    <div class="w-full bg-blue-200 rounded-full h-2">
+                        <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" :style="'width: ' + uploadProgress + '%'"></div>
+                    </div>
+                </div>
+                
                 {{-- Loading --}}
                 <div x-show="loading" class="flex items-center justify-center py-12">
                     <svg class="w-8 h-8 animate-spin text-blue-500" fill="none" viewBox="0 0 24 24">
@@ -117,7 +132,7 @@
                 {{-- Folders --}}
                 <div x-show="!loading && folders.length > 0" class="mb-6">
                     <h4 class="text-sm font-medium text-gray-500 mb-3">Thư mục</h4>
-                    <div class="grid grid-cols-6 gap-3">
+                    <div class="grid grid-cols-8 gap-3">
                         <template x-for="folder in folders" :key="folder.path">
                             <button @click="navigateTo(folder.path)" 
                                     class="flex flex-col items-center p-3 rounded-lg border border-gray-200 hover:border-blue-400 hover:bg-blue-50 transition group">
@@ -133,23 +148,33 @@
                 {{-- Files Grid View --}}
                 <div x-show="!loading && viewMode === 'grid'">
                     <h4 x-show="folders.length > 0" class="text-sm font-medium text-gray-500 mb-3">Files</h4>
-                    <div class="grid grid-cols-5 gap-4">
+                    <div class="grid grid-cols-6 gap-4">
                         <template x-for="file in filteredFiles" :key="file.id">
-                            <div @click="toggleSelect(file)"
-                                 :class="isSelected(file) ? 'ring-2 ring-blue-500 border-blue-500' : 'border-gray-200 hover:border-gray-300'"
-                                 class="relative group cursor-pointer rounded-lg border overflow-hidden bg-gray-50 transition">
-                                <div class="aspect-square">
-                                    <img :src="file.url" :alt="file.name" class="w-full h-full object-cover">
+                            <div class="relative group">
+                                <div @click="toggleSelect(file)"
+                                     :class="isSelected(file) ? 'ring-2 ring-blue-500 border-blue-500' : 'border-gray-200 hover:border-gray-300'"
+                                     class="cursor-pointer rounded-lg border overflow-hidden bg-gray-50 transition">
+                                    <div class="aspect-square">
+                                        <img :src="file.url" :alt="file.name" class="w-full h-full object-cover">
+                                    </div>
+                                    <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition pointer-events-none"></div>
+                                    <div x-show="isSelected(file)" class="absolute top-2 left-2 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                        </svg>
+                                    </div>
+                                    <div class="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/60 to-transparent">
+                                        <p class="text-xs text-white truncate" x-text="file.name"></p>
+                                    </div>
                                 </div>
-                                <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition"></div>
-                                <div x-show="isSelected(file)" class="absolute top-2 right-2 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                                {{-- Delete button --}}
+                                <button @click.stop="deleteFile(file)" 
+                                        class="absolute top-2 right-2 w-7 h-7 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                                        title="Xóa file">
                                     <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                     </svg>
-                                </div>
-                                <div class="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/60 to-transparent">
-                                    <p class="text-xs text-white truncate" x-text="file.name"></p>
-                                </div>
+                                </button>
                             </div>
                         </template>
                     </div>
@@ -162,19 +187,29 @@
                             <tr>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Preview</th>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tên file</th>
+                                <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">Thao tác</th>
                                 <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Chọn</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
                             <template x-for="file in filteredFiles" :key="file.id">
-                                <tr @click="toggleSelect(file)" 
-                                    :class="isSelected(file) ? 'bg-blue-50' : 'hover:bg-gray-50'"
-                                    class="cursor-pointer transition">
-                                    <td class="px-4 py-2">
-                                        <img :src="file.url" class="w-12 h-12 object-cover rounded">
+                                <tr :class="isSelected(file) ? 'bg-blue-50' : 'hover:bg-gray-50'"
+                                    class="transition">
+                                    <td class="px-4 py-2" @click="toggleSelect(file)">
+                                        <img :src="file.url" class="w-16 h-16 object-cover rounded cursor-pointer">
                                     </td>
-                                    <td class="px-4 py-2 text-sm text-gray-700" x-text="file.name"></td>
-                                    <td class="px-4 py-2 text-right">
+                                    <td class="px-4 py-2 text-sm text-gray-700 cursor-pointer" @click="toggleSelect(file)" x-text="file.name"></td>
+                                    <td class="px-4 py-2 text-center">
+                                        <button @click.stop="deleteFile(file)" 
+                                                class="px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-600 text-xs rounded-lg transition"
+                                                title="Xóa file">
+                                            <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                            </svg>
+                                            Xóa
+                                        </button>
+                                    </td>
+                                    <td class="px-4 py-2 text-right cursor-pointer" @click="toggleSelect(file)">
                                         <div x-show="isSelected(file)" class="inline-flex w-6 h-6 bg-blue-500 rounded-full items-center justify-center">
                                             <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
@@ -219,13 +254,14 @@
 </div>
 
 <script>
-function mediaPickerModal(id, multiple, listUrl, uploadUrl) {
+function mediaPickerModal(id, multiple, listUrl, uploadUrl, deleteUrl) {
     return {
         id: id,
         isOpen: false,
         multiple: multiple,
         listUrl: listUrl,
         uploadUrl: uploadUrl,
+        deleteUrl: deleteUrl,
         loading: false,
         viewMode: 'grid',
         currentPath: '',
@@ -236,11 +272,16 @@ function mediaPickerModal(id, multiple, listUrl, uploadUrl) {
         selectedFiles: [],
         targetField: null,
         targetComponent: null,
+        mediaType: null,
+        uploadProgress: 0,
+        uploadTotal: 0,
+        uploadCurrent: 0,
         
         openPicker(detail) {
             this.targetField = detail.field || null;
             this.targetComponent = detail.component || null;
             this.multiple = detail.multiple || this.multiple;
+            this.mediaType = detail.mediaType || null;
             this.selectedFiles = [];
             this.isOpen = true;
             this.loadMedia();
@@ -249,6 +290,7 @@ function mediaPickerModal(id, multiple, listUrl, uploadUrl) {
         closePicker() {
             this.isOpen = false;
             this.selectedFiles = [];
+            this.mediaType = null;
         },
         
         async loadMedia() {
@@ -271,12 +313,29 @@ function mediaPickerModal(id, multiple, listUrl, uploadUrl) {
         },
         
         filterFiles() {
-            if (!this.searchQuery) {
-                this.filteredFiles = this.files;
-            } else {
-                const query = this.searchQuery.toLowerCase();
-                this.filteredFiles = this.files.filter(f => f.name.toLowerCase().includes(query));
+            let filtered = this.files;
+            
+            if (this.mediaType) {
+                const videoExtensions = ['mp4', 'webm', 'mov', 'avi', 'mkv'];
+                const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
+                
+                filtered = filtered.filter(f => {
+                    const ext = f.name.split('.').pop().toLowerCase();
+                    if (this.mediaType === 'video') {
+                        return videoExtensions.includes(ext);
+                    } else if (this.mediaType === 'image') {
+                        return imageExtensions.includes(ext);
+                    }
+                    return true;
+                });
             }
+            
+            if (this.searchQuery) {
+                const query = this.searchQuery.toLowerCase();
+                filtered = filtered.filter(f => f.name.toLowerCase().includes(query));
+            }
+            
+            this.filteredFiles = filtered;
         },
         
         toggleSelect(file) {
@@ -297,31 +356,90 @@ function mediaPickerModal(id, multiple, listUrl, uploadUrl) {
         },
         
         async uploadFiles(event) {
-            const files = event.target.files;
+            const files = Array.from(event.target.files);
             if (!files.length) return;
             
             this.loading = true;
-            const formData = new FormData();
-            for (let i = 0; i < files.length; i++) {
-                formData.append('files[]', files[i]);
-            }
-            formData.append('path', this.currentPath);
-            formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
+            this.uploadTotal = files.length;
+            this.uploadCurrent = 0;
+            this.uploadProgress = 0;
             
+            let successCount = 0;
+            let failedFiles = [];
+            
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                this.uploadCurrent = i + 1;
+                this.uploadProgress = Math.round((i / files.length) * 100);
+                
+                const formData = new FormData();
+                formData.append('files[]', file);
+                formData.append('path', this.currentPath);
+                
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+                if (csrfToken) {
+                    formData.append('_token', csrfToken);
+                }
+                
+                try {
+                    const response = await fetch(this.uploadUrl, {
+                        method: 'POST',
+                        body: formData,
+                        credentials: 'same-origin'
+                    });
+                    
+                    if (response.ok) {
+                        successCount++;
+                    } else {
+                        failedFiles.push(file.name);
+                    }
+                } catch (e) {
+                    failedFiles.push(file.name);
+                }
+            }
+            
+            this.uploadProgress = 100;
+            
+            if (failedFiles.length > 0) {
+                alert('Upload hoàn tất: ' + successCount + '/' + files.length + ' file thành công.\nFile lỗi: ' + failedFiles.join(', '));
+            }
+            
+            this.loadMedia();
+            this.loading = false;
+            this.uploadProgress = 0;
+            this.uploadTotal = 0;
+            this.uploadCurrent = 0;
+            event.target.value = '';
+        },
+        
+        async deleteFile(file) {
+            if (!confirm('Bạn có chắc muốn xóa file "' + file.name + '"?')) {
+                return;
+            }
+            
+            this.loading = true;
             try {
-                const response = await fetch(this.uploadUrl, {
-                    method: 'POST',
-                    body: formData
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+                const response = await fetch(this.deleteUrl + '/' + file.id, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'same-origin'
                 });
-                const data = await response.json();
-                if (data.success) {
+                
+                if (response.ok) {
+                    this.selectedFiles = this.selectedFiles.filter(f => f.id !== file.id);
                     this.loadMedia();
+                } else {
+                    alert('Xóa file thất bại: ' + response.status);
                 }
             } catch (e) {
-                console.error('Upload error:', e);
+                alert('Lỗi khi xóa file: ' + e.message);
             }
             this.loading = false;
-            event.target.value = '';
         },
         
         confirmSelection() {
@@ -329,7 +447,6 @@ function mediaPickerModal(id, multiple, listUrl, uploadUrl) {
             
             const urls = this.selectedFiles.map(f => f.url);
             
-            // Dispatch event with selected files - this works for both Livewire and non-Livewire pages
             if (this.targetField) {
                 window.dispatchEvent(new CustomEvent('media-selected', {
                     detail: {
@@ -339,7 +456,6 @@ function mediaPickerModal(id, multiple, listUrl, uploadUrl) {
                     }
                 }));
                 
-                // If Livewire component was passed directly, use it
                 if (this.targetComponent) {
                     try {
                         this.targetComponent.set('settings.' + this.targetField, this.multiple ? urls : urls[0]);
@@ -347,12 +463,10 @@ function mediaPickerModal(id, multiple, listUrl, uploadUrl) {
                         console.log('Could not set Livewire value directly:', e);
                     }
                 } else if (window.Livewire && typeof Livewire.first === 'function') {
-                    // Try to find Livewire component on page (only if Livewire exists)
                     try {
                         const component = Livewire.first();
                         if (component && component.$wire) {
                             if (this.multiple) {
-                                // For gallery, append to existing
                                 const current = component.get('settings.' + this.targetField) || [];
                                 component.set('settings.' + this.targetField, [...current, ...urls]);
                             } else {
@@ -360,7 +474,6 @@ function mediaPickerModal(id, multiple, listUrl, uploadUrl) {
                             }
                         }
                     } catch (e) {
-                        // Livewire component not found or error - that's OK, event was dispatched
                         console.log('No Livewire component found, using event dispatch only');
                     }
                 }
@@ -368,6 +481,6 @@ function mediaPickerModal(id, multiple, listUrl, uploadUrl) {
             
             this.closePicker();
         }
-    }
+    };
 }
 </script>

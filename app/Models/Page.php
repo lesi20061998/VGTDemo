@@ -24,7 +24,6 @@ class Page extends Model
         'excerpt',
         'featured_image',
         'post_type',
-        'grapes_data',
         'custom_css',
         'template',
         'status',
@@ -84,17 +83,10 @@ class Page extends Model
     }
 
     /**
-     * Get rendered page content (GrapesJS or legacy)
+     * Get rendered page content
      */
     public function getRenderedContent(): string
     {
-        // If has GrapesJS data, use it
-        if ($this->grapes_data) {
-            $grapesData = json_decode($this->grapes_data, true);
-            return $grapesData['html'] ?? $this->content ?? '';
-        }
-        
-        // Legacy: content + sections
         $content = $this->content ?? '';
         
         foreach ($this->activeSections as $section) {
@@ -105,20 +97,15 @@ class Page extends Model
     }
 
     /**
-     * Get custom CSS (GrapesJS or legacy)
+     * Get custom CSS
      */
     public function getCustomCss(): string
     {
-        if ($this->grapes_data) {
-            $grapesData = json_decode($this->grapes_data, true);
-            return $grapesData['css'] ?? $this->custom_css ?? '';
-        }
-        
         return $this->custom_css ?? '';
     }
 
     /**
-     * Add a section to the page (legacy support)
+     * Add a section to the page
      */
     public function addSection(string $type, array $settings = [], ?int $order = null): PageSection
     {

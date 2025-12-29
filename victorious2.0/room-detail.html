@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Room Detail | Vite Template</title>
+    <meta name="description" content="Room Detail" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Petrona:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css" />
+    <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://cdn.jsdelivr.net/npm/paper-css@0.4.1/paper.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="./assets/css/style.css">
+  </head>
+
+  <body>
+    <header class="c-header js-header">
+      <div class="c-header__container">
+        <div class="c-header__top">
+          <div class="details l-container">
+            <div class="c-header__mail">
+              <a href="tel:0909999999">
+                <img src="./assets/img/icon/phone-ic.svg" alt="" class="c-header__mailic" /> 0909 999 999 </a>
+              <a href="mailto:info@victorious.com">
+                <img src="./assets/img/icon/email-ic.svg" alt="" class="c-header__mailic" /> info@victorious.com </a>
+            </div>
+            <div class="c-header__social">
+              <p class="c-header__social-title">Contact us</p>
+              <ul class="c-header__social--list">
+                <li class="c-header__social--item">
+                  <a href=""><img src="./assets/img/icon/fb-ic.svg" alt="" /></a>
+                </li>
+                <li class="c-header__social--item">
+                  <a href=""><img src="./assets/img/icon/ins-ic.svg" alt="" /></a>
+                </li>
+                <li class="c-header__social--item">
+                  <a href=""><img src="./assets/img/icon/ytb-ic.svg" alt="" /></a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="c-header__main">
+          <div class="details l-container">
+            <ul class="c-header__main--left">
+              <li><a href="/">Home page</a></li>
+              <li class="flex-ic room-categories__cabin-dropmenu">
+                <a href="#">about victorious</a><img src="./assets/img/icon/down-ic.svg" alt="" />
+                <ul class="cabin-menu">
+                  <li class="cabin-item"><a href="#">About us</a></li>
+                  <li class="cabin-item"><a href="#">News & Events</a></li>
+                </ul>
+              </li>
+              <li class="flex-ic room-categories__cabin-dropmenu">
+                <a href="/room-detail">room categories</a><img src="./assets/img/icon/down-ic.svg" alt="" />
+                <ul class="cabin-menu">
+                  <li class="cabin-item"><a href="#">Deluxe</a></li>
+                  <li class="cabin-item"><a href="#">Executive</a></li>
+                  <li class="cabin-item"><a href="#">Executive Triple</a></li>
+                  <li class="cabin-item"><a href="#">Premium Executive</a></li>
+                  <li class="cabin-item"><a href="#">Junior Suite</a></li>
+                  <li class="cabin-item"><a href="#">Captain Suite</a></li>
+                  <li class="cabin-item"><a href="#">Royal Suite</a></li>
+                  <li class="cabin-item"><a href="#">President Suite</a></li>
+                </ul>
+              </li>
+            </ul>
+            <a href="/" class="c-header__logo"><img src="./assets/img/common/logo-header.svg" alt="VICTORIOUS" /></a>
+            <ul class="c-header__main--right">
+              <li class="flex-ic room-categories__cabin-dropmenu">
+                <a href="/itineraries">itineraries</a><img src="./assets/img/icon/down-ic.svg" alt="" />
+                <ul class="cabin-menu">
+                  <li class="cabin-item"><a href="#">2 days 1 night</a></li>
+                  <li class="cabin-item"><a href="#">3 days 2 night</a></li>
+                </ul>
+              </li>
+              <li><a href="#">special offers</a></li>
+              <li><a href="#">contact</a></li>
+            </ul>
+            <div class="c-header__hamburger">
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </div>
+        </div>
+        <div class="main-header__mobile-menu" id="mobileMenu">
+          <div class="main-header__mobile-menu-overlay"></div>
+          <div class="main-header__mobile-menu-content">
+            <button class="main-header__mobile-close" id="mobileMenuClose">
+              <img src="./assets/img/icon/close-ic.svg" alt="" />
+            </button>
+            <ul class="main-header__mobile-nav">
+              <li class="mobile-nav__item mobile-nav__item--has-sub">
+                <div class="mobile-nav__link-wrap">
+                  <a href="/" class="mobile-nav__link">Home page</a>
+                </div>
+              </li>
+              <li class="mobile-nav__item mobile-nav__item--has-sub">
+                <div class="mobile-nav__link-wrap">
+                  <a href="#" class="mobile-nav__link">About victorious</a>
+                  <button class="mobile-nav__toggle-btn">
+                    <img src="./assets/img/icon/arrow-right-ic.svg" alt="" />
+                  </button>
+                </div>
+                <ul class="mobile-nav__sub-list">
+                  <li class="mobile-nav__sub-item"><a href="#">About us</a></li>
+                  <li class="mobile-nav__sub-item"><a href="#">News & Events</a></li>
+                </ul>
+              </li>
+              <li class="mobile-nav__item mobile-nav__item--has-sub">
+                <div class="mobile-nav__link-wrap">
+                  <a href="#" class="mobile-nav__link">Room catagories</a>
+                  <button class="mobile-nav__toggle-btn">
+                    <img src="./assets/img/icon/arrow-right-ic.svg" alt="" />
+                  </button>
+                </div>
+                <ul class="mobile-nav__sub-list">
+                  <li class="mobile-nav__sub-item"><a href="#">Deluxe</a></li>
+                  <li class="mobile-nav__sub-item"><a href="#">Executive</a></li>
+                  <li class="mobile-nav__sub-item"><a href="#">Executive Triple</a></li>
+                  <li class="mobile-nav__sub-item"><a href="#">Premium Executive</a></li>
+                  <li class="mobile-nav__sub-item"><a href="#">Junior Suite</a></li>
+                  <li class="mobile-nav__sub-item"><a href="#">Captain Suite</a></li>
+                  <li class="mobile-nav__sub-item"><a href="#">Royal Suite</a></li>
+                  <li class="mobile-nav__sub-item"><a href="#">President Suite</a></li>
+                </ul>
+              </li>
+              <li class="mobile-nav__item mobile-nav__item--has-sub">
+                <div class="mobile-nav__link-wrap">
+                  <a href="#" class="mobile-nav__link">Itineraries</a>
+                  <button class="mobile-nav__toggle-btn">
+                    <img src="./assets/img/icon/arrow-right-ic.svg" alt="" />
+                  </button>
+                </div>
+                <ul class="mobile-nav__sub-list">
+                  <li class="mobile-nav__sub-item"><a href="#">2 days 1 night</a></li>
+                  <li class="mobile-nav__sub-item"><a href="#">3 days 2 night</a></li>
+                </ul>
+              </li>
+              <li class="mobile-nav__item mobile-nav__item--has-sub">
+                <div class="mobile-nav__link-wrap">
+                  <a href="#" class="mobile-nav__link">Special offers</a>
+                </div>
+              </li>
+              <li class="mobile-nav__item mobile-nav__item--has-sub">
+                <div class="mobile-nav__link-wrap">
+                  <a href="#" class="mobile-nav__link">Contact</a>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </header>
+    <main class="p-top">
+      <section class="hero-section">
+        <div class="hero-section__img">
+          <img src="./assets/img/common/hero-banner.png" alt="" />
+        </div>
+      </section>
+      <section class="breadcrumb-section">
+        <div class="breadcrumb">
+          <a href="#" class="breadcrumb__item">HOME</a>
+          <span class="breadcrumb__separator">
+            <img src="./assets/img/icon/next-2.svg" alt="" />
+          </span>
+          <a href="#" class="breadcrumb__item">ROOMS CATAGORIES</a>
+          <span class="breadcrumb__separator">
+            <img src="./assets/img/icon/next-2.svg" alt="" />
+          </span>
+          <a href="#" class="breadcrumb__item breadcrumb__item--active">TWIN ROOM</a>
+        </div>
+      </section>
+      <section class="room-detail">
+        <div class="l-container l-pd-0-135px">
+          <div class="room-detail__content">
+            <h1 class="room-detail__title">HONEYMOON SUITE WITH TERRACE</h1>
+            <div class="room-detail__content-box">
+              <p class="room-detail__text">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>
+            </div>
+            <a href="#" class="room-detail__back-link">
+              <img src="./assets/img/icon/prev-ic.svg" alt="" />
+              <p>Back to Room & Catagories</p>
+            </a>
+            <!-- Slider main container -->
+            <div class="swiper large-swiper">
+              <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                  <img src="./assets/img/common/room-detail-img-1.png" alt="Honeymoon" class="" />
+                </div>
+                <div class="swiper-slide">
+                  <img src="./assets/img/common/room-detail-img-1.png" alt="Honeymoon" class="" />
+                </div>
+                <div class="swiper-slide">
+                  <img src="./assets/img/common/room-detail-img-1.png" alt="Honeymoon" class="" />
+                </div>
+                <div class="swiper-slide">
+                  <img src="./assets/img/common/room-detail-img-1.png" alt="Honeymoon" class="" />
+                </div>
+              </div>
+              <div class="swiper-counter">
+                <span class="swiper-counter__left">01</span>
+                <span>/</span>
+                <span class="swiper-counter__right">04</span>
+              </div>
+              <div class="swiper-pagination"></div>
+              <div class="swiper-button-prev"></div>
+              <div class="swiper-button-next"></div>
+            </div>
+            <div class="room-detail__features-wrap">
+              <div class="room-detail__features">
+                <div class="features__item">
+                  <span class="features__icon">
+                    <img src="./assets/img/icon/room-ic-1.svg" alt="" />
+                  </span>
+                  <span class="features__text">Deck: 3rd floor or 4th floor</span>
+                </div>
+                <div class="features__item">
+                  <span class="features__icon">
+                    <img src="./assets/img/icon/room-ic-2.svg" alt="" />
+                  </span>
+                  <span class="features__text">Private balcony / Bathtub / Shower stall</span>
+                </div>
+                <div class="features__item">
+                  <span class="features__icon">
+                    <img src="./assets/img/icon/room-ic-3.svg" alt="" />
+                  </span>
+                  <span class="features__text">75 - 90 sqm</span>
+                </div>
+                <div class="features__item">
+                  <span class="features__icon">
+                    <img src="./assets/img/icon/room-ic-4.svg" alt="" />
+                  </span>
+                  <span class="features__text">Double bed</span>
+                </div>
+                <div class="features__item">
+                  <span class="features__icon">
+                    <img src="./assets/img/icon/room-ic-5.svg" alt="" />
+                  </span>
+                  <span class="features__text">Standard occupancy: 02 adults & 1 child under 5</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="room-facilities">
+        <div class="l-container l-pd-0-135px">
+          <h2 class="room-facilities__title">ROOM FACILITIES</h2>
+          <ul class="room-facilities__list">
+            <li class="room-facilities__item">
+              <img src="./assets/img/icon/tick-ic.svg" alt="Tick Icon" />
+              <p>Welcome drink on arrival</p>
+            </li>
+            <li class="room-facilities__item">
+              <img src="./assets/img/icon/tick-ic.svg" alt="Tick Icon" />
+              <p>Full finest bathroom amenities</p>
+            </li>
+            <li class="room-facilities__item">
+              <img src="./assets/img/icon/tick-ic.svg" alt="Tick Icon" />
+              <p>Satellite - HD LED Tivi</p>
+            </li>
+            <li class="room-facilities__item">
+              <img src="./assets/img/icon/tick-ic.svg" alt="Tick Icon" />
+              <p>Wardrobe</p>
+            </li>
+            <li class="room-facilities__item">
+              <img src="./assets/img/icon/tick-ic.svg" alt="Tick Icon" />
+              <p>24 hours room service</p>
+            </li>
+            <li class="room-facilities__item">
+              <img src="./assets/img/icon/tick-ic.svg" alt="Tick Icon" />
+              <p>Telephone</p>
+            </li>
+            <li class="room-facilities__item">
+              <img src="./assets/img/icon/tick-ic.svg" alt="Tick Icon" />
+              <p>Multi air conditioning</p>
+            </li>
+            <li class="room-facilities__item">
+              <img src="./assets/img/icon/tick-ic.svg" alt="Tick Icon" />
+              <p>Dressing table</p>
+            </li>
+            <li class="room-facilities__item">
+              <img src="./assets/img/icon/tick-ic.svg" alt="Tick Icon" />
+              <p>Minibar</p>
+            </li>
+            <li class="room-facilities__item">
+              <img src="./assets/img/icon/tick-ic.svg" alt="Tick Icon" />
+              <p>Hairdryer</p>
+            </li>
+            <li class="room-facilities__item">
+              <img src="./assets/img/icon/tick-ic.svg" alt="Tick Icon" />
+              <p>Wireless Internet</p>
+            </li>
+            <li class="room-facilities__item">
+              <img src="./assets/img/icon/tick-ic.svg" alt="Tick Icon" />
+              <p>Free kayak</p>
+            </li>
+            <li class="room-facilities__item">
+              <img src="./assets/img/icon/tick-ic.svg" alt="Tick Icon" />
+              <p>En-suite luxury marble bathroom</p>
+            </li>
+            <li class="room-facilities__item">
+              <img src="./assets/img/icon/tick-ic.svg" alt="Tick Icon" />
+              <p>Electric shaver outlet</p>
+            </li>
+            <li class="room-facilities__item">
+              <img src="./assets/img/icon/tick-ic.svg" alt="Tick Icon" />
+              <p>Safety box</p>
+            </li>
+            <li class="room-facilities__item">
+              <img src="./assets/img/icon/tick-ic.svg" alt="Tick Icon" />
+              <p>Life jackets</p>
+            </li>
+            <li class="room-facilities__item">
+              <img src="./assets/img/icon/tick-ic.svg" alt="Tick Icon" />
+              <p>Bathtub</p>
+            </li>
+            <li class="room-facilities__item">
+              <img src="./assets/img/icon/tick-ic.svg" alt="Tick Icon" />
+              <p>Complimentary: tea, coffee, fresh fruit, fresh flowers</p>
+            </li>
+          </ul>
+          <div class="room-facilities__actions">
+            <div class="c-btn c-btn--view-more">
+              <div class="btn-inner">
+                <span>BOOK ROOM</span>
+                <span class="c-btn__arrow">
+                  <img src="./assets/img/icon/next.svg" alt="" />
+                </span>
+              </div>
+              <div class="btn-hover">
+                <span>BOOK ROOM</span>
+                <span class="c-btn__arrow">
+                  <img src="./assets/img/icon/next-2.svg" alt="" />
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="other-rooms">
+        <div class="l-container l-pd-0-135px">
+          <h2 class="other-rooms__title">OTHER ROOMS</h2>
+          <div class="other-rooms__list">
+            <article class="room-card__wrapper">
+              <a href="#" class="room-card">
+                <div class="room-card__slider">
+                  <div class="swiper general-swiper">
+                    <div class="swiper-wrapper">
+                      <div class="swiper-slide">
+                        <img src="./assets/img/common/room-detail-img-1.png" alt="Honeymoon" class="" />
+                      </div>
+                      <div class="swiper-slide">
+                        <img src="./assets/img/common/room-detail-img-1.png" alt="Honeymoon" class="" />
+                      </div>
+                      <div class="swiper-slide">
+                        <img src="./assets/img/common/room-detail-img-1.png" alt="Honeymoon" class="" />
+                      </div>
+                      <div class="swiper-slide">
+                        <img src="./assets/img/common/room-detail-img-1.png" alt="Honeymoon" class="" />
+                      </div>
+                    </div>
+                    <div class="swiper-counter">
+                      <div class="swiper-button-prev"></div>
+                      <span class="swiper-counter__left">01</span>
+                      <span>/</span>
+                      <span class="swiper-counter__right">04</span>
+                      <div class="swiper-button-next"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="room-card__content">
+                  <h3 class="room-card__name">GALAXY VIEW SUITE</h3>
+                  <ul class="room-card__features">
+                    <li class="room-card__feature-item">
+                      <img src="./assets/img/icon/room-ic-1.svg" alt="" />
+                      <p>Bow compartment</p>
+                    </li>
+                    <li class="room-card__feature-item">
+                      <img src="./assets/img/icon/room-ic-2.svg" alt="" />
+                      <p>Double bed</p>
+                    </li>
+                    <li class="room-card__feature-item">
+                      <img src="./assets/img/icon/room-ic-3.svg" alt="" />
+                      <p>Standard occupancy: 3 adults</p>
+                    </li>
+                    <li class="room-card__feature-item">
+                      <img src="./assets/img/icon/room-ic-4.svg" alt="" />
+                      <p>60 sqm</p>
+                    </li>
+                    <li class="room-card__feature-item">
+                      <img src="./assets/img/icon/room-ic-5.svg" alt="" />
+                      <p>Private balcony / Bathtub / Shower stall</p>
+                    </li>
+                  </ul>
+                  <div class="room-card__actions">
+                    <div class="c-btn c-btn--view-more">
+                      <div class="btn-inner">
+                        <span>VIEW MORE</span>
+                        <span class="c-btn__arrow">
+                          <img src="./assets/img/icon/next.svg" alt="" />
+                        </span>
+                      </div>
+                      <div class="btn-hover">
+                        <span>VIEW MORE</span>
+                        <span class="c-btn__arrow">
+                          <img src="./assets/img/icon/next-2.svg" alt="" />
+                        </span>
+                      </div>
+                    </div>
+                    <div class="c-btn c-btn--book-room">
+                      <div class="btn-inner">
+                        <span>BOOK ROOM</span>
+                        <span class="c-btn__arrow">
+                          <img src="./assets/img/icon/next-2.svg" alt="" />
+                        </span>
+                      </div>
+                      <div class="btn-hover">
+                        <span>BOOK ROOM</span>
+                        <span class="c-btn__arrow">
+                          <img src="./assets/img/icon/next.svg" alt="" />
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </a>
+            </article>
+            <article class="room-card__wrapper">
+              <a href="#" class="room-card">
+                <div class="room-card__slider">
+                  <div class="swiper general-swiper">
+                    <div class="swiper-wrapper">
+                      <div class="swiper-slide">
+                        <img src="./assets/img/common/room-detail-img-1.png" alt="Honeymoon" class="" />
+                      </div>
+                      <div class="swiper-slide">
+                        <img src="./assets/img/common/room-detail-img-1.png" alt="Honeymoon" class="" />
+                      </div>
+                      <div class="swiper-slide">
+                        <img src="./assets/img/common/room-detail-img-1.png" alt="Honeymoon" class="" />
+                      </div>
+                      <div class="swiper-slide">
+                        <img src="./assets/img/common/room-detail-img-1.png" alt="Honeymoon" class="" />
+                      </div>
+                    </div>
+                    <div class="swiper-counter">
+                      <div class="swiper-button-prev"></div>
+                      <span class="swiper-counter__left">01</span>
+                      <span>/</span>
+                      <span class="swiper-counter__right">04</span>
+                      <div class="swiper-button-next"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="room-card__content">
+                  <h3 class="room-card__name">GALAXY VIEW SUITE</h3>
+                  <ul class="room-card__features">
+                    <li class="room-card__feature-item">
+                      <img src="./assets/img/icon/room-ic-1.svg" alt="" />
+                      <p>Bow compartment</p>
+                    </li>
+                    <li class="room-card__feature-item">
+                      <img src="./assets/img/icon/room-ic-2.svg" alt="" />
+                      <p>Double bed</p>
+                    </li>
+                    <li class="room-card__feature-item">
+                      <img src="./assets/img/icon/room-ic-3.svg" alt="" />
+                      <p>Standard occupancy: 3 adults</p>
+                    </li>
+                    <li class="room-card__feature-item">
+                      <img src="./assets/img/icon/room-ic-4.svg" alt="" />
+                      <p>60 sqm</p>
+                    </li>
+                    <li class="room-card__feature-item">
+                      <img src="./assets/img/icon/room-ic-5.svg" alt="" />
+                      <p>Private balcony / Bathtub / Shower stall</p>
+                    </li>
+                  </ul>
+                  <div class="room-card__actions">
+                    <div class="c-btn c-btn--view-more">
+                      <div class="btn-inner">
+                        <span>VIEW MORE</span>
+                        <span class="c-btn__arrow">
+                          <img src="./assets/img/icon/next.svg" alt="" />
+                        </span>
+                      </div>
+                      <div class="btn-hover">
+                        <span>VIEW MORE</span>
+                        <span class="c-btn__arrow">
+                          <img src="./assets/img/icon/next-2.svg" alt="" />
+                        </span>
+                      </div>
+                    </div>
+                    <div class="c-btn c-btn--book-room">
+                      <div class="btn-inner">
+                        <span>BOOK ROOM</span>
+                        <span class="c-btn__arrow">
+                          <img src="./assets/img/icon/next-2.svg" alt="" />
+                        </span>
+                      </div>
+                      <div class="btn-hover">
+                        <span>BOOK ROOM</span>
+                        <span class="c-btn__arrow">
+                          <img src="./assets/img/icon/next.svg" alt="" />
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </a>
+            </article>
+            <article class="room-card__wrapper">
+              <a href="#" class="room-card">
+                <div class="room-card__slider">
+                  <div class="swiper general-swiper">
+                    <div class="swiper-wrapper">
+                      <div class="swiper-slide">
+                        <img src="./assets/img/common/room-detail-img-1.png" alt="Honeymoon" class="" />
+                      </div>
+                      <div class="swiper-slide">
+                        <img src="./assets/img/common/room-detail-img-1.png" alt="Honeymoon" class="" />
+                      </div>
+                      <div class="swiper-slide">
+                        <img src="./assets/img/common/room-detail-img-1.png" alt="Honeymoon" class="" />
+                      </div>
+                      <div class="swiper-slide">
+                        <img src="./assets/img/common/room-detail-img-1.png" alt="Honeymoon" class="" />
+                      </div>
+                    </div>
+                    <div class="swiper-counter">
+                      <div class="swiper-button-prev"></div>
+                      <span class="swiper-counter__left">01</span>
+                      <span>/</span>
+                      <span class="swiper-counter__right">04</span>
+                      <div class="swiper-button-next"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="room-card__content">
+                  <h3 class="room-card__name">GALAXY VIEW SUITE</h3>
+                  <ul class="room-card__features">
+                    <li class="room-card__feature-item">
+                      <img src="./assets/img/icon/room-ic-1.svg" alt="" />
+                      <p>Bow compartment</p>
+                    </li>
+                    <li class="room-card__feature-item">
+                      <img src="./assets/img/icon/room-ic-2.svg" alt="" />
+                      <p>Double bed</p>
+                    </li>
+                    <li class="room-card__feature-item">
+                      <img src="./assets/img/icon/room-ic-3.svg" alt="" />
+                      <p>Standard occupancy: 3 adults</p>
+                    </li>
+                    <li class="room-card__feature-item">
+                      <img src="./assets/img/icon/room-ic-4.svg" alt="" />
+                      <p>60 sqm</p>
+                    </li>
+                    <li class="room-card__feature-item">
+                      <img src="./assets/img/icon/room-ic-5.svg" alt="" />
+                      <p>Private balcony / Bathtub / Shower stall</p>
+                    </li>
+                  </ul>
+                  <div class="room-card__actions">
+                    <div class="c-btn c-btn--view-more">
+                      <div class="btn-inner">
+                        <span>VIEW MORE</span>
+                        <span class="c-btn__arrow">
+                          <img src="./assets/img/icon/next.svg" alt="" />
+                        </span>
+                      </div>
+                      <div class="btn-hover">
+                        <span>VIEW MORE</span>
+                        <span class="c-btn__arrow">
+                          <img src="./assets/img/icon/next-2.svg" alt="" />
+                        </span>
+                      </div>
+                    </div>
+                    <div class="c-btn c-btn--book-room">
+                      <div class="btn-inner">
+                        <span>BOOK ROOM</span>
+                        <span class="c-btn__arrow">
+                          <img src="./assets/img/icon/next-2.svg" alt="" />
+                        </span>
+                      </div>
+                      <div class="btn-hover">
+                        <span>BOOK ROOM</span>
+                        <span class="c-btn__arrow">
+                          <img src="./assets/img/icon/next.svg" alt="" />
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </a>
+            </article>
+            <article class="room-card__wrapper">
+              <a href="#" class="room-card">
+                <div class="room-card__slider">
+                  <div class="swiper general-swiper">
+                    <div class="swiper-wrapper">
+                      <div class="swiper-slide">
+                        <img src="./assets/img/common/room-detail-img-1.png" alt="Honeymoon" class="" />
+                      </div>
+                      <div class="swiper-slide">
+                        <img src="./assets/img/common/room-detail-img-1.png" alt="Honeymoon" class="" />
+                      </div>
+                      <div class="swiper-slide">
+                        <img src="./assets/img/common/room-detail-img-1.png" alt="Honeymoon" class="" />
+                      </div>
+                      <div class="swiper-slide">
+                        <img src="./assets/img/common/room-detail-img-1.png" alt="Honeymoon" class="" />
+                      </div>
+                    </div>
+                    <div class="swiper-counter">
+                      <div class="swiper-button-prev"></div>
+                      <span class="swiper-counter__left">01</span>
+                      <span>/</span>
+                      <span class="swiper-counter__right">04</span>
+                      <div class="swiper-button-next"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="room-card__content">
+                  <h3 class="room-card__name">GALAXY VIEW SUITE</h3>
+                  <ul class="room-card__features">
+                    <li class="room-card__feature-item">
+                      <img src="./assets/img/icon/room-ic-1.svg" alt="" />
+                      <p>Bow compartment</p>
+                    </li>
+                    <li class="room-card__feature-item">
+                      <img src="./assets/img/icon/room-ic-2.svg" alt="" />
+                      <p>Double bed</p>
+                    </li>
+                    <li class="room-card__feature-item">
+                      <img src="./assets/img/icon/room-ic-3.svg" alt="" />
+                      <p>Standard occupancy: 3 adults</p>
+                    </li>
+                    <li class="room-card__feature-item">
+                      <img src="./assets/img/icon/room-ic-4.svg" alt="" />
+                      <p>60 sqm</p>
+                    </li>
+                    <li class="room-card__feature-item">
+                      <img src="./assets/img/icon/room-ic-5.svg" alt="" />
+                      <p>Private balcony / Bathtub / Shower stall</p>
+                    </li>
+                  </ul>
+                  <div class="room-card__actions">
+                    <div class="c-btn c-btn--view-more">
+                      <div class="btn-inner">
+                        <span>VIEW MORE</span>
+                        <span class="c-btn__arrow">
+                          <img src="./assets/img/icon/next.svg" alt="" />
+                        </span>
+                      </div>
+                      <div class="btn-hover">
+                        <span>VIEW MORE</span>
+                        <span class="c-btn__arrow">
+                          <img src="./assets/img/icon/next-2.svg" alt="" />
+                        </span>
+                      </div>
+                    </div>
+                    <div class="c-btn c-btn--book-room">
+                      <div class="btn-inner">
+                        <span>BOOK ROOM</span>
+                        <span class="c-btn__arrow">
+                          <img src="./assets/img/icon/next-2.svg" alt="" />
+                        </span>
+                      </div>
+                      <div class="btn-hover">
+                        <span>BOOK ROOM</span>
+                        <span class="c-btn__arrow">
+                          <img src="./assets/img/icon/next.svg" alt="" />
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </a>
+            </article>
+          </div>
+        </div>
+      </section>
+      <section class="special-offers-rd">
+        <div class="l-container l-pd-0-135px">
+          <h2 class="special-offers-rd__title">SPECIAL OFFERS</h2>
+          <div class="special-offers-rd__slider">
+            <div class="swiper special-offers-rd__swiper">
+              <div class="swiper-wrapper">
+                <article class="swiper-slide">
+                  <a href="#" class="special-offers-rd__card">
+                    <div class="special-offers-rd__image-wrapper">
+                      <img src="./assets/img/common/special-offers-8.png" alt="Galaxy View Suite" />
+                    </div>
+                    <div class="special-offers-rd__content">
+                      <h2 class="special-offers-rd__name">GALAXY VIEW SUITE</h2>
+                      <p class="special-offers-rd__detail ug-line-break-3">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut</p>
+                      <div class="special-offers-rd__actions">
+                        <div class="c-btn c-btn--view-more">
+                          <div class="btn-inner">
+                            <span>VIEW MORE</span>
+                            <span class="c-btn__arrow">
+                              <img src="./assets/img/icon/next.svg" alt="" />
+                            </span>
+                          </div>
+                          <div class="btn-hover">
+                            <span>VIEW MORE</span>
+                            <span class="c-btn__arrow">
+                              <img src="./assets/img/icon/next-2.svg" alt="" />
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </a>
+                </article>
+                <article class="swiper-slide">
+                  <a href="#" class="special-offers-rd__card">
+                    <div class="special-offers-rd__image-wrapper">
+                      <img src="./assets/img/common/special-offers-8.png" alt="Galaxy View Suite" />
+                    </div>
+                    <div class="special-offers-rd__content">
+                      <h2 class="special-offers-rd__name">GALAXY VIEW SUITE</h2>
+                      <p class="special-offers-rd__detail ug-line-break-3">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut</p>
+                      <div class="special-offers-rd__actions">
+                        <div class="c-btn c-btn--view-more">
+                          <div class="btn-inner">
+                            <span>VIEW MORE</span>
+                            <span class="c-btn__arrow">
+                              <img src="./assets/img/icon/next.svg" alt="" />
+                            </span>
+                          </div>
+                          <div class="btn-hover">
+                            <span>VIEW MORE</span>
+                            <span class="c-btn__arrow">
+                              <img src="./assets/img/icon/next-2.svg" alt="" />
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </a>
+                </article>
+              </div>
+              <div class="swiper-button-prev"></div>
+              <div class="swiper-button-next"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer class="footer">
+      <div class="footer__inner l-container l-pd-0-135px">
+        <div class="footer-top">
+          <a href="#" class="footer-top__link">About Us</a>
+          <a href="#" class="footer-top__link">Brand Policy</a>
+          <a href="#" class="footer-top__link">Privacy Policy</a>
+          <a href="#" class="footer-top__link">Our Itineraries</a>
+          <a href="#" class="footer-top__link">Our Amenities</a>
+          <a href="#" class="footer-top__link">Our Services</a>
+          <a href="#" class="footer-top__link">News & Event</a>
+          <a href="#" class="footer-top__link">Contact Us</a>
+        </div>
+        <div class="footer-mid">
+          <div class="footer__brand-info">
+            <div class="footer__logo">
+              <img src="./assets/img/common/logo-footer.svg" alt="Victorious Cruise Logo" />
+            </div>
+          </div>
+          <div class="footer__contact-grid">
+            <div class="footer__contact-col">
+              <h3 class="footer__contact-title">HEADQUARER</h3>
+              <p class="footer__contact-detail">Address: 5th Floor, VRP Bank Building, 23 Hang Voi street - Hoan Kiem ward - Ha Noi</p>
+              <p class="footer__contact-detail">Phone: (+84) 24 3939 3555</p>
+              <p class="footer__contact-detail">Hotline: (+84) 983 086 355</p>
+              <p class="footer__contact-detail">Email: info@victoriouscruise.com</p>
+            </div>
+            <div class="footer__contact-col">
+              <h3 class="footer__contact-title">HALONG OFFICE</h3>
+              <p class="footer__contact-detail">Address: No. 26 Tuan Chau Marina, Halong - Quang Ninh</p>
+              <p class="footer__contact-detail">Phone: (+84) 983 730 882</p>
+              <p class="footer__contact-detail">Hotline: (+84) 376 169 787</p>
+            </div>
+          </div>
+        </div>
+        <div class="footer__social-media">
+          <h3 class="footer__social-title">SOCIAL MEDIA</h3>
+          <div class="footer__social-links">
+            <a href="#" class="footer__social-icon" aria-label="Facebook">
+              <img src="./assets/img/icon/fb-ic.svg" alt="" />
+            </a>
+            <a href="#" class="footer__social-icon" aria-label="Instagram">
+              <img src="./assets/img/icon/ins-ic.svg" alt="" />
+            </a>
+            <a href="#" class="footer__social-icon" aria-label="Telegram">
+              <img src="./assets/img/icon/tele-ic.svg" alt="" />
+            </a>
+            <a href="#" class="footer__social-icon" aria-label="Youtube">
+              <img src="./assets/img/icon/ytb-ic.svg" alt="" />
+            </a>
+            <a href="#" class="footer__social-icon" aria-label="X (Twitter)">
+              <img src="./assets/img/icon/x-ic.svg" alt="" />
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="footer__copyright l-container l-pd-0-135px">
+        <p>COPYRIGHT © 2025. VICTORIUS. ALL RIGHTS RESERVED.</p>
+      </div>
+    </footer>
+    <script></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.matchHeight/0.7.2/jquery.matchHeight-min.js" integrity="sha512-/bOVV1DV1AQXcypckRwsR9ThoCj7FqTV2/0Bm79bL3YSyLkVideFLE3MIZkq1u5t28ke1c0n31WYCOrO01dsUg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="./assets/js/main.js"></script>
+    <script src="./assets/js/slider.js"></script>
+  </body>
+
+</html>

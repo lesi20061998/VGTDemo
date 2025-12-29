@@ -49,7 +49,7 @@
         {{-- Tabs: Fields / Code / CSS / JS --}}
         <div class="bg-white rounded-lg shadow-sm overflow-hidden">
             <div class="border-b flex">
-                <button type="button" @click="activeTab = 'fields'; $wire.setActiveTab('fields')" 
+                <button type="button" @click="activeTab = 'fields'" 
                         :class="activeTab === 'fields' ? 'border-b-2 border-blue-500 text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-50'"
                         class="px-6 py-3 font-medium transition">
                     <span class="flex items-center gap-2">
@@ -59,7 +59,7 @@
                         Fields ({{ count($fields ?? []) }})
                     </span>
                 </button>
-                <button type="button" @click="activeTab = 'code'; $wire.setActiveTab('code')" 
+                <button type="button" @click="activeTab = 'code'" 
                         :class="activeTab === 'code' ? 'border-b-2 border-blue-500 text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-50'"
                         class="px-6 py-3 font-medium transition">
                     <span class="flex items-center gap-2">
@@ -69,7 +69,7 @@
                         Template Code
                     </span>
                 </button>
-                <button type="button" @click="activeTab = 'css'; $wire.setActiveTab('css')" 
+                <button type="button" @click="activeTab = 'css'" 
                         :class="activeTab === 'css' ? 'border-b-2 border-blue-500 text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-50'"
                         class="px-6 py-3 font-medium transition">
                     <span class="flex items-center gap-2">
@@ -79,7 +79,7 @@
                         CSS
                     </span>
                 </button>
-                <button type="button" @click="activeTab = 'js'; $wire.setActiveTab('js')" 
+                <button type="button" @click="activeTab = 'js'" 
                         :class="activeTab === 'js' ? 'border-b-2 border-blue-500 text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-50'"
                         class="px-6 py-3 font-medium transition">
                     <span class="flex items-center gap-2">
@@ -478,7 +478,7 @@
                 <div class="sticky bottom-0 bg-gray-50 border-t px-6 py-4 flex justify-end gap-3">
                     <button type="button" @click="showModal = false; $wire.closeFieldModal()" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100">Hủy</button>
                     <button type="button" wire:click="saveField" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                        {{ $editingFieldIndex >= 0 ? 'Cập nhật' : 'Thêm Field' }}
+                        {{ ($editingFieldIndex ?? -1) >= 0 ? 'Cập nhật' : 'Thêm Field' }}
                     </button>
                 </div>
             </div>

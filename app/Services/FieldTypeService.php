@@ -8,6 +8,7 @@ use App\Services\FieldTypes\TextareaField;
 use App\Services\FieldTypes\SelectField;
 use App\Services\FieldTypes\CheckboxField;
 use App\Services\FieldTypes\ImageField;
+use App\Services\FieldTypes\VideoField;
 use App\Services\FieldTypes\GalleryField;
 use App\Services\FieldTypes\RepeatableField;
 use App\Services\FieldTypes\UrlField;
@@ -50,6 +51,7 @@ class FieldTypeService
         
         // Media fields
         $this->register(new ImageField());
+        $this->register(new VideoField());
         $this->register(new GalleryField());
         $this->register(new ColorField());
         
@@ -127,12 +129,18 @@ class FieldTypeService
         $fieldType = $this->get($type);
 
         if (!$fieldType) {
-            return false;
+            // Unknown field type - skip validation
+            return true;
         }
 
         $rules = [];
         if (isset($fieldConfig['validation'])) {
             $rules = explode('|', $fieldConfig['validation']);
+        }
+
+        // Set config for field types that need it (like select)
+        if (method_exists($fieldType, 'setConfig')) {
+            $fieldType->setConfig($fieldConfig);
         }
 
         return $fieldType->validate($value, $rules);
@@ -195,8 +203,13 @@ class FieldTypeService
                 continue;
             }
 
+            // Skip validation for empty non-required fields
+            if (empty($fieldValue)) {
+                continue;
+            }
+
             // Validate field value
-            if ($fieldValue !== null && !$this->validateField($field, $fieldValue)) {
+            if (!$this->validateField($field, $fieldValue)) {
                 $errors[$fieldName] = "Field '{$field['label']}' has invalid value";
             }
         }
@@ -253,6 +266,7 @@ class FieldTypeService
             'select' => 'Dropdown selection',
             'checkbox' => 'Boolean checkbox',
             'image' => 'Image file upload',
+            'video' => 'Video file upload',
             'gallery' => 'Multiple image gallery',
             'repeatable' => 'Repeatable group of fields',
             'url' => 'URL input with validation',

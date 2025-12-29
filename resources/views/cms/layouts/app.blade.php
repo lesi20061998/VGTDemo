@@ -9,6 +9,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     @livewireStyles
     @stack('styles')
+    @stack('head-scripts')
 </head>
 <body class="bg-gray-100" x-data="{ showAlert: false, alertMessage: '', alertType: 'success' }">
     <!-- Global Alert -->

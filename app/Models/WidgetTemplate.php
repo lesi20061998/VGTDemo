@@ -75,10 +75,18 @@ class WidgetTemplate extends Model
      */
     public function getCss(): string
     {
+        // First check folder structure: views/widgets/custom/{type}/style.css
         $cssPath = resource_path("views/widgets/custom/{$this->type}/style.css");
         if (\File::exists($cssPath)) {
             return \File::get($cssPath);
         }
+        
+        // Fallback: check for direct file views/widgets/custom/{type}.css
+        $directCssPath = resource_path("views/widgets/custom/{$this->type}.css");
+        if (\File::exists($directCssPath)) {
+            return \File::get($directCssPath);
+        }
+        
         return '';
     }
     
@@ -87,10 +95,18 @@ class WidgetTemplate extends Model
      */
     public function getJs(): string
     {
+        // First check folder structure: views/widgets/custom/{type}/script.js
         $jsPath = resource_path("views/widgets/custom/{$this->type}/script.js");
         if (\File::exists($jsPath)) {
             return \File::get($jsPath);
         }
+        
+        // Fallback: check for direct file views/widgets/custom/{type}.js
+        $directJsPath = resource_path("views/widgets/custom/{$this->type}.js");
+        if (\File::exists($directJsPath)) {
+            return \File::get($directJsPath);
+        }
+        
         return '';
     }
     

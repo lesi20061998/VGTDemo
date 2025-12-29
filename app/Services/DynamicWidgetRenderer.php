@@ -46,12 +46,23 @@ class DynamicWidgetRenderer
      */
     public function renderFromTemplate(WidgetTemplate $template, array $settings): string
     {
-        // First priority: Use template_code if available (custom Blade/PHP code from admin)
-        if (!empty($template->template_code)) {
-            return $this->renderFromCode($template, $settings);
+        // First priority: Check if there's a custom blade view file in folder structure
+        // (views/widgets/custom/{type}/view.blade.php)
+        $customViewPath = "widgets.custom.{$template->type}.view";
+        
+        if (View::exists($customViewPath)) {
+            return $this->renderFromCustomView($template, $settings, $customViewPath);
         }
         
-        // Second priority: Check if there's a blade view for this template type
+        // Second priority: Check if there's a direct blade file
+        // (views/widgets/custom/{type}.blade.php)
+        $directViewPath = "widgets.custom.{$template->type}";
+        
+        if (View::exists($directViewPath)) {
+            return $this->renderFromCustomView($template, $settings, $directViewPath);
+        }
+        
+        // Third priority: Check if there's a dynamic blade view
         $viewName = "widgets.dynamic.{$template->type}";
         
         if (View::exists($viewName)) {
@@ -66,9 +77,9 @@ class DynamicWidgetRenderer
     }
     
     /**
-     * Render widget from template_code (Blade/PHP code stored in database)
+     * Render widget from custom view file (stored in views/widgets/custom/{type}/)
      */
-    protected function renderFromCode(WidgetTemplate $template, array $settings): string
+    protected function renderFromCustomView(WidgetTemplate $template, array $settings, string $viewPath): string
     {
         try {
             // Merge default settings with provided settings
@@ -79,23 +90,25 @@ class DynamicWidgetRenderer
             $posts = fn($limit = 10) => \App\Models\Post::take($limit)->get();
             $categories = fn() => \App\Models\Category::all();
             
-            // Render the Blade code
-            $html = Blade::render($template->template_code, [
+            // Render the Blade view
+            $html = view($viewPath, [
                 'settings' => $mergedSettings,
                 'widget' => $template,
                 'products' => $products,
                 'posts' => $posts,
                 'categories' => $categories,
-            ]);
+            ])->render();
             
-            // Inject CSS if available
-            if (!empty($template->template_css)) {
-                $html = "<style>{$template->template_css}</style>" . $html;
+            // Inject CSS if available (from file)
+            $css = $template->getCss();
+            if (!empty(trim($css))) {
+                $html = "<style>{$css}</style>" . $html;
             }
             
-            // Inject JS if available
-            if (!empty($template->template_js)) {
-                $html .= "<script>{$template->template_js}</script>";
+            // Inject JS if available (from file)
+            $js = $template->getJs();
+            if (!empty(trim($js))) {
+                $html .= "<script>{$js}</script>";
             }
             
             return $html;

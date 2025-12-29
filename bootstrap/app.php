@@ -25,6 +25,12 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\HandleDatabaseErrors::class,
         ]);
 
+        // Exclude media upload routes from CSRF verification
+        $middleware->validateCsrfTokens(except: [
+            'admin/media/upload',
+            '*/admin/media/upload',
+        ]);
+
         // Chỉ áp dụng TenantMiddleware cho các route không phải admin
         $middleware->group('tenant', [
             \App\Http\Middleware\TenantMiddleware::class,

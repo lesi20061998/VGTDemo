@@ -131,9 +131,27 @@ class WidgetRenderingService
      */
     public function renderArea(string $area, array $context = []): string
     {
-        $widgets = \App\Models\Widget::where('area', $area)
-            ->where('is_active', true)
-            ->orderBy('sort_order')
+        // Get tenant_id from session
+        $currentProject = session('current_project');
+        $tenantId = null;
+        if (\is_array($currentProject)) {
+            $tenantId = $currentProject['id'] ?? null;
+        } elseif (\is_object($currentProject)) {
+            $tenantId = $currentProject->id ?? null;
+        }
+        
+        $query = \App\Models\Widget::where('area', $area)
+            ->where('is_active', true);
+            
+        // Filter by tenant_id if available, or get widgets without tenant_id
+        if ($tenantId) {
+            $query->where(function ($q) use ($tenantId) {
+                $q->where('tenant_id', $tenantId)
+                  ->orWhereNull('tenant_id');
+            });
+        }
+        
+        $widgets = $query->orderBy('sort_order')
             ->get()
             ->toArray();
             

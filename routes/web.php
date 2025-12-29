@@ -60,6 +60,10 @@ Route::prefix('admin')->name('cms.')->middleware(['auth'])->group(function () {
     Route::get('widgets/create', \App\Livewire\Admin\WidgetEditor::class)->name('widgets.create');
     Route::get('widgets/{id}/edit-livewire', \App\Livewire\Admin\WidgetEditor::class)->name('widgets.edit-livewire');
     
+    // Code-based Widget Editor
+    Route::get('code-widgets', \App\Livewire\Admin\CodeWidgetList::class)->name('code-widgets.index');
+    Route::get('code-widgets/{type}/edit', \App\Livewire\Admin\CodeWidgetEditor::class)->name('code-widgets.edit');
+    
     Route::middleware($middlewares)->group(function () {
         Route::get('widgets', [\App\Http\Controllers\Admin\WidgetController::class, 'index'])->name('widgets.index');
         Route::post('widgets', [\App\Http\Controllers\Admin\WidgetController::class, 'store'])->name('widgets.store');
