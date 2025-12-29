@@ -16,9 +16,18 @@ class WidgetController extends Controller
         // Skip permission check entirely in local environment
         if (config('app.env') !== 'local') {
             $permissionService = new WidgetPermissionService();
+            $user = auth()->user();
+            
+            // Debug: Log permission check
+            \Log::info('Widget permission check', [
+                'user_id' => $user?->id,
+                'username' => $user?->username,
+                'role' => $user?->role,
+                'can_manage' => $permissionService->canManageWidgets($user),
+            ]);
             
             // Check if user can manage widgets
-            if (!$permissionService->canManageWidgets()) {
+            if (!$permissionService->canManageWidgets($user)) {
                 abort(403, 'You do not have permission to manage widgets');
             }
         }
