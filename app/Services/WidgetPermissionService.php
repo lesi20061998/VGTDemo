@@ -66,7 +66,7 @@ class WidgetPermissionService
         }
 
         return $this->isSuperAdmin($user) || 
-               $this->hasAnyPermission($user, ['admin', 'editor', 'widget_manager']);
+               $this->hasAnyPermission($user, ['admin', 'editor', 'widget_manager', 'cms']);
     }
 
     /**
@@ -86,7 +86,7 @@ class WidgetPermissionService
         }
 
         return $this->isSuperAdmin($user) || 
-               $this->hasAnyPermission($user, ['admin', 'widget_admin']);
+               $this->hasAnyPermission($user, ['admin', 'widget_admin', 'cms']);
     }
 
     /**
