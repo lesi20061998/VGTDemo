@@ -57,7 +57,14 @@ class WidgetController extends Controller
 
         // Get only accessible widgets for current user
         $permissionService = new WidgetPermissionService();
-        $availableWidgets = $permissionService->getAccessibleWidgetsByCategory();
+        $availableWidgets = $permissionService->getAccessibleWidgetsByCategory($user);
+        
+        // Debug: dd available widgets
+        dd([
+            'availableWidgets' => $availableWidgets,
+            'count' => count($availableWidgets),
+            'user' => $user ? ['id' => $user->id, 'role' => $user->role] : null,
+        ]);
 
         // Check if we're in project context
         $projectCode = request()->route('projectCode');
