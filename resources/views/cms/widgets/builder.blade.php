@@ -198,53 +198,59 @@ function filterWidgets(query) {
         </div>
 
         <!-- Drop Zone Container -->
-        <div class="flex-1 bg-white rounded-lg shadow-sm overflow-hidden flex flex-col">
+        <div class="flex-1 bg-white rounded-lg shadow-sm overflow-hidden flex flex-col min-h-0">
             <!-- Homepage Main Zone -->
-            <div id="zone-homepage-main" class="drop-zone-container flex-1 flex flex-col" data-area="homepage-main">
-                <div class="p-4 border-b bg-gray-50 flex items-center justify-between">
+            <div id="zone-homepage-main" class="drop-zone-container flex-1 flex flex-col min-h-0" data-area="homepage-main">
+                <div class="p-4 border-b bg-gray-50 flex items-center justify-between flex-shrink-0">
                     <h3 class="font-semibold text-gray-700">Homepage Main Content</h3>
                     <span class="text-sm text-gray-500">Kéo widget vào đây</span>
                 </div>
-                <div id="dropZone" class="flex-1 overflow-y-auto p-4 min-h-[300px] border-2 border-dashed border-gray-200 m-4 rounded-lg transition-colors" data-area="homepage-main">
-                    <p class="empty-message text-gray-400 text-center py-16">
-                        <svg class="w-16 h-16 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                        </svg>
-                        Kéo widget từ bên trái vào đây<br>
-                        <small class="text-xs">Có thể sắp xếp lại bằng cách kéo thả</small>
-                    </p>
+                <div class="flex-1 overflow-y-auto p-4 min-h-0">
+                    <div id="dropZone" class="min-h-[200px] border-2 border-dashed border-gray-200 rounded-lg transition-colors p-4" data-area="homepage-main">
+                        <p class="empty-message text-gray-400 text-center py-16">
+                            <svg class="w-16 h-16 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                            </svg>
+                            Kéo widget từ bên trái vào đây<br>
+                            <small class="text-xs">Có thể sắp xếp lại bằng cách kéo thả</small>
+                        </p>
+                    </div>
                 </div>
             </div>
 
             <!-- Sidebar Zone (Hidden by default) -->
-            <div id="zone-sidebar" class="drop-zone-container flex-1 flex-col hidden" data-area="sidebar">
-                <div class="p-4 border-b bg-gray-50 flex items-center justify-between">
+            <div id="zone-sidebar" class="drop-zone-container flex-1 flex-col hidden min-h-0" data-area="sidebar">
+                <div class="p-4 border-b bg-gray-50 flex items-center justify-between flex-shrink-0">
                     <h3 class="font-semibold text-gray-700">Sidebar Widgets</h3>
                     <span class="text-sm text-gray-500">Kéo widget vào đây</span>
                 </div>
-                <div id="sidebarZone" class="flex-1 overflow-y-auto p-4 min-h-[300px] border-2 border-dashed border-gray-200 m-4 rounded-lg transition-colors" data-area="sidebar">
-                    <p class="empty-message text-gray-400 text-center py-16">
-                        <svg class="w-16 h-16 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                        </svg>
-                        Kéo widget cho Sidebar vào đây
-                    </p>
+                <div class="flex-1 overflow-y-auto p-4 min-h-0">
+                    <div id="sidebarZone" class="min-h-[200px] border-2 border-dashed border-gray-200 rounded-lg transition-colors p-4" data-area="sidebar">
+                        <p class="empty-message text-gray-400 text-center py-16">
+                            <svg class="w-16 h-16 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                            </svg>
+                            Kéo widget cho Sidebar vào đây
+                        </p>
+                    </div>
                 </div>
             </div>
 
             <!-- Footer Zone (Hidden by default) -->
-            <div id="zone-footer" class="drop-zone-container flex-1 flex-col hidden" data-area="footer">
-                <div class="p-4 border-b bg-gray-50 flex items-center justify-between">
+            <div id="zone-footer" class="drop-zone-container flex-1 flex-col hidden min-h-0" data-area="footer">
+                <div class="p-4 border-b bg-gray-50 flex items-center justify-between flex-shrink-0">
                     <h3 class="font-semibold text-gray-700">Footer Widgets</h3>
                     <span class="text-sm text-gray-500">Kéo widget vào đây</span>
                 </div>
-                <div id="footerZone" class="flex-1 overflow-y-auto p-4 min-h-[300px] border-2 border-dashed border-gray-200 m-4 rounded-lg transition-colors" data-area="footer">
-                    <p class="empty-message text-gray-400 text-center py-16">
-                        <svg class="w-16 h-16 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                        </svg>
-                        Kéo widget cho Footer vào đây
-                    </p>
+                <div class="flex-1 overflow-y-auto p-4 min-h-0">
+                    <div id="footerZone" class="min-h-[200px] border-2 border-dashed border-gray-200 rounded-lg transition-colors p-4" data-area="footer">
+                        <p class="empty-message text-gray-400 text-center py-16">
+                            <svg class="w-16 h-16 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                            </svg>
+                            Kéo widget cho Footer vào đây
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
