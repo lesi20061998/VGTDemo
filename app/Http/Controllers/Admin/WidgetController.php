@@ -16,12 +16,27 @@ class WidgetController extends Controller
         // Get user from request attributes (project context) or auth (web context)
         $user = request()->attributes->get('auth_user') ?? auth()->user();
         
+        // Debug log
+        \Log::info('Widget index - auth debug', [
+            'auth_user_from_request' => request()->attributes->get('auth_user') ? 'YES' : 'NO',
+            'auth_user_from_auth' => auth()->user() ? 'YES' : 'NO',
+            'user_id' => $user?->id,
+            'user_role' => $user?->role,
+            'user_level' => $user?->level,
+            'session_project_user_id' => session('project_user_id'),
+            'env' => config('app.env'),
+        ]);
+        
         // Skip permission check entirely in local environment
         if (config('app.env') !== 'local') {
             $permissionService = new WidgetPermissionService();
             
             // Check if user can manage widgets
             if (!$permissionService->canManageWidgets($user)) {
+                \Log::error('Widget permission denied', [
+                    'user' => $user ? $user->toArray() : null,
+                    'can_manage' => $permissionService->canManageWidgets($user),
+                ]);
                 abort(403, 'You do not have permission to manage widgets');
             }
         }
