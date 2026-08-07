@@ -14,7 +14,7 @@ $gaId = setting_string('google_analytics_id');
 <meta name="keywords" content="{{ $metaKeywords }}">
 @endif
 <meta name="author" content="{{ $siteName }}">
-<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+<meta name="robots" content="noindex, nofollow">
 <link rel="canonical" href="{{ $metaUrl }}">
 <meta property="og:locale" content="{{ $locale == 'vi' ? 'vi_VN' : 'en_US' }}">
 <meta property="og:type" content="website">
