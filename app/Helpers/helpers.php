@@ -92,12 +92,17 @@ if (! function_exists('can_project')) {
 if (! function_exists('render_menu')) {
     function render_menu($location = 'header')
     {
-        $menu = \App\Models\Menu::where('location', $location)
-            ->where('is_active', true)
-            ->with(['items' => function ($query) {
-                $query->whereNull('parent_id')->with('children')->orderBy('order');
-            }])
-            ->first();
+        $menu = null;
+        try {
+            $menu = \App\Models\Menu::where('location', $location)
+                ->where('is_active', true)
+                ->with(['items' => function ($query) {
+                    $query->whereNull('parent_id')->with('children')->orderBy('order');
+                }])
+                ->first();
+        } catch (\Exception $e) {
+            // Bỏ qua lỗi nếu bảng menus không tồn tại
+        }
 
         if (! $menu || $menu->items->isEmpty()) {
             return '';

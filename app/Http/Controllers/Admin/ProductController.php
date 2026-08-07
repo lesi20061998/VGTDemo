@@ -25,7 +25,7 @@ class ProductController extends Controller
             ->paginate(20);
 
         $parentCategories = Taxonomy::where('taxonomy', 'product_cat')->whereNull('parent_id')->with('children')->get();
-        $currentProject = (object) ['code' => request()->route('projectCode')];
+        $currentProject = \App\Models\Project::where('code', request()->route('projectCode'))->first();
         $languageId = 1;
 
         return view('admin.products.index', compact('products', 'parentCategories', 'currentProject', 'languageId'));

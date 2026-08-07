@@ -71,7 +71,7 @@ class WidgetController extends Controller
         $currentProject = null;
         
         if ($projectCode) {
-            $currentProject = (object) ['code' => $projectCode];
+            $currentProject = \App\Models\Project::where('code', $projectCode)->first();
         }
 
         $permissionSummary = config('app.env') === 'local' ? 

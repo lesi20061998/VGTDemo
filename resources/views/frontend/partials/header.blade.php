@@ -18,25 +18,35 @@
     $navMenuId = $getSettingValue('navigation_menu_id', null);
     
     // Load topbar menu với tất cả items
-    $topbarMenu = $topbarMenuId ? \App\Models\Menu::with(['items' => function($query) {
-        $query->whereNull('parent_id')
-              ->orderBy('order')
-              ->with(['children' => function($q) {
-                  $q->orderBy('order');
-              }]);
-    }])->find($topbarMenuId) : null;
+    $topbarMenu = null;
+    try {
+        $topbarMenu = $topbarMenuId ? \App\Models\Menu::with(['items' => function($query) {
+            $query->whereNull('parent_id')
+                  ->orderBy('order')
+                  ->with(['children' => function($q) {
+                      $q->orderBy('order');
+                  }]);
+        }])->find($topbarMenuId) : null;
+    } catch (\Exception $e) {
+        // Bỏ qua lỗi nếu bảng menus không tồn tại
+    }
     
     // Load navigation menu với tất cả items và children (submenu đa cấp)
-    $navMenu = $navMenuId ? \App\Models\Menu::with(['items' => function($query) {
-        $query->whereNull('parent_id')
-              ->orderBy('order')
-              ->with(['children' => function($q) {
-                  $q->orderBy('order')
-                    ->with(['children' => function($q2) {
-                        $q2->orderBy('order');
-                    }]);
-              }]);
-    }])->find($navMenuId) : null;
+    $navMenu = null;
+    try {
+        $navMenu = $navMenuId ? \App\Models\Menu::with(['items' => function($query) {
+            $query->whereNull('parent_id')
+                  ->orderBy('order')
+                  ->with(['children' => function($q) {
+                      $q->orderBy('order')
+                        ->with(['children' => function($q2) {
+                            $q2->orderBy('order');
+                        }]);
+                  }]);
+        }])->find($navMenuId) : null;
+    } catch (\Exception $e) {
+        // Bỏ qua lỗi nếu bảng menus không tồn tại
+    }
     
     // Get styles from theme options
     $themeTopbar = setting('theme_option_topbar', []);

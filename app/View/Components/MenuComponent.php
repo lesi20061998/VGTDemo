@@ -13,12 +13,17 @@ class MenuComponent extends Component
     public function __construct($location = 'header')
     {
         $this->location = $location;
-        $this->menu = Menu::where('location', $location)
-            ->where('is_active', true)
-            ->with(['items' => function($query) {
-                $query->whereNull('parent_id')->with('children')->orderBy('order');
-            }])
-            ->first();
+        $this->menu = null;
+        try {
+            $this->menu = Menu::where('location', $location)
+                ->where('is_active', true)
+                ->with(['items' => function($query) {
+                    $query->whereNull('parent_id')->with('children')->orderBy('order');
+                }])
+                ->first();
+        } catch (\Exception $e) {
+            // Bỏ qua lỗi nếu bảng menus không tồn tại
+        }
     }
 
     public function render()
