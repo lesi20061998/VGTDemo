@@ -22,7 +22,7 @@ use App\Widgets\WidgetRegistry;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return redirect('/login');
+    return view('coming-soon');
 })->name('home');
 
 // TEMPORARY: Reset password route - DELETE AFTER USE!
