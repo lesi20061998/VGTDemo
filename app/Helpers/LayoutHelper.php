@@ -25,6 +25,7 @@ if (!function_exists('get_layout_config')) {
             'full-width-banner' => [
                 'sidebar' => false,
                 'banner' => true,
+                'banner_style' => 'style-2',
                 'container_class' => 'container mx-auto',
                 'content_class' => 'w-full',
                 'grid_class' => 'grid grid-cols-1'

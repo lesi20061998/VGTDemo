@@ -47,7 +47,9 @@
     @include('cms.theme-options.tabs.layouts.page')
 
     @include('cms.theme-options.tabs.layouts.post')
+    @include('cms.theme-options.tabs.layouts.post-category')
 
+    @include('cms.theme-options.tabs.layouts.product')
     @include('cms.theme-options.tabs.layouts.product-category')
 </div>
 

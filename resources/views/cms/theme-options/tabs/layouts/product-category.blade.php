@@ -1,14 +1,18 @@
-<div>
-    <h3 class="text-lg font-semibold mb-2">Products Category Layout</h3>
-    <p class="text-sm text-gray-600 mb-4">Chọn layout cho trang danh mục sản phẩm và chi tiết sản phẩm</p>
+<div class="border rounded-lg p-6 bg-white">
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <h3 class="text-lg font-medium text-gray-900">Danh mục Sản phẩm (Product Category)</h3>
+            <p class="text-sm text-gray-500">Cấu hình giao diện mặc định cho trang danh mục sản phẩm.</p>
+        </div>
+    </div>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        @php $selectedProductLayout = $data['product_layout'] ?? 'sidebar-left'; @endphp
+        @php $selectedPageLayout = $data['product_category_layout'] ?? 'sidebar-left'; @endphp
         @foreach($layouts as $key => $layout)
-        <label class="layout-option block p-3 border-2 rounded-lg hover:border-blue-400 cursor-pointer transition-all {{ $selectedProductLayout === $key ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200' : 'border-gray-200' }}">
-            <input type="radio" name="product_layout" value="{{ $key }}" 
-                   {{ $selectedProductLayout === $key ? 'checked' : '' }} class="hidden layout-radio">
+        <label class="layout-option block p-3 border-2 rounded-lg hover:border-blue-400 cursor-pointer transition-all {{ $selectedPageLayout === $key ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200' : 'border-gray-200' }}">
+            <input type="radio" name="product_category_layout" value="{{ $key }}" 
+                   {{ $selectedPageLayout === $key ? 'checked' : '' }} class="hidden layout-radio">
             <div class="relative">
-                @if($selectedProductLayout === $key)
+                @if($selectedPageLayout === $key)
                 <div class="absolute -top-1 -right-1 bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold z-10">✓</div>
                 @endif
                 <img src="{{ asset($layout['image']) }}" alt="{{ $layout['label'] }}" class="w-full h-32 object-contain rounded mb-2 bg-white">

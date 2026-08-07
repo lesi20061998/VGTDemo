@@ -34,10 +34,10 @@
         <h3 class="text-lg font-semibold mb-2">Post Category Layout</h3>
         <p class="text-sm text-gray-600 mb-4">Chọn kiểu hiển thị cho trang danh mục bài viết</p>
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            @php $selectedPostCategoryLayout = $data['post_category_layout'] ?? 'grid'; @endphp
+            @php $selectedPostCategoryLayout = $data['post_category_style'] ?? 'grid'; @endphp
             @foreach($postLayouts as $key => $layout)
             <label class="layout-option block p-3 border-2 rounded-lg hover:border-blue-400 cursor-pointer transition-all {{ $selectedPostCategoryLayout === $key ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200' : 'border-gray-200' }}">
-                <input type="radio" name="post_category_layout" value="{{ $key }}" 
+                <input type="radio" name="post_category_style" value="{{ $key }}" 
                        {{ $selectedPostCategoryLayout === $key ? 'checked' : '' }} class="hidden layout-radio">
                 <div class="relative">
                     @if($selectedPostCategoryLayout === $key)
