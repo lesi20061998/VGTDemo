@@ -8,10 +8,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #00ff88;
-            --secondary: #0a0a0a;
+            --primary: #002D80;
+            --secondary: #001B4E;
             --text-main: #ffffff;
-            --text-muted: #888888;
+            --text-muted: #cbd5e1; /* slate-300 */
+            --accent: #3b82f6; /* blue-500 for glows and highlights */
         }
 
         * {
@@ -38,7 +39,7 @@
             position: absolute;
             width: 600px;
             height: 600px;
-            background: radial-gradient(circle, rgba(0,255,136,0.15) 0%, rgba(10,10,10,0) 70%);
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, rgba(0, 27, 78, 0) 70%);
             border-radius: 50%;
             top: 50%;
             left: 50%;
@@ -60,13 +61,13 @@
             max-width: 800px;
         }
 
-        .logo-text {
-            font-size: 1.5rem;
-            font-weight: 900;
-            letter-spacing: 4px;
-            color: var(--primary);
+        .logo-container {
             margin-bottom: 3rem;
-            text-transform: uppercase;
+        }
+        
+        .logo-container img {
+            height: 80px;
+            object-fit: contain;
         }
 
         h1 {
@@ -74,7 +75,7 @@
             font-weight: 700;
             line-height: 1.1;
             margin-bottom: 1.5rem;
-            background: linear-gradient(135deg, #ffffff 0%, #a5a5a5 100%);
+            background: linear-gradient(135deg, #ffffff 0%, #93c5fd 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             letter-spacing: -2px;
@@ -89,9 +90,9 @@
         }
 
         .notify-btn {
-            background: transparent;
+            background: var(--primary);
             color: var(--text-main);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid var(--accent);
             padding: 15px 40px;
             font-size: 1rem;
             font-weight: 500;
@@ -103,10 +104,9 @@
         }
 
         .notify-btn:hover {
-            background: var(--text-main);
-            color: var(--secondary);
-            border-color: var(--text-main);
-            box-shadow: 0 0 20px rgba(255,255,255,0.2);
+            background: var(--accent);
+            color: #ffffff;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
         }
 
         /* Glitch effect on title hover */
@@ -134,12 +134,13 @@
         }
 
         .admin-link:hover {
-            color: var(--primary);
+            color: var(--text-main);
         }
 
         @media (max-width: 768px) {
             h1 { font-size: 3.5rem; }
             p { font-size: 1rem; }
+            .logo-container img { height: 60px; }
         }
     </style>
 </head>
@@ -147,7 +148,9 @@
     <div class="bg-glow"></div>
     
     <div class="content">
-        <div class="logo-text">AIM Agency</div>
+        <div class="logo-container">
+            <img src="{{ asset('Logo.png') }}" alt="AIM AGENCY">
+        </div>
         <h1>WE ARE<br>CRAFTING<br>SOMETHING EPIC</h1>
         <p>Hệ thống đang được nâng cấp và phát triển. Hãy quay lại sau nhé!<br>Một trải nghiệm tuyệt vời đang chờ đón bạn.</p>
         
