@@ -64,7 +64,7 @@ class MediaController extends Controller
             return [
                 'id' => md5($file),
                 'name' => basename($file),
-                'url' => Storage::url($file),
+                'url' => asset(Storage::url($file)),
                 'path' => $file,
             ];
         })->values();
@@ -121,7 +121,7 @@ class MediaController extends Controller
                 $uploaded[] = [
                     'id' => md5($filePath),
                     'name' => basename($filePath),
-                    'url' => Storage::url($filePath),
+                    'url' => asset(Storage::url($filePath)),
                     'path' => $filePath,
                 ];
             } catch (\Exception $e) {

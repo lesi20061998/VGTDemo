@@ -2,11 +2,13 @@
 
 if (!function_exists('get_theme_layout')) {
     function get_theme_layout($type = 'page') {
-        $settings = cache()->remember('theme_options', 3600, function() {
-            return \App\Models\ThemeOption::pluck('value', 'key')->toArray();
-        });
+        $layoutSettings = setting('theme_option_layout', []);
         
-        return $settings["{$type}_layout"] ?? 'full-width';
+        if (is_string($layoutSettings)) {
+            $layoutSettings = json_decode($layoutSettings, true) ?: [];
+        }
+        
+        return $layoutSettings["{$type}_layout"] ?? 'full-width';
     }
 }
 
