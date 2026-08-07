@@ -59,7 +59,7 @@
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
                         <div class="sidebar-text">
-                            <img src="https://vnglobaltech.com/wp-content/uploads/2025/11/logo_header.png" alt="VGT" class="h-10">
+                            <img src="{{ asset('Logo.png') }}" alt="VGT" class="h-10">
                         </div>
                     </div>
                     <button id="sidebarToggle" class="p-2 text-slate-400 hover:text-white transition-colors">
@@ -380,7 +380,7 @@
             <div class="mt-auto p-4 border-t border-slate-700">
                 <div class="text-slate-400 text-xs text-center space-y-1">
                     <p class="font-semibold">Version 2.0.0</p>
-                    <p> ©2025 VNEXT GLOBAL TECH</p>
+                    <p>© 2025 AIM AGENCY</p>
                     <p class="text-slate-500">All rights reserved</p>
                 </div>
             </div>
