@@ -35,8 +35,11 @@ class ProductController extends Controller
     {
         $categories = Taxonomy::where('taxonomy', 'product_cat')->orderBy('order')->get();
         $categoriesTree = $this->buildCategoryOptions($categories); 
-        $attributes = ProductAttribute::with('values')->orderBy('sort_order')->get();
-        $brands = ProjectBrand::orderBy('name')->get();
+        $attributes = collect();
+        try { $attributes = ProductAttribute::with('values')->orderBy('sort_order')->get(); } catch (\Exception $e) {}
+        
+        $brands = collect();
+        try { $brands = ProjectBrand::orderBy('name')->get(); } catch (\Exception $e) {}
         $currentLang = 'vi';
 
         return view('cms.products.create', compact('categories', 'categoriesTree', 'attributes', 'brands', 'currentLang'));
@@ -136,8 +139,11 @@ class ProductController extends Controller
 
         $categories = Taxonomy::where('taxonomy', 'product_cat')->orderBy('order')->get();
         $categoriesTree = $this->buildCategoryOptions($categories); 
-        $attributes = ProductAttribute::with('values')->orderBy('sort_order')->get();
-        $brands = ProjectBrand::orderBy('name')->get();
+        $attributes = collect();
+        try { $attributes = ProductAttribute::with('values')->orderBy('sort_order')->get(); } catch (\Exception $e) {}
+        
+        $brands = collect();
+        try { $brands = ProjectBrand::orderBy('name')->get(); } catch (\Exception $e) {}
         $currentLang = 'vi';
 
         // Mock relations for view

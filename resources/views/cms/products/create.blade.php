@@ -503,9 +503,6 @@
             <div class="bg-white rounded-lg shadow-sm p-6">
                 <h2 class="font-semibold text-gray-900 mb-4">Thương hiệu</h2>
                 <div class="max-h-64 overflow-y-auto border rounded-lg p-3 space-y-2">
-                    @php
-                        $brands = \App\Models\Brand::all();
-                    @endphp
                     @foreach($brands as $brand)
                     <label class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer">
                         <input type="checkbox" name="brands[]" value="{{ $brand->id }}" class="rounded border-gray-300 text-blue-600 mr-2">
