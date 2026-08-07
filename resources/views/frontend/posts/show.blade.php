@@ -27,6 +27,7 @@
         {!! $post->content ?? '' !!}
     </div>
     
+    {{-- Tags temporarily disabled because tags table is missing
     @if($post->tags && count($post->tags) > 0)
     <div class="mt-8 pt-6 border-t">
         <span class="font-medium">Tags:</span>
@@ -35,6 +36,7 @@
         @endforeach
     </div>
     @endif
+    --}}
 </article>
 
 @if(isset($relatedPosts) && count($relatedPosts) > 0)
