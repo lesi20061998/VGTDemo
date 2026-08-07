@@ -1,31 +1,23 @@
 @php
-    $headerStyles = [
-        'style-1' => ['label' => 'Header Style 1', 'image' => '/images/header/header-style-1.png', 'desc' => 'Logo trái, menu giữa, icons phải'],
-        'style-1-1' => ['label' => 'Header Style 1-1', 'image' => '/images/header/header-style-1-1.png', 'desc' => 'Logo trái, menu + search phải'],
-        'style-1-2' => ['label' => 'Header Style 1-2', 'image' => '/images/header/header-style-1-2.png', 'desc' => 'Logo trái, menu giữa, hotline phải'],
-        'style-1-3' => ['label' => 'Header Style 1-3', 'image' => '/images/header/header-style-1-3.png', 'desc' => 'Logo trái, search giữa, menu phải'],
-        'style-1-4' => ['label' => 'Header Style 1-4', 'image' => '/images/header/header-style-1-4.png', 'desc' => 'Logo + hotline trái, menu phải'],
-        'style-1-5' => ['label' => 'Header Style 1-5', 'image' => '/images/header/header-style-1-5.png', 'desc' => 'Logo trái, menu + cart phải'],
-        'style-1-6' => ['label' => 'Header Style 1-6', 'image' => '/images/header/header-style-1-6.png', 'desc' => 'Logo giữa, menu 2 bên'],
-        'style-1-7' => ['label' => 'Header Style 1-7', 'image' => '/images/header/header-style-1-7.png', 'desc' => 'Logo trái, menu + user phải'],
-        'style-2' => ['label' => 'Header Style 2', 'image' => '/images/header/header-style-2.png', 'desc' => '2 hàng: Logo + icons / Menu'],
-        'style-2-1' => ['label' => 'Header Style 2-1', 'image' => '/images/header/header-style-2-1.png', 'desc' => '2 hàng: Logo + search / Menu'],
-        'style-2-2' => ['label' => 'Header Style 2-2', 'image' => '/images/header/header-style-2-2.png', 'desc' => '2 hàng: Logo giữa / Menu giữa'],
-        'style-3' => ['label' => 'Header Style 3', 'image' => '/images/header/header-style-3.png', 'desc' => 'Sidebar menu trái'],
-        'style-3-2' => ['label' => 'Header Style 3-2', 'image' => '/images/header/header-style-3-2.png', 'desc' => 'Sidebar menu phải'],
-        'style-3-3' => ['label' => 'Header Style 3-3', 'image' => '/images/header/header-style-3-3.png', 'desc' => 'Hamburger menu fullscreen'],
-        'style-3-4' => ['label' => 'Header Style 3-4', 'image' => '/images/header/header-style-3-4.png', 'desc' => 'Hamburger + logo giữa'],
-        'style-3-5' => ['label' => 'Header Style 3-5', 'image' => '/images/header/header-style-3-5.png', 'desc' => 'Minimal với hamburger'],
-        'style-3-6' => ['label' => 'Header Style 3-6', 'image' => '/images/header/header-style-3-6.png', 'desc' => 'Transparent overlay'],
-        'style-3-7' => ['label' => 'Header Style 3-7', 'image' => '/images/header/header-style-3-7.png', 'desc' => 'Fixed sidebar'],
-        'style-4' => ['label' => 'Header Style 4', 'image' => '/images/header/header-style-4.png', 'desc' => 'E-commerce: Logo + search + cart'],
-        'style-4-1' => ['label' => 'Header Style 4-1', 'image' => '/images/header/header-style-4-1.png', 'desc' => 'E-commerce: Categories dropdown'],
-        'style-4-2' => ['label' => 'Header Style 4-2', 'image' => '/images/header/header-style-4-2.png', 'desc' => 'E-commerce: Mega menu'],
-        'style-4-3' => ['label' => 'Header Style 4-3', 'image' => '/images/header/header-style-4-3.png', 'desc' => 'E-commerce: 3 hàng full'],
-        'style-4-4' => ['label' => 'Header Style 4-4', 'image' => '/images/header/header-style-4-4.png', 'desc' => 'E-commerce: Compact'],
-        'style-4-5' => ['label' => 'Header Style 4-5', 'image' => '/images/header/header-style-4-5.png', 'desc' => 'E-commerce: Dark theme'],
-        'style-4-6' => ['label' => 'Header Style 4-6', 'image' => '/images/header/header-style-4-6.png', 'desc' => 'E-commerce: Sticky cart'],
-    ];
+    // Lấy các header styles từ database (bảng posts, post_type = 'header')
+    $dbHeaders = \App\Models\Post::where('post_type', 'header')->get();
+    
+    $headerStyles = [];
+    foreach ($dbHeaders as $header) {
+        $headerStyles[$header->slug] = [
+            'label' => $header->title,
+            'image' => $header->featured_image ?? '/images/header/default.png',
+            'desc'  => $header->excerpt
+        ];
+    }
+    
+    // Nếu chưa có trong DB, giữ lại một số mẫu mặc định
+    if (empty($headerStyles)) {
+        $headerStyles = [
+            'style-1' => ['label' => 'Header Style 1', 'image' => '/images/header/header-style-1.png', 'desc' => 'Logo trái, menu giữa, icons phải'],
+            'style-2' => ['label' => 'Header Style 2', 'image' => '/images/header/header-style-2.png', 'desc' => '2 hàng: Logo + icons / Menu'],
+        ];
+    }
 @endphp
 
 <div class="space-y-6">

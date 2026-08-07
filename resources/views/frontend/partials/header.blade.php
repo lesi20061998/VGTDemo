@@ -88,18 +88,27 @@
 
 <!-- Header -->
 @php
-    // Fallback to style-1 if selected style doesn't exist
-    $headerViewPath = 'frontend.partials.headers.' . $headerStyle;
-    if (!view()->exists($headerViewPath)) {
-        $headerViewPath = 'frontend.partials.headers.style-1';
-    }
+    // Kiểm tra xem header có trong DB không
+    $dbHeader = \App\Models\Post::where('post_type', 'header')->where('slug', $headerStyle)->first();
 @endphp
-@include($headerViewPath, [
-    'headerBg' => $headerBg,
-    'headerText' => $headerText,
-    'logo' => $logo,
-    'siteName' => $siteName,
-    'hotline' => $hotline,
-    'navMenu' => $navMenu,
-    'projectCode' => $projectCode
-])
+
+@if($dbHeader)
+    {!! $dbHeader->content !!}
+@else
+    @php
+        // Fallback to style-1 if selected style doesn't exist
+        $headerViewPath = 'frontend.partials.headers.' . $headerStyle;
+        if (!view()->exists($headerViewPath)) {
+            $headerViewPath = 'frontend.partials.headers.style-1';
+        }
+    @endphp
+    @include($headerViewPath, [
+        'headerBg' => $headerBg,
+        'headerText' => $headerText,
+        'logo' => $logo,
+        'siteName' => $siteName,
+        'hotline' => $hotline,
+        'navMenu' => $navMenu,
+        'projectCode' => $projectCode
+    ])
+@endif
