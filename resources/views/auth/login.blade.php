@@ -7,26 +7,31 @@
     <title>Đăng nhập Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gradient-to-br from-red-50 to-rose-100 min-h-screen">
+<body class="bg-slate-50 min-h-screen font-sans">
     <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div class="max-w-md w-full">
             <!-- Logo/Brand -->
             <div class="text-center mb-8">
-                <div class="mx-auto mb-4">
-                    <img src="https://vgt.vnglobaltech.com/wp-content/uploads/2025/11/logo_header.png" alt="VGT Logo" class="h-20 mx-auto">
+                <div class="mx-auto mb-4 flex flex-col items-center">
+                    <div class="w-20 h-20 bg-[#001B4E] rounded-2xl flex items-center justify-center mb-3 shadow-lg">
+                        <svg class="w-10 h-10 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" />
+                            <circle cx="12" cy="12" r="4" />
+                        </svg>
+                    </div>
+                    <h2 class="text-3xl font-bold text-[#001B4E] uppercase tracking-wider font-sans">Aim Agency</h2>
                 </div>
-                <h2 class="text-3xl font-bold text-gray-900 mb-2">Admin Panel</h2>
                 <p class="text-gray-600">Đăng nhập để truy cập hệ thống quản trị</p>
             </div>
 
             <!-- Login Form -->
-            <div class="bg-white rounded-2xl shadow-xl p-8">
+            <div class="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
                 <form method="POST" action="{{ route('login') }}" class="space-y-6">
                     @csrf
                     
                     <!-- Email Field -->
                     <div>
-                        <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                        <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">Email</label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -34,7 +39,7 @@
                                 </svg>
                             </div>
                             <input id="email" name="email" type="email" required 
-                                   class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#98191F] focus:border-[#98191F] transition duration-200 {{ $errors->has('email') ? 'border-red-300' : '' }}" 
+                                   class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#001B4E] focus:border-[#001B4E] transition duration-200 {{ $errors->has('email') ? 'border-red-300' : '' }}" 
                                    placeholder="admin@example.com" value="{{ old('email') }}">
                         </div>
                         @error('email')
@@ -44,7 +49,7 @@
 
                     <!-- Password Field -->
                     <div>
-                        <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Mật khẩu</label>
+                        <label for="password" class="block text-sm font-semibold text-gray-700 mb-2">Mật khẩu</label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -52,7 +57,7 @@
                                 </svg>
                             </div>
                             <input id="password" name="password" type="password" required 
-                                   class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#98191F] focus:border-[#98191F] transition duration-200" 
+                                   class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#001B4E] focus:border-[#001B4E] transition duration-200" 
                                    placeholder="••••••••">
                         </div>
                     </div>
@@ -61,7 +66,7 @@
                     <div class="flex items-center justify-between">
                         <div class="flex items-center">
                             <input id="remember" name="remember" type="checkbox" 
-                                   class="h-4 w-4 text-[#98191F] focus:ring-[#98191F] border-gray-300 rounded transition duration-200">
+                                   class="h-4 w-4 text-[#001B4E] focus:ring-[#001B4E] border-gray-300 rounded transition duration-200">
                             <label for="remember" class="ml-2 block text-sm text-gray-700">
                                 Ghi nhớ đăng nhập
                             </label>
@@ -71,27 +76,20 @@
                     <!-- Submit Button -->
                     <div>
                         <button type="submit" 
-                                class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-[#98191F] hover:bg-[#7a1419] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#98191F] transition duration-200 transform hover:scale-105">
+                                class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-[#001B4E] hover:bg-[#001235] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#001B4E] transition duration-200 transform hover:scale-[1.02]">
                             <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
                             </svg>
-                            Đăng nhập
+                            ĐĂNG NHẬP
                         </button>
                     </div>
                 </form>
-
-                <!-- Demo Credentials -->
-                <div class="mt-6 p-4 bg-red-50 rounded-lg border border-red-200">
-                    <p class="text-sm text-red-800 font-medium mb-1">Thông tin đăng nhập demo:</p>
-                    <p class="text-xs text-red-600">Email: admin@example.com</p>
-                    <p class="text-xs text-red-600">Password: password</p>
-                </div>
             </div>
 
             <!-- Footer -->
             <div class="text-center mt-8">
-                <p class="text-sm text-gray-500">
-                    © 2025 VGT System
+                <p class="text-sm text-gray-500 font-medium">
+                    © 2025 AIM AGENCY
                 </p>
             </div>
         </div>

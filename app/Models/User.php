@@ -43,11 +43,6 @@ class User extends Authenticatable
         'preferences',
     ];
 
-    public function employee()
-    {
-        return $this->hasOne(Employee::class);
-    }
-
     protected $hidden = [
         'password',
         'remember_token',
@@ -70,6 +65,15 @@ class User extends Authenticatable
         ];
     }
 
+    protected static function booted()
+    {
+        static::deleting(function ($user) {
+            if ($user->email === 'admin@example.com') {
+                throw new \Exception('Không thể xóa tài khoản Super Admin gốc (admin@example.com).');
+            }
+        });
+    }
+
     // Relationships
     public function roles()
     {
@@ -86,10 +90,20 @@ class User extends Authenticatable
         return $this->hasMany(ActivityLog::class);
     }
 
-    public function orders()
+    public function briefs()
     {
-        return $this->hasMany(Order::class);
+        return $this->hasMany(Brief::class, 'account_id');
     }
+
+    public function tasks()
+    {
+        return $this->hasMany(Task::class, 'dev_id');
+    }
+
+    // public function orders()
+    // {
+    //     return $this->hasMany(Order::class);
+    // }
 
     // Methods
     public function hasRole(string|array $roles): bool
@@ -188,7 +202,7 @@ class User extends Authenticatable
 
     public function canAccessSuperAdmin(): bool
     {
-        return isset($this->level) && \in_array($this->level, [0, 1]);
+        return isset($this->level) && \in_array($this->level, [0, 1, 2]);
     }
 
     public function hasAccessToProject(int $projectId): bool

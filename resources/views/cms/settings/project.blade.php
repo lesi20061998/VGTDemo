@@ -21,28 +21,28 @@
                     <label class="flex items-center gap-2">
                         <input type="checkbox" name="permissions[{{ $permission->module }}][can_view]" 
                                value="1" {{ $permission->can_view ? 'checked' : '' }}
-                               class="rounded border-gray-300 text-purple-600 focus:ring-purple-500">
+                               class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
                         <span class="text-sm">Xem</span>
                     </label>
                     
                     <label class="flex items-center gap-2">
                         <input type="checkbox" name="permissions[{{ $permission->module }}][can_create]" 
                                value="1" {{ $permission->can_create ? 'checked' : '' }}
-                               class="rounded border-gray-300 text-purple-600 focus:ring-purple-500">
+                               class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
                         <span class="text-sm">Tạo mới</span>
                     </label>
                     
                     <label class="flex items-center gap-2">
                         <input type="checkbox" name="permissions[{{ $permission->module }}][can_edit]" 
                                value="1" {{ $permission->can_edit ? 'checked' : '' }}
-                               class="rounded border-gray-300 text-purple-600 focus:ring-purple-500">
+                               class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
                         <span class="text-sm">Chỉnh sửa</span>
                     </label>
                     
                     <label class="flex items-center gap-2">
                         <input type="checkbox" name="permissions[{{ $permission->module }}][can_delete]" 
                                value="1" {{ $permission->can_delete ? 'checked' : '' }}
-                               class="rounded border-gray-300 text-purple-600 focus:ring-purple-500">
+                               class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
                         <span class="text-sm">Xóa</span>
                     </label>
                 </div>
@@ -54,7 +54,7 @@
             <a href="{{ route('project.admin.dashboard', $currentProject->code) }}" 
                class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">Hủy</a>
             <button type="submit" 
-                    class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">Lưu phân quyền</button>
+                    class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Lưu phân quyền</button>
         </div>
     </form>
 </div>

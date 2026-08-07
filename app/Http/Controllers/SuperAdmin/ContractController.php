@@ -4,136 +4,173 @@ namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Contract;
-use App\Models\Employee;
-use App\Models\Website;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ContractController extends Controller
 {
-    public function index()
+    /**
+     * Display a listing of the resource.
+     */
+    public function index(Request $request)
     {
-        $user = auth()->user();
-        $query = Contract::with(['employee']);
-        
-        // Account role chỉ xem hợp đồng của bản thân
-        if ($user->employee && $user->employee->superadmin_role === 'account') {
-            $query->where('employee_id', $user->employee->id);
+        $query = Contract::query();
+
+        if ($request->has('service_type') && $request->service_type != '') {
+            $query->where('service_type', $request->service_type);
         }
-        // Director và superadmin xem tất cả
-        
-        $contracts = $query->latest()->get();
+
+        if ($request->has('status') && $request->status != '') {
+            $query->where('status', $request->status);
+        }
+
+        $contracts = $query->orderBy('created_at', 'desc')->paginate(10);
+
         return view('superadmin.contracts.index', compact('contracts'));
     }
 
+    /**
+     * Show the form for creating a new resource.
+     */
     public function create()
     {
-        $employees = Employee::where('is_active', true)->get();
-        return view('superadmin.contracts.create', compact('employees'));
+        return view('superadmin.contracts.create');
     }
 
+    /**
+     * Store a newly created resource in storage.
+     */
     public function store(Request $request)
     {
-        $request->validate([
-            'employee_id' => 'required|exists:employees,id',
-            'contract_code' => 'required|string|unique:contracts,contract_code',
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
             'client_name' => 'nullable|string|max:255',
-            'service_type' => 'nullable|string|max:255',
-            'requirements' => 'nullable|string',
-            'design_description' => 'nullable|string',
-            'attachments' => 'nullable|file|max:10240',
-            'deadline' => 'nullable|date',
+            'service_type' => 'required|in:website,publication,branding,social_media',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'domain_name' => 'nullable|string|max:255',
+            'domain_purchase_date' => 'nullable|date',
+            'hosting_provider' => 'nullable|string|max:255',
+            'hosting_start_date' => 'nullable|date',
+            'contract_value' => 'nullable|numeric|min:0',
+            'status' => 'required|in:pending,active,completed,cancelled',
+            'description' => 'nullable|string',
+            'technical_requirements' => 'nullable|string',
+            'features' => 'nullable|string',
+            'has_client_resources' => 'boolean',
+            'client_resource_details' => 'nullable|string',
+            'attachment_files.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
         ]);
 
-        $employee = Employee::findOrFail($request->employee_id);
-        $fullCode = $employee->code . '/' . $request->contract_code;
-        
-        $data = [
-            'employee_id' => $request->employee_id,
-            'contract_code' => $request->contract_code,
-            'full_code' => $fullCode,
-            'start_date' => now(),
-            'end_date' => $request->deadline,
-            'notes' => $request->notes,
-            'is_active' => true,
-        ];
+        $validated['has_client_resources'] = $request->boolean('has_client_resources');
 
-        Contract::create($data);
+        if ($request->input('action') === 'approve') {
+            $validated['status'] = 'active';
+        }
 
-        return redirect()->route('superadmin.contracts.index')->with('alert', [
-            'type' => 'success',
-            'message' => 'Tạo hợp đồng thành công! Chờ Super Admin duyệt.'
-        ]);
+        // Handle attachments
+        $attachments = [];
+        if ($request->hasFile('attachment_files')) {
+            foreach ($request->file('attachment_files') as $file) {
+                $path = $file->store('contracts', 'public');
+                $attachments[] = $path;
+            }
+        }
+        $validated['attachments'] = $attachments;
+
+        Contract::create($validated);
+
+        return redirect()->route('superadmin.contracts.index')->with('success', 'Hợp đồng đã được tạo thành công.');
     }
 
+    /**
+     * Display the specified resource.
+     */
     public function show(Contract $contract)
     {
-        $contract->load('employee');
         return view('superadmin.contracts.show', compact('contract'));
     }
 
-    public function approve(Contract $contract)
-    {
-        $contract->update(['status' => 'approved']);
-        
-        return back()->with('alert', [
-            'type' => 'success',
-            'message' => 'Duyệt hợp đồng thành công! Có thể tạo dự án từ hợp đồng này.'
-        ]);
-    }
-
-    public function reject(Contract $contract)
-    {
-        $contract->update(['status' => 'rejected']);
-        
-        return back()->with('alert', [
-            'type' => 'success',
-            'message' => 'Đã từ chối hợp đồng.'
-        ]);
-    }
-
+    /**
+     * Show the form for editing the specified resource.
+     */
     public function edit(Contract $contract)
     {
-        $employees = Employee::where('is_active', true)->get();
-        return view('superadmin.contracts.edit', compact('contract', 'employees'));
+        return view('superadmin.contracts.edit', compact('contract'));
     }
 
+    /**
+     * Update the specified resource in storage.
+     */
     public function update(Request $request, Contract $contract)
     {
-        $request->validate([
-            'employee_id' => 'required|exists:employees,id',
-            'contract_code' => 'required|string|unique:contracts,contract_code,' . $contract->id,
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
             'client_name' => 'nullable|string|max:255',
-            'deadline' => 'nullable|date',
+            'service_type' => 'required|in:website,publication,branding,social_media',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'domain_name' => 'nullable|string|max:255',
+            'domain_purchase_date' => 'nullable|date',
+            'hosting_provider' => 'nullable|string|max:255',
+            'hosting_start_date' => 'nullable|date',
+            'contract_value' => 'nullable|numeric|min:0',
+            'status' => 'required|in:pending,active,completed,cancelled',
+            'description' => 'nullable|string',
+            'technical_requirements' => 'nullable|string',
+            'features' => 'nullable|string',
+            'has_client_resources' => 'boolean',
+            'client_resource_details' => 'nullable|string',
+            'attachment_files.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
         ]);
 
-        $employee = Employee::findOrFail($request->employee_id);
-        $fullCode = $employee->code . '/' . $request->contract_code;
+        $validated['has_client_resources'] = $request->boolean('has_client_resources');
 
-        $data = [
-            'employee_id' => $request->employee_id,
-            'contract_code' => $request->contract_code,
-            'full_code' => $fullCode,
-            'start_date' => $contract->start_date,
-            'end_date' => $request->deadline,
-            'notes' => $request->notes,
-            'is_active' => true,
-        ];
+        if ($request->input('action') === 'approve') {
+            $validated['status'] = 'active';
+        }
 
-        $contract->update($data);
+        $attachments = $contract->attachments ?? [];
 
-        return redirect()->route('superadmin.contracts.index')->with('alert', [
-            'type' => 'success',
-            'message' => 'Cập nhật hợp đồng thành công!'
-        ]);
+        // Remove old attachments if requested
+        if ($request->has('remove_attachments')) {
+            foreach ($request->remove_attachments as $removePath) {
+                if (($key = array_search($removePath, $attachments)) !== false) {
+                    unset($attachments[$key]);
+                    Storage::disk('public')->delete($removePath);
+                }
+            }
+            $attachments = array_values($attachments); // re-index
+        }
+
+        // Add new attachments
+        if ($request->hasFile('attachment_files')) {
+            foreach ($request->file('attachment_files') as $file) {
+                $path = $file->store('contracts', 'public');
+                $attachments[] = $path;
+            }
+        }
+        $validated['attachments'] = $attachments;
+
+        $contract->update($validated);
+
+        return redirect()->route('superadmin.contracts.index')->with('success', 'Cập nhật hợp đồng thành công.');
     }
 
+    /**
+     * Remove the specified resource from storage.
+     */
     public function destroy(Contract $contract)
     {
+        // Delete physical files
+        if ($contract->attachments) {
+            foreach ($contract->attachments as $path) {
+                Storage::disk('public')->delete($path);
+            }
+        }
+
         $contract->delete();
-        return redirect()->route('superadmin.contracts.index')->with('alert', [
-            'type' => 'success',
-            'message' => 'Xóa hợp đồng thành công!'
-        ]);
+
+        return redirect()->route('superadmin.contracts.index')->with('success', 'Xóa hợp đồng thành công.');
     }
 }
-

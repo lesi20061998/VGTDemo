@@ -82,6 +82,7 @@
                 </a>
 
                 <!-- E-Commerce -->
+                @if(isset($currentProject) && ($currentProject->hasFeature('commerce') || $currentProject->hasFeature('product_listing')))
                 <div class="mb-4">
                     <div class="dropdown-parent">
                         <button class="nav-item flex items-center justify-between w-full px-4 py-3 mb-2 text-slate-300 hover:bg-[#98191F] hover:text-white rounded-lg transition-all duration-200">
@@ -129,6 +130,8 @@
                         </div>
                     </div>
                 </div>
+                @endif
+
 
                 <!-- Content Management -->
                 <div class="mb-4">
@@ -172,6 +175,114 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Bất động sản -->
+                @if(isset($currentProject) && ($currentProject->hasFeature('property') || $currentProject->hasFeature('property_category')))
+                <div class="mb-4">
+                    <div class="dropdown-parent">
+                        <button class="nav-item flex items-center justify-between w-full px-4 py-3 mb-2 text-slate-300 hover:bg-[#98191F] hover:text-white rounded-lg transition-all duration-200">
+                            <div class="flex items-center">
+                                <svg class="h-5 w-5 nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                                </svg>
+                                <span class="font-medium nav-text ml-3">Bất động sản</span>
+                            </div>
+                            <svg class="h-4 w-4 nav-text dropdown-arrow transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div class="dropdown-menu ml-4 space-y-1 max-h-0 overflow-hidden transition-all duration-300">
+                            @if($currentProject->hasFeature('property_category'))
+                            <a href="{{ route('project.admin.property-categories.index', request()->route('projectCode')) }}" class="flex items-center px-4 py-2 text-slate-400 hover:bg-[#98191F] hover:text-white rounded-lg transition-all duration-200 {{ request()->routeIs('project.admin.property-categories.*') ? 'bg-[#98191F] text-white' : '' }}">
+                                <span class="text-sm nav-text">Danh mục BĐS</span>
+                            </a>
+                            @endif
+                            @if($currentProject->hasFeature('property'))
+                            <a href="{{ route('project.admin.properties.index', request()->route('projectCode')) }}" class="flex items-center px-4 py-2 text-slate-400 hover:bg-[#98191F] hover:text-white rounded-lg transition-all duration-200 {{ request()->routeIs('project.admin.properties.*') ? 'bg-[#98191F] text-white' : '' }}">
+                                <span class="text-sm nav-text">Danh sách BĐS</span>
+                            </a>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+                @endif
+
+                <!-- Khách sạn & Lưu trú -->
+                @if(isset($currentProject) && ($currentProject->hasFeature('room') || $currentProject->hasFeature('hotel_booking') || $currentProject->hasFeature('amenity')))
+                <div class="mb-4">
+                    <div class="dropdown-parent">
+                        <button class="nav-item flex items-center justify-between w-full px-4 py-3 mb-2 text-slate-300 hover:bg-[#98191F] hover:text-white rounded-lg transition-all duration-200">
+                            <div class="flex items-center">
+                                <svg class="h-5 w-5 nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                                </svg>
+                                <span class="font-medium nav-text ml-3">Khách sạn</span>
+                            </div>
+                            <svg class="h-4 w-4 nav-text dropdown-arrow transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div class="dropdown-menu ml-4 space-y-1 max-h-0 overflow-hidden transition-all duration-300">
+                            @if($currentProject->hasFeature('room'))
+                            <a href="{{ route('project.admin.rooms.index', request()->route('projectCode')) }}" class="flex items-center px-4 py-2 text-slate-400 hover:bg-[#98191F] hover:text-white rounded-lg transition-all duration-200 {{ request()->routeIs('project.admin.rooms.*') ? 'bg-[#98191F] text-white' : '' }}">
+                                <span class="text-sm nav-text">Quản lý Phòng</span>
+                            </a>
+                            @endif
+                            @if($currentProject->hasFeature('hotel_booking'))
+                            <a href="{{ route('project.admin.hotel-bookings.index', request()->route('projectCode')) }}" class="flex items-center px-4 py-2 text-slate-400 hover:bg-[#98191F] hover:text-white rounded-lg transition-all duration-200 {{ request()->routeIs('project.admin.hotel-bookings.*') ? 'bg-[#98191F] text-white' : '' }}">
+                                <span class="text-sm nav-text">Đặt phòng</span>
+                            </a>
+                            @endif
+                            @if($currentProject->hasFeature('amenity'))
+                            <a href="{{ route('project.admin.amenities.index', request()->route('projectCode')) }}" class="flex items-center px-4 py-2 text-slate-400 hover:bg-[#98191F] hover:text-white rounded-lg transition-all duration-200 {{ request()->routeIs('project.admin.amenities.*') ? 'bg-[#98191F] text-white' : '' }}">
+                                <span class="text-sm nav-text">Tiện nghi</span>
+                            </a>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+                @endif
+
+                <!-- Y tế & Phòng khám -->
+                @if(isset($currentProject) && ($currentProject->hasFeature('doctor') || $currentProject->hasFeature('patient') || $currentProject->hasFeature('prescription') || $currentProject->hasFeature('booking')))
+                <div class="mb-4">
+                    <div class="dropdown-parent">
+                        <button class="nav-item flex items-center justify-between w-full px-4 py-3 mb-2 text-slate-300 hover:bg-[#98191F] hover:text-white rounded-lg transition-all duration-200">
+                            <div class="flex items-center">
+                                <svg class="h-5 w-5 nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                                </svg>
+                                <span class="font-medium nav-text ml-3">Y tế</span>
+                            </div>
+                            <svg class="h-4 w-4 nav-text dropdown-arrow transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div class="dropdown-menu ml-4 space-y-1 max-h-0 overflow-hidden transition-all duration-300">
+                            @if($currentProject->hasFeature('booking'))
+                            <a href="{{ route('project.admin.appointments.index', request()->route('projectCode')) }}" class="flex items-center px-4 py-2 text-slate-400 hover:bg-[#98191F] hover:text-white rounded-lg transition-all duration-200 {{ request()->routeIs('project.admin.appointments.*') ? 'bg-[#98191F] text-white' : '' }}">
+                                <span class="text-sm nav-text">Đặt lịch hẹn</span>
+                            </a>
+                            @endif
+                            @if($currentProject->hasFeature('doctor'))
+                            <a href="{{ route('project.admin.doctors.index', request()->route('projectCode')) }}" class="flex items-center px-4 py-2 text-slate-400 hover:bg-[#98191F] hover:text-white rounded-lg transition-all duration-200 {{ request()->routeIs('project.admin.doctors.*') ? 'bg-[#98191F] text-white' : '' }}">
+                                <span class="text-sm nav-text">Bác sĩ</span>
+                            </a>
+                            @endif
+                            @if($currentProject->hasFeature('patient'))
+                            <a href="{{ route('project.admin.patients.index', request()->route('projectCode')) }}" class="flex items-center px-4 py-2 text-slate-400 hover:bg-[#98191F] hover:text-white rounded-lg transition-all duration-200 {{ request()->routeIs('project.admin.patients.*') ? 'bg-[#98191F] text-white' : '' }}">
+                                <span class="text-sm nav-text">Bệnh nhân</span>
+                            </a>
+                            @endif
+                            @if($currentProject->hasFeature('prescription'))
+                            <a href="{{ route('project.admin.prescriptions.index', request()->route('projectCode')) }}" class="flex items-center px-4 py-2 text-slate-400 hover:bg-[#98191F] hover:text-white rounded-lg transition-all duration-200 {{ request()->routeIs('project.admin.prescriptions.*') ? 'bg-[#98191F] text-white' : '' }}">
+                                <span class="text-sm nav-text">Đơn thuốc</span>
+                            </a>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+                @endif
 
                 <!-- Page Builder -->
                 <div class="mb-4">

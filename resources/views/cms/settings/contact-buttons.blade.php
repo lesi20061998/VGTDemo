@@ -171,7 +171,7 @@
                     <!-- Desktop Preview -->
                     <div class="mb-4">
                         <div class="text-sm font-medium mb-2 text-gray-600">Desktop</div>
-                        <div class="border rounded-lg bg-gradient-to-br from-purple-100 to-blue-100 relative overflow-hidden" style="height: 300px;">
+                        <div class="border rounded-lg bg-gradient-to-br from-blue-100 to-blue-100 relative overflow-hidden" style="height: 300px;">
                             <div class="absolute inset-0 flex items-center justify-center text-gray-400 text-xs">
                                 <div class="text-center">
                                     <svg class="w-12 h-12 mx-auto mb-1 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">

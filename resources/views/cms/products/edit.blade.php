@@ -38,8 +38,6 @@
         </div>
     </div>
 
-    <!-- Language Switcher -->
-    @include('cms.components.language-switcher')
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Cột trái: Form chính -->
@@ -91,12 +89,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-2">
                         Mô tả đầy đủ
                     </label>
-                    <x-quill-editor 
-                        name="description" 
-                        :value="old('description', $product->description)" 
-                        height="400px"
-                        placeholder="Nhập mô tả chi tiết về sản phẩm..." />
-                    @error('description')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
+                    <textarea name="description" class="tinymce-editor">{{ old('description', $product->description) }}</textarea>
                 </div>
             </div>
 
@@ -139,13 +132,13 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Giá gốc (₫)</label>
-                                <input type="number" name="price" value="{{ old('price', $product->price) }}" x-model="basePrice" @input="validateSalePrice()"
-                                       max="9999999999999.99" step="0.01" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#98191F]">
+                                <input type="text" name="price" value="{{ old('price', $product->price) }}" x-model="basePrice" @input="validateSalePrice()"
+                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#98191F] input-number-format">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Giá khuyến mãi (₫)</label>
-                                <input type="number" name="sale_price" value="{{ old('sale_price', $product->sale_price) }}" x-model="salePrice" @input="validateSalePrice()"
-                                       max="9999999999999.99" step="0.01" :max="basePrice" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#98191F]">
+                                <input type="text" name="sale_price" value="{{ old('sale_price', $product->sale_price) }}" x-model="salePrice" @input="validateSalePrice()"
+                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#98191F] input-number-format">
                                 <p x-show="salePriceError" class="text-red-600 text-sm mt-1" x-text="salePriceError"></p>
                             </div>
                         </div>
@@ -509,8 +502,6 @@
                     </div>
                     <input type="hidden" name="featured_image" x-model="featuredImage">
                     <div @click="currentGalleryMode = false">
-                        @include('cms.components.media-manager')
-                                    </div>
                                 </div>
                     
                                 <!-- Danh mục -->

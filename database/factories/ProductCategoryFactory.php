@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ProductCategory>
+ * @extends Factory<ProductCategory>
  */
 class ProductCategoryFactory extends Factory
 {
@@ -15,7 +15,7 @@ class ProductCategoryFactory extends Factory
 
     public function definition(): array
     {
-        $name = $this->faker->word();
+        $name = $this->faker->unique()->words(2, true);
 
         return [
             'name' => ucfirst($name),
@@ -44,7 +44,7 @@ class ProductCategoryFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'parent_id' => $parent->id,
             'level' => $parent->level + 1,
-            'path' => $parent->path . '/' . $attributes['slug'],
+            'path' => $parent->path.'/'.$attributes['slug'],
         ]);
     }
 }

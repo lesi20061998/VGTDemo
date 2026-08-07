@@ -13,6 +13,18 @@ use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
+    /**
+     * Get the index route based on current context.
+     */
+    protected function getIndexRoute()
+    {
+        if (request()->routeIs('superadmin.*')) {
+            return route('superadmin.users.index');
+        }
+
+        return route('project.admin.users.index', ['projectCode' => request()->route('projectCode')]);
+    }
+
     // Middleware is now handled in routes or via attributes in Laravel 12
 
     /**
@@ -112,7 +124,7 @@ class UserController extends Controller
             // Mail::to($user)->send(new WelcomeEmail($user));
         }
 
-        return redirect()->route('cms.users.index')
+        return redirect($this->getIndexRoute())
             ->with('success', 'User created successfully.');
     }
 
@@ -191,7 +203,7 @@ class UserController extends Controller
             );
         }
 
-        return redirect()->route('cms.users.index')
+        return redirect($this->getIndexRoute())
             ->with('success', 'User updated successfully.');
     }
 
@@ -202,13 +214,13 @@ class UserController extends Controller
     {
         // Prevent deleting super admin
         if ($user->isSuperAdmin()) {
-            return redirect()->route('cms.users.index')
+            return redirect($this->getIndexRoute())
                 ->with('error', 'Cannot delete super administrator.');
         }
 
         // Prevent self-deletion
         if ($user->id === auth()->id()) {
-            return redirect()->route('cms.users.index')
+            return redirect($this->getIndexRoute())
                 ->with('error', 'Cannot delete your own account.');
         }
 
@@ -228,7 +240,7 @@ class UserController extends Controller
             );
         }
 
-        return redirect()->route('cms.users.index')
+        return redirect($this->getIndexRoute())
             ->with('success', 'User deleted successfully.');
     }
 

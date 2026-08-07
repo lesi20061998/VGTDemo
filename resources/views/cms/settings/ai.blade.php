@@ -195,9 +195,9 @@
                         <p class="text-sm text-gray-600">Tokens đã dùng</p>
                         <p class="text-2xl font-bold text-green-600">{{ number_format($ai['stats']['total_tokens'] ?? 0) }}</p>
                     </div>
-                    <div class="bg-purple-50 rounded-lg p-4">
+                    <div class="bg-blue-50 rounded-lg p-4">
                         <p class="text-sm text-gray-600">Chi phí ước tính</p>
-                        <p class="text-2xl font-bold text-purple-600">${{ number_format(($ai['stats']['estimated_cost'] ?? 0), 2) }}</p>
+                        <p class="text-2xl font-bold text-blue-600">${{ number_format(($ai['stats']['estimated_cost'] ?? 0), 2) }}</p>
                     </div>
                 </div>
             </div>
@@ -218,7 +218,7 @@
             <textarea x-ref="prompt" rows="3" class="w-full px-4 py-2 border rounded-lg" placeholder="Viết mô tả sản phẩm iPhone 15 Pro Max..."></textarea>
         </div>
         <button type="button" @click="generateContent()" :disabled="generating"
-                class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 flex items-center gap-2">
+                class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2">
             <svg x-show="!generating" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
             </svg>

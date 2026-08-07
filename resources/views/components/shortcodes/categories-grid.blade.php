@@ -22,7 +22,7 @@
                      alt="{{ $category->name }}" 
                      class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
             @else
-                <div class="absolute inset-0 bg-gradient-to-br from-blue-500 to-purple-600"></div>
+                <div class="absolute inset-0 bg-gradient-to-br from-blue-500 to-blue-600"></div>
             @endif
             
             {{-- Overlay --}}

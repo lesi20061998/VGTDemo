@@ -13,39 +13,57 @@ use Livewire\Component;
 class WidgetTemplateBuilder extends Component
 {
     public ?WidgetTemplate $template = null;
+
     public ?string $projectCode = null;
-    
+
     // Mode: 'custom' for database templates, 'code' for code-based widgets
     public string $mode = 'custom';
+
     public ?string $codeWidgetType = null;
+
     public ?string $codeWidgetClass = null;
-    
+
     public string $name = '';
+
     public string $type = '';
+
     public string $category = 'general';
+
     public string $description = '';
+
     public string $icon = 'cube';
+
     public string $version = '1.0.0';
+
     public bool $is_active = true;
-    
+
     public string $template_code = '';
+
     public string $template_css = '';
+
     public string $template_js = '';
-    
+
     // For code-based widgets
     public string $phpPath = '';
+
     public string $viewPath = '';
+
     public string $jsonPath = '';
+
     public bool $hasJsonMetadata = false;
-    
+
     public array $fields = [];
+
     public array $fieldTypes = [];
-    
+
     public bool $showFieldModal = false;
+
     public int $editingFieldIndex = -1;
+
     public array $currentField = [];
+
     public string $activeTab = 'fields';
-    
+
     public array $categories = [
         'general' => 'Chung',
         'hero' => 'Hero/Banner',
@@ -64,7 +82,7 @@ class WidgetTemplateBuilder extends Component
 
     public function updatedName($value): void
     {
-        if (!$this->template) {
+        if (! $this->template) {
             $this->type = $this->generateSlug($value);
         }
     }
@@ -74,20 +92,22 @@ class WidgetTemplateBuilder extends Component
         $text = $this->removeVietnameseAccents($text);
         $text = strtolower($text);
         $text = preg_replace('/[^a-z0-9]+/', '_', $text);
+
         return trim($text, '_');
     }
 
     protected function removeVietnameseAccents(string $str): string
     {
         $map = [
-            'à'=>'a','á'=>'a','ạ'=>'a','ả'=>'a','ã'=>'a','â'=>'a','ầ'=>'a','ấ'=>'a','ậ'=>'a','ẩ'=>'a','ẫ'=>'a',
-            'ă'=>'a','ằ'=>'a','ắ'=>'a','ặ'=>'a','ẳ'=>'a','ẵ'=>'a','è'=>'e','é'=>'e','ẹ'=>'e','ẻ'=>'e','ẽ'=>'e',
-            'ê'=>'e','ề'=>'e','ế'=>'e','ệ'=>'e','ể'=>'e','ễ'=>'e','ì'=>'i','í'=>'i','ị'=>'i','ỉ'=>'i','ĩ'=>'i',
-            'ò'=>'o','ó'=>'o','ọ'=>'o','ỏ'=>'o','õ'=>'o','ô'=>'o','ồ'=>'o','ố'=>'o','ộ'=>'o','ổ'=>'o','ỗ'=>'o',
-            'ơ'=>'o','ờ'=>'o','ớ'=>'o','ợ'=>'o','ở'=>'o','ỡ'=>'o','ù'=>'u','ú'=>'u','ụ'=>'u','ủ'=>'u','ũ'=>'u',
-            'ư'=>'u','ừ'=>'u','ứ'=>'u','ự'=>'u','ử'=>'u','ữ'=>'u','ỳ'=>'y','ý'=>'y','ỵ'=>'y','ỷ'=>'y','ỹ'=>'y',
-            'đ'=>'d','Đ'=>'D',
+            'à' => 'a', 'á' => 'a', 'ạ' => 'a', 'ả' => 'a', 'ã' => 'a', 'â' => 'a', 'ầ' => 'a', 'ấ' => 'a', 'ậ' => 'a', 'ẩ' => 'a', 'ẫ' => 'a',
+            'ă' => 'a', 'ằ' => 'a', 'ắ' => 'a', 'ặ' => 'a', 'ẳ' => 'a', 'ẵ' => 'a', 'è' => 'e', 'é' => 'e', 'ẹ' => 'e', 'ẻ' => 'e', 'ẽ' => 'e',
+            'ê' => 'e', 'ề' => 'e', 'ế' => 'e', 'ệ' => 'e', 'ể' => 'e', 'ễ' => 'e', 'ì' => 'i', 'í' => 'i', 'ị' => 'i', 'ỉ' => 'i', 'ĩ' => 'i',
+            'ò' => 'o', 'ó' => 'o', 'ọ' => 'o', 'ỏ' => 'o', 'õ' => 'o', 'ô' => 'o', 'ồ' => 'o', 'ố' => 'o', 'ộ' => 'o', 'ổ' => 'o', 'ỗ' => 'o',
+            'ơ' => 'o', 'ờ' => 'o', 'ớ' => 'o', 'ợ' => 'o', 'ở' => 'o', 'ỡ' => 'o', 'ù' => 'u', 'ú' => 'u', 'ụ' => 'u', 'ủ' => 'u', 'ũ' => 'u',
+            'ư' => 'u', 'ừ' => 'u', 'ứ' => 'u', 'ự' => 'u', 'ử' => 'u', 'ữ' => 'u', 'ỳ' => 'y', 'ý' => 'y', 'ỵ' => 'y', 'ỷ' => 'y', 'ỹ' => 'y',
+            'đ' => 'd', 'Đ' => 'D',
         ];
+
         return strtr($str, $map);
     }
 
@@ -95,11 +115,11 @@ class WidgetTemplateBuilder extends Component
     {
         $this->projectCode = request()->route('projectCode');
         $this->loadFieldTypes();
-        
+
         // Get codeType from route parameter if not passed directly
         // Livewire doesn't auto-inject route parameters, so we need to get them manually
         $codeType = $codeType ?? request()->route('codeType');
-        
+
         // Debug logging
         \Log::info('WidgetTemplateBuilder mount', [
             'id' => $id,
@@ -108,7 +128,7 @@ class WidgetTemplateBuilder extends Component
             'route_codeType' => request()->route('codeType'),
             'full_url' => request()->fullUrl(),
         ]);
-        
+
         // Check if editing a code-based widget
         if ($codeType) {
             $this->mode = 'code';
@@ -129,33 +149,34 @@ class WidgetTemplateBuilder extends Component
             $this->mode = 'custom';
             $this->template_code = $this->getDefaultTemplateCode();
         }
-        
+
         $this->resetCurrentField();
     }
-    
+
     protected function loadCodeBasedWidget(string $type): void
     {
         \Log::info('loadCodeBasedWidget called', ['type' => $type]);
-        
+
         $this->codeWidgetClass = WidgetRegistry::get($type);
-        
+
         \Log::info('Widget class found', ['class' => $this->codeWidgetClass]);
-        
-        if (!$this->codeWidgetClass || !class_exists($this->codeWidgetClass)) {
+
+        if (! $this->codeWidgetClass || ! class_exists($this->codeWidgetClass)) {
             \Log::error('Widget class not found', ['type' => $type, 'class' => $this->codeWidgetClass]);
             session()->flash('error', "Widget type '{$type}' không tồn tại");
+
             return;
         }
-        
+
         // Get paths
         $reflection = new \ReflectionClass($this->codeWidgetClass);
         $classDir = dirname($reflection->getFileName());
         $this->phpPath = $reflection->getFileName();
         $this->jsonPath = "{$classDir}/widget.json";
-        
+
         // Check for widget.json metadata
         $this->hasJsonMetadata = File::exists($this->jsonPath);
-        
+
         // Load metadata from registry
         $config = WidgetRegistry::getConfig($type);
         if ($config) {
@@ -167,20 +188,20 @@ class WidgetTemplateBuilder extends Component
             $this->fields = $config['fields'] ?? [];
             $this->type = $type;
         }
-        
+
         // Load view code
         $phpContent = File::get($this->phpPath);
         if (preg_match("/view\(['\"]([^'\"]+)['\"]/", $phpContent, $matches)) {
             $viewName = $matches[1];
-            $this->viewPath = resource_path('views/' . str_replace('.', '/', $viewName) . '.blade.php');
+            $this->viewPath = resource_path('views/'.str_replace('.', '/', $viewName).'.blade.php');
             if (File::exists($this->viewPath)) {
                 $this->template_code = File::get($this->viewPath);
             }
         }
-        
+
         // Load CSS/JS from view directory or class directory
         $viewDir = $this->viewPath ? dirname($this->viewPath) : $classDir;
-        
+
         $cssPaths = ["{$viewDir}/style.css", "{$classDir}/style.css"];
         foreach ($cssPaths as $path) {
             if (File::exists($path)) {
@@ -188,7 +209,7 @@ class WidgetTemplateBuilder extends Component
                 break;
             }
         }
-        
+
         $jsPaths = ["{$viewDir}/script.js", "{$classDir}/script.js"];
         foreach ($jsPaths as $path) {
             if (File::exists($path)) {
@@ -214,9 +235,9 @@ class WidgetTemplateBuilder extends Component
 
     protected function loadFieldTypes(): void
     {
-        $service = new FieldTypeService();
+        $service = new FieldTypeService;
         $info = $service->getFieldTypeInfo();
-        
+
         // Convert to simple array format that Livewire can serialize
         $this->fieldTypes = [];
         foreach ($info as $key => $data) {
@@ -226,12 +247,12 @@ class WidgetTemplateBuilder extends Component
             ];
         }
     }
-    
+
     protected function getDefaultTemplateCode(): string
     {
         return "<div class=\"widget-container p-4\">\n    {{-- Your widget code here --}}\n</div>";
     }
-    
+
     public function setActiveTab(string $tab): void
     {
         $this->activeTab = $tab;
@@ -339,35 +360,35 @@ class WidgetTemplateBuilder extends Component
     public function save(): void
     {
         $this->validate();
-        
+
         if ($this->mode === 'code') {
             $this->saveCodeBasedWidget();
         } else {
             $this->saveCustomTemplate();
         }
     }
-    
+
     protected function saveCodeBasedWidget(): void
     {
         // Save view code
-        if (!empty($this->viewPath) && !empty($this->template_code)) {
+        if (! empty($this->viewPath) && ! empty($this->template_code)) {
             File::put($this->viewPath, $this->template_code);
         }
-        
+
         // Save CSS
-        if (!empty($this->template_css)) {
+        if (! empty($this->template_css)) {
             $viewDir = $this->viewPath ? dirname($this->viewPath) : dirname($this->phpPath);
             $cssPath = "{$viewDir}/style.css";
             File::put($cssPath, $this->template_css);
         }
-        
+
         // Save JS
-        if (!empty($this->template_js)) {
+        if (! empty($this->template_js)) {
             $viewDir = $this->viewPath ? dirname($this->viewPath) : dirname($this->phpPath);
             $jsPath = "{$viewDir}/script.js";
             File::put($jsPath, $this->template_js);
         }
-        
+
         // Save metadata to widget.json
         $metadata = [
             'name' => $this->name,
@@ -378,32 +399,32 @@ class WidgetTemplateBuilder extends Component
             'fields' => $this->fields,
             'variants' => ['default' => 'Default'],
         ];
-        
-        $jsonPath = $this->jsonPath ?: dirname($this->phpPath) . '/widget.json';
+
+        $jsonPath = $this->jsonPath ?: dirname($this->phpPath).'/widget.json';
         File::put($jsonPath, json_encode($metadata, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-        
+
         WidgetRegistry::clearCache();
-        
+
         session()->flash('success', 'Code-based Widget đã được cập nhật!');
-        
+
         if ($this->projectCode) {
-            $this->redirect(route('project.admin.widget-templates.index', ['projectCode' => $this->projectCode]));
+            $this->redirect(route('project.admin.code-widgets.index', ['projectCode' => $this->projectCode]));
         } else {
-            $this->redirect(route('cms.widget-templates.index'));
+            $this->redirect(route('cms.code-widgets.index'));
         }
     }
-    
+
     protected function saveCustomTemplate(): void
     {
         // Create widget folder with files
         $dir = resource_path("views/widgets/custom/{$this->type}");
-        if (!File::isDirectory($dir)) {
+        if (! File::isDirectory($dir)) {
             File::makeDirectory($dir, 0755, true);
         }
-        
+
         File::put("{$dir}/view.blade.php", $this->template_code ?: $this->getDefaultTemplateCode());
-        File::put("{$dir}/style.css", "/* Widget: {$this->name} */\n\n" . $this->template_css);
-        File::put("{$dir}/script.js", "/* Widget: {$this->name} */\n\n" . $this->template_js);
+        File::put("{$dir}/style.css", "/* Widget: {$this->name} */\n\n".$this->template_css);
+        File::put("{$dir}/script.js", "/* Widget: {$this->name} */\n\n".$this->template_js);
 
         $data = [
             'name' => $this->name,
@@ -427,9 +448,9 @@ class WidgetTemplateBuilder extends Component
         WidgetRegistry::clearCache();
 
         if ($this->projectCode) {
-            $this->redirect(route('project.admin.widget-templates.index', ['projectCode' => $this->projectCode]));
+            $this->redirect(route('project.admin.code-widgets.index', ['projectCode' => $this->projectCode]));
         } else {
-            $this->redirect(route('cms.widget-templates.index'));
+            $this->redirect(route('cms.code-widgets.index'));
         }
     }
 

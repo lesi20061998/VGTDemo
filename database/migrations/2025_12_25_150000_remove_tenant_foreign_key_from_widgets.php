@@ -2,13 +2,18 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
     public function up(): void
     {
+        // Only run on MySQL/MariaDB — SQLite doesn't support foreign key metadata queries
+        if (DB::getDriverName() !== 'mysql') {
+            return;
+        }
+
         // Get all foreign keys on widgets table
         $foreignKeys = DB::select("
             SELECT CONSTRAINT_NAME 
@@ -17,7 +22,7 @@ return new class extends Migration
             AND TABLE_NAME = 'widgets' 
             AND CONSTRAINT_TYPE = 'FOREIGN KEY'
         ");
-        
+
         Schema::table('widgets', function (Blueprint $table) use ($foreignKeys) {
             foreach ($foreignKeys as $fk) {
                 try {

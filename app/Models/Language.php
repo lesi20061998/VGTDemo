@@ -26,15 +26,15 @@ class Language extends Model
     ];
 
     // Relationships
-    public function products()
-    {
-        return $this->hasMany(Product::class);
-    }
+    // public function products()
+    // {
+    //     return $this->hasMany(Product::class);
+    // }
 
-    public function projectProducts()
-    {
-        return $this->hasMany(ProjectProduct::class);
-    }
+    // public function projectProducts()
+    // {
+    //     return $this->hasMany(ProjectProduct::class);
+    // }
 
     // Scopes
     public function scopeActive(Builder $query)

@@ -2,12 +2,14 @@
 
 namespace Tests\Feature\Admin;
 
+use App\Http\Controllers\Admin\UserController;
 use App\Models\ActivityLog;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -96,8 +98,8 @@ class UserControllerTest extends TestCase
         ]);
 
         // Test the controller logic directly
-        $controller = new \App\Http\Controllers\Admin\UserController;
-        $request = new \Illuminate\Http\Request;
+        $controller = new UserController;
+        $request = new Request;
 
         // Test without search
         $query = User::with(['roles', 'activityLogs' => function ($q) {
@@ -147,7 +149,7 @@ class UserControllerTest extends TestCase
 
         // Search by name
         $response = $this->actingAs($this->admin)
-            ->get(route('cms.users.index', ['search' => 'John']));
+            ->get(route('superadmin.users.index', ['search' => 'John']));
 
         $response->assertStatus(200);
         $response->assertSee($searchUser->name);
@@ -155,7 +157,7 @@ class UserControllerTest extends TestCase
 
         // Search by email
         $response = $this->actingAs($this->admin)
-            ->get(route('cms.users.index', ['search' => 'search@example.com']));
+            ->get(route('superadmin.users.index', ['search' => 'search@example.com']));
 
         $response->assertStatus(200);
         $response->assertSee($searchUser->email);
@@ -174,7 +176,7 @@ class UserControllerTest extends TestCase
         $regularUser->roles()->attach($this->userRole);
 
         $response = $this->actingAs($this->admin)
-            ->get(route('cms.users.index', ['role' => 'admin']));
+            ->get(route('superadmin.users.index', ['role' => 'admin']));
 
         $response->assertStatus(200);
         $response->assertSee($adminUser->name);
@@ -217,7 +219,7 @@ class UserControllerTest extends TestCase
         $response = $this->actingAs($this->admin)
             ->post(route('cms.users.store'), $userData);
 
-        $response->assertRedirect(route('cms.users.index'));
+        $response->assertRedirect(route('superadmin.users.index'));
         $response->assertSessionHas('success', 'User created successfully.');
 
         // Assert user was created
@@ -261,7 +263,7 @@ class UserControllerTest extends TestCase
         $response = $this->actingAs($this->admin)
             ->post(route('cms.users.store'), $userData);
 
-        $response->assertRedirect(route('cms.users.index'));
+        $response->assertRedirect(route('superadmin.users.index'));
 
         // Assert user was created
         $user = User::where('email', 'john@example.com')->first();
@@ -358,7 +360,7 @@ class UserControllerTest extends TestCase
         $response = $this->actingAs($this->admin)
             ->put(route('cms.users.update', $user), $updateData);
 
-        $response->assertRedirect(route('cms.users.index'));
+        $response->assertRedirect(route('superadmin.users.index'));
         $response->assertSessionHas('success', 'User updated successfully.');
 
         // Assert user was updated
@@ -394,7 +396,7 @@ class UserControllerTest extends TestCase
         $response = $this->actingAs($this->admin)
             ->put(route('cms.users.update', $user), $updateData);
 
-        $response->assertRedirect(route('cms.users.index'));
+        $response->assertRedirect(route('superadmin.users.index'));
 
         // Assert password was changed
         $user->refresh();
@@ -420,7 +422,7 @@ class UserControllerTest extends TestCase
         $response = $this->actingAs($this->admin)
             ->put(route('cms.users.update', $user), $updateData);
 
-        $response->assertRedirect(route('cms.users.index'));
+        $response->assertRedirect(route('superadmin.users.index'));
 
         // Assert password was not changed
         $user->refresh();
@@ -437,7 +439,7 @@ class UserControllerTest extends TestCase
         $response = $this->actingAs($this->admin)
             ->delete(route('cms.users.destroy', $user));
 
-        $response->assertRedirect(route('cms.users.index'));
+        $response->assertRedirect(route('superadmin.users.index'));
         $response->assertSessionHas('success', 'User deleted successfully.');
 
         // Assert user was deleted
@@ -457,7 +459,7 @@ class UserControllerTest extends TestCase
         $response = $this->actingAs($this->admin)
             ->delete(route('cms.users.destroy', $superAdmin));
 
-        $response->assertRedirect(route('cms.users.index'));
+        $response->assertRedirect(route('superadmin.users.index'));
         $response->assertSessionHas('error', 'Cannot delete super administrator.');
 
         // Assert user was not deleted
@@ -472,7 +474,7 @@ class UserControllerTest extends TestCase
         $response = $this->actingAs($this->admin)
             ->delete(route('cms.users.destroy', $this->admin));
 
-        $response->assertRedirect(route('cms.users.index'));
+        $response->assertRedirect(route('superadmin.users.index'));
         $response->assertSessionHas('error', 'Cannot delete your own account.');
 
         // Assert user was not deleted

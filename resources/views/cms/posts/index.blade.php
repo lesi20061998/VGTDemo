@@ -1,138 +1,140 @@
-@extends('cms.layouts.app')
+@extends(request()->routeIs('superadmin.*') ? 'superadmin.layouts.app' : 'cms.layouts.app')
 
-@section('title', 'Quản lý bài viết')
-@section('page-title', 'Bài viết & Trang')
+@section('title', 'Quản lý ' . ($config['name'] ?? 'dữ liệu'))
+@section('page-title', 'Danh sách ' . ($config['name'] ?? 'dữ liệu'))
 
 @section('content')
-<div class="space-y-6">
-    <!-- Header với nút thêm mới -->
-    <div class="bg-white rounded-lg shadow-sm p-4">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-xl font-bold text-gray-900">Bài viết & Trang</h1>
-                <p class="text-sm text-gray-500">Quản lý nội dung website</p>
-            </div>
-            <div class="flex gap-3">
-                <a href="{{ isset($currentProject) ? route('project.admin.posts.create', $currentProject->code) : '#' }}" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-                    + Thêm bài viết
-                </a>
-                <a href="{{ isset($currentProject) ? route('project.admin.pages.create', $currentProject->code) : '#' }}" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
-                    + Thêm trang
-                </a>
-            </div>
+@php
+    $createUrl = isset($currentProject) 
+        ? route('project.admin.posts.create', ['projectCode' => $currentProject->code, 'type' => $postType]) 
+        : route('superadmin.posts.create', ['type' => $postType]);
+@endphp
+
+<div class="bg-white rounded-lg shadow-sm">
+    <!-- Toolbar -->
+    <div class="p-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <form method="GET" class="flex gap-2">
+            <input type="hidden" name="type" value="{{ $postType }}">
+            <input type="text" name="search" value="{{ request('search') }}" 
+                   placeholder="Tìm kiếm..." 
+                   class="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 w-full sm:w-64">
+            
+            <select name="status" class="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
+                <option value="">Tất cả trạng thái</option>
+                <option value="published" {{ request('status') == 'published' ? 'selected' : '' }}>Đã xuất bản</option>
+                <option value="draft" {{ request('status') == 'draft' ? 'selected' : '' }}>Bản nháp</option>
+            </select>
+            
+            <button type="submit" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
+                Lọc
+            </button>
+        </form>
+
+        <div class="flex gap-2">
+            <a href="{{ $createUrl }}" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                Thêm mới
+            </a>
         </div>
     </div>
 
-    <!-- Bộ lọc -->
-    <div class="bg-white rounded-lg shadow-sm p-4">
-        <form method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="Tìm kiếm..." 
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-            </div>
-            <div>
-                <select name="post_type" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                    <option value="">Tất cả loại</option>
-                    <option value="post" {{ request('post_type') === 'post' ? 'selected' : '' }}>Bài viết</option>
-                    <option value="page" {{ request('post_type') === 'page' ? 'selected' : '' }}>Trang</option>
-                </select>
-            </div>
-            <div>
-                <select name="status" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                    <option value="">Tất cả trạng thái</option>
-                    <option value="published" {{ request('status') === 'published' ? 'selected' : '' }}>Đã xuất bản</option>
-                    <option value="draft" {{ request('status') === 'draft' ? 'selected' : '' }}>Nháp</option>
-                    <option value="archived" {{ request('status') === 'archived' ? 'selected' : '' }}>Lưu trữ</option>
-                </select>
-            </div>
-            <div>
-                <button type="submit" class="w-full px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition">
-                    Lọc
-                </button>
-            </div>
-        </form>
-    </div>
-
-    <!-- Danh sách bài viết -->
-    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="w-full">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tiêu đề</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loại</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tác giả</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày tạo</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Thao tác</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    @forelse($posts as $post)
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-6 py-4">
-                            <div class="flex items-center">
-                                @if($post->featured_image)
-                                <img src="{{ $post->featured_image }}" alt="" class="w-10 h-10 rounded object-cover mr-3">
+    <!-- Table -->
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-gray-50 border-b border-gray-100 text-sm text-gray-500">
+                    <th class="p-4 font-medium">Tiêu đề</th>
+                    <th class="p-4 font-medium">Trạng thái</th>
+                    <th class="p-4 font-medium">Ngày tạo</th>
+                    <th class="p-4 font-medium text-right">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 text-sm">
+                @forelse($posts as $post)
+                    @php
+                        $editUrl = isset($currentProject) 
+                            ? route('project.admin.posts.edit', ['projectCode' => $currentProject->code, 'post' => $post]) 
+                            : route('superadmin.posts.edit', ['post' => $post]);
+                            
+                        $destroyUrl = isset($currentProject) 
+                            ? route('project.admin.posts.destroy', ['projectCode' => $currentProject->code, 'post' => $post]) 
+                            : route('superadmin.posts.destroy', ['post' => $post]);
+                    @endphp
+                    <tr class="hover:bg-gray-50/50 transition">
+                        <td class="p-4">
+                            <div class="flex items-center gap-3">
+                                @if(in_array('featured_image', $config['supports'] ?? []) && $post->featured_image)
+                                    <img src="{{ $post->featured_image }}" class="w-10 h-10 rounded object-cover">
+                                @else
+                                    <div class="w-10 h-10 rounded bg-gray-100 flex items-center justify-center text-gray-400">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 002 2z"></path>
+                                        </svg>
+                                    </div>
                                 @endif
                                 <div>
-                                    <div class="text-sm font-medium text-gray-900">{{ $post->title }}</div>
-                                    <div class="text-sm text-gray-500">{{ $post->slug }}</div>
+                                    <a href="{{ $editUrl }}" class="font-medium text-gray-900 hover:text-blue-600 block mb-0.5">
+                                        {{ $post->title }}
+                                    </a>
                                 </div>
                             </div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $post->post_type === 'page' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800' }}">
-                                {{ $post->post_type === 'page' ? 'Trang' : 'Bài viết' }}
-                            </span>
+                        <td class="p-4">
+                            @if($post->status === 'published')
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    Đã xuất bản
+                                </span>
+                            @elseif($post->status === 'draft')
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                    Bản nháp
+                                </span>
+                            @else
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                    Lưu trữ
+                                </span>
+                            @endif
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ $post->author->name ?? 'N/A' }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full 
-                                {{ $post->status === 'published' ? 'bg-green-100 text-green-800' : 
-                                   ($post->status === 'draft' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800') }}">
-                                {{ $post->status === 'published' ? 'Đã xuất bản' : 
-                                   ($post->status === 'draft' ? 'Nháp' : 'Lưu trữ') }}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td class="p-4 text-gray-500">
                             {{ $post->created_at->format('d/m/Y') }}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <td class="p-4 text-right">
                             <div class="flex items-center justify-end gap-2">
-                                <a href="{{ isset($currentProject) ? route('project.admin.posts.edit', [$currentProject->code, $post]) : '#' }}" class="text-blue-600 hover:text-blue-900">Sửa</a>
-                                <form method="POST" action="{{ isset($currentProject) ? route('project.admin.posts.destroy', [$currentProject->code, $post]) : '#' }}" class="inline" 
-                                      onsubmit="return confirm('Bạn có chắc muốn xóa?')">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="text-red-600 hover:text-red-900">Xóa</button>
+                                <a href="{{ $editUrl }}" class="p-2 text-gray-400 hover:text-blue-600 transition bg-white rounded-lg border border-gray-200 hover:border-blue-100 shadow-sm" title="Sửa">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                    </svg>
+                                </a>
+                                
+                                <form method="POST" action="{{ $destroyUrl }}" class="inline-block" onsubmit="return confirm('Bạn có chắc chắn muốn xóa?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="p-2 text-gray-400 hover:text-red-600 transition bg-white rounded-lg border border-gray-200 hover:border-red-100 shadow-sm" title="Xóa">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                        </svg>
+                                    </button>
                                 </form>
                             </div>
                         </td>
                     </tr>
-                    @empty
+                @empty
                     <tr>
-                        <td colspan="6" class="px-6 py-12 text-center text-gray-500">
-                            <div class="flex flex-col items-center">
-                                <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                </svg>
-                                <p class="text-lg font-medium">Chưa có bài viết nào</p>
-                                <p class="text-sm">Bắt đầu tạo bài viết đầu tiên của bạn</p>
-                            </div>
+                        <td colspan="4" class="p-8 text-center text-gray-500">
+                            Chưa có dữ liệu nào. <a href="{{ $createUrl }}" class="text-blue-600 hover:underline">Tạo mới ngay</a>
                         </td>
                     </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-        
-        @if($posts->hasPages())
-        <div class="px-6 py-4 border-t border-gray-200">
-            {{ $posts->links() }}
-        </div>
-        @endif
+                @endforelse
+            </tbody>
+        </table>
     </div>
+
+    <!-- Pagination -->
+    @if($posts->hasPages())
+        <div class="p-4 border-t border-gray-100">
+            {{ $posts->appends(request()->query())->links() }}
+        </div>
+    @endif
 </div>
 @endsection

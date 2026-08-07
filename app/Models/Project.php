@@ -9,7 +9,7 @@ class Project extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['contract_id', 'name', 'code', 'subdomain', 'remote_url', 'api_token', 'client_name', 'start_date', 'deadline', 'status', 'contract_value', 'contract_file', 'technical_requirements', 'features', 'environment', 'notes', 'admin_id', 'employee_ids', 'created_by', 'project_admin_username', 'project_admin_password', 'project_admin_password_plain', 'password_updated_at', 'password_updated_by', 'approved_at', 'initialized_at'];
+    protected $fillable = ['contract_id', 'name', 'code', 'subdomain', 'remote_url', 'api_token', 'external_domain', 'sync_enabled', 'client_name', 'start_date', 'deadline', 'status', 'contract_value', 'contract_file', 'technical_requirements', 'features', 'cms_features', 'environment', 'notes', 'admin_id', 'employee_ids', 'created_by', 'project_admin_username', 'project_admin_password', 'project_admin_password_plain', 'password_updated_at', 'password_updated_by', 'approved_at', 'initialized_at'];
 
     protected $casts = [
         'start_date' => 'date',
@@ -19,6 +19,7 @@ class Project extends Model
         'initialized_at' => 'datetime',
         'password_updated_at' => 'datetime',
         'employee_ids' => 'array',
+        'cms_features' => 'array',
     ];
 
     protected $hidden = ['project_admin_password', 'project_admin_password_plain'];
@@ -30,12 +31,17 @@ class Project extends Model
 
     public function admin()
     {
-        return $this->belongsTo(Employee::class, 'admin_id');
+        return $this->belongsTo(User::class, 'admin_id');
     }
 
     public function createdBy()
     {
-        return $this->belongsTo(Employee::class, 'created_by');
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function tasks()
+    {
+        return $this->hasMany(Task::class);
     }
 
     public function passwordUpdatedBy()
@@ -60,15 +66,15 @@ class Project extends Model
         return substr(str_shuffle(str_repeat($chars, 12)), 0, 12);
     }
 
-    public function members()
-    {
-        return $this->belongsToMany(Employee::class, 'project_members')->withPivot('role')->withTimestamps();
-    }
+    // public function members()
+    // {
+    //     return $this->belongsToMany(Employee::class, 'project_members')->withPivot('role')->withTimestamps();
+    // }
 
-    public function tasks()
-    {
-        return $this->hasMany(Task::class);
-    }
+    // public function tasks()
+    // {
+    //     return $this->hasMany(Task::class);
+    // }
 
     public function permissions()
     {
@@ -92,7 +98,7 @@ class Project extends Model
             return collect([]);
         }
 
-        return Employee::whereIn('id', $this->employee_ids)->get();
+        return User::whereIn('id', $this->employee_ids)->get();
     }
 
     public function hasEmployee($employeeId)
@@ -105,14 +111,15 @@ class Project extends Model
      */
     public function getDecryptedPassword(): ?string
     {
-        if (!$this->project_admin_password_plain) {
+        if (! $this->project_admin_password_plain) {
             return null;
         }
 
         try {
             return decrypt($this->project_admin_password_plain);
         } catch (\Exception $e) {
-            \Log::error('Failed to decrypt password for project ' . $this->id . ': ' . $e->getMessage());
+            \Log::error('Failed to decrypt password for project '.$this->id.': '.$e->getMessage());
+
             return null;
         }
     }
@@ -123,5 +130,13 @@ class Project extends Model
     public function setEncryptedPassword(string $password): void
     {
         $this->project_admin_password_plain = encrypt($password);
+    }
+
+    /**
+     * Check if project has a specific CMS feature pack enabled
+     */
+    public function hasFeature(string $feature): bool
+    {
+        return is_array($this->cms_features) && in_array($feature, $this->cms_features);
     }
 }

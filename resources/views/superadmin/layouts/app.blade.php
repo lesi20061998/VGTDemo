@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Super Admin')</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
     <script>
         // Bỏ qua lỗi từ browser extensions
         window.addEventListener('error', function(e) {
@@ -23,78 +23,116 @@
         });
     </script>
 </head>
-<body class="bg-gray-100">
+<body class="bg-slate-50 font-sans text-gray-800">
     <div class="min-h-screen flex w-full">
-        <div class="w-72 bg-gradient-to-b from-purple-900 to-purple-700 shadow-2xl fixed h-screen overflow-y-auto">
-            <div class="p-6 border-b border-purple-600">
-                <div class="flex items-center">
-                    <div class="h-10 w-10 bg-yellow-400 rounded-lg flex items-center justify-center">
-                        <svg class="h-6 w-6 text-purple-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
-                        </svg>
-                    </div>
-                    <div class="ml-3">
-                        <h2 class="text-white font-bold">SUPER ADMIN</h2>
-                        <p class="text-purple-200 text-xs">Quản trị hệ thống</p>
-                    </div>
+        <div class="w-72 bg-[#001B4E] shadow-2xl fixed h-screen overflow-y-auto">
+            <div class="p-6 border-b border-[#002D80]">
+                <div class="flex items-center justify-center py-6 px-4">
+                    <img src="{{ asset('Logo.png') }}" alt="AIM AGENCY" class="h-20 w-full object-contain">
                 </div>
             </div>
 
             <nav class="mt-6 px-3">
-                <a href="{{ route('superadmin.dashboard') }}" class="flex items-center px-4 py-3 mb-2 text-purple-100 hover:bg-purple-600 rounded-lg {{ request()->routeIs('superadmin.dashboard') ? 'bg-purple-600' : '' }}">
+                <a href="{{ route('superadmin.dashboard') }}" class="flex items-center px-4 py-3 mb-2 text-gray-300 hover:bg-[#002D80] rounded-lg {{ request()->routeIs('superadmin.dashboard') ? 'bg-[#002D80]' : '' }}">
                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
                     </svg>
                     <span class="ml-3 font-medium">Dashboard</span>
                 </a>
 
-                <a href="{{ route('superadmin.multi-tenancy') }}" class="flex items-center px-4 py-3 mb-2 text-purple-100 hover:bg-purple-600 rounded-lg {{ request()->routeIs('superadmin.multi-tenancy') ? 'bg-purple-600' : '' }}">
+                @if(auth()->user()->isSuperAdmin())
+                <a href="{{ route('superadmin.multi-tenancy') }}" class="flex items-center px-4 py-3 mb-2 text-gray-300 hover:bg-[#002D80] rounded-lg {{ request()->routeIs('superadmin.multi-tenancy') ? 'bg-[#002D80]' : '' }}">
                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-3zM14 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1h-4a1 1 0 01-1-1v-3z"></path>
                     </svg>
                     <span class="ml-3 font-medium">Multi-Tenancy</span>
                 </a>
+                @endif
 
-                <a href="{{ route('superadmin.employees.index') }}" class="flex items-center px-4 py-3 mb-2 text-purple-100 hover:bg-purple-600 rounded-lg {{ request()->routeIs('superadmin.employees.*') ? 'bg-purple-600' : '' }}">
+                @if(auth()->user()->isSuperAdmin())
+                <a href="{{ route('superadmin.users.index') }}" class="flex items-center px-4 py-3 mb-2 text-gray-300 hover:bg-[#002D80] rounded-lg {{ request()->routeIs('superadmin.users.*') ? 'bg-[#002D80]' : '' }}">
                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
                     </svg>
                     <span class="ml-3 font-medium">Quản lý Nhân sự</span>
                 </a>
 
-                <a href="{{ route('superadmin.contracts.index') }}" class="flex items-center px-4 py-3 mb-2 text-purple-100 hover:bg-purple-600 rounded-lg {{ request()->routeIs('superadmin.contracts.*') ? 'bg-purple-600' : '' }}">
+                <a href="{{ route('superadmin.roles.index') }}" class="flex items-center px-4 py-3 mb-2 text-gray-300 hover:bg-[#002D80] rounded-lg {{ request()->routeIs('superadmin.roles.*') ? 'bg-[#002D80]' : '' }}">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                    </svg>
+                    <span class="ml-3 font-medium">Vai trò (Roles)</span>
+                </a>
+
+                <a href="{{ route('superadmin.permissions.index') }}" class="flex items-center px-4 py-3 mb-2 text-gray-300 hover:bg-[#002D80] rounded-lg {{ request()->routeIs('superadmin.permissions.*') ? 'bg-[#002D80]' : '' }}">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"></path>
+                    </svg>
+                    <span class="ml-3 font-medium">Quyền hạn (Permissions)</span>
+                </a>
+                @endif
+
+                @if(auth()->user()->isSuperAdmin() || auth()->user()->hasPermission('manage-contracts'))
+                <a href="{{ route('superadmin.contracts.index') }}" class="flex items-center px-4 py-3 mb-2 text-gray-300 hover:bg-[#002D80] rounded-lg {{ request()->routeIs('superadmin.contracts.*') ? 'bg-[#002D80]' : '' }}">
                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                     </svg>
                     <span class="ml-3 font-medium">Quản lý Hợp đồng</span>
                 </a>
+                @endif
 
-                <a href="{{ route('superadmin.projects.index') }}" class="flex items-center px-4 py-3 mb-2 text-purple-100 hover:bg-purple-600 rounded-lg {{ request()->routeIs('superadmin.projects.*') ? 'bg-purple-600' : '' }}">
+                @if(auth()->user()->isSuperAdmin() || auth()->user()->hasPermission('manage-briefs'))
+                <a href="{{ route('superadmin.briefs.index') }}" class="flex items-center px-4 py-3 mb-2 text-gray-300 hover:bg-[#002D80] rounded-lg {{ request()->routeIs('superadmin.briefs.*') ? 'bg-[#002D80]' : '' }}">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <span class="ml-3 font-medium">Quản lý Brief</span>
+                </a>
+                @endif
+
+                @if(auth()->user()->isSuperAdmin() || auth()->user()->hasPermission('manage-projects') || auth()->user()->role === 'dev' || auth()->user()->hasRole('dev'))
+                <a href="{{ route('superadmin.projects.index') }}" class="flex items-center px-4 py-3 mb-2 text-gray-300 hover:bg-[#002D80] rounded-lg {{ request()->routeIs('superadmin.projects.*') ? 'bg-[#002D80]' : '' }}">
                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
                     </svg>
                     <span class="ml-3 font-medium">Quản lý Dự án</span>
                 </a>
-
-                <a href="{{ route('superadmin.tasks.index') }}" class="flex items-center px-4 py-3 mb-2 text-purple-100 hover:bg-purple-600 rounded-lg {{ request()->routeIs('superadmin.tasks.*') ? 'bg-purple-600' : '' }}">
+                
+                @if(auth()->user()->isSuperAdmin())
+                <a href="{{ route('superadmin.feature-packs.index') }}" class="flex items-center px-4 py-3 mb-2 text-gray-300 hover:bg-[#002D80] rounded-lg {{ request()->routeIs('superadmin.feature-packs.*') ? 'bg-[#002D80]' : '' }}">
                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
                     </svg>
-                    <span class="ml-3 font-medium">Quản lý Task</span>
+                    <span class="ml-3 font-medium">Gói Tính Năng (Feature Packs)</span>
                 </a>
+                @endif
+                @endif
 
-                <a href="{{ route('superadmin.tickets.index') }}" class="flex items-center px-4 py-3 mb-2 text-purple-100 hover:bg-purple-600 rounded-lg {{ request()->routeIs('superadmin.tickets.*') ? 'bg-purple-600' : '' }}">
+                @if(auth()->user()->isSuperAdmin() || auth()->user()->hasPermission('manage-tasks') || auth()->user()->hasPermission('update-tasks-progress') || auth()->user()->hasPermission('review-tasks') || auth()->user()->role === 'dev' || auth()->user()->hasRole('dev'))
+                <a href="{{ route('superadmin.tickets.index') }}" class="flex items-center px-4 py-3 mb-2 text-gray-300 hover:bg-[#002D80] rounded-lg {{ request()->routeIs('superadmin.tickets.*') ? 'bg-[#002D80]' : '' }}">
                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"></path>
                     </svg>
-                    <span class="ml-3 font-medium">Ticket & Feedback</span>
+                    <span class="ml-3 font-medium">Hỗ trợ / Tickets</span>
                 </a>
+                @endif
+
+                @if(auth()->user()->isSuperAdmin() || auth()->user()->role === 'dev' || auth()->user()->hasRole('dev'))
+                <a href="{{ route('superadmin.multi-tenancy') }}" class="flex items-center px-4 py-3 mb-2 text-gray-300 hover:bg-[#002D80] rounded-lg {{ request()->routeIs('superadmin.multi-tenancy*') ? 'bg-[#002D80]' : '' }}">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                    </svg>
+                    <span class="ml-3 font-medium">Multi Dự án</span>
+                </a>
+                @endif
+
+
             </nav>
 
-            <div class="mt-auto p-4 border-t border-purple-600 absolute bottom-0 w-full">
-                <div class="text-purple-200 text-xs text-center space-y-1">
+            <div class="mt-auto p-4 border-t border-[#002D80] absolute bottom-0 w-full">
+                <div class="text-gray-400 text-xs text-center space-y-1">
                     <p class="font-semibold">Super Admin Panel</p>
-                    <p>© 2025 VN Global Tech</p>
+                    <p>© 2025 AIM AGENCY</p>
                 </div>
             </div>
         </div>

@@ -39,7 +39,7 @@
                         <img src="{{ $brand->logo }}" alt="{{ $brand->name }}" 
                              class="h-24 w-24 rounded-lg object-cover border-2 border-gray-200">
                     @else
-                        <div class="h-24 w-24 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                        <div class="h-24 w-24 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
                             <span class="text-white text-2xl font-bold">{{ substr($brand->name, 0, 1) }}</span>
                         </div>
                     @endif

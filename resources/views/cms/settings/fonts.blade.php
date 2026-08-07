@@ -34,7 +34,7 @@
                 <tr>
                     <td class="px-6 py-4">{{ $font['key'] ?? '' }}</td>
                     <td class="px-6 py-4">
-                        <span class="px-2 py-1 text-xs rounded {{ $font['type'] === 'google' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800' }}">
+                        <span class="px-2 py-1 text-xs rounded {{ $font['type'] === 'google' ? 'bg-blue-100 text-blue-800' : 'bg-blue-100 text-blue-800' }}">
                             {{ ucfirst($font['type']) }}
                         </span>
                     </td>

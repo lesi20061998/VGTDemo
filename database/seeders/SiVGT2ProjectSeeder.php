@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class SiVGT2ProjectSeeder extends Seeder
 {
@@ -11,7 +12,7 @@ class SiVGT2ProjectSeeder extends Seeder
     {
         // Lấy hoặc tạo employee
         $employee = DB::table('employees')->where('code', 'ADMIN')->first();
-        if (!$employee) {
+        if (! $employee) {
             $employeeId = DB::table('employees')->insertGetId([
                 'code' => 'SIVGT2_ADMIN',
                 'name' => 'SiVGT2 Admin',
@@ -19,7 +20,7 @@ class SiVGT2ProjectSeeder extends Seeder
                 'position' => 'Project Admin',
                 'is_active' => true,
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ]);
         } else {
             $employeeId = $employee->id;
@@ -34,7 +35,7 @@ class SiVGT2ProjectSeeder extends Seeder
             'end_date' => now()->addMonths(6)->format('Y-m-d'),
             'is_active' => true,
             'created_at' => now(),
-            'updated_at' => now()
+            'updated_at' => now(),
         ]);
 
         // Tạo project SiVGT2
@@ -51,13 +52,13 @@ class SiVGT2ProjectSeeder extends Seeder
             'features' => 'Product Management, Order Management, User Management, Content Management',
             'environment' => 'Development',
             'project_admin_username' => 'admin',
-            'project_admin_password' => bcrypt('admin123'),
+            'project_admin_password' => Hash::make('admin123'),
             'admin_id' => $employeeId,
             'created_by' => $employeeId,
             'approved_at' => now(),
             'initialized_at' => now(),
             'created_at' => now(),
-            'updated_at' => now()
+            'updated_at' => now(),
         ]);
 
         echo "✅ Project SiVGT2 đã được tạo thành công!\n";

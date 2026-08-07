@@ -143,8 +143,8 @@
                 
                 @if($template)
                     <div class="mt-4 p-3 bg-gray-50 rounded-lg text-sm">
-                        <p class="font-medium text-gray-700">{{ $template->name }}</p>
-                        <p class="text-gray-500 text-xs mt-1">{{ $template->description }}</p>
+                        <p class="font-medium text-gray-700">{{ $template['name'] ?? '' }}</p>
+                        <p class="text-gray-500 text-xs mt-1">{{ $template['description'] ?? '' }}</p>
                     </div>
                 @endif
             </div>

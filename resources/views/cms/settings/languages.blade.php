@@ -59,7 +59,7 @@
         <div class="space-y-3" x-show="multilingualEnabled">
             <template x-for="(lang, index) in languages" :key="index">
                 <div class="flex items-center gap-4 p-4 border rounded-lg hover:bg-gray-50">
-                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg" x-text="lang.code.toUpperCase()"></div>
+                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-lg" x-text="lang.code.toUpperCase()"></div>
                     <div class="flex-1">
                         <div class="font-semibold text-lg" x-text="lang.name"></div>
                         <div class="text-sm text-gray-500">

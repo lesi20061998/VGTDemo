@@ -47,12 +47,12 @@
 {{-- Custom Widget Templates --}}
 @if(!empty($dbTemplates))
 <div class="bg-white rounded-lg shadow-sm mb-6">
-    <div class="p-4 border-b bg-gradient-to-r from-purple-50 to-blue-50 flex justify-between items-center">
+    <div class="p-4 border-b bg-gradient-to-r from-blue-50 to-blue-50 flex justify-between items-center">
         <div>
             <h2 class="text-lg font-bold text-gray-900">Custom Widget Templates</h2>
             <p class="text-gray-600 text-sm">Widget tự tạo</p>
         </div>
-        <span class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
+        <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
             {{ array_sum(array_map('count', $dbTemplates)) }} widgets
         </span>
     </div>
@@ -61,10 +61,10 @@
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
             @foreach($dbTemplates as $category => $templates)
                 @foreach($templates as $template)
-                <div class="border border-gray-200 rounded-lg p-3 hover:shadow-md hover:border-purple-300 transition group relative">
+                <div class="border border-gray-200 rounded-lg p-3 hover:shadow-md hover:border-blue-300 transition group relative">
                     <div class="flex items-center gap-2 mb-2">
-                        <div class="w-8 h-8 bg-purple-100 rounded flex items-center justify-center shrink-0">
-                            <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="w-8 h-8 bg-blue-100 rounded flex items-center justify-center shrink-0">
+                            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
                             </svg>
                         </div>

@@ -205,13 +205,13 @@
         <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
             <div class="flex items-center justify-between mb-4 pb-3 border-b">
                 <h3 class="text-lg font-semibold flex items-center gap-2">
-                    <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
                     </svg>
                     Custom HTML (Nâng cao)
                 </h3>
                 <label class="flex items-center gap-2 text-sm cursor-pointer">
-                    <input type="checkbox" x-model="useCustomHtml" class="w-4 h-4 text-purple-600 rounded focus:ring-purple-500">
+                    <input type="checkbox" x-model="useCustomHtml" class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
                     <span>Sử dụng HTML tùy chỉnh</span>
                 </label>
             </div>
@@ -219,7 +219,7 @@
             <div x-show="useCustomHtml" x-collapse>
                 <textarea name="popup[content]" rows="10" 
                           placeholder="Nhập HTML/CSS tùy chỉnh cho popup..."
-                          class="w-full px-4 py-3 border border-gray-300 rounded-lg font-mono text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">{{ $customContent }}</textarea>
+                          class="w-full px-4 py-3 border border-gray-300 rounded-lg font-mono text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">{{ $customContent }}</textarea>
                 <p class="text-xs text-gray-500 mt-2">⚠️ Nếu sử dụng HTML tùy chỉnh, các cấu hình form ở trên sẽ bị bỏ qua.</p>
             </div>
         </div>

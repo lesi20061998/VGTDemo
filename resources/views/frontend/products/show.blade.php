@@ -213,16 +213,16 @@
         <div class="bg-white rounded-lg shadow hover:shadow-lg transition overflow-hidden">
             <a href="/{{ $projectCode }}/san-pham/{{ $related->slug }}">
                 <img src="{{ $related->featured_image ?? '/assets/img/placeholder-images-image_large.webp' }}" 
-                     alt="{{ $related->name }}" class="w-full h-40 object-cover">
+                     alt="{{ $related->title }}" class="w-full h-40 object-cover">
             </a>
             <div class="p-4">
-                <a href="/{{ $projectCode }}/san-pham/{{ $related->slug }}" class="font-bold hover:text-blue-600 line-clamp-2">{{ $related->name }}</a>
+                <a href="/{{ $projectCode }}/san-pham/{{ $related->slug }}" class="font-bold hover:text-blue-600 line-clamp-2">{{ $related->title }}</a>
                 <div class="mt-2">
-                    @if($related->sale_price && $related->sale_price < $related->price)
-                    <span class="text-red-600 font-bold">{{ number_format($related->sale_price) }}đ</span>
-                    <span class="text-gray-400 line-through text-sm ml-1">{{ number_format($related->price) }}đ</span>
+                    @if(!empty($related->meta_data['sale_price']) && $related->meta_data['sale_price'] < ($related->meta_data['price'] ?? 0))
+                    <span class="text-red-600 font-bold">{{ number_format($related->meta_data['sale_price']) }}đ</span>
+                    <span class="text-gray-400 line-through text-sm ml-1">{{ number_format($related->meta_data['price'] ?? 0) }}đ</span>
                     @else
-                    <span class="text-blue-600 font-bold">{{ number_format($related->price ?? 0) }}đ</span>
+                    <span class="text-blue-600 font-bold">{{ number_format($related->meta_data['price'] ?? 0) }}đ</span>
                     @endif
                 </div>
             </div>
@@ -240,12 +240,12 @@
         <h3 class="font-bold mb-3 text-lg">Danh mục sản phẩm</h3>
         <ul class="space-y-2">
             @php
-                $categories = \App\Models\ProductCategory::where('is_active', true)->orderBy('order')->get();
+                $categories = \App\Models\Taxonomy::where('taxonomy', 'product_cat')->where('status', 'published')->orderBy('order')->get();
             @endphp
             @foreach($categories as $cat)
             <li>
                 <a href="/{{ $projectCode }}/danh-muc/{{ $cat->slug }}" 
-                   class="flex items-center py-2 px-3 rounded hover:bg-gray-50 {{ $product->product_category_id == $cat->id ? 'bg-blue-50 text-blue-600' : '' }}">
+                   class="flex items-center py-2 px-3 rounded hover:bg-gray-50 {{ isset($product) && $product->taxonomies->contains('id', $cat->id) ? 'bg-blue-50 text-blue-600' : '' }}">
                     {{ $cat->name }}
                 </a>
             </li>
@@ -258,18 +258,19 @@
         <h3 class="font-bold mb-3 text-lg">🔥 Sản phẩm hot</h3>
         <div class="space-y-3">
             @php
-                $hotProducts = \App\Models\ProjectProduct::where('status', 'published')
-                    ->where('is_bestseller', true)
+                $hotProducts = \App\Models\Post::where('post_type', 'product')
+                    ->where('status', 'published')
+                    ->where('meta_data->is_bestseller', true)
                     ->limit(5)
                     ->get();
             @endphp
             @foreach($hotProducts as $hot)
             <a href="/{{ $projectCode }}/san-pham/{{ $hot->slug }}" class="flex gap-3 hover:bg-gray-50 p-2 rounded transition">
                 <img src="{{ $hot->featured_image ?? '/assets/img/placeholder-images-image_large.webp' }}" 
-                     alt="{{ $hot->name }}" class="w-16 h-16 object-cover rounded">
+                     alt="{{ $hot->title }}" class="w-16 h-16 object-cover rounded">
                 <div class="flex-1">
-                    <h4 class="font-medium text-sm line-clamp-2">{{ $hot->name }}</h4>
-                    <span class="text-blue-600 font-bold text-sm">{{ number_format($hot->sale_price ?? $hot->price) }}đ</span>
+                    <h4 class="font-medium text-sm line-clamp-2">{{ $hot->title }}</h4>
+                    <span class="text-blue-600 font-bold text-sm">{{ number_format($hot->meta_data['sale_price'] ?? ($hot->meta_data['price'] ?? 0)) }}đ</span>
                 </div>
             </a>
             @endforeach

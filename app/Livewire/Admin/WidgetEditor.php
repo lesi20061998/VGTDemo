@@ -3,7 +3,6 @@
 namespace App\Livewire\Admin;
 
 use App\Models\Widget;
-use App\Models\WidgetTemplate;
 use App\Widgets\WidgetRegistry;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -15,24 +14,31 @@ class WidgetEditor extends Component
     use WithFileUploads;
 
     public ?Widget $widget = null;
-    public ?WidgetTemplate $template = null;
-    
+
     // Widget info
     public string $name = '';
+
     public string $type = '';
+
     public string $area = 'homepage';
+
     public string $variant = 'default';
+
     public int $sort_order = 0;
+
     public bool $is_active = true;
-    
+
     // Dynamic settings based on template fields
     public array $settings = [];
-    
+
     // Available templates (both code-based and custom)
     public array $templates = [];
-    
+
     // Fields from selected template
     public array $fields = [];
+
+    // Current selected template info
+    public ?array $template = null;
 
     // File uploads
     public array $uploads = [];
@@ -43,7 +49,7 @@ class WidgetEditor extends Component
     {
         // Load all widgets from WidgetRegistry (includes both code-based and custom templates)
         $allWidgets = WidgetRegistry::all();
-        
+
         // Convert to template format for the dropdown
         $this->templates = collect($allWidgets)->map(function ($widget) {
             return [
@@ -64,7 +70,7 @@ class WidgetEditor extends Component
             $this->sort_order = $this->widget->sort_order ?? 0;
             $this->is_active = $this->widget->is_active;
             $this->settings = $this->widget->settings ?? [];
-            
+
             $this->loadTemplateFields();
         } elseif ($templateType) {
             $this->type = $templateType;
@@ -76,11 +82,7 @@ class WidgetEditor extends Component
     {
         $this->loadTemplateFields();
         $this->settings = [];
-        
-        // Set default values from template
-        if ($this->template) {
-            $this->settings = $this->template->default_settings ?? [];
-        }
+
     }
 
     protected function loadTemplateFields(): void
@@ -88,22 +90,17 @@ class WidgetEditor extends Component
         if (empty($this->type)) {
             $this->template = null;
             $this->fields = [];
+
             return;
         }
 
         // First try to get config from WidgetRegistry (handles both code-based and custom)
         $config = WidgetRegistry::getConfig($this->type);
-        
+
         if ($config) {
+            $this->template = $config;
             $this->fields = $config['fields'] ?? [];
-            
-            // If it's a custom template, load the model
-            if ($config['is_custom'] ?? false) {
-                $this->template = WidgetTemplate::where('type', $this->type)->first();
-            } else {
-                $this->template = null;
-            }
-            
+
             // Initialize settings with defaults if empty
             if (empty($this->settings)) {
                 foreach ($this->fields as $field) {
@@ -125,19 +122,19 @@ class WidgetEditor extends Component
 
     public function addRepeaterItem(string $fieldName): void
     {
-        if (!isset($this->settings[$fieldName])) {
+        if (! isset($this->settings[$fieldName])) {
             $this->settings[$fieldName] = [];
         }
-        
+
         // Find field config to get sub-fields
         $fieldConfig = collect($this->fields)->firstWhere('name', $fieldName);
         $subFields = $fieldConfig['fields'] ?? [];
-        
+
         $newItem = [];
         foreach ($subFields as $subField) {
             $newItem[$subField['name']] = $subField['default'] ?? '';
         }
-        
+
         $this->settings[$fieldName][] = $newItem;
     }
 
@@ -159,7 +156,7 @@ class WidgetEditor extends Component
 
     public function addGalleryImage(string $fieldName, string $url): void
     {
-        if (!isset($this->settings[$fieldName])) {
+        if (! isset($this->settings[$fieldName])) {
             $this->settings[$fieldName] = [];
         }
         $this->settings[$fieldName][] = $url;
@@ -176,7 +173,8 @@ class WidgetEditor extends Component
         // Validate required fields
         foreach ($this->fields as $field) {
             if (($field['required'] ?? false) && empty($this->settings[$field['name']] ?? null)) {
-                $this->addError('settings.' . $field['name'], "Field '{$field['label']}' là bắt buộc");
+                $this->addError('settings.'.$field['name'], "Field '{$field['label']}' là bắt buộc");
+
                 return;
             }
         }
@@ -215,9 +213,9 @@ class WidgetEditor extends Component
         }
 
         try {
-            return \App\Widgets\WidgetRegistry::render($this->type, $this->settings, $this->variant);
+            return WidgetRegistry::render($this->type, $this->settings, $this->variant);
         } catch (\Exception $e) {
-            return '<div class="text-red-500 p-4">Preview Error: ' . htmlspecialchars($e->getMessage()) . '</div>';
+            return '<div class="text-red-500 p-4">Preview Error: '.htmlspecialchars($e->getMessage()).'</div>';
         }
     }
 

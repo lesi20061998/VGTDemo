@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="mb-6">
-    <a href="{{ route('superadmin.projects.config', $project) }}" class="text-purple-600 hover:text-purple-700 flex items-center gap-2">
+    <a href="{{ route('superadmin.projects.config', $project) }}" class="text-blue-600 hover:text-blue-700 flex items-center gap-2">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
         </svg>
@@ -96,9 +96,9 @@
                     <p class="text-sm text-gray-600">Large Files</p>
                     <p class="text-2xl font-bold text-orange-600">{{ count($exportData['file_analysis']['large_files']) }}</p>
                 </div>
-                <div class="bg-purple-50 p-3 rounded">
+                <div class="bg-blue-50 p-3 rounded">
                     <p class="text-sm text-gray-600">File Types</p>
-                    <p class="text-2xl font-bold text-purple-600">{{ count($exportData['file_analysis']['file_types']) }}</p>
+                    <p class="text-2xl font-bold text-blue-600">{{ count($exportData['file_analysis']['file_types']) }}</p>
                 </div>
             </div>
 

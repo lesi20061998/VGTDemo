@@ -41,10 +41,12 @@ class Post extends Model
         'author_id',
         'tenant_id',
         'language',
+        'meta_data',
     ];
 
     protected $casts = [
         'seo_data' => 'array',
+        'meta_data' => 'array',
         'published_at' => 'datetime',
     ];
 
@@ -73,6 +75,12 @@ class Post extends Model
     public function tags(): BelongsToMany
     {
         return $this->belongsToMany(Tag::class, 'post_tag');
+    }
+
+    public function taxonomies(): BelongsToMany
+    {
+        return $this->belongsToMany(Taxonomy::class, 'term_relationships', 'object_id', 'term_taxonomy_id')
+            ->withPivot('order');
     }
 
     public function sections(): HasMany

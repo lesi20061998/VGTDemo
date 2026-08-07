@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Order>
+ * @extends Factory<Order>
  */
 class OrderFactory extends Factory
 {
@@ -20,7 +20,7 @@ class OrderFactory extends Factory
         $shippingAmount = $this->faker->numberBetween(10000, 500000);
 
         return [
-            'order_number' => 'ORD-' . strtoupper(Str::random(10)),
+            'order_number' => 'ORD-'.strtoupper(Str::random(10)),
             'status' => $this->faker->randomElement(['pending', 'processing', 'shipped', 'delivered']),
             'subtotal' => $subtotal,
             'tax_amount' => $taxAmount,
@@ -34,14 +34,14 @@ class OrderFactory extends Factory
             'billing_address' => [
                 'address' => $this->faker->address(),
                 'city' => $this->faker->city(),
-                'state' => $this->faker->state(),
+                'state' => $this->faker->city(),
                 'postal_code' => $this->faker->postcode(),
                 'country' => 'Vietnam',
             ],
             'shipping_address' => [
                 'address' => $this->faker->address(),
                 'city' => $this->faker->city(),
-                'state' => $this->faker->state(),
+                'state' => $this->faker->city(),
                 'postal_code' => $this->faker->postcode(),
                 'country' => 'Vietnam',
             ],

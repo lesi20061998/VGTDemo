@@ -96,8 +96,8 @@
             <h3 class="text-lg font-bold text-gray-900 mb-4">Hợp Đồng của Tôi</h3>
             <div class="space-y-3">
                 @forelse($myContracts as $contract)
-                <div class="border-l-4 border-purple-500 pl-4 py-2">
-                    <p class="font-mono font-bold text-purple-600">{{ $contract->full_code }}</p>
+                <div class="border-l-4 border-blue-500 pl-4 py-2">
+                    <p class="font-mono font-bold text-blue-600">{{ $contract->full_code }}</p>
                     <p class="text-sm text-gray-600">{{ $contract->website->slug }}</p>
                     <p class="text-xs text-gray-500">{{ $contract->start_date->format('d/m/Y') }}</p>
                 </div>

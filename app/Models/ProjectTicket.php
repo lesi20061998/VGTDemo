@@ -2,30 +2,27 @@
 
 namespace App\Models;
 
+use Database\Factories\ProjectTicketFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class ProjectTicket extends Model
 {
+    /** @use HasFactory<ProjectTicketFactory> */
+    protected $connection = 'mysql';
+
     protected $fillable = [
-        'project_id', 'created_by', 'assigned_to', 'ticket_number', 
-        'title', 'description', 'type', 'priority', 'status', 
-        'resolution', 'resolved_at'
+        'project_id',
+        'creator_id',
+        'title',
+        'description',
+        'status',
+        'last_reply_at',
     ];
 
     protected $casts = [
-        'resolved_at' => 'datetime'
+        'last_reply_at' => 'datetime',
     ];
-
-    protected static function boot()
-    {
-        parent::boot();
-        
-        static::creating(function ($ticket) {
-            if (!$ticket->ticket_number) {
-                $ticket->ticket_number = 'TK-' . strtoupper(uniqid());
-            }
-        });
-    }
 
     public function project()
     {
@@ -34,12 +31,11 @@ class ProjectTicket extends Model
 
     public function creator()
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->belongsTo(User::class, 'creator_id');
     }
 
-    public function assignedTo()
+    public function replies()
     {
-        return $this->belongsTo(Employee::class, 'assigned_to');
+        return $this->hasMany(ProjectTicketReply::class);
     }
 }
-

@@ -126,7 +126,7 @@
         <div class="flex flex-wrap gap-2">
             <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">Smartphone</span>
             <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Laptop</span>
-            <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">Gaming</span>
+            <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">Gaming</span>
             <span class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs">Apple</span>
             <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs">Review</span>
         </div>

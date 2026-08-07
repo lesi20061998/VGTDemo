@@ -2,63 +2,50 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\Project;
-use App\Models\Employee;
-use App\Models\Contract;
+use App\Models\User;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
 class CreateProjectCommand extends Command
 {
     protected $signature = 'project:create {code} {--name=} {--client=} {--admin-username=admin} {--admin-password=admin123}';
+
     protected $description = 'Tạo project mới tự động';
 
     public function handle()
     {
         $code = $this->argument('code');
-        $name = $this->option('name') ?: 'Project ' . $code;
-        $client = $this->option('client') ?: 'Client ' . $code;
+        $name = $this->option('name') ?: 'Project '.$code;
+        $client = $this->option('client') ?: 'Client '.$code;
         $adminUsername = $this->option('admin-username');
         $adminPassword = $this->option('admin-password');
 
         // Kiểm tra project đã tồn tại
         if (Project::where('code', $code)->exists()) {
             $this->error("Project với code '{$code}' đã tồn tại!");
+
             return 1;
         }
 
         try {
             DB::transaction(function () use ($code, $name, $client, $adminUsername, $adminPassword) {
                 // Tạo hoặc lấy employee mặc định
-                $employee = Employee::firstOrCreate(
-                    ['code' => 'AUTO_ADMIN'],
+                $employee = User::firstOrCreate(
+                    ['username' => 'AUTO_ADMIN'],
                     [
                         'name' => 'Auto Admin',
                         'email' => 'auto.admin@system.local',
-                        'position' => 'System Admin',
-                        'department' => 'admin',
-                        'is_active' => true
+                        'role' => 'superadmin',
+                        'password' => bcrypt('password'),
                     ]
                 );
 
-                // Tạo contract
-                $contract = Contract::create([
-                    'employee_id' => $employee->id,
-                    'contract_code' => 'CT_' . $code,
-                    'full_code' => 'CT_' . $code . '_' . date('Y'),
-                    'client_name' => $client,
-                    'service_type' => 'Web Development',
-                    'requirements' => 'Project requirements for ' . $name,
-                    'start_date' => now(),
-                    'end_date' => now()->addMonths(12),
-                    'deadline' => now()->addMonths(12),
-                    'status' => 'approved',
-                    'is_active' => true
-                ]);
+                $contractId = 0; // Mock contract ID
 
                 // Tạo project
                 $project = Project::create([
-                    'contract_id' => $contract->id,
+                    'contract_id' => $contractId,
                     'name' => $name,
                     'code' => $code,
                     'client_name' => $client,
@@ -74,11 +61,11 @@ class CreateProjectCommand extends Command
                     'admin_id' => $employee->id,
                     'created_by' => $employee->id,
                     'approved_at' => now(),
-                    'initialized_at' => now()
+                    'initialized_at' => now(),
                 ]);
 
                 $this->info("✅ Project '{$code}' đã được tạo thành công!");
-                $this->info("📋 Thông tin truy cập:");
+                $this->info('📋 Thông tin truy cập:');
                 $this->info("🔗 Login URL: http://localhost:8000/{$code}/login");
                 $this->info("⚙️  Admin Panel: http://localhost:8000/{$code}/admin");
                 $this->info("👤 Username: {$adminUsername}");
@@ -87,7 +74,8 @@ class CreateProjectCommand extends Command
 
             return 0;
         } catch (\Exception $e) {
-            $this->error("❌ Lỗi khi tạo project: " . $e->getMessage());
+            $this->error('❌ Lỗi khi tạo project: '.$e->getMessage());
+
             return 1;
         }
     }

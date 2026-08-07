@@ -5,7 +5,7 @@
 
 @section('content')
 <div class="mb-6">
-    <a href="{{ route('superadmin.projects.index') }}" class="text-purple-600 hover:text-purple-700 flex items-center gap-2">
+    <a href="{{ route('superadmin.projects.index') }}" class="text-blue-600 hover:text-blue-700 flex items-center gap-2">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
         </svg>
@@ -37,9 +37,9 @@
                 <p class="text-sm text-gray-600">Products</p>
                 <p class="text-2xl font-bold text-green-600">{{ $remoteStats['products'] ?? 0 }}</p>
             </div>
-            <div class="bg-purple-50 p-3 rounded-lg">
+            <div class="bg-blue-50 p-3 rounded-lg">
                 <p class="text-sm text-gray-600">Orders</p>
-                <p class="text-2xl font-bold text-purple-600">{{ $remoteStats['orders'] ?? 0 }}</p>
+                <p class="text-2xl font-bold text-blue-600">{{ $remoteStats['orders'] ?? 0 }}</p>
             </div>
             <div class="bg-orange-50 p-3 rounded-lg">
                 <p class="text-sm text-gray-600">Posts</p>
@@ -106,12 +106,18 @@
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
     <!-- Cột trái: Thông tin tài khoản -->
     <div class="bg-white rounded-lg shadow-sm p-6">
-        <h3 class="text-lg font-bold mb-4">Thông tin tài khoản</h3>
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-bold">Thông tin tài khoản</h3>
+            <button type="button" onclick="document.getElementById('resetAccountModal').classList.remove('hidden')" class="px-3 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 flex items-center gap-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                Tạo / Đổi mật khẩu
+            </button>
+        </div>
         
         @if($users->isNotEmpty())
         <div class="space-y-3">
             @foreach($users as $user)
-            <div class="border rounded-lg p-4 hover:border-purple-200 transition-colors">
+            <div class="border rounded-lg p-4 hover:border-blue-200 transition-colors">
                 <div class="flex items-start justify-between mb-2">
                     <div class="flex-1">
                         <h5 class="font-semibold text-gray-900">{{ $user->name }}</h5>
@@ -128,8 +134,9 @@
                     </div>
                     <div>
                         <span class="text-gray-500">Mật khẩu:</span>
-                        @if($project->project_admin_password && $user->username == $project->code)
-                            <p class="font-mono text-purple-600 font-semibold">{{ $project->project_admin_password }}</p>
+                        @php $plainPwd = $project->getDecryptedPassword(); @endphp
+                        @if($user->username == $project->project_admin_username && $plainPwd)
+                            <p class="font-mono text-blue-600 font-semibold">{{ $plainPwd }}</p>
                         @else
                             <p class="text-gray-400">***</p>
                         @endif
@@ -145,31 +152,52 @@
 
     <!-- Cột phải: Tabs -->
     <div class="bg-white rounded-lg shadow-sm p-6">
-        <!-- Tab Navigation -->
-        <div class="flex border-b mb-4">
-            <button class="tab-button active px-4 py-2 border-b-2 border-purple-600 text-purple-600 font-semibold flex items-center gap-2" onclick="showTab('config')">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                </svg>
-                Cấu hình CMS
-            </button>
-            <button class="tab-button px-4 py-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700 flex items-center gap-2" onclick="showTab('history')">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                </svg>
-                Lịch sử chỉnh sửa
-            </button>
-        </div>
-        
-        <!-- Config Tab -->
-        <div id="config-tab" class="tab-content">
-            <form method="POST" action="{{ route('superadmin.projects.config', $project) }}">
-                @csrf
-                
-                <div class="space-y-3 max-h-[600px] overflow-y-auto pr-2">
+        <form method="POST" action="{{ route('superadmin.projects.config', $project) }}">
+            @csrf
+            
+            <!-- Tab Navigation -->
+            <div class="flex border-b mb-4">
+                <button type="button" id="tab-btn-config" class="tab-button active px-4 py-2 border-b-2 border-blue-600 text-blue-600 font-semibold flex items-center gap-2" onclick="showTab('config', this)">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    Cấu hình CMS
+                </button>
+                <button type="button" id="tab-btn-features" class="tab-button px-4 py-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700 flex items-center gap-2" onclick="showTab('features', this)">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+                    </svg>
+                    Feature Packs
+                    @php $activeFeatureCount = count(is_array($project->cms_features) ? $project->cms_features : json_decode($project->cms_features ?? '[]', true) ?? []); @endphp
+                    @if($activeFeatureCount > 0)
+                        <span class="bg-blue-600 text-white text-xs font-bold rounded-full px-1.5 py-0.5 min-w-[20px] text-center">{{ $activeFeatureCount }}</span>
+                    @endif
+                </button>
+                <button type="button" id="tab-btn-history" class="tab-button px-4 py-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700 flex items-center gap-2" onclick="showTab('history', this)">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Lịch sử
+                </button>
+            </div>
+            
+            <!-- Config Tab -->
+            <div id="config-tab" class="tab-content">
+                <div class="space-y-6 max-h-[600px] overflow-y-auto pr-2">
+                    
+                    <!-- Feature Packs are now in features-tab -->
+                    
+                    <div>
+                        <h4 class="font-bold text-gray-800 mb-3 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                            </svg>
+                            Core Modules
+                        </h4>
+                        <div class="space-y-3">
                     @foreach($systemModules as $module)
-                    <div class="border rounded-lg p-4 hover:border-purple-300 transition-colors">
+                    <div class="border rounded-lg p-4 hover:border-blue-300 transition-colors">
                         <div class="flex items-center justify-between">
                             <div class="flex-1">
                                 <h5 class="font-semibold text-gray-800 mb-1">{{ $module['title'] }}</h5>
@@ -183,6 +211,8 @@
                         </div>
                     </div>
                     @endforeach
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="border-t pt-4 mt-4">
@@ -197,15 +227,127 @@
                 
                 <div class="flex justify-end gap-3 mt-6 pt-6 border-t">
                     <a href="{{ route('superadmin.projects.index') }}" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">Hủy</a>
-                    <button type="submit" class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">Lưu cấu hình</button>
+                    <button type="button" onclick="this.form.submit()" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Lưu cấu hình</button>
                 </div>
-            </form>
-        </div>
+            </div>
+            
+            <!-- Features Tab -->
+            <div id="features-tab" class="tab-content hidden">
+                @php
+                    $currentFeatures = is_array($project->cms_features) ? $project->cms_features : json_decode($project->cms_features ?? '[]', true) ?? [];
+                    $currentFeatures = old('cms_features', $currentFeatures);
+                    $groupConfigs = config('feature_packs.groups', []);
+                    $groupedPacks = $featurePacks->groupBy('group_name');
+                    
+                    // Map group label -> config key for icon/color lookup
+                    $groupMeta = [];
+                    foreach ($groupConfigs as $key => $cfg) {
+                        $groupMeta[$cfg['label']] = [
+                            'icon' => $cfg['icon'] ?? '📦',
+                            'color' => $cfg['color'] ?? 'gray',
+                            'description' => $cfg['description'] ?? '',
+                        ];
+                    }
+                    $colorMap = [
+                        'red'    => ['bg' => 'bg-red-50',    'border' => 'border-red-200',    'title' => 'text-red-700',    'badge' => 'bg-red-100 text-red-700',    'check' => 'text-red-600'],
+                        'blue'   => ['bg' => 'bg-blue-50',   'border' => 'border-blue-200',   'title' => 'text-blue-700',   'badge' => 'bg-blue-100 text-blue-700',   'check' => 'text-blue-600'],
+                        'yellow' => ['bg' => 'bg-yellow-50', 'border' => 'border-yellow-200', 'title' => 'text-yellow-700', 'badge' => 'bg-yellow-100 text-yellow-700', 'check' => 'text-yellow-600'],
+                        'green'  => ['bg' => 'bg-green-50',  'border' => 'border-green-200',  'title' => 'text-green-700',  'badge' => 'bg-green-100 text-green-700',  'check' => 'text-green-600'],
+                        'purple' => ['bg' => 'bg-purple-50', 'border' => 'border-purple-200', 'title' => 'text-purple-700', 'badge' => 'bg-purple-100 text-purple-700', 'check' => 'text-purple-600'],
+                        'gray'   => ['bg' => 'bg-gray-50',   'border' => 'border-gray-200',   'title' => 'text-gray-700',   'badge' => 'bg-gray-100 text-gray-700',   'check' => 'text-gray-600'],
+                    ];
+                @endphp
+
+                @if($featurePacks->isEmpty())
+                    <div class="text-center py-12">
+                        <div class="text-5xl mb-3">📦</div>
+                        <p class="text-gray-500 font-medium">Chưa có Feature Pack nào.</p>
+                        <p class="text-gray-400 text-sm mt-1">Vui lòng chạy <code class="bg-gray-100 px-1 rounded">php artisan db:seed --class=FeaturePackSeeder</code></p>
+                    </div>
+                @else
+                    {{-- Summary bar --}}
+                    <div class="flex items-center justify-between mb-4 px-1">
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm font-semibold text-gray-700">Tính năng đã kích hoạt:</span>
+                            <span id="feature-count-badge" class="px-2.5 py-0.5 rounded-full text-sm font-bold bg-blue-600 text-white">{{ count($currentFeatures) }}</span>
+                            <span class="text-sm text-gray-500">/ {{ $featurePacks->count() }}</span>
+                        </div>
+                        <button type="button" onclick="toggleAllFeatures()" class="text-xs text-blue-600 hover:text-blue-800 underline">Bỏ chọn tất cả</button>
+                    </div>
+
+                    <div class="space-y-4 max-h-[520px] overflow-y-auto pr-1 pb-1">
+                    @foreach($groupedPacks as $groupName => $packs)
+                        @php
+                            $meta = $groupMeta[$groupName] ?? ['icon' => '📦', 'color' => 'gray', 'description' => ''];
+                            $colors = $colorMap[$meta['color']] ?? $colorMap['gray'];
+                            $activeCount = $packs->filter(fn($p) => in_array($p->code, $currentFeatures))->count();
+                        @endphp
+                        <div class="rounded-xl border-2 {{ $colors['border'] }} {{ $colors['bg'] }} overflow-hidden">
+                            {{-- Group Header --}}
+                            <div class="flex items-center justify-between px-4 py-3 border-b {{ $colors['border'] }} bg-white/60">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xl">{{ $meta['icon'] }}</span>
+                                    <div>
+                                        <h4 class="font-bold text-sm {{ $colors['title'] }}">{{ $groupName }}</h4>
+                                        @if($meta['description'])
+                                            <p class="text-xs text-gray-500">{{ $meta['description'] }}</p>
+                                        @endif
+                                    </div>
+                                </div>
+                                <span class="text-xs font-semibold px-2 py-1 rounded-full {{ $colors['badge'] }}">
+                                    {{ $activeCount }}/{{ $packs->count() }} tính năng
+                                </span>
+                            </div>
+
+                            {{-- Feature Cards --}}
+                            <div class="p-3 grid grid-cols-1 gap-2">
+                                @foreach($packs as $pack)
+                                    @php $isChecked = in_array($pack->code, $currentFeatures); @endphp
+                                    <label class="feature-card flex items-start gap-3 p-3 rounded-lg cursor-pointer border-2 transition-all duration-200
+                                        {{ $isChecked 
+                                            ? 'bg-white border-' . $meta['color'] . '-400 shadow-sm' 
+                                            : 'bg-white/50 border-transparent hover:border-gray-300 hover:bg-white' }}"
+                                        id="label-{{ $pack->code }}">
+                                        <input type="checkbox"
+                                            name="cms_features[]"
+                                            value="{{ $pack->code }}"
+                                            class="feature-checkbox mt-0.5 w-4 h-4 rounded border-gray-300 {{ $colors['check'] }} focus:ring-2"
+                                            {{ $isChecked ? 'checked' : '' }}
+                                            onchange="onFeatureChange(this, '{{ $meta['color'] }}')">
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-sm font-semibold text-gray-800 leading-tight">{{ $pack->name }}</p>
+                                            @if($pack->description)
+                                                <p class="text-xs text-gray-500 mt-0.5 leading-relaxed">{{ $pack->description }}</p>
+                                            @endif
+                                        </div>
+                                        @if($isChecked)
+                                            <svg class="feature-check-icon w-4 h-4 {{ $colors['check'] }} shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                            </svg>
+                                        @else
+                                            <svg class="feature-check-icon w-4 h-4 text-transparent shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                            </svg>
+                                        @endif
+                                    </label>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endforeach
+                    </div>
+                @endif
+
+                <div class="flex justify-end gap-3 mt-4 pt-4 border-t">
+                    <a href="{{ route('superadmin.projects.index') }}" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">Hủy</a>
+                    <button type="button" onclick="this.form.submit()" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">💾 Lưu Feature Packs</button>
+                </div>
+            </div>
+        </form>
         
         <!-- History Tab -->
         <div id="history-tab" class="tab-content hidden">
             <div class="mb-4 flex gap-2">
-                <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2" onclick="refreshHistory()">
+                <button type="button" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2" onclick="refreshHistory()">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                     </svg>
@@ -219,7 +361,7 @@
                     Debug
                 </a>
                 <div class="relative">
-                    <button onclick="toggleExportMenu()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2">
+                    <button type="button" onclick="toggleExportMenu()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                         </svg>
@@ -255,6 +397,39 @@
                 </div>
             </div>
         </div>
+    </div>
+</div>
+
+<!-- Modal Reset Account -->
+<div id="resetAccountModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h4 class="text-lg font-bold">Tạo / Đổi mật khẩu</h4>
+            <button onclick="document.getElementById('resetAccountModal').classList.add('hidden')" class="text-gray-500 hover:text-gray-700">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        <form method="POST" action="{{ route('superadmin.projects.reset-admin', $project) }}">
+            @csrf
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Tên đăng nhập</label>
+                    <input type="text" name="username" value="{{ $project->code }}" required class="w-full border rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" name="email" value="{{ 'admin@' . $project->code . '.com' }}" required class="w-full border rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Mật khẩu mới</label>
+                    <input type="password" name="password" required minlength="6" class="w-full border rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div class="pt-4 flex justify-end gap-2">
+                    <button type="button" onclick="document.getElementById('resetAccountModal').classList.add('hidden')" class="px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-50">Hủy</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Lưu thay đổi</button>
+                </div>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -357,7 +532,7 @@ function showNotification(message, type = 'info') {
 function showProcessingStatus(step, message, progress = null) {
     const statusHtml = `
         <div class="text-center py-8">
-            <div class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 rounded-lg mb-4 shadow-sm">
+            <div class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-100 to-blue-100 text-blue-800 rounded-lg mb-4 shadow-sm">
                 <svg class="animate-spin -ml-1 mr-3 h-6 w-6 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -419,24 +594,79 @@ function getTimeAgo(date) {
 }
 
 // Tab management
-function showTab(tabName) {
+function showTab(tabName, btnEl) {
     document.querySelectorAll('.tab-content').forEach(tab => {
         tab.classList.add('hidden');
     });
     
     document.querySelectorAll('.tab-button').forEach(btn => {
-        btn.classList.remove('active', 'border-purple-600', 'text-purple-600');
+        btn.classList.remove('active', 'border-blue-600', 'text-blue-600', 'font-semibold');
         btn.classList.add('border-transparent', 'text-gray-500');
     });
     
     document.getElementById(tabName + '-tab').classList.remove('hidden');
     
-    event.target.classList.add('active', 'border-purple-600', 'text-purple-600');
-    event.target.classList.remove('border-transparent', 'text-gray-500');
+    // Use the passed button element (fixes SVG child click issue)
+    var activeBtn = btnEl || document.getElementById('tab-btn-' + tabName);
+    if (activeBtn) {
+        activeBtn.classList.add('active', 'border-blue-600', 'text-blue-600', 'font-semibold');
+        activeBtn.classList.remove('border-transparent', 'text-gray-500');
+    }
     
     if (tabName === 'history') {
         loadHistory();
     }
+}
+
+// Feature Pack toggle
+function onFeatureChange(checkbox, colorKey) {
+    var label = checkbox.closest('label');
+    var icon = label.querySelector('.feature-check-icon');
+    var borderColorMap = {
+        'red': 'border-red-400', 'blue': 'border-blue-400',
+        'yellow': 'border-yellow-400', 'green': 'border-green-400',
+        'purple': 'border-purple-400', 'gray': 'border-gray-400'
+    };
+    var iconColorMap = {
+        'red': 'text-red-600', 'blue': 'text-blue-600',
+        'yellow': 'text-yellow-600', 'green': 'text-green-600',
+        'purple': 'text-purple-600', 'gray': 'text-gray-600'
+    };
+    
+    if (checkbox.checked) {
+        label.classList.add('bg-white', 'shadow-sm', borderColorMap[colorKey] || 'border-blue-400');
+        label.classList.remove('bg-white/50', 'border-transparent');
+        if (icon) {
+            icon.classList.remove('text-transparent');
+            icon.classList.add(iconColorMap[colorKey] || 'text-blue-600');
+        }
+    } else {
+        label.classList.remove('bg-white', 'shadow-sm', borderColorMap[colorKey] || 'border-blue-400');
+        label.classList.add('bg-white/50', 'border-transparent');
+        if (icon) {
+            icon.classList.add('text-transparent');
+            icon.classList.remove(iconColorMap[colorKey] || 'text-blue-600');
+        }
+    }
+    
+    // Update count badge
+    var total = document.querySelectorAll('.feature-checkbox:checked').length;
+    var badge = document.getElementById('feature-count-badge');
+    if (badge) badge.textContent = total;
+}
+
+// Toggle all feature checkboxes
+var allFeaturesSelected = false;
+function toggleAllFeatures() {
+    allFeaturesSelected = !allFeaturesSelected;
+    document.querySelectorAll('.feature-checkbox').forEach(cb => {
+        if (cb.checked !== allFeaturesSelected) {
+            cb.checked = allFeaturesSelected;
+            onFeatureChange(cb, cb.closest('[data-color]')?.dataset.color || 'blue');
+        }
+    });
+    var btn = event.target;
+    btn.textContent = allFeaturesSelected ? 'Bỏ chọn tất cả' : 'Chọn tất cả';
 }
 
 // History management
@@ -544,14 +774,14 @@ function displayLogs(logs) {
                     </div>
                 </div>
             </div>
-            <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <div class="flex items-center">
-                    <svg class="w-8 h-8 text-purple-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-8 h-8 text-blue-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                     </svg>
                     <div>
-                        <p class="text-sm font-medium text-purple-900">Project</p>
-                        <p class="text-sm font-bold text-purple-600">{{ $project->code }}</p>
+                        <p class="text-sm font-medium text-blue-900">Project</p>
+                        <p class="text-sm font-bold text-blue-600">{{ $project->code }}</p>
                     </div>
                 </div>
             </div>

@@ -10,7 +10,7 @@
             <div class="space-y-4" id="settingsContainer"></div>
             
             <div class="flex justify-end gap-3 mt-6 pt-6 border-t">
-                <button type="submit" class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">Lưu cấu hình</button>
+                <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Lưu cấu hình</button>
             </div>
         </form>
     </div>
@@ -99,7 +99,7 @@ function renderSettings(settings) {
         const isEnabled = settings[setting.key] === '1' || settings[setting.key] === true;
         
         container.innerHTML += `
-            <div class="border rounded-lg p-4 hover:border-purple-300 transition-colors">
+            <div class="border rounded-lg p-4 hover:border-blue-300 transition-colors">
                 <div class="flex items-center justify-between">
                     <div class="flex-1">
                         <h5 class="font-semibold text-gray-800 mb-1">${setting.label}</h5>

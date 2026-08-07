@@ -96,7 +96,15 @@
                     </div>
                     <div>
                         <span class="text-sm text-gray-600">Password:</span>
-                        <p class="font-mono font-bold text-red-600">{{ $project->project_admin_password }}</p>
+                        <p class="font-mono font-bold text-red-600">
+                            @php
+                                try {
+                                    echo decrypt($project->project_admin_password_plain);
+                                } catch (\Exception $e) {
+                                    echo '(Không thể giải mã)';
+                                }
+                            @endphp
+                        </p>
                         <p class="text-xs text-gray-500 mt-1">⚠️ Lưu mật khẩu này, không thể xem lại sau khi rời trang</p>
                     </div>
                 </div>
@@ -124,9 +132,90 @@
                     </div>
                 </div>
             </div>
+
+            @if($project->contract)
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <h3 class="text-lg font-bold text-gray-900 mb-4 border-b pb-2">Tài nguyên & Hợp đồng</h3>
+                <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <span class="text-gray-500 text-sm block">Domain:</span>
+                            <span class="font-medium">{{ $project->contract->domain_name ?: 'Chưa cập nhật' }}</span>
+                            @if($project->contract->domain_purchase_date)
+                            <div class="text-xs text-gray-400 mt-1">Mua lúc: {{ $project->contract->domain_purchase_date->format('d/m/Y') }}</div>
+                            @endif
+                        </div>
+                        <div>
+                            <span class="text-gray-500 text-sm block">Hosting/Máy chủ:</span>
+                            <span class="font-medium">{{ $project->contract->hosting_provider ?: 'Chưa cập nhật' }}</span>
+                            @if($project->contract->hosting_start_date)
+                            <div class="text-xs text-gray-400 mt-1">Bắt đầu: {{ $project->contract->hosting_start_date->format('d/m/Y') }}</div>
+                            @endif
+                        </div>
+                    </div>
+                    
+                    @if($project->contract->has_client_resources)
+                    <div class="pt-4 border-t border-gray-100">
+                        <span class="font-bold text-gray-800 text-sm block mb-2">Tài nguyên do khách gửi:</span>
+                        <div class="prose max-w-none text-gray-600 bg-amber-50 p-3 rounded-lg border border-amber-100 text-sm">
+                            {!! $project->contract->client_resource_details ?: '<span class="italic text-gray-400">Không có dữ liệu</span>' !!}
+                        </div>
+                    </div>
+                    @endif
+                </div>
+            </div>
+            @endif
+            
+            <!-- Hệ thống Ticket -->
+            <livewire:superadmin.project-tickets :project="$project" />
         </div>
 
         <div class="space-y-6">
+            <!-- Phân công & Quản lý -->
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <h3 class="text-lg font-bold text-gray-900 mb-4 border-b pb-2">Phân công & Quản lý</h3>
+                <div class="space-y-4">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500 mb-2">Quản lý dự án (PM)</p>
+                        @if($project->admin)
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-sm font-bold text-blue-700 uppercase">
+                                {{ substr($project->admin->name, 0, 1) }}
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-gray-900">{{ $project->admin->name }}</p>
+                                <p class="text-xs text-gray-500">{{ $project->admin->email }}</p>
+                            </div>
+                        </div>
+                        @else
+                        <p class="text-sm text-gray-500 italic">Chưa phân công PM</p>
+                        @endif
+                    </div>
+                    
+                    <div>
+                        <p class="text-sm font-medium text-gray-500 mb-2 mt-4">Lập trình viên (Devs)</p>
+                        <div class="space-y-3">
+                            @php
+                                $devs = $project->employees()->where('id', '!=', $project->admin_id);
+                            @endphp
+                            @forelse($devs as $dev)
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-sm font-bold text-gray-700 uppercase">
+                                    {{ substr($dev->name, 0, 1) }}
+                                </div>
+                                <div>
+                                    <p class="text-sm font-bold text-gray-900">{{ $dev->name }}</p>
+                                    <p class="text-xs text-gray-500">{{ $dev->email }}</p>
+                                </div>
+                            </div>
+                            @empty
+                            <p class="text-sm text-gray-500 italic">Chưa có Lập trình viên.</p>
+                            @endforelse
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="bg-white rounded-lg shadow-sm p-6">
                 <h3 class="text-lg font-bold text-gray-900 mb-4">Timeline</h3>
                 <div class="space-y-3">

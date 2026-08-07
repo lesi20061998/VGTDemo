@@ -5,7 +5,7 @@
 
 @section('content')
 <div class="mb-6">
-    <div class="bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg p-6 text-white">
+    <div class="bg-gradient-to-r from-blue-600 to-blue-600 rounded-lg p-6 text-white">
         <h2 class="text-2xl font-bold mb-2">Multi-Tenancy Control Center</h2>
         <p class="opacity-90">Quản lý và giám sát tất cả {{ $projects->count() }} projects từ một nơi</p>
     </div>
@@ -59,10 +59,10 @@
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm text-gray-600">Hoạt động hôm nay</p>
-                <p class="text-3xl font-bold text-purple-600">{{ $todayActivities }}</p>
+                <p class="text-3xl font-bold text-blue-600">{{ $todayActivities }}</p>
             </div>
-            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                 </svg>
             </div>
@@ -110,19 +110,13 @@
 
             <div class="flex gap-2 mb-3">
                 <a href="{{ route('project.admin.dashboard', $project->code) }}" 
-                   class="flex-1 px-3 py-2 bg-purple-600 text-white text-center rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium">
+                   class="flex-1 px-3 py-2 bg-blue-600 text-white text-center rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
                     Vào CMS
                 </a>
                 <button onclick="exportWebsite('{{ $project->code }}')" 
                    class="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors" title="Xuất Website">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                    </svg>
-                </button>
-                <button onclick="toggleCmsFeatures('{{ $project->id }}')" 
-                   class="px-3 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors" title="Cấu hình CMS">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"></path>
                     </svg>
                 </button>
             </div>
@@ -150,8 +144,8 @@
     <div class="space-y-3">
         @forelse($recentActivities as $activity)
         <div class="flex items-start gap-4 p-4 bg-gray-50 rounded-lg">
-            <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
-                <span class="text-purple-600 font-bold">{{ substr($activity->user->name ?? 'U', 0, 1) }}</span>
+            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <span class="text-blue-600 font-bold">{{ substr($activity->user->name ?? 'U', 0, 1) }}</span>
             </div>
             <div class="flex-1">
                 <p class="text-sm">
@@ -173,34 +167,7 @@
     </div>
 </div>
 
-<!-- CMS Features Control Modal -->
-<div id="cmsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
-    <div class="flex items-center justify-center min-h-screen p-4">
-        <div class="bg-white rounded-lg max-w-2xl w-full p-6">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-semibold">Cấu hình chức năng CMS</h3>
-                <button onclick="closeCmsModal()" class="text-gray-400 hover:text-gray-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
-            
-            <div id="cmsFeatures" class="space-y-4">
-                <!-- Features will be loaded here -->
-            </div>
-            
-            <div class="flex justify-end gap-3 mt-6">
-                <button onclick="closeCmsModal()" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-                    Hủy
-                </button>
-                <button onclick="saveCmsFeatures()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                    Lưu thay đổi
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
+
 
 <script>
 let currentProjectId = null;
@@ -241,7 +208,7 @@ function showProgressModal(projectCode) {
                 '<span id="progressPercent">0%</span>' +
             '</div>' +
             '<div class="w-full bg-gray-200 rounded-full h-4">' +
-                '<div id="progressBar" class="bg-gradient-to-r from-blue-500 to-purple-600 h-4 rounded-full transition-all duration-500" style="width: 0%"></div>' +
+                '<div id="progressBar" class="bg-gradient-to-r from-blue-500 to-blue-600 h-4 rounded-full transition-all duration-500" style="width: 0%"></div>' +
             '</div>' +
         '</div>' +
         '<div id="progressSteps" class="text-xs text-gray-600 space-y-2">' +
@@ -383,81 +350,6 @@ function performExport(projectCode) {
     });
 }
 
-function toggleCmsFeatures(projectId) {
-    currentProjectId = projectId;
-    document.getElementById('cmsModal').classList.remove('hidden');
-    loadCmsFeatures(projectId);
-}
 
-function closeCmsModal() {
-    document.getElementById('cmsModal').classList.add('hidden');
-    currentProjectId = null;
-}
-
-function loadCmsFeatures(projectId) {
-    const featuresContainer = document.getElementById('cmsFeatures');
-    featuresContainer.innerHTML = '<div class="text-center py-4">Loading...</div>';
-    
-    fetch('/superadmin/projects/' + projectId + '/cms-features')
-    .then(response => response.json())
-    .then(data => {
-        const features = [
-            { key: 'products', label: 'Quản lý sản phẩm', enabled: data.products || false },
-            { key: 'orders', label: 'Quản lý đơn hàng', enabled: data.orders || false },
-            { key: 'posts', label: 'Quản lý bài viết', enabled: data.posts || false },
-            { key: 'widgets', label: 'Page Builder', enabled: data.widgets || false },
-            { key: 'menus', label: 'Quản lý menu', enabled: data.menus || false },
-            { key: 'themes', label: 'Theme Options', enabled: data.themes || false },
-            { key: 'media', label: 'Quản lý media', enabled: data.media || false },
-            { key: 'users', label: 'Quản lý người dùng', enabled: data.users || false }
-        ];
-        
-        featuresContainer.innerHTML = features.map(feature => 
-            '<div class="flex items-center justify-between p-4 border rounded-lg">' +
-                '<div>' +
-                    '<h4 class="font-medium">' + feature.label + '</h4>' +
-                    '<p class="text-sm text-gray-600">Bật/tắt chức năng ' + feature.label.toLowerCase() + '</p>' +
-                '</div>' +
-                '<label class="relative inline-flex items-center cursor-pointer">' +
-                    '<input type="checkbox" class="sr-only peer" data-feature="' + feature.key + '" ' + (feature.enabled ? 'checked' : '') + '>' +
-                    '<div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[\'\'] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>' +
-                '</label>' +
-            '</div>'
-        ).join('');
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        featuresContainer.innerHTML = '<div class="text-center py-4 text-red-600">Lỗi khi tải dữ liệu</div>';
-    });
-}
-
-function saveCmsFeatures() {
-    const features = {};
-    document.querySelectorAll('#cmsFeatures input[type="checkbox"]').forEach(checkbox => {
-        features[checkbox.dataset.feature] = checkbox.checked;
-    });
-    
-    fetch('/superadmin/projects/' + currentProjectId + '/cms-features', {
-        method: 'PUT',
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ features: features })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('Cập nhật thành công!');
-            closeCmsModal();
-        } else {
-            alert('Có lỗi xảy ra!');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Có lỗi xảy ra!');
-    });
-}
 </script>
 @endsection

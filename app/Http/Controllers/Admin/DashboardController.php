@@ -5,12 +5,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Order;
-use App\Models\Product;
 use App\Models\User;
 use App\Models\VisitorLog;
 use App\Services\CacheService;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -21,22 +18,22 @@ class DashboardController extends Controller
     {
         $data = CacheService::remember(CacheService::DASHBOARD_STATS, 5, function () {
             return [
-                'today_orders' => Order::whereDate('created_at', today())->count(),
-                'today_revenue' => Order::whereDate('created_at', today())->sum('total_amount'),
-                'total_revenue' => Order::sum('total_amount'),
-                'out_of_stock_products' => Product::where('stock_status', 'out_of_stock')->count(),
+                'today_orders' => 0,
+                'today_revenue' => 0,
+                'total_revenue' => 0,
+                'out_of_stock_products' => 0,
                 'new_users_today' => User::whereDate('created_at', today())->count(),
                 'total_users' => User::count(),
-                'total_products' => Product::count(),
-                'pending_orders' => Order::where('status', 'pending')->count(),
+                'total_products' => 0,
+                'pending_orders' => 0,
 
-                'revenue_chart' => $this->getRevenueChart(),
-                'orders_chart' => $this->getOrdersChart(),
+                'revenue_chart' => collect(),
+                'orders_chart' => collect(),
                 'device_chart' => $this->getDeviceChart(),
                 'traffic_chart' => $this->getTrafficChart(),
-                'order_status_chart' => $this->getOrderStatusChart(),
-                'top_products' => $this->getTopProducts(),
-                'recent_orders' => Order::with(['items'])->latest()->take(5)->get(),
+                'order_status_chart' => collect(),
+                'top_products' => collect(),
+                'recent_orders' => collect(),
             ];
         });
 
@@ -53,32 +50,12 @@ class DashboardController extends Controller
 
     private function getRevenueChart()
     {
-        $days = collect();
-        for ($i = 6; $i >= 0; $i--) {
-            $date = Carbon::now()->subDays($i);
-            $revenue = Order::whereDate('created_at', $date)->sum('total_amount');
-            $days->push([
-                'date' => $date->format('d/m'),
-                'revenue' => $revenue,
-            ]);
-        }
-
-        return $days;
+        return collect();
     }
 
     private function getOrdersChart()
     {
-        $days = collect();
-        for ($i = 6; $i >= 0; $i--) {
-            $date = Carbon::now()->subDays($i);
-            $orders = Order::whereDate('created_at', $date)->count();
-            $days->push([
-                'date' => $date->format('d/m'),
-                'orders' => $orders,
-            ]);
-        }
-
-        return $days;
+        return collect();
     }
 
     private function getDeviceChart()
@@ -163,24 +140,12 @@ class DashboardController extends Controller
 
     private function getOrderStatusChart()
     {
-        return Order::selectRaw('status, COUNT(*) as count')
-            ->groupBy('status')
-            ->get()
-            ->mapWithKeys(function ($item) {
-                return [$item->status => $item->count];
-            })
-            ->toArray();
+        return [];
     }
 
     private function getTopProducts()
     {
-        return DB::table('order_items')
-            ->join('products_enhanced', 'order_items.product_id', '=', 'products_enhanced.id')
-            ->select('products_enhanced.name', DB::raw('SUM(order_items.quantity) as total_sold'))
-            ->groupBy('products_enhanced.id', 'products_enhanced.name')
-            ->orderBy('total_sold', 'desc')
-            ->take(5)
-            ->get();
+        return collect();
     }
 
     private function getVisitorStats()
@@ -192,9 +157,9 @@ class DashboardController extends Controller
     {
         $stats = Cache::remember('dashboard_api_stats', 30, function () {
             return [
-                'orders_today' => Order::whereDate('created_at', today())->count(),
-                'revenue_today' => Order::whereDate('created_at', today())->sum('total_amount'),
-                'products_out_of_stock' => Product::where('stock_status', 'out_of_stock')->count(),
+                'orders_today' => 0,
+                'revenue_today' => 0,
+                'products_out_of_stock' => 0,
                 'users_new' => User::whereDate('created_at', today())->count(),
             ];
         });
@@ -209,20 +174,20 @@ class DashboardController extends Controller
         // Cache the dashboard data for better performance
         $data = Cache::remember("project_dashboard_{$project->id}", 5, function () {
             return [
-                'today_orders' => Order::whereDate('created_at', today())->count(),
-                'today_revenue' => Order::whereDate('created_at', today())->sum('total_amount'),
-                'total_revenue' => Order::sum('total_amount'),
-                'out_of_stock_products' => Product::where('stock_status', 'out_of_stock')->count(),
+                'today_orders' => 0,
+                'today_revenue' => 0,
+                'total_revenue' => 0,
+                'out_of_stock_products' => 0,
                 'new_users_today' => User::whereDate('created_at', today())->count(),
                 'total_users' => User::count(),
-                'total_products' => Product::count(),
-                'pending_orders' => Order::where('status', 'pending')->count(),
+                'total_products' => 0,
+                'pending_orders' => 0,
 
-                'revenue_chart' => $this->getRevenueChart(),
-                'orders_chart' => $this->getOrdersChart(),
-                'order_status_chart' => $this->getOrderStatusChart(),
-                'top_products' => $this->getTopProducts(),
-                'recent_orders' => Order::with(['items'])->latest()->take(5)->get(),
+                'revenue_chart' => collect(),
+                'orders_chart' => collect(),
+                'order_status_chart' => collect(),
+                'top_products' => collect(),
+                'recent_orders' => collect(),
             ];
         });
 

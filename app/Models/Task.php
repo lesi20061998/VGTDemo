@@ -2,22 +2,37 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Task extends Model
 {
-    protected $fillable = ['project_id', 'assigned_to', 'title', 'description', 'status', 'priority', 'due_date'];
+    use HasFactory;
 
-    protected $casts = ['due_date' => 'date'];
+    protected $fillable = [
+        'project_id',
+        'title',
+        'description',
+        'dev_id',
+        'status',
+        'result_notes',
+        'deadline',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'deadline' => 'date',
+        ];
+    }
 
     public function project()
     {
         return $this->belongsTo(Project::class);
     }
 
-    public function assignedTo()
+    public function dev()
     {
-        return $this->belongsTo(Employee::class, 'assigned_to');
+        return $this->belongsTo(User::class, 'dev_id');
     }
 }
-

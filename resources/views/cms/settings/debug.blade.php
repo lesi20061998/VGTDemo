@@ -9,7 +9,7 @@
     <div class="space-y-4">
         <div>
             <h3 class="font-semibold text-lg mb-2">Current User:</h3>
-            <pre class="bg-gray-100 p-4 rounded">{{ json_encode(auth()->user(), JSON_PRETTY_PRINT) }}</pre>
+            <pre class="bg-gray-100 p-4 rounded">{{ json_encode($authUser ?? auth()->user(), JSON_PRETTY_PRINT) }}</pre>
         </div>
         
         <div>

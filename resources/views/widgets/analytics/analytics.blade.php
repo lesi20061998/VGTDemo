@@ -15,7 +15,7 @@
         </div>
         
         <div class="stat-item">
-            <div class="stat-number text-purple-600">{{ number_format($days3) }}</div>
+            <div class="stat-number text-blue-600">{{ number_format($days3) }}</div>
             <div class="stat-label">3 ngày qua</div>
         </div>
         

@@ -23,8 +23,8 @@ class SuperAdminMiddleware
 
         $user = Auth::guard('web')->user();
 
-        // Cho phép: level 0-1 HOẶC role=superadmin với employee có superadmin_role
-        if ($user->level <= 1) {
+        // Cho phép: level 0-2 (superadmin, account, dev) HOẶC role=superadmin với employee có superadmin_role
+        if ($user->level <= 2) {
             return $next($request);
         }
 

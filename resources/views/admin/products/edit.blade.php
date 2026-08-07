@@ -22,10 +22,6 @@
         </div>
     </div>
 
-    <!-- Language Switcher -->
-    @if(file_exists(resource_path('views/admin/components/language-switcher.blade.php')))
-        @include('admin.components.language-switcher')
-    @endif
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Cột trái: Form chính -->

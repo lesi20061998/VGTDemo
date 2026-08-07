@@ -39,7 +39,7 @@
         </button>
     </form>
 
-    <a href="{{ isset($currentProject) && $currentProject ? route('project.admin.orders.reports', $currentProject->code) : route('cms.orders.reports') }}" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+    <a href="{{ isset($currentProject) && $currentProject ? route('project.admin.orders.reports', $currentProject->code) : route('cms.orders.reports') }}" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
         Báo cáo
     </a>
 </div>

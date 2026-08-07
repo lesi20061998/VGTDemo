@@ -1,11 +1,13 @@
 <?php
+
 // MODIFIED: 2025-01-21
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\User;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class RolePermissionSeeder extends Seeder
 {
@@ -23,7 +25,7 @@ class RolePermissionSeeder extends Seeder
             ['email' => 'admin@example.com'],
             [
                 'name' => 'Administrator',
-                'password' => bcrypt('password'),
+                'password' => Hash::make('password'),
                 'email_verified_at' => now(),
             ]
         );

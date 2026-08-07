@@ -9,15 +9,15 @@ class Tenant extends Model
 {
     protected $fillable = [
         'name',
-        'code', 
+        'code',
         'domain',
         'database_name',
         'settings',
-        'status'
+        'status',
     ];
 
     protected $casts = [
-        'settings' => 'array'
+        'settings' => 'array',
     ];
 
     // Relationships
@@ -31,15 +31,15 @@ class Tenant extends Model
         return $this->hasMany(Post::class);
     }
 
-    public function products(): HasMany
-    {
-        return $this->hasMany(Product::class);
-    }
+    // public function products(): HasMany
+    // {
+    //     return $this->hasMany(Product::class);
+    // }
 
-    public function orders(): HasMany
-    {
-        return $this->hasMany(Order::class);
-    }
+    // public function orders(): HasMany
+    // {
+    //     return $this->hasMany(Order::class);
+    // }
 
     public function projects(): HasMany
     {
@@ -60,6 +60,6 @@ class Tenant extends Model
 
     public function getUrl(): string
     {
-        return 'https://' . $this->domain;
+        return 'https://'.$this->domain;
     }
 }

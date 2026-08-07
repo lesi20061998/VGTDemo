@@ -38,7 +38,7 @@
                          alt="{{ $featuredPost->title }}" 
                          class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                 @else
-                    <div class="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600"></div>
+                    <div class="w-full h-full bg-gradient-to-br from-blue-500 to-blue-600"></div>
                 @endif
             </div>
             <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>

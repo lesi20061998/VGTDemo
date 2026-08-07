@@ -37,14 +37,14 @@
         </div>
     </div>
 
-    <div class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
+    <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-purple-100 text-sm font-medium">Tổng người dùng</p>
+                <p class="text-blue-100 text-sm font-medium">Tổng người dùng</p>
                 <p class="text-3xl font-bold">{{ number_format($total_users ?? 0) }}</p>
-                <p class="text-purple-100 text-xs mt-1">+{{ $new_users_today ?? 0 }} hôm nay</p>
+                <p class="text-blue-100 text-xs mt-1">+{{ $new_users_today ?? 0 }} hôm nay</p>
             </div>
-            <div class="p-3 bg-purple-400 bg-opacity-30 rounded-lg">
+            <div class="p-3 bg-blue-400 bg-opacity-30 rounded-lg">
                 <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
                 </svg>
@@ -70,7 +70,7 @@
 
 <!-- Quick Actions -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-    <a href="{{ route('cms.products.index') }}" class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+    <a href="{{ isset($currentProject) && $currentProject ? route('project.admin.posts.index', ['projectCode' => $currentProject->code, 'type' => 'product']) : route('superadmin.posts.index', ['type' => 'product']) }}" class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
         <div class="flex items-center">
             <div class="p-3 bg-blue-100 rounded-lg">
                 <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -84,7 +84,7 @@
         </div>
     </a>
 
-    <a href="{{ route('cms.orders.index') }}" class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+    <a href="{{ isset($currentProject) && $currentProject ? route('project.admin.posts.index', ['projectCode' => $currentProject->code, 'type' => 'order']) : route('superadmin.posts.index', ['type' => 'order']) }}" class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
         <div class="flex items-center">
             <div class="p-3 bg-green-100 rounded-lg">
                 <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -98,10 +98,10 @@
         </div>
     </a>
 
-    <a href="{{ route('cms.users.index') }}" class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+    <a href="{{ isset($currentProject) && $currentProject ? route('project.admin.users.index', $currentProject->code) : route('superadmin.users.index') }}" class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
         <div class="flex items-center">
-            <div class="p-3 bg-purple-100 rounded-lg">
-                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="p-3 bg-blue-100 rounded-lg">
+                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
                 </svg>
             </div>
@@ -112,7 +112,7 @@
         </div>
     </a>
 
-    <a href="{{ route('cms.settings.index') }}" class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+    <a href="{{ isset($currentProject) && $currentProject ? route('project.admin.settings.index', $currentProject->code) : '#' }}" class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
         <div class="flex items-center">
             <div class="p-3 bg-orange-100 rounded-lg">
                 <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

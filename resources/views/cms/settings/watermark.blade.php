@@ -84,26 +84,26 @@
 
                     <!-- Text Watermark Settings -->
                     <div id="textWatermarkSettings" class="space-y-4 {{ $type === 'text' ? '' : 'hidden' }}">
-                        <div class="bg-purple-50 rounded-lg p-4 border border-purple-200">
-                            <h4 class="font-semibold text-purple-900 mb-3">Cấu hình Text Watermark</h4>
+                        <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                            <h4 class="font-semibold text-blue-900 mb-3">Cấu hình Text Watermark</h4>
                             
                             <div class="space-y-4">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Nội dung text</label>
                                     <input type="text" name="watermark[text]" value="{{ $text }}" 
                                            placeholder="VD: © {{ config('app.name') }}"
-                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                                 </div>
                                 
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">Cỡ chữ (px)</label>
                                         <input type="number" name="watermark[font_size]" value="{{ $fontSize }}" min="10" max="100"
-                                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">Màu chữ</label>
-                                        <select name="watermark[font_color]" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                                        <select name="watermark[font_color]" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                                             <option value="rgba(255, 255, 255, 0.7)" {{ $fontColor === 'rgba(255, 255, 255, 0.7)' ? 'selected' : '' }}>Trắng mờ</option>
                                             <option value="rgba(255, 255, 255, 1)" {{ $fontColor === 'rgba(255, 255, 255, 1)' ? 'selected' : '' }}>Trắng</option>
                                             <option value="rgba(0, 0, 0, 0.5)" {{ $fontColor === 'rgba(0, 0, 0, 0.5)' ? 'selected' : '' }}>Đen mờ</option>

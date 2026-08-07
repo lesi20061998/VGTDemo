@@ -19,7 +19,7 @@
             @forelse($contracts as $contract)
             <tr class="hover:bg-gray-50">
                 <td class="px-6 py-4">
-                    <span class="font-mono font-bold text-purple-600">{{ $contract->full_code }}</span>
+                    <span class="font-mono font-bold text-blue-600">{{ $contract->full_code }}</span>
                 </td>
                 <td class="px-6 py-4 text-sm text-gray-900">{{ $contract->website->slug }}</td>
                 <td class="px-6 py-4 text-sm text-gray-600">{{ $contract->start_date->format('d/m/Y') }}</td>

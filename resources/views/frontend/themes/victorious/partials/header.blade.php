@@ -53,8 +53,8 @@
                     <li class="flex-ic room-categories__cabin-dropmenu">
                         <a href="/rooms">room categories</a><img src="{{ asset('themes/victorious/img/icon/down-ic.svg') }}" alt="">
                         <ul class="cabin-menu">
-                            @foreach(\App\Models\Product::where('status', 'published')->limit(8)->get() as $room)
-                            <li class="cabin-item"><a href="{{ url('room/' . $room->slug) }}">{{ $room->name }}</a></li>
+                            @foreach(\App\Models\Post::where('post_type', 'product')->where('status', 'published')->limit(8)->get() as $room)
+                            <li class="cabin-item"><a href="{{ url('room/' . $room->slug) }}">{{ $room->title }}</a></li>
                             @endforeach
                         </ul>
                     </li>
@@ -115,8 +115,8 @@
                             </button>
                         </div>
                         <ul class="mobile-nav__sub-list">
-                            @foreach(\App\Models\Product::where('status', 'published')->limit(8)->get() as $room)
-                            <li class="mobile-nav__sub-item"><a href="{{ url('room/' . $room->slug) }}">{{ $room->name }}</a></li>
+                            @foreach(\App\Models\Post::where('post_type', 'product')->where('status', 'published')->limit(8)->get() as $room)
+                            <li class="mobile-nav__sub-item"><a href="{{ url('room/' . $room->slug) }}">{{ $room->title }}</a></li>
                             @endforeach
                         </ul>
                     </li>

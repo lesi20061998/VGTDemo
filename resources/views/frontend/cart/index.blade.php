@@ -5,7 +5,7 @@
 @endphp
 
 @section('content')
-<div class="bg-gradient-to-r from-blue-600 to-purple-600 py-8">
+<div class="bg-gradient-to-r from-blue-600 to-blue-600 py-8">
     <div class="container mx-auto px-4">
         <h1 class="text-3xl font-bold text-white">🛒 Giỏ hàng</h1>
         <nav class="text-white/80 text-sm mt-2">

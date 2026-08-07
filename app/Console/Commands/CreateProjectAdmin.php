@@ -90,8 +90,8 @@ class CreateProjectAdmin extends Command
                     ->where('username', $username)
                     ->update([
                         'password' => Hash::make($password),
-                        'level' => 0, // Superadmin
-                        'role' => 'admin',
+                        'level' => 2, // CMS Manager level
+                        'role' => 'cms',
                         'updated_at' => now(),
                     ]);
 
@@ -101,8 +101,8 @@ class CreateProjectAdmin extends Command
                     'username' => $username,
                     'email' => $email,
                     'password' => Hash::make($password),
-                    'level' => 0, // Superadmin level
-                    'role' => 'admin',
+                    'level' => 2, // CMS Manager level
+                    'role' => 'cms',
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);

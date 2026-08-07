@@ -1,13 +1,36 @@
 <?php
 
+use App\Http\Middleware\AdminMiddleware;
+use App\Http\Middleware\Authenticate;
+use App\Http\Middleware\BypassWidgetPermission;
+use App\Http\Middleware\CMSMiddleware;
+use App\Http\Middleware\HandleDatabaseErrors;
+use App\Http\Middleware\HideServerSignature;
+use App\Http\Middleware\LogFileChanges;
+use App\Http\Middleware\LogVisitor;
+use App\Http\Middleware\PanelSessionMiddleware;
+use App\Http\Middleware\ProjectMiddleware;
+use App\Http\Middleware\ProjectSession;
+use App\Http\Middleware\SetLocale;
+use App\Http\Middleware\SuperAdminMiddleware;
+use App\Http\Middleware\TenantMiddleware;
+use App\Http\Middleware\VerifyApiToken;
+use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
+use Illuminate\Cookie\Middleware\EncryptCookies;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
+use Illuminate\Routing\Middleware\SubstituteBindings;
+use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
+use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
+        api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
         then: function () {
@@ -18,11 +41,11 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [
-            \App\Http\Middleware\SetLocale::class,
-            \App\Http\Middleware\HideServerSignature::class,
-            \App\Http\Middleware\LogVisitor::class,
-            \App\Http\Middleware\LogFileChanges::class,
-            \App\Http\Middleware\HandleDatabaseErrors::class,
+            SetLocale::class,
+            HideServerSignature::class,
+            LogVisitor::class,
+            LogFileChanges::class,
+            HandleDatabaseErrors::class,
         ]);
 
         // Exclude media upload routes from CSRF verification
@@ -33,34 +56,35 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Chỉ áp dụng TenantMiddleware cho các route không phải admin
         $middleware->group('tenant', [
-            \App\Http\Middleware\TenantMiddleware::class,
+            TenantMiddleware::class,
         ]);
 
         // Project routes group with isolated session - runs BEFORE StartSession
         $middleware->group('project.web', [
-            \Illuminate\Cookie\Middleware\EncryptCookies::class,
-            \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
-            \App\Http\Middleware\ProjectSession::class, // Set session config BEFORE StartSession
-            \Illuminate\Session\Middleware\StartSession::class,
-            \Illuminate\View\Middleware\ShareErrorsFromSession::class,
-            \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
-            \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            EncryptCookies::class,
+            AddQueuedCookiesToResponse::class,
+            ProjectSession::class, // Set session config BEFORE StartSession
+            StartSession::class,
+            ShareErrorsFromSession::class,
+            ValidateCsrfToken::class,
+            SubstituteBindings::class,
         ]);
 
         $middleware->alias([
-            'auth' => \App\Http\Middleware\Authenticate::class,
-            'admin' => \App\Http\Middleware\AdminMiddleware::class,
-            'superadmin' => \App\Http\Middleware\SuperAdminMiddleware::class,
-            'project' => \App\Http\Middleware\ProjectMiddleware::class,
-            'cms' => \App\Http\Middleware\CMSMiddleware::class,
-            'panel.session' => \App\Http\Middleware\PanelSessionMiddleware::class,
-            'project.session' => \App\Http\Middleware\ProjectSession::class,
-            'widget.bypass' => \App\Http\Middleware\BypassWidgetPermission::class,
+            'auth' => Authenticate::class,
+            'admin' => AdminMiddleware::class,
+            'superadmin' => SuperAdminMiddleware::class,
+            'project' => ProjectMiddleware::class,
+            'cms' => CMSMiddleware::class,
+            'panel.session' => PanelSessionMiddleware::class,
+            'project.session' => ProjectSession::class,
+            'widget.bypass' => BypassWidgetPermission::class,
+            'api.token' => VerifyApiToken::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // Xử lý lỗi database QueryException
-        $exceptions->render(function (\Illuminate\Database\QueryException $e, $request) {
+        $exceptions->render(function (QueryException $e, $request) {
             // Xử lý lỗi numeric overflow
             if (str_contains($e->getMessage(), 'Out of range value')) {
                 if ($request->expectsJson()) {

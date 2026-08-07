@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\ProjectUser;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,7 +13,7 @@ class CheckCmsRole
     /**
      * Handle an incoming request.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  Closure(Request): (Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
@@ -27,7 +28,7 @@ class CheckCmsRole
             }
 
             // Load user from project database and share with views
-            $user = \App\Models\ProjectUser::find($userId);
+            $user = ProjectUser::find($userId);
 
             if (! $user) {
                 session()->forget(['project_user_id', 'project_user_username', 'current_project']);
@@ -39,13 +40,13 @@ class CheckCmsRole
             view()->share('authUser', $user);
             $request->attributes->set('auth_user', $user);
 
-            // Allow superadmin (level=0) and administrator (level=1)
-            if (isset($user->level) && in_array($user->level, [0, 1])) {
+            // Allow superadmin (level=0), administrator (level=1) and dev (level=2)
+            if (isset($user->level) && in_array($user->level, [0, 1, 2])) {
                 return $next($request);
             }
 
-            // Allow all users with cms or admin role
-            if (isset($user->role) && in_array($user->role, ['cms', 'admin'])) {
+            // Allow all users with cms, admin, or dev role
+            if (isset($user->role) && in_array($user->role, ['cms', 'admin', 'dev'])) {
                 return $next($request);
             }
 
@@ -59,13 +60,13 @@ class CheckCmsRole
 
         $user = Auth::guard('web')->user();
 
-        // Allow superadmin (level=0) and administrator (level=1)
-        if (isset($user->level) && in_array($user->level, [0, 1])) {
+        // Allow superadmin (level=0), administrator (level=1), and dev (level=2)
+        if (isset($user->level) && in_array($user->level, [0, 1, 2])) {
             return $next($request);
         }
 
-        // Allow all users with cms or admin role to access all CMS
-        if (isset($user->role) && in_array($user->role, ['cms', 'admin'])) {
+        // Allow all users with cms, admin, or dev role to access all CMS
+        if (isset($user->role) && in_array($user->role, ['cms', 'admin', 'dev'])) {
             return $next($request);
         }
 

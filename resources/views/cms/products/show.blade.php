@@ -142,7 +142,7 @@
                         <p class="text-xs font-medium text-gray-500 uppercase">Thương hiệu</p>
                         <p class="text-sm text-gray-900 mt-1">
                             @if($product->brand)
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
                                     {{ $product->brand->name }}
                                 </span>
                             @else

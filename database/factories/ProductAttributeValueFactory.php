@@ -2,13 +2,13 @@
 
 namespace Database\Factories;
 
-use App\Models\ProductAttributeValue;
 use App\Models\ProductAttribute;
+use App\Models\ProductAttributeValue;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ProductAttributeValue>
+ * @extends Factory<ProductAttributeValue>
  */
 class ProductAttributeValueFactory extends Factory
 {
@@ -16,7 +16,7 @@ class ProductAttributeValueFactory extends Factory
 
     public function definition(): array
     {
-        $value = $this->faker->word();
+        $value = $this->faker->unique()->word();
 
         return [
             'product_attribute_id' => ProductAttribute::factory(),

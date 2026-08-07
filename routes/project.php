@@ -121,6 +121,9 @@ Route::prefix('{projectCode}/admin')
         Route::resource('posts', \App\Http\Controllers\Admin\PostController::class);
         Route::get('posts/create', [\App\Http\Controllers\Admin\PostController::class, 'create'])->name('posts.create');
 
+        // Property Categories Management
+        Route::resource('property-categories', \App\Http\Controllers\Admin\PropertyCategoryController::class);
+
         // Pages Management (Trang tĩnh)
         Route::get('pages', [\App\Http\Controllers\Admin\PostController::class, 'index'])->name('pages.index')->defaults('post_type', 'page');
         Route::get('pages/create', [\App\Http\Controllers\Admin\PostController::class, 'create'])->name('pages.create')->defaults('type', 'page');
@@ -128,6 +131,27 @@ Route::prefix('{projectCode}/admin')
         Route::get('pages/{post}/edit', [\App\Http\Controllers\Admin\PostController::class, 'edit'])->name('pages.edit');
         Route::put('pages/{post}', [\App\Http\Controllers\Admin\PostController::class, 'update'])->name('pages.update');
         Route::delete('pages/{post}', [\App\Http\Controllers\Admin\PostController::class, 'destroy'])->name('pages.destroy');
+
+        // Feature Pack Dynamic Post Types
+        $featurePostTypes = [
+            'properties' => 'property',
+            'rooms' => 'room',
+            'hotel-bookings' => 'hotel_booking',
+            'amenities' => 'amenity',
+            'doctors' => 'doctor',
+            'patients' => 'patient',
+            'prescriptions' => 'prescription',
+            'appointments' => 'appointment',
+        ];
+
+        foreach ($featurePostTypes as $uri => $type) {
+            Route::get($uri, [\App\Http\Controllers\Admin\PostController::class, 'index'])->name("{$uri}.index")->defaults('post_type', $type);
+            Route::get("{$uri}/create", [\App\Http\Controllers\Admin\PostController::class, 'create'])->name("{$uri}.create")->defaults('type', $type);
+            Route::get("{$uri}/{post}", [\App\Http\Controllers\Admin\PostController::class, 'show'])->name("{$uri}.show");
+            Route::get("{$uri}/{post}/edit", [\App\Http\Controllers\Admin\PostController::class, 'edit'])->name("{$uri}.edit");
+            Route::put("{$uri}/{post}", [\App\Http\Controllers\Admin\PostController::class, 'update'])->name("{$uri}.update");
+            Route::delete("{$uri}/{post}", [\App\Http\Controllers\Admin\PostController::class, 'destroy'])->name("{$uri}.destroy");
+        }
 
         // Attributes Management
         Route::resource('attributes', \App\Http\Controllers\Admin\AttributeController::class);
