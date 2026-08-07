@@ -22,6 +22,14 @@ Route::prefix('{projectCode}')
         \App\Http\Middleware\SetProjectDatabase::class,
     ])
     ->group(function () {
+        // Demo Layout Routes
+        Route::get('/demo-layout/{type}', function($projectCode, $type) {
+            if (!in_array($type, ['page', 'post', 'product'])) {
+                abort(404);
+            }
+            return view("frontend.demo.{$type}");
+        })->name('project.demo-layout');
+
         // Default routes (no locale prefix - uses default language)
         Route::get('/', [HomeController::class, 'index'])->name('project.home');
         Route::get('/san-pham', [\App\Http\Controllers\Frontend\ProductController::class, 'index'])->name('project.products.index');
