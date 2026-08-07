@@ -1,15 +1,14 @@
 <IfModule mod_rewrite.c>
-    <IfModule mod_negotiation.c>
-        Options -MultiViews -Indexes
-    </IfModule>
-
     RewriteEngine On
     
-    # Forward all requests to public directory
-    RewriteRule ^(.*)$ public/$1 [L]
+    # Bỏ qua nếu đường dẫn đã có sẵn chữ /public/ để tránh bị loop lặp vô hạn
+    RewriteCond %{REQUEST_URI} !^/public/
+    
+    # Chuyển tiếp toàn bộ (ẩn chữ public)
+    RewriteRule ^(.*)$ /public/$1 [L,QSA]
 </IfModule>
 
-# Increase PHP limits for export
+# Cấu hình PHP Limits
 php_value max_execution_time 120
 php_value memory_limit 256M
 php_value upload_max_filesize 50M
