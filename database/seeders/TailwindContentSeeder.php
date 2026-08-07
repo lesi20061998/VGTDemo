@@ -15,7 +15,8 @@ class TailwindContentSeeder extends Seeder
             $project = Project::first();
         }
 
-        $tenantId = session('current_tenant_id') ?? 1;
+        $tenant = DB::table('tenants')->first();
+        $tenantId = session('current_tenant_id') ?? ($tenant ? $tenant->id : null);
         $projectId = session('current_project_id') ?? ($project ? $project->id : 1);
 
         $posts = [
