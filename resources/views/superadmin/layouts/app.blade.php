@@ -21,11 +21,44 @@
                 return false;
             }
         });
+
+        // Xử lý resize sidebar
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.querySelector('.sidebar-resizable');
+            if(sidebar) {
+                new ResizeObserver(entries => {
+                    for (let entry of entries) {
+                        document.documentElement.style.setProperty('--sidebar-width', entry.contentRect.width + 'px');
+                    }
+                }).observe(sidebar);
+            }
+        });
     </script>
+    <style>
+        :root {
+            --sidebar-width: 18rem; /* 72 * 0.25rem = 18rem */
+        }
+        .sidebar-resizable {
+            width: var(--sidebar-width);
+            min-width: 15rem;
+            max-width: 30rem;
+            resize: horizontal;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        .content-resizable {
+            margin-left: var(--sidebar-width);
+        }
+        /* Style cho thanh kéo resize */
+        .sidebar-resizable::-webkit-resizer {
+            background-color: #002D80;
+            border-left: 1px solid #ffffff33;
+        }
+    </style>
 </head>
 <body class="bg-slate-50 font-sans text-gray-800">
     <div class="min-h-screen flex w-full">
-        <div class="w-72 bg-[#001B4E] shadow-2xl fixed h-screen overflow-y-auto">
+        <div class="sidebar-resizable bg-[#001B4E] shadow-2xl fixed h-screen">
             <div class="p-6 border-b border-[#002D80]">
                 <div class="flex items-center justify-center py-6 px-4">
                     <img src="{{ asset('Logo.png') }}" alt="AIM AGENCY" class="h-20 w-full object-contain">
@@ -137,7 +170,7 @@
             </div>
         </div>
 
-        <div class="flex-1 flex flex-col ml-72">
+        <div class="flex-1 flex flex-col content-resizable">
             <header class="bg-white shadow-sm border-b border-gray-200">
                 <div class="flex justify-between items-center px-6 py-4">
                     <h1 class="text-2xl font-bold text-gray-900">@yield('page-title', 'Super Admin')</h1>

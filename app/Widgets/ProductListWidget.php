@@ -2,7 +2,7 @@
 
 namespace App\Widgets;
 
-use App\Models\Product;
+use App\Models\Post;
 
 class ProductListWidget extends BaseWidget
 {
@@ -16,9 +16,12 @@ class ProductListWidget extends BaseWidget
         $html .= "<div class=\"products\">";
         
         foreach ($data['products'] as $product) {
+            $priceValue = $product->meta_data['price'] ?? null;
+            $price = $priceValue ? number_format($priceValue) . 'đ' : 'Liên hệ';
+            
             $html .= "<div class=\"product-item\">";
-            $html .= "<h4>{$product->name}</h4>";
-            $html .= "<p>{$product->price}</p>";
+            $html .= "<h4>{$product->title}</h4>";
+            $html .= "<p>{$price}</p>";
             $html .= "</div>";
         }
         
@@ -32,10 +35,12 @@ class ProductListWidget extends BaseWidget
         $categoryId = $this->getConfig('category_id');
         $limit = $this->getConfig('limit', 10);
         
-        $query = Product::with(['category', 'brand']);
+        $query = Post::where('post_type', 'product')->with(['taxonomies']);
         
         if ($categoryId) {
-            $query->where('category_id', $categoryId);
+            $query->whereHas('taxonomies', function($q) use ($categoryId) {
+                $q->where('taxonomies.id', $categoryId);
+            });
         }
         
         $products = $query->limit($limit)->get();

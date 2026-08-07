@@ -3,7 +3,7 @@
 namespace App\Widgets\Product;
 
 use App\Widgets\BaseWidget;
-use App\Models\ProjectProductCategory;
+use App\Models\Taxonomy;
 
 class ProductCateWidget extends BaseWidget
 {
@@ -14,8 +14,8 @@ class ProductCateWidget extends BaseWidget
         $showCount = $this->get('show_count', true);
         $onlyParent = $this->get('only_parent', true);
         
-        // Lấy danh mục từ database
-        $query = ProjectProductCategory::orderBy('sort_order', 'asc');
+        // Lấy danh mục từ database thông qua Taxonomy (chuyển sang dạng post type)
+        $query = Taxonomy::where('taxonomy', 'product_cat')->orderBy('order', 'asc');
         
         // Chỉ lấy danh mục cha nếu được chọn
         if ($onlyParent) {
@@ -38,10 +38,14 @@ class ProductCateWidget extends BaseWidget
         
         foreach ($categories as $category) {
             $categoryUrl = $projectCode ? "/{$projectCode}/danh-muc/{$category->slug}" : "/danh-muc/{$category->slug}";
-            $image = $category->image ?: 'https://via.placeholder.com/300x200?text=' . urlencode($category->name);
+            
+            // Xử lý hình ảnh (trong Taxonomy có thể lưu trong meta_data)
+            $image = isset($category->meta_data['image']) && $category->meta_data['image'] 
+                ? $category->meta_data['image'] 
+                : 'https://via.placeholder.com/300x200?text=' . urlencode($category->name);
             
             // Đếm số sản phẩm trong danh mục
-            $productCount = $showCount ? $category->products()->where('status', 'published')->count() : 0;
+            $productCount = $showCount ? $category->posts()->where('status', 'published')->count() : 0;
             
             $html .= "<div class=\"category-item bg-gray-50 rounded-lg overflow-hidden hover:shadow-lg transition\">";
             $html .= "<img src=\"{$image}\" alt=\"{$category->name}\" class=\"w-full h-40 object-cover\">";
