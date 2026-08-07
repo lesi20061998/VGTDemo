@@ -3,14 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Product;
+use App\Models\Post;
+use App\Models\Taxonomy;
 use App\Models\ProductAttribute;
-use App\Models\ProductAttributeValue;
-use App\Models\ProductVariation;
 use App\Models\ProjectBrand;
-use App\Models\ProjectProduct;
-use App\Models\ProjectProductAttributeValueMapping;
-use App\Models\ProjectProductCategory;
 use App\Traits\HasCrudAlerts;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -21,65 +17,29 @@ class ProductController extends Controller
 
     public function index(Request $request)
     {
-        // Multi-site: Always require project context
-        $projectCode = request()->route('projectCode');
-        if (! $projectCode) {
-            abort(404, 'Project context required');
-        }
-
-        // Always use project models - Default to language_id = 1 (Vietnamese)
-        $languageId = $request->get('language_id', 1);
-
-        $products = ProjectProduct::with(['category', 'categories', 'brands'])
-            ->where('language_id', $languageId)
-            ->when($request->search, fn ($q) => $q->where('name', 'like', "%{$request->search}%"))
-            ->when($request->category, fn ($q) => $q->where('product_category_id', $request->category))
+        $products = Post::where('post_type', 'product')
+            ->with(['taxonomies'])
+            ->when($request->search, fn ($q) => $q->where('title', 'like', "%{$request->search}%"))
             ->when($request->status, fn ($q) => $q->where('status', $request->status))
             ->latest()
             ->paginate(20);
 
-        $parentCategories = ProjectProductCategory::whereNull('parent_id')->with('children')->get();
-
-        // Pass current project context to view
-        $currentProject = (object) ['code' => $projectCode];
+        $parentCategories = Taxonomy::where('taxonomy', 'product_cat')->whereNull('parent_id')->with('children')->get();
+        $currentProject = (object) ['code' => request()->route('projectCode')];
+        $languageId = 1;
 
         return view('admin.products.index', compact('products', 'parentCategories', 'currentProject', 'languageId'));
     }
 
     public function create(Request $request)
     {
-        // Multi-site: Always require project context
-        $projectCode = request()->route('projectCode');
-        if (! $projectCode) {
-            abort(404, 'Project context required');
-        }
-
-        // Get all categories for multi-select
-        $categories = ProjectProductCategory::orderBy('sort_order')->get();
-        $categoriesTree = $this->getCategoriesTree(); // For dropdown if needed
-
-        // Categories loaded successfully
+        $categories = Taxonomy::where('taxonomy', 'product_cat')->orderBy('order')->get();
+        $categoriesTree = $this->buildCategoryOptions($categories); 
         $attributes = ProductAttribute::with('values')->orderBy('sort_order')->get();
         $brands = ProjectBrand::orderBy('name')->get();
-
-        // Lấy ngôn ngữ hiện tại từ URL parameter
-        $languages = setting('languages', []);
-        $defaultLang = collect($languages)->firstWhere('is_default', true)['code'] ?? 'vi';
-        $currentLang = $request->get('lang', $defaultLang);
-
-        // Lưu ngôn ngữ hiện tại vào session
-        session(['admin_language' => $currentLang]);
+        $currentLang = 'vi';
 
         return view('cms.products.create', compact('categories', 'categoriesTree', 'attributes', 'brands', 'currentLang'));
-    }
-
-    // Removed legacy CMS model methods - now always use Project models
-
-    private function getCategoriesTree()
-    {
-        $allCategories = ProjectProductCategory::orderBy('sort_order')->get();
-
-        return $this->buildCategoryOptions($allCategories);
     }
 
     private function buildCategoryOptions($categories, $parentId = null, $prefix = '')
@@ -93,1350 +53,181 @@ class ProductController extends Controller
             $childOptions = $this->buildCategoryOptions($categories, $category->id, $prefix.'  └─ ');
             $options = array_merge($options, $childOptions);
         }
-
         return $options;
     }
 
     public function store(Request $request)
     {
-        $projectCode = request()->route('projectCode');
-
-        // Enhanced validation với thông báo lỗi chi tiết
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'sku' => [
-                'required',
-                'string',
-                'max:100',
-                \Illuminate\Validation\Rule::unique('products_enhanced', 'sku'),
+            'status' => 'required|in:draft,published,archived',
+        ]);
+
+        $slug = $request->input('slug') ?: Str::slug($request->name);
+        
+        $metaData = [
+            'sku' => $request->input('sku'),
+            'price' => $request->input('price', 0),
+            'sale_price' => $request->input('sale_price', 0),
+            'product_type' => $request->input('product_type', 'simple'),
+            'stock_quantity' => $request->input('stock_quantity', 0),
+            'manage_stock' => $request->has('manage_stock'),
+            'is_featured' => $request->has('is_featured'),
+            'attributes' => $request->input('attributes', []),
+            'variations' => $request->input('variations', []),
+            'gallery' => $request->input('gallery', []),
+            'brands' => $request->input('brands', []),
+        ];
+
+        $post = Post::create([
+            'title' => $request->name,
+            'slug' => $slug,
+            'excerpt' => $request->short_description,
+            'content' => $request->description,
+            'featured_image' => $request->input('featured_image'),
+            'post_type' => 'product',
+            'status' => $request->status,
+            'meta_title' => $request->meta_title,
+            'meta_description' => $request->meta_description,
+            'seo_data' => [
+                'focus_keyword' => $request->focus_keyword,
+                'noindex' => $request->has('noindex'),
             ],
-            'product_type' => 'required|in:simple,variable',
-            'status' => 'required|in:draft,published,archived',
-        ], [
-            'name.required' => 'Tên sản phẩm là bắt buộc',
-            'name.max' => 'Tên sản phẩm không được vượt quá 255 ký tự',
-            'sku.required' => 'SKU là bắt buộc',
-            'sku.max' => 'SKU không được vượt quá 100 ký tự',
-            'sku.unique' => 'SKU này đã tồn tại, vui lòng chọn SKU khác',
-            'product_type.required' => 'Loại sản phẩm là bắt buộc',
-            'product_type.in' => 'Loại sản phẩm phải là simple hoặc variable',
-            'status.required' => 'Trạng thái sản phẩm là bắt buộc',
-            'status.in' => 'Trạng thái không hợp lệ',
+            'meta_data' => $metaData,
         ]);
 
-        // Validation bổ sung cho variable products
-        if ($request->input('product_type') === 'variable') {
-            // Kiểm tra có chọn attributes không
-            if (! $request->has('attributes') || empty($request->input('attributes'))) {
-                return back()
-                    ->withInput()
-                    ->with('alert', [
-                        'type' => 'error',
-                        'message' => 'Sản phẩm biến thể phải chọn ít nhất một thuộc tính!',
-                    ]);
-            }
-
-            // Kiểm tra có tạo variations không
-            if (! $request->has('variations') || empty($request->input('variations'))) {
-                return back()
-                    ->withInput()
-                    ->with('alert', [
-                        'type' => 'error',
-                        'message' => 'Sản phẩm biến thể phải có ít nhất một biến thể!',
-                    ]);
-            }
-
-            // Validate từng variation
-            $variations = $request->input('variations', []);
-            foreach ($variations as $index => $variation) {
-                if (empty($variation['sku'])) {
-                    return back()
-                        ->withInput()
-                        ->with('alert', [
-                            'type' => 'error',
-                            'message' => 'Biến thể thứ '.($index + 1).' thiếu SKU!',
-                        ]);
-                }
-
-                if (! isset($variation['price']) || $variation['price'] < 0) {
-                    return back()
-                        ->withInput()
-                        ->with('alert', [
-                            'type' => 'error',
-                            'message' => 'Biến thể thứ '.($index + 1).' thiếu giá hoặc giá không hợp lệ!',
-                        ]);
-                }
-            }
+        if ($request->has('categories')) {
+            $post->taxonomies()->sync($request->categories);
         }
 
-        // Validation cho price nếu có
-        if ($request->filled('price')) {
-            $request->validate([
-                'price' => 'numeric|min:0|max:9999999999999.99',
-            ], [
-                'price.numeric' => 'Giá phải là số',
-                'price.min' => 'Giá không được âm',
-                'price.max' => 'Giá không được vượt quá 9,999,999,999,999.99',
-            ]);
-        }
-
-        if ($request->filled('sale_price')) {
-            $request->validate([
-                'sale_price' => 'numeric|min:0|max:9999999999999.99|lt:price',
-            ], [
-                'sale_price.numeric' => 'Giá khuyến mãi phải là số',
-                'sale_price.min' => 'Giá khuyến mãi không được âm',
-                'sale_price.max' => 'Giá khuyến mãi không được vượt quá 9,999,999,999,999.99',
-                'sale_price.lt' => 'Giá khuyến mãi phải nhỏ hơn giá gốc',
-            ]);
-        }
-
-        // Lấy tất cả dữ liệu từ form và set defaults
-        $validated['slug'] = $request->input('slug') ?: Str::slug($validated['name']);
-        $validated['description'] = $request->input('description', '');
-        $validated['short_description'] = $request->input('short_description');
-        $validated['status'] = $request->input('status', 'draft');
-        $validated['language_id'] = 1;
-        $validated['stock_quantity'] = $request->input('stock_quantity', 0);
-        $validated['stock_status'] = $request->input('stock_status', 'in_stock');
-        $validated['product_type'] = $request->input('product_type', 'simple');
-        $validated['views'] = 0;
-        $validated['rating_average'] = 0.00;
-        $validated['rating_count'] = 0;
-
-        // Validation cho categories (khuyến khích chọn ít nhất 1 category)
-        if (! $request->has('categories') || empty($request->input('categories'))) {
-            return back()
-                ->withInput()
-                ->with('alert', [
-                    'type' => 'warning',
-                    'message' => 'Khuyến khích chọn ít nhất một danh mục cho sản phẩm để dễ quản lý!',
-                ]);
-        }
-
-        // Boolean fields
-        $validated['is_featured'] = $request->has('is_featured');
-        $validated['noindex'] = $request->has('noindex');
-        $validated['manage_stock'] = $request->has('manage_stock');
-
-        // Optional fields từ form
-        if ($request->filled('price')) {
-            $validated['price'] = $request->input('price');
-            $validated['has_price'] = true;
-        } else {
-            $validated['has_price'] = false;
-        }
-
-        if ($request->filled('sale_price')) {
-            $validated['sale_price'] = $request->input('sale_price');
-        }
-
-        if ($request->filled('meta_title')) {
-            $validated['meta_title'] = $request->input('meta_title');
-        }
-
-        if ($request->filled('meta_description')) {
-            $validated['meta_description'] = $request->input('meta_description');
-        }
-
-        if ($request->filled('focus_keyword')) {
-            $validated['focus_keyword'] = $request->input('focus_keyword');
-        }
-
-        // Featured image - lưu URL trực tiếp
-        if ($request->filled('featured_image')) {
-            $validated['featured_image'] = $request->input('featured_image');
-        }
-
-        // Gallery - lưu dưới dạng array (model sẽ tự cast thành JSON)
-        if ($request->has('gallery') && is_array($request->gallery)) {
-            $validated['gallery'] = $request->gallery;
-        }
-
-        // Lưu sản phẩm vào database với xử lý lỗi
-        try {
-            $product = ProjectProduct::create($validated);
-
-            // Handle categories - sync với pivot table
-            if ($request->has('categories') && is_array($request->categories) && count($request->categories) > 0) {
-                $product->categories()->sync($request->categories);
-                // Set primary category (first one selected)
-                $product->update(['product_category_id' => $request->categories[0]]);
-            }
-
-            // Handle brands - sync với pivot table
-            if ($request->has('brands') && is_array($request->brands) && count($request->brands) > 0) {
-                $product->brands()->sync($request->brands);
-                // Set primary brand (first one selected)
-                $product->update(['brand_id' => $request->brands[0]]);
-            }
-
-            // Handle attributes - sync với pivot table cho variable products
-            if ($request->input('product_type') === 'variable' && $request->has('attributes')) {
-                $this->syncProductAttributes($product, $request->input('attributes', []));
-            }
-
-            // Handle variations - lưu variations khi product type là variable
-            if ($request->input('product_type') === 'variable' && $request->has('variations')) {
-                // Debug for CREATE
-                \Log::info('CREATE - Processing variations:', [
-                    'product_id' => $product->id,
-                    'variations_count' => count($request->input('variations', [])),
-                    'variations_data' => $request->input('variations', []),
-                ]);
-
-                try {
-                    $this->syncProductVariations($product, $request->input('variations', []));
-
-                    // Verify variations were saved
-                    $savedVariations = $product->fresh()->variations;
-                    \Log::info('CREATE - Variations saved successfully:', [
-                        'product_id' => $product->id,
-                        'saved_count' => $savedVariations->count(),
-                        'saved_variations' => $savedVariations->toArray(),
-                    ]);
-
-                    if ($savedVariations->count() === 0) {
-                        throw new \Exception('No variations were saved to database');
-                    }
-
-                } catch (\Exception $e) {
-                    \Log::error('CREATE - Failed to save variations:', [
-                        'product_id' => $product->id,
-                        'error' => $e->getMessage(),
-                        'variations_data' => $request->input('variations', []),
-                    ]);
-
-                    return back()
-                        ->withInput()
-                        ->with('alert', [
-                            'type' => 'error',
-                            'message' => 'Lỗi khi lưu biến thể: '.$e->getMessage(),
-                        ]);
-                }
-            }
-
-            // Thông báo thành công với thông tin chi tiết
-            $successMessage = "Sản phẩm '{$product->name}' đã được thêm vào hệ thống.";
-
-            if ($request->input('product_type') === 'variable') {
-                $variationsCount = $product->variations()->count();
-                $successMessage .= " Đã tạo {$variationsCount} biến thể.";
-            }
-
-            if ($request->has('categories')) {
-                $categoriesCount = count($request->input('categories', []));
-                $successMessage .= " Đã gán {$categoriesCount} danh mục.";
-            }
-
-            $this->alertCreated('sản phẩm', $successMessage);
-
-            return redirect()->route('project.admin.products.index', $projectCode);
-
-        } catch (\Illuminate\Database\QueryException $e) {
-            // Xử lý lỗi database (như numeric overflow)
-            if (str_contains($e->getMessage(), 'Out of range value')) {
-                return back()
-                    ->withInput()
-                    ->with('alert', [
-                        'type' => 'error',
-                        'message' => 'Giá trị nhập vào quá lớn! Vui lòng nhập giá không vượt quá 9,999,999,999,999.99 VNĐ.',
-                    ]);
-            }
-
-            // Xử lý các lỗi database khác
-            return back()
-                ->withInput()
-                ->with('alert', [
-                    'type' => 'error',
-                    'message' => 'Có lỗi xảy ra khi lưu sản phẩm. Vui lòng kiểm tra lại dữ liệu và thử lại.',
-                ]);
-
-        } catch (\Exception $e) {
-            // Xử lý các lỗi khác
-            return back()
-                ->withInput()
-                ->with('alert', [
-                    'type' => 'error',
-                    'message' => 'Có lỗi không mong muốn xảy ra. Vui lòng thử lại sau.',
-                ]);
-        }
-    }
-
-    // Removed legacy CMS product model method - now always use ProjectProduct
-
-    private function storeMultilingual(Request $request)
-    {
-        $validated = $request->validate([
-            'sku' => 'required|string',
-            'slug' => 'nullable|string',
-            'price' => 'nullable|numeric',
-            'sale_price' => 'nullable|numeric',
-            'product_category_id' => 'required|exists:product_categories,id',
-            'status' => 'required|in:draft,published,archived',
-            'is_featured' => 'boolean',
-            'product_type' => 'required|in:simple,variable',
-            'featured_image' => 'nullable|string',
-            'gallery' => 'nullable|array',
-            'focus_keyword' => 'nullable|string',
-            'schema_type' => 'nullable|string',
-            'canonical_url' => 'nullable|url',
-            'noindex' => 'boolean',
-            'language_versions' => 'required|array',
-        ]);
-
-        $languages = setting('languages', []);
-        $defaultLang = collect($languages)->firstWhere('is_default', true)['code'] ?? 'vi';
-
-        // Validate ngôn ngữ mặc định
-        $request->validate([
-            "language_versions.{$defaultLang}.name" => 'required|string|max:255',
-            "language_versions.{$defaultLang}.description" => 'required|string',
-        ]);
-
-        $validated['is_featured'] = $request->has('is_featured');
-        $validated['noindex'] = $request->has('noindex');
-
-        $createdProducts = [];
-
-        foreach ($request->input('language_versions') as $langCode => $langData) {
-            if (empty($langData['name']) && empty($langData['description'])) {
-                continue; // Skip empty language versions
-            }
-
-            $productData = $validated;
-            $productData['name'] = $langData['name'];
-            $productData['short_description'] = $langData['short_description'];
-            $productData['description'] = $langData['description'];
-            $productData['meta_title'] = $langData['meta_title'];
-            $productData['meta_description'] = $langData['meta_description'];
-            $productData['language'] = $langCode;
-
-            // Tạo slug riêng cho từng ngôn ngữ
-            $baseSlug = $validated['slug'] ?? Str::slug($langData['name']);
-            $productData['slug'] = $langCode === $defaultLang ? $baseSlug : $baseSlug.'-'.$langCode;
-
-            // Tạo SKU riêng cho từng ngôn ngữ (trừ ngôn ngữ mặc định)
-            $productData['sku'] = $langCode === $defaultLang ? $validated['sku'] : $validated['sku'].'-'.$langCode;
-
-            $createdProducts[] = ProjectProduct::create($productData);
-
-        }
-
-        $projectCode = request()->route('projectCode');
-
-        // dd($projectCode);
-        return redirect()->route('project.admin.products.index', $projectCode)->with('alert', [
-            'type' => 'success',
-            'message' => 'Thêm sản phẩm đa ngôn ngữ thành công! Đã tạo '.count($createdProducts).' bản ghi.',
-        ]);
-
-    }
-
-    private function storeLanguageVersion(Request $request)
-    {
-        $validated = $request->validate([
-            'language' => 'required|string|in:'.implode(',', array_column(setting('languages', []), 'code')),
-            'sku' => 'required|string',
-            'slug' => 'nullable|string',
-            'name' => 'required|string|max:255',
-            'short_description' => 'nullable|string',
-            'description' => 'required|string',
-            'meta_title' => 'nullable|string|max:60',
-            'meta_description' => 'nullable|string|max:160',
-            'price' => 'nullable|numeric',
-            'sale_price' => 'nullable|numeric',
-            'product_category_id' => 'required|exists:product_categories,id',
-            'status' => 'required|in:draft,published,archived',
-            'is_featured' => 'boolean',
-            'product_type' => 'required|in:simple,variable',
-            'featured_image' => 'nullable|string',
-            'gallery' => 'nullable|array',
-            'focus_keyword' => 'nullable|string',
-            'schema_type' => 'nullable|string',
-            'canonical_url' => 'nullable|url',
-            'noindex' => 'boolean',
-        ]);
-
-        $language = $validated['language'];
-
-        // Tạo slug unique cho ngôn ngữ này
-        $baseSlug = $validated['slug'] ?? Str::slug($validated['name']);
-        $slug = $this->generateUniqueSlug($baseSlug, $language);
-
-        // Tạo SKU unique cho ngôn ngữ này
-        $baseSku = $validated['sku'];
-        $sku = $this->generateUniqueSku($baseSku, $language);
-
-        $validated['slug'] = $slug;
-        $validated['sku'] = $sku;
-        $validated['is_featured'] = $request->has('is_featured');
-        $validated['noindex'] = $request->has('noindex');
-
-        $product = Product::create($validated);
-
-        $currentLang = $request->get('lang', $language);
-
-        $projectCode = request()->route('projectCode');
-
-        return redirect()->route('project.admin.products.create', [$projectCode, 'lang' => $currentLang])->with('alert', [
-            'type' => 'success',
-            'message' => "Thêm sản phẩm bản {$language} thành công!",
-        ]);
-    }
-
-    private function generateUniqueSlug($baseSlug, $language, $id = null)
-    {
-        $slug = $baseSlug;
-        $counter = 1;
-
-        while (true) {
-            $query = ProjectProduct::where('slug', $slug)->where('language', $language);
-            if ($id) {
-                $query->where('id', '!=', $id);
-            }
-
-            if (! $query->exists()) {
-                break;
-            }
-
-            $slug = $baseSlug.'-'.$counter;
-            $counter++;
-        }
-
-        return $slug;
-    }
-
-    private function generateUniqueSku($baseSku, $language, $id = null)
-    {
-        $sku = $baseSku.'-'.strtoupper($language);
-        $counter = 1;
-
-        while (true) {
-            $query = ProjectProduct::where('sku', $sku);
-            if ($id) {
-                $query->where('id', '!=', $id);
-            }
-
-            if (! $query->exists()) {
-                break;
-            }
-
-            $sku = $baseSku.'-'.strtoupper($language).'-'.$counter;
-            $counter++;
-        }
-
-        return $sku;
-    }
-
-    public function show($projectCode, $id)
-    {
-        $product = ProjectProduct::findOrFail($id);
-       
-        return view('admin.products.show', compact('product'));
+        $this->alertCreated('sản phẩm', "Sản phẩm '{$post->title}' đã được thêm.");
+        
+        $route = request()->route('projectCode') 
+            ? route('project.admin.products.index', request()->route('projectCode')) 
+            : route('cms.products.index');
+            
+        return redirect($route);
     }
 
     public function edit(Request $request, $projectCode, $id)
     {
-        // Multi-site: Always require project context
-        if (! $projectCode) {
-            abort(404, 'Project context required');
-        }
+        $product = Post::where('post_type', 'product')->findOrFail($id);
+        
+        // Map Post to view variables to minimize blade changes
+        $product->name = $product->title;
+        $product->description = $product->content;
+        $product->short_description = $product->excerpt;
+        
+        $metaData = is_string($product->meta_data) ? json_decode($product->meta_data, true) : ($product->meta_data ?? []);
+        $product->sku = $metaData['sku'] ?? '';
+        $product->price = $metaData['price'] ?? 0;
+        $product->sale_price = $metaData['sale_price'] ?? 0;
+        $product->product_type = $metaData['product_type'] ?? 'simple';
+        $product->stock_quantity = $metaData['stock_quantity'] ?? 0;
+        $product->manage_stock = $metaData['manage_stock'] ?? false;
+        $product->is_featured = $metaData['is_featured'] ?? false;
+        $product->gallery = $metaData['gallery'] ?? [];
+        $product->attributes_data = $metaData['attributes'] ?? [];
+        $product->variations_data = $metaData['variations'] ?? [];
+        
+        $seoData = is_string($product->seo_data) ? json_decode($product->seo_data, true) : ($product->seo_data ?? []);
+        $product->focus_keyword = $seoData['focus_keyword'] ?? '';
+        $product->noindex = $seoData['noindex'] ?? false;
 
-        $product = ProjectProduct::with(['categories', 'brands', 'attributeMappings.attribute', 'attributeMappings.attributeValue', 'variations'])->findOrFail($id);
-
-        // Get all categories for multi-select
-        $categories = ProjectProductCategory::orderBy('sort_order')->get();
-        $categoriesTree = $this->getCategoriesTree();
-        $parentCategories = ProjectProductCategory::whereNull('parent_id')->with('children')->get();
+        $categories = Taxonomy::where('taxonomy', 'product_cat')->orderBy('order')->get();
+        $categoriesTree = $this->buildCategoryOptions($categories); 
+        $attributes = ProductAttribute::with('values')->orderBy('sort_order')->get();
         $brands = ProjectBrand::orderBy('name')->get();
+        $currentLang = 'vi';
 
-        // Get all attributes with their values for variable products
-        $attributes = ProductAttribute::with('values')->orderBy('name')->get();
+        // Mock relations for view
+        $product->categories = $product->taxonomies;
+        $product->brands = collect($brands)->whereIn('id', $metaData['brands'] ?? []);
 
-        // Get current language (default to Vietnamese)
-        $currentLang = $request->get('lang', 'vi');
-
-        // Prepare variations data for JavaScript
-        $variationsData = $product->variations->map(function ($variation) {
-            $attributeDetails = [];
-            $attributeValueIds = [];
-
-            if ($variation->attributes) {
-                foreach ($variation->attributes as $attrId => $valueId) {
-                    $attribute = ProductAttribute::find($attrId);
-                    $value = ProductAttributeValue::find($valueId);
-                    if ($attribute && $value) {
-                        $attributeDetails[$attrId] = [
-                            'name' => $attribute->name,
-                            'value' => $value->value,
-                        ];
-                        $attributeValueIds[] = $valueId; // Collect value IDs for frontend
-                    }
-                }
+        // Biến đổi attributes_data cho view
+        $attributeMappings = collect();
+        foreach ($product->attributes_data as $attrId => $values) {
+            foreach ($values as $valId) {
+                $attributeMappings->push((object)[
+                    'product_attribute_id' => $attrId,
+                    'product_attribute_value_id' => $valId
+                ]);
             }
+        }
+        $product->attributeMappings = $attributeMappings;
+        $product->variations = collect($product->variations_data);
 
-            return [
-                'id' => $variation->id,
-                'name' => $variation->attribute_names ?: 'Variation '.$variation->id,
-                'sku' => $variation->sku,
-                'price' => $variation->price,
-                'sale_price' => $variation->sale_price,
-                'stock_quantity' => $variation->stock_quantity,
-                'image' => $variation->image,
-                'gallery' => $variation->gallery ?: [],
-                'attributes' => $attributeValueIds, // Array of value IDs for form submission
-                'attributeDetails' => $attributeDetails, // Detailed info for display
-            ];
-        })->toArray();
-
-        // Ensure gallery is properly formatted as array for JavaScript
-        $product->gallery = $product->gallery ?: [];
-
-        return view('cms.products.edit', compact('product', 'categories', 'categoriesTree', 'parentCategories', 'brands', 'attributes', 'currentLang', 'variationsData'));
+        return view('cms.products.edit', compact('product', 'categories', 'categoriesTree', 'attributes', 'brands', 'currentLang'));
     }
 
     public function update(Request $request, $projectCode, $id)
     {
-        $product = ProjectProduct::findOrFail($id);
-
-        // Debug: Log variations data to file instead of dd()
-        \Log::info('Update Product - Request Data:', [
-            'product_id' => $id,
-            'product_type' => $request->input('product_type'),
-            'has_variations' => $request->has('variations'),
-            'variations_count' => $request->has('variations') ? count($request->input('variations', [])) : 0,
-            'variations_data' => $request->input('variations', []),
-            'all_request_keys' => array_keys($request->all()),
-        ]);
-
-        // Also write to a simple text file for easier debugging
-        file_put_contents(storage_path('logs/variations_debug.txt'),
-            date('Y-m-d H:i:s')." - Product ID: $id\n".
-            'Product Type: '.$request->input('product_type')."\n".
-            'Has Variations: '.($request->has('variations') ? 'YES' : 'NO')."\n".
-            'Variations Count: '.($request->has('variations') ? count($request->input('variations', [])) : 0)."\n".
-            'Variations Data: '.json_encode($request->input('variations', []), JSON_PRETTY_PRINT)."\n".
-            'All Request Keys: '.implode(', ', array_keys($request->all()))."\n".
-            "---\n\n",
-            FILE_APPEND
-        );
-
-        // Enhanced validation với thông báo lỗi chi tiết (giống store)
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'sku' => [
-                'required',
-                'string',
-                'max:100',
-                \Illuminate\Validation\Rule::unique('products_enhanced', 'sku')->ignore($id),
+            'status' => 'required|in:draft,published,archived',
+        ]);
+
+        $post = Post::where('post_type', 'product')->findOrFail($id);
+        
+        $slug = $request->input('slug') ?: Str::slug($request->name);
+        
+        $metaData = [
+            'sku' => $request->input('sku'),
+            'price' => $request->input('price', 0),
+            'sale_price' => $request->input('sale_price', 0),
+            'product_type' => $request->input('product_type', 'simple'),
+            'stock_quantity' => $request->input('stock_quantity', 0),
+            'manage_stock' => $request->has('manage_stock'),
+            'is_featured' => $request->has('is_featured'),
+            'attributes' => $request->input('attributes', []),
+            'variations' => $request->input('variations', []),
+            'gallery' => $request->input('gallery', []),
+            'brands' => $request->input('brands', []),
+        ];
+
+        $post->update([
+            'title' => $request->name,
+            'slug' => $slug,
+            'excerpt' => $request->short_description,
+            'content' => $request->description,
+            'featured_image' => $request->input('featured_image'),
+            'status' => $request->status,
+            'meta_title' => $request->meta_title,
+            'meta_description' => $request->meta_description,
+            'seo_data' => [
+                'focus_keyword' => $request->focus_keyword,
+                'noindex' => $request->has('noindex'),
             ],
-            'product_type' => 'required|in:simple,variable',
-            'status' => 'required|in:draft,published,archived',
-        ], [
-            'name.required' => 'Tên sản phẩm là bắt buộc',
-            'name.max' => 'Tên sản phẩm không được vượt quá 255 ký tự',
-            'sku.required' => 'SKU là bắt buộc',
-            'sku.max' => 'SKU không được vượt quá 100 ký tự',
-            'sku.unique' => 'SKU này đã tồn tại, vui lòng chọn SKU khác',
-            'product_type.required' => 'Loại sản phẩm là bắt buộc',
-            'product_type.in' => 'Loại sản phẩm phải là simple hoặc variable',
-            'status.required' => 'Trạng thái sản phẩm là bắt buộc',
-            'status.in' => 'Trạng thái không hợp lệ',
+            'meta_data' => $metaData,
         ]);
 
-        // Validation bổ sung cho variable products
-        if ($request->input('product_type') === 'variable') {
-            // Kiểm tra có variations không
-            if (! $request->has('variations') || empty($request->input('variations'))) {
-                return back()
-                    ->withInput()
-                    ->with('alert', [
-                        'type' => 'error',
-                        'message' => 'Sản phẩm biến thể phải có ít nhất một biến thể!',
-                    ]);
-            }
-
-            // Validate từng variation
-            $variations = $request->input('variations', []);
-            foreach ($variations as $index => $variation) {
-                if (empty($variation['sku'])) {
-                    return back()
-                        ->withInput()
-                        ->with('alert', [
-                            'type' => 'error',
-                            'message' => 'Biến thể thứ '.($index + 1).' thiếu SKU!',
-                        ]);
-                }
-            }
-        }
-
-        // Lấy tất cả dữ liệu từ form và set defaults
-        $validated['slug'] = $request->input('slug') ?: Str::slug($validated['name']);
-        $validated['description'] = $request->input('description', '');
-        $validated['short_description'] = $request->input('short_description');
-        $validated['status'] = $request->input('status', $product->status ?? 'draft');
-        $validated['language_id'] = $product->language_id ?? 1;
-        $validated['stock_quantity'] = $request->input('stock_quantity', $product->stock_quantity ?? 0);
-        $validated['stock_status'] = $request->input('stock_status', $product->stock_status ?? 'in_stock');
-        $validated['product_type'] = $request->input('product_type', $product->product_type ?? 'simple');
-
-        // Boolean fields
-        $validated['is_featured'] = $request->has('is_featured');
-        $validated['noindex'] = $request->has('noindex');
-        $validated['manage_stock'] = $request->has('manage_stock');
-
-        // Optional fields từ form
-        if ($request->filled('price')) {
-            $validated['price'] = $request->input('price');
-            $validated['has_price'] = true;
+        if ($request->has('categories')) {
+            $post->taxonomies()->sync($request->categories);
         } else {
-            $validated['has_price'] = false;
+            $post->taxonomies()->sync([]);
         }
 
-        if ($request->filled('sale_price')) {
-            $validated['sale_price'] = $request->input('sale_price');
-        }
-
-        if ($request->filled('meta_title')) {
-            $validated['meta_title'] = $request->input('meta_title');
-        }
-
-        if ($request->filled('meta_description')) {
-            $validated['meta_description'] = $request->input('meta_description');
-        }
-
-        if ($request->filled('focus_keyword')) {
-            $validated['focus_keyword'] = $request->input('focus_keyword');
-        }
-
-        // Featured image - lưu URL trực tiếp
-        if ($request->filled('featured_image')) {
-            $validated['featured_image'] = $request->input('featured_image');
-        }
-
-        // Gallery - lưu dưới dạng array (model sẽ tự cast thành JSON)
-        if ($request->has('gallery') && is_array($request->gallery)) {
-            $validated['gallery'] = $request->gallery;
-        }
-
-        // Cập nhật sản phẩm với xử lý lỗi
-        try {
-            $product->update($validated);
-
-            // Handle categories - sync với pivot table
-            if ($request->has('categories') && is_array($request->categories) && count($request->categories) > 0) {
-                $product->categories()->sync($request->categories);
-                $product->update(['product_category_id' => $request->categories[0]]);
-            } else {
-                $product->categories()->sync([]);
-                $product->update(['product_category_id' => null]);
-            }
-
-            // Handle brands - sync với pivot table
-            if ($request->has('brands') && is_array($request->brands) && count($request->brands) > 0) {
-                $product->brands()->sync($request->brands);
-                $product->update(['brand_id' => $request->brands[0]]);
-            } else {
-                $product->brands()->sync([]);
-                $product->update(['brand_id' => null]);
-            }
-
-            // Handle attributes - sync với pivot table khi chuyển sang variable product
-            if ($request->input('product_type') === 'variable' && $request->has('attributes')) {
-                $this->syncProductAttributes($product, $request->input('attributes', []));
-            } elseif ($request->input('product_type') === 'simple') {
-                // Xóa tất cả attributes khi chuyển về simple product
-                $product->attributeMappings()->delete();
-            }
-
-            // Handle variations - lưu variations khi product type là variable
-            if ($request->input('product_type') === 'variable' && $request->has('variations')) {
-                $this->syncProductVariations($product, $request->input('variations', []));
-            } elseif ($request->input('product_type') === 'simple') {
-                // Xóa tất cả variations khi chuyển về simple product
-                $product->variations()->delete();
-            }
-
-            $this->alertUpdated('sản phẩm', "Sản phẩm '{$product->name}' đã được cập nhật.");
-
-            return redirect()->route('project.admin.products.index', $projectCode);
-
-        } catch (\Illuminate\Database\QueryException $e) {
-            \Log::error('Product update DB error: ' . $e->getMessage(), [
-                'product_id' => $product->id,
-                'sql' => $e->getSql() ?? 'N/A',
-                'bindings' => $e->getBindings() ?? [],
-            ]);
+        $this->alertUpdated('sản phẩm', "Sản phẩm '{$post->title}' đã được cập nhật.");
+        
+        $route = request()->route('projectCode') 
+            ? route('project.admin.products.index', request()->route('projectCode')) 
+            : route('cms.products.index');
             
-            // Xử lý lỗi database (như numeric overflow)
-            if (str_contains($e->getMessage(), 'Out of range value')) {
-                return back()
-                    ->withInput()
-                    ->with('alert', [
-                        'type' => 'error',
-                        'message' => 'Giá trị nhập vào quá lớn! Vui lòng nhập giá không vượt quá 9,999,999,999,999.99 VNĐ.',
-                    ]);
-            }
-
-            // Xử lý các lỗi database khác
-            return back()
-                ->withInput()
-                ->with('alert', [
-                    'type' => 'error',
-                    'message' => 'Lỗi Database: ' . $e->getMessage(),
-                ]);
-
-        } catch (\Exception $e) {
-            \Log::error('Product update error: ' . $e->getMessage(), [
-                'product_id' => $product->id,
-                'trace' => $e->getTraceAsString(),
-            ]);
-            
-            // Xử lý các lỗi khác
-            return back()
-                ->withInput()
-                ->with('alert', [
-                    'type' => 'error',
-                    'message' => 'Lỗi: ' . $e->getMessage(),
-                ]);
-        }
-    }
-
-    /**
-     * Sync product attributes when converting to variable product
-     */
-    private function syncProductAttributes(ProjectProduct $product, array $attributes): void
-    {
-        // Xóa tất cả mappings cũ
-        $product->attributeMappings()->delete();
-
-        // Tạo mappings mới
-        foreach ($attributes as $attributeId => $valueIds) {
-            if (empty($valueIds) || ! is_array($valueIds)) {
-                continue;
-            }
-
-            foreach ($valueIds as $valueId) {
-                // dd($valueId);
-                ProjectProductAttributeValueMapping::create([
-                    'product_id' => $product->id,
-                    'product_attribute_id' => $attributeId,
-                    'product_attribute_value_id' => $valueId,
-                ]);
-            }
-        }
-    }
-
-    /**
-     * Sync product variations when product type is variable
-     */
-    private function syncProductVariations(ProjectProduct $product, array $variations): void
-    {
-        // Debug: Log sync process
-        \Log::info('Syncing Product Variations:', [
-            'product_id' => $product->id,
-            'variations_count' => count($variations),
-            'variations_data' => $variations,
-        ]);
-
-        // Xóa tất cả variations cũ
-        $deletedCount = $product->variations()->count();
-        $product->variations()->delete();
-        \Log::info('Deleted old variations:', ['count' => $deletedCount]);
-
-        // Tạo variations mới
-        $createdCount = 0;
-        foreach ($variations as $index => $variationData) {
-            if (empty($variationData['sku'])) {
-                \Log::warning('Skipping variation without SKU:', ['index' => $index, 'data' => $variationData]);
-
-                continue; // Skip variations without SKU
-            }
-
-            // Prepare variation data
-            $data = [
-                'product_id' => $product->id,
-                'sku' => $variationData['sku'],
-                'price' => $variationData['price'] ?? 0,
-                'sale_price' => $variationData['sale_price'] ?? null,
-                'stock_quantity' => $variationData['stock_quantity'] ?? 0,
-                'image' => $variationData['image'] ?? null,
-                'gallery' => isset($variationData['gallery']) ? (is_string($variationData['gallery']) ? json_decode($variationData['gallery'], true) : $variationData['gallery']) : [],
-                'is_active' => true,
-            ];
-
-            // Handle attributes - convert from array to proper format
-            if (isset($variationData['attributes'])) {
-                $attributes = [];
-                $attributeIds = [];
-
-                if (is_string($variationData['attributes'])) {
-                    $attributeIds = json_decode($variationData['attributes'], true);
-                } else {
-                    $attributeIds = $variationData['attributes'];
-                }
-
-                \Log::info('Processing attributes for variation:', [
-                    'raw_attributes' => $variationData['attributes'],
-                    'parsed_attributes' => $attributeIds,
-                ]);
-
-                if (is_array($attributeIds)) {
-                    foreach ($attributeIds as $valueId) {
-                        $attributeValue = ProductAttributeValue::find($valueId);
-                        if ($attributeValue) {
-                            $attributes[$attributeValue->product_attribute_id] = $valueId;
-                            \Log::info('Added attribute mapping:', [
-                                'attribute_id' => $attributeValue->product_attribute_id,
-                                'value_id' => $valueId,
-                                'value_name' => $attributeValue->value,
-                            ]);
-                        } else {
-                            \Log::warning('Attribute value not found:', ['value_id' => $valueId]);
-                        }
-                    }
-                }
-                $data['attributes'] = $attributes;
-            }
-
-            \Log::info('Creating variation:', ['data' => $data]);
-            $variation = ProductVariation::create($data);
-            $createdCount++;
-            \Log::info('Created variation:', ['id' => $variation->id, 'sku' => $variation->sku]);
-        }
-
-        \Log::info('Sync completed:', ['created_count' => $createdCount]);
-    }
-
-    private function updateSingle(Request $request, $product)
-    {
-        $projectCode = request()->route('projectCode');
-        $tableName = $product->getTable();
-
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'sku' => "required|string|unique:{$tableName},sku,{$product->id}",
-            'slug' => "nullable|string|unique:{$tableName},slug,{$product->id}",
-            'short_description' => 'nullable|string',
-            'description' => 'required|string',
-            'meta_title' => 'nullable|string|max:60',
-            'meta_description' => 'nullable|string|max:160',
-            'price' => 'nullable|numeric',
-            'sale_price' => 'nullable|numeric',
-            'product_category_id' => 'required|exists:product_categories,id',
-            'status' => 'required|in:draft,published,archived',
-            'is_featured' => 'boolean',
-            'product_type' => 'required|in:simple,variable',
-            'featured_image' => 'nullable|string',
-            'gallery' => 'nullable|array',
-            'focus_keyword' => 'nullable|string',
-            'schema_type' => 'nullable|string',
-            'canonical_url' => 'nullable|url',
-            'noindex' => 'boolean',
-            'stock_quantity' => 'nullable|integer|min:0',
-            'manage_stock' => 'boolean',
-            'stock_status' => 'nullable|in:in_stock,out_of_stock',
-        ]);
-
-        // Set default language for single language mode
-        $validated['language'] = 'vi';
-        $validated['slug'] ??= Str::slug($validated['name']);
-        $validated['is_featured'] = $request->has('is_featured');
-        $validated['noindex'] = $request->has('noindex');
-        $validated['manage_stock'] = $request->has('manage_stock');
-
-        $product->update($validated);
-
-        // Multi-site: Always redirect to project route
-        return redirect()->route('project.admin.products.edit', [$projectCode, $product->id])->with('alert', [
-            'type' => 'success',
-            'message' => 'Cập nhật sản phẩm thành công!',
-        ]);
-    }
-
-    private function updateMultilingual(Request $request, Product $product)
-    {
-        // For multilingual, we need to handle updating the specific language version
-        // This is more complex as we need to identify which language version we're editing
-
-        $validated = $request->validate([
-            'sku' => 'required|string',
-            'slug' => 'nullable|string',
-            'price' => 'nullable|numeric',
-            'sale_price' => 'nullable|numeric',
-            'product_category_id' => 'required|exists:product_categories,id',
-            'status' => 'required|in:draft,published,archived',
-            'is_featured' => 'boolean',
-            'product_type' => 'required|in:simple,variable',
-            'featured_image' => 'nullable|string',
-            'gallery' => 'nullable|array',
-            'focus_keyword' => 'nullable|string',
-            'schema_type' => 'nullable|string',
-            'canonical_url' => 'nullable|url',
-            'noindex' => 'boolean',
-            'language_versions' => 'required|array',
-        ]);
-
-        $languages = setting('languages', []);
-        $defaultLang = collect($languages)->firstWhere('is_default', true)['code'] ?? 'vi';
-
-        // Update the current product (assuming it's the default language version)
-        $langData = $request->input('language_versions')[$product->language] ?? $request->input('language_versions')[$defaultLang];
-
-        $validated['name'] = $langData['name'];
-        $validated['short_description'] = $langData['short_description'];
-        $validated['description'] = $langData['description'];
-        $validated['meta_title'] = $langData['meta_title'];
-        $validated['meta_description'] = $langData['meta_description'];
-        $validated['is_featured'] = $request->has('is_featured');
-        $validated['noindex'] = $request->has('noindex');
-
-        $product->update($validated);
-
-        $projectCode = request()->route('projectCode');
-
-        return redirect()->route('project.admin.products.edit', [$projectCode, $product->id])->with('alert', [
-            'type' => 'success',
-            'message' => 'Cập nhật sản phẩm thành công!',
-        ]);
-    }
-
-    private function updateLanguageVersion(Request $request, ProjectProduct $product)
-    {
-        $validated = $request->validate([
-            'language' => 'required|string|in:'.implode(',', array_column(setting('languages', []), 'code')),
-            'sku' => 'required|string',
-            'slug' => 'nullable|string',
-            'name' => 'required|string|max:255',
-            'short_description' => 'nullable|string',
-            'description' => 'required|string',
-            'meta_title' => 'nullable|string|max:60',
-            'meta_description' => 'nullable|string|max:160',
-            'price' => 'nullable|numeric',
-            'sale_price' => 'nullable|numeric',
-            'product_category_id' => 'required|exists:product_categories,id',
-            'status' => 'required|in:draft,published,archived',
-            'is_featured' => 'boolean',
-            'product_type' => 'required|in:simple,variable',
-            'featured_image' => 'nullable|string',
-            'gallery' => 'nullable|array',
-            'focus_keyword' => 'nullable|string',
-            'schema_type' => 'nullable|string',
-            'canonical_url' => 'nullable|url',
-            'noindex' => 'boolean',
-        ]);
-
-        $language = $validated['language'];
-
-        // Tìm bản ghi cho ngôn ngữ hiện tại
-        $languageProduct = ProjectProduct::where('sku', $product->sku)
-            ->where('language', $language)
-            ->first();
-
-        if ($languageProduct) {
-            // Cập nhật bản ghi hiện có
-            $baseSlug = $validated['slug'] ?? Str::slug($validated['name']);
-            $slug = $this->generateUniqueSlug($baseSlug, $language, $languageProduct->id);
-
-            $validated['slug'] = $slug;
-            $validated['is_featured'] = $request->has('is_featured');
-            $validated['noindex'] = $request->has('noindex');
-
-            $languageProduct->update($validated);
-
-            $message = "Cập nhật sản phẩm bản {$language} thành công!";
-        } else {
-            // Tạo bản ghi mới cho ngôn ngữ này
-            $baseSlug = $validated['slug'] ?? Str::slug($validated['name']);
-            $slug = $this->generateUniqueSlug($baseSlug, $language);
-
-            $baseSku = $validated['sku'];
-            $sku = $this->generateUniqueSku($baseSku, $language);
-
-            $validated['slug'] = $slug;
-            $validated['sku'] = $sku;
-            $validated['is_featured'] = $request->has('is_featured');
-            $validated['noindex'] = $request->has('noindex');
-
-            ProjectProduct::create($validated);
-
-            $message = "Tạo sản phẩm bản {$language} thành công!";
-        }
-
-        $currentLang = $request->get('lang', $language);
-
-        $projectCode = request()->route('projectCode');
-
-        return redirect()->route('project.admin.products.edit', [$projectCode, $product->id, 'lang' => $currentLang])->with('alert', [
-            'type' => 'success',
-            'message' => $message,
-        ]);
-    }
-
-    public function quickEdit($id)
-    {
-        $product = ProjectProduct::findOrFail($id);
-
-        return response()->json([
-            'name' => $product->name,
-            'sku' => $product->sku,
-            'price' => $product->price,
-            'sale_price' => $product->sale_price,
-            'stock_quantity' => $product->stock_quantity,
-            'status' => $product->status,
-            'is_featured' => $product->is_featured,
-        ]);
-    }
-
-    public function bulkEdit(Request $request)
-    {
-        try {
-            $ids = $request->input('ids', []);
-            \Log::info('Bulk Edit Request:', ['ids' => $ids]);
-
-            $products = ProjectProduct::with(['category', 'brand', 'categories', 'brands'])->whereIn('id', $ids)->get();
-            $categories = ProjectProductCategory::all(['id', 'name']);
-            $brands = ProjectBrand::all(['id', 'name']);
-
-            // Add selected categories and brands to each product for the UI
-            $products = $products->map(function ($product) {
-                $product->selected_categories = $product->categories->pluck('id')->toArray();
-                $product->selected_brands = $product->brands->pluck('id')->toArray();
-
-                \Log::info("Product {$product->id} relationships:", [
-                    'categories' => $product->categories->pluck('name')->toArray(),
-                    'brands' => $product->brands->pluck('name')->toArray(),
-                    'selected_categories' => $product->selected_categories,
-                    'selected_brands' => $product->selected_brands,
-                ]);
-
-                return $product;
-            });
-
-            return response()->json([
-                'success' => true,
-                'products' => $products,
-                'categories' => $categories,
-                'brands' => $brands,
-            ]);
-        } catch (\Exception $e) {
-            \Log::error('Bulk Edit Error:', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Lỗi: '.$e->getMessage(),
-            ], 500);
-        }
-    }
-
-    public function bulkUpdate(Request $request)
-    {
-        try {
-            $ids = $request->input('ids', []);
-            $categories = $request->input('categories', []);
-            $brands = $request->input('brands', []);
-            $badges = $request->input('badges', []);
-            $status = $request->input('status');
-            $price = $request->input('price');
-            $salePrice = $request->input('sale_price');
-
-            // Debug logging
-            \Log::info('Bulk Update Request Data:', [
-                'ids' => $ids,
-                'categories' => $categories,
-                'brands' => $brands,
-                'badges' => $badges,
-                'status' => $status,
-                'price' => $price,
-                'sale_price' => $salePrice,
-            ]);
-
-            // Validate price and sale_price relationship
-            if (! empty($price) && ! empty($salePrice)) {
-                if (floatval($salePrice) >= floatval($price)) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Giá khuyến mãi phải nhỏ hơn giá gốc!',
-                    ], 422);
-                }
-            }
-
-            $updateData = [];
-
-            // Prepare single field updates
-            if (! empty($status)) {
-                $updateData['status'] = $status;
-            }
-
-            if (! empty($price)) {
-                $updateData['price'] = $price;
-            }
-
-            if (! empty($salePrice)) {
-                $updateData['sale_price'] = $salePrice;
-            }
-
-            // Update single fields for all products
-            if (! empty($updateData)) {
-                ProjectProduct::whereIn('id', $ids)->update($updateData);
-                \Log::info('Updated single fields for products', ['ids' => $ids, 'data' => $updateData]);
-            }
-
-            // Validate sale price against existing prices if only sale_price is being updated
-            if (empty($price) && ! empty($salePrice)) {
-                $products = ProjectProduct::whereIn('id', $ids)->get();
-                foreach ($products as $product) {
-                    if ($product->price && floatval($salePrice) >= floatval($product->price)) {
-                        return response()->json([
-                            'success' => false,
-                            'message' => "Giá khuyến mãi ({$salePrice}) phải nhỏ hơn giá gốc hiện tại của sản phẩm '{$product->name}' ({$product->price})!",
-                        ], 422);
-                    }
-                }
-            }
-
-            // Update categories and brands for each product individually
-            foreach ($ids as $productId) {
-                $product = ProjectProduct::find($productId);
-                if ($product) {
-                    // Update multiple categories using pivot table
-                    if (! empty($categories)) {
-                        $product->categories()->sync($categories);
-                        // Also update primary category for backward compatibility
-                        $product->update(['product_category_id' => $categories[0]]);
-                        \Log::info("Synced categories for product {$productId}", ['categories' => $categories]);
-                    }
-
-                    // Update multiple brands using pivot table
-                    if (! empty($brands)) {
-                        $product->brands()->sync($brands);
-                        // Also update primary brand for backward compatibility
-                        $product->update(['brand_id' => $brands[0]]);
-                        \Log::info("Synced brands for product {$productId}", ['brands' => $brands]);
-                    }
-
-                    // Update badges if selected
-                    if (! empty($badges)) {
-                        $badgeUpdates = [];
-                        $currentBadges = $product->badges ?? [];
-
-                        // Badge configurations
-                        $badgeConfigs = [
-                            'featured' => [
-                                'type' => 'featured',
-                                'label' => 'Nổi bật',
-                                'color' => 'yellow',
-                                'icon' => 'star',
-                            ],
-                            'favorite' => [
-                                'type' => 'favorite',
-                                'label' => 'Yêu thích',
-                                'color' => 'red',
-                                'icon' => 'heart',
-                            ],
-                            'bestseller' => [
-                                'type' => 'bestseller',
-                                'label' => 'Bán chạy',
-                                'color' => 'green',
-                                'icon' => 'trending-up',
-                            ],
-                        ];
-
-                        // Update boolean fields
-                        foreach (['featured', 'favorite', 'bestseller'] as $badgeType) {
-                            $fieldName = 'is_'.$badgeType;
-                            if (in_array($badgeType, $badges)) {
-                                $badgeUpdates[$fieldName] = true;
-
-                                // Add to badges JSON if not exists
-                                $badgeExists = false;
-                                foreach ($currentBadges as $badge) {
-                                    if ($badge['type'] === $badgeType) {
-                                        $badgeExists = true;
-                                        break;
-                                    }
-                                }
-                                if (! $badgeExists) {
-                                    $currentBadges[] = $badgeConfigs[$badgeType];
-                                }
-                            } else {
-                                $badgeUpdates[$fieldName] = false;
-
-                                // Remove from badges JSON
-                                $currentBadges = array_filter($currentBadges, function ($badge) use ($badgeType) {
-                                    return $badge['type'] !== $badgeType;
-                                });
-                                $currentBadges = array_values($currentBadges);
-                            }
-                        }
-
-                        // Update the product with new badge data
-                        $badgeUpdates['badges'] = $currentBadges;
-                        $product->update($badgeUpdates);
-                        \Log::info("Updated badges for product {$productId}", ['badges' => $badges, 'updates' => $badgeUpdates]);
-                    }
-                }
-            }
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Cập nhật thành công '.\count($ids).' sản phẩm!',
-            ]);
-        } catch (\Exception $e) {
-            \Log::error('Bulk Update Error:', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Có lỗi xảy ra: '.$e->getMessage(),
-            ], 500);
-        }
-    }
-
-    public function toggleBadge(Request $request)
-    {
-        try {
-            $productId = $request->input('product_id');
-            $badgeType = $request->input('badge_type');
-
-            // Validate inputs
-            if (! $productId || ! $badgeType) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Thiếu thông tin sản phẩm hoặc loại badge',
-                ], 400);
-            }
-
-            // Validate badge type
-            $validBadgeTypes = ['featured', 'favorite', 'bestseller'];
-            if (! in_array($badgeType, $validBadgeTypes)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Loại badge không hợp lệ',
-                ], 400);
-            }
-
-            $product = ProjectProduct::findOrFail($productId);
-
-            // Map badge types to database fields
-            $fieldMap = [
-                'featured' => 'is_featured',
-                'favorite' => 'is_favorite',
-                'bestseller' => 'is_bestseller',
-            ];
-
-            $field = $fieldMap[$badgeType];
-            $currentValue = $product->$field;
-            $newValue = ! $currentValue;
-
-            // Update the boolean field
-            $product->update([$field => $newValue]);
-
-            // Update badges JSON field
-            $badges = $product->badges ?? [];
-
-            // Badge configurations
-            $badgeConfigs = [
-                'featured' => [
-                    'type' => 'featured',
-                    'label' => 'Nổi bật',
-                    'color' => 'yellow',
-                    'icon' => 'star',
-                ],
-                'favorite' => [
-                    'type' => 'favorite',
-                    'label' => 'Yêu thích',
-                    'color' => 'red',
-                    'icon' => 'heart',
-                ],
-                'bestseller' => [
-                    'type' => 'bestseller',
-                    'label' => 'Bán chạy',
-                    'color' => 'green',
-                    'icon' => 'trending-up',
-                ],
-            ];
-
-            if ($newValue) {
-                // Add badge to JSON if not exists
-                $badgeExists = false;
-                foreach ($badges as $badge) {
-                    if ($badge['type'] === $badgeType) {
-                        $badgeExists = true;
-                        break;
-                    }
-                }
-
-                if (! $badgeExists) {
-                    $badges[] = $badgeConfigs[$badgeType];
-                }
-            } else {
-                // Remove badge from JSON
-                $badges = array_filter($badges, function ($badge) use ($badgeType) {
-                    return $badge['type'] !== $badgeType;
-                });
-                $badges = array_values($badges); // Re-index array
-            }
-
-            // Update badges JSON field
-            $product->update(['badges' => $badges]);
-
-            $actionText = $newValue ? 'bật' : 'tắt';
-            $badgeLabel = $badgeConfigs[$badgeType]['label'];
-
-            return response()->json([
-                'success' => true,
-                'message' => "Đã {$actionText} badge '{$badgeLabel}' cho sản phẩm '{$product->name}'",
-                'badge_active' => $newValue,
-                'product_id' => $productId,
-                'badge_type' => $badgeType,
-            ]);
-
-        } catch (\Exception $e) {
-            \Log::error('Badge Toggle Error:', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Có lỗi xảy ra khi cập nhật badge: '.$e->getMessage(),
-            ], 500);
-        }
-    }
-
-    public function quickUpdate(Request $request, $id)
-    {
-        $product = ProjectProduct::findOrFail($id);
-
-        // Get the correct table name for validation
-        $tableName = $product->getTable();
-
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'sku' => "required|string|unique:{$tableName},sku,{$product->id}",
-            'price' => 'nullable|numeric',
-            'sale_price' => 'nullable|numeric',
-            'stock_quantity' => 'nullable|integer|min:0',
-            'status' => 'required|in:draft,published,archived',
-            'is_featured' => 'boolean',
-        ]);
-
-        $validated['is_featured'] = $request->has('is_featured');
-
-        $product->update($validated);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Cập nhật sản phẩm thành công!',
-        ]);
+        return redirect($route);
     }
 
     public function destroy($projectCode, $id)
     {
-        $product = ProjectProduct::findOrFail($id);
-        $productName = $product->name;
-        $product->delete();
+        $post = Post::where('post_type', 'product')->findOrFail($id);
+        $title = $post->title;
+        $post->delete();
 
-        $this->alertDeleted('sản phẩm', "Sản phẩm '{$productName}' đã được xóa khỏi hệ thống.");
-
-        return redirect()->route('project.admin.products.index', $projectCode);
+        $this->alertDeleted('sản phẩm', "Sản phẩm '{$title}' đã được xóa.");
+        
+        $route = request()->route('projectCode') 
+            ? route('project.admin.products.index', request()->route('projectCode')) 
+            : route('cms.products.index');
+            
+        return redirect($route);
     }
 }
