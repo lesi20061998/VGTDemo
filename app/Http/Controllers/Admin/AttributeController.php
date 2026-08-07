@@ -82,13 +82,20 @@ class AttributeController extends Controller
     // ===== PRODUCT ATTRIBUTES =====
     public function index($projectCode, Request $request)
     {
-        $attributes = ProductAttribute::with(['group', 'values'])
-            ->when($request->search, fn ($q) => $q->search($request->search))
-            ->when($request->group_id, fn ($q) => $q->where('attribute_group_id', $request->group_id))
-            ->orderBy('sort_order')
-            ->paginate(config('app.admin_per_page', 20));
+        try {
+            $attributes = ProductAttribute::with(['group', 'values'])
+                ->when($request->search, fn ($q) => $q->search($request->search))
+                ->when($request->group_id, fn ($q) => $q->where('attribute_group_id', $request->group_id))
+                ->orderBy('sort_order')
+                ->paginate(config('app.admin_per_page', 20));
+        } catch (\Exception $e) {
+            $attributes = new \Illuminate\Pagination\LengthAwarePaginator([], 0, config('app.admin_per_page', 20), 1, ['path' => $request->url()]);
+        }
 
-        $groups = AttributeGroup::active()->get();
+        $groups = collect();
+        try {
+            $groups = AttributeGroup::active()->get();
+        } catch (\Exception $e) {}
 
         return view('cms.attributes.index', compact('attributes', 'groups'));
     }

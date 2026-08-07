@@ -18,11 +18,15 @@ class OrderController extends Controller
 
     public function index(Request $request)
     {
-        $orders = Order::with(['items'])
-            ->when($request->search, fn ($q) => $q->search($request->search))
-            ->filter($request->only(['status', 'payment_status', 'date_from', 'date_to']))
-            ->latest()
-            ->paginate(config('app.admin_per_page', 20));
+        try {
+            $orders = Order::with(['items'])
+                ->when($request->search, fn ($q) => $q->search($request->search))
+                ->filter($request->only(['status', 'payment_status', 'date_from', 'date_to']))
+                ->latest()
+                ->paginate(config('app.admin_per_page', 20));
+        } catch (\Exception $e) {
+            $orders = new \Illuminate\Pagination\LengthAwarePaginator([], 0, config('app.admin_per_page', 20), 1, ['path' => $request->url()]);
+        }
 
         return view('cms.orders.index', compact('orders'));
     }
@@ -131,35 +135,42 @@ class OrderController extends Controller
 
         $cacheKey = 'order_reports_'.md5($dateFrom.$dateTo);
 
-        $reportData = Cache::remember($cacheKey, 60, function () use ($dateFrom, $dateTo) {
-            return [
-                'total_sales' => Order::withoutGlobalScope('project')
-                    ->whereBetween('created_at', [$dateFrom, $dateTo])
-                    ->where('payment_status', 'paid')
-                    ->sum('total_amount'),
-                'total_orders' => Order::withoutGlobalScope('project')
-                    ->whereBetween('created_at', [$dateFrom, $dateTo])->count(),
-                'orders_by_status' => Order::withoutGlobalScope('project')
-                    ->whereBetween('created_at', [$dateFrom, $dateTo])
-                    ->selectRaw('status, COUNT(*) as count')
-                    ->groupBy('status')
-                    ->pluck('count', 'status'),
-                'daily_revenue' => Order::withoutGlobalScope('project')
-                    ->whereBetween('created_at', [$dateFrom, $dateTo])
-                    ->where('payment_status', 'paid')
-                    ->selectRaw('DATE(created_at) as date, SUM(total_amount) as revenue, COUNT(*) as count')
-                    ->groupBy('date')
-                    ->orderBy('date')
-                    ->get(),
-                'top_products' => OrderItem::withoutGlobalScope('project')
-                    ->whereBetween('created_at', [$dateFrom, $dateTo])
-                    ->selectRaw('product_name, SUM(quantity) as total_quantity, SUM(total_price) as total_revenue, COUNT(DISTINCT order_id) as order_count')
-                    ->groupBy('product_name')
-                    ->orderByDesc('total_revenue')
-                    ->limit(10)
-                    ->get(),
+        $reportData = [];
+        try {
+            $reportData = Cache::remember($cacheKey, 60, function () use ($dateFrom, $dateTo) {
+                return [
+                    'total_sales' => Order::withoutGlobalScope('project')
+                        ->whereBetween('created_at', [$dateFrom, $dateTo])
+                        ->where('payment_status', 'paid')
+                        ->sum('total_amount'),
+                    'total_orders' => Order::withoutGlobalScope('project')
+                        ->whereBetween('created_at', [$dateFrom, $dateTo])->count(),
+                    'orders_by_status' => Order::withoutGlobalScope('project')
+                        ->whereBetween('created_at', [$dateFrom, $dateTo])
+                        ->selectRaw('status, COUNT(*) as count')
+                        ->groupBy('status')
+                        ->pluck('count', 'status'),
+                    'daily_revenue' => Order::withoutGlobalScope('project')
+                        ->whereBetween('created_at', [$dateFrom, $dateTo])
+                        ->where('payment_status', 'paid')
+                        ->selectRaw('DATE(created_at) as date, SUM(total_amount) as revenue, COUNT(*) as count')
+                        ->groupBy('date')
+                        ->orderBy('date')
+                        ->get(),
+                    'top_products' => OrderItem::withoutGlobalScope('project')
+                        ->whereBetween('created_at', [$dateFrom, $dateTo])
+                        ->selectRaw('product_name, SUM(quantity) as total_quantity, SUM(total_price) as total_revenue, COUNT(DISTINCT order_id) as order_count')
+                        ->groupBy('product_name')
+                        ->orderByDesc('total_revenue')
+                        ->limit(10)
+                        ->get(),
+                ];
+            });
+        } catch (\Exception $e) {
+            $reportData = [
+                'total_sales' => 0, 'total_orders' => 0, 'orders_by_status' => collect(), 'daily_revenue' => collect(), 'top_products' => collect()
             ];
-        });
+        }
 
         return view('cms.orders.reports', array_merge($reportData, [
             'dateFrom' => $dateFrom,

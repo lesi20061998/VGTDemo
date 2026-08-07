@@ -53,9 +53,9 @@
 
     <div class="min-h-screen flex w-full">
         <!-- Sidebar -->
-        <div id="sidebar" class="w-72 bg-slate-800 shadow-2xl transition-all duration-300 fixed h-screen overflow-y-auto">
+        <div id="sidebar" class="w-72 bg-[#001B4E] shadow-2xl transition-all duration-300 fixed h-screen overflow-y-auto">
             <!-- Logo -->
-            <div class="p-6 border-b border-slate-700 bg-slate-900">
+            <div class="p-6 border-b border-[#002D80] bg-[#001235]">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
                         <div class="sidebar-text">
