@@ -187,17 +187,17 @@
                             </svg>
                         </button>
                         <div class="dropdown-menu ml-4 space-y-1 max-h-0 overflow-hidden transition-all duration-300">
-                            @if($currentProject->hasFeature('property'))
+                            @if($currentProject->hasFeature('property') && Route::has('project.admin.properties.index'))
                             <a href="{{ route('project.admin.properties.index', request()->route('projectCode')) }}" class="flex items-center px-4 py-2 text-slate-400 hover:bg-[blue-600] hover:text-white rounded-lg transition-all duration-200 {{ request()->routeIs('project.admin.properties.*') ? 'bg-[blue-600] text-white' : '' }}">
                                 <span class="text-sm nav-text">Danh sách BĐS</span>
                             </a>
                             @endif
-                            @if($currentProject->hasFeature('agent'))
+                            @if($currentProject->hasFeature('agent') && Route::has('project.admin.agents.index'))
                             <a href="{{ route('project.admin.agents.index', request()->route('projectCode')) }}" class="flex items-center px-4 py-2 text-slate-400 hover:bg-[blue-600] hover:text-white rounded-lg transition-all duration-200 {{ request()->routeIs('project.admin.agents.*') ? 'bg-[blue-600] text-white' : '' }}">
                                 <span class="text-sm nav-text">Môi giới</span>
                             </a>
                             @endif
-                            @if($currentProject->hasFeature('gallery_360'))
+                            @if($currentProject->hasFeature('gallery_360') && Route::has('project.admin.gallery-360.index'))
                             <a href="{{ route('project.admin.gallery-360.index', request()->route('projectCode')) }}" class="flex items-center px-4 py-2 text-slate-400 hover:bg-[blue-600] hover:text-white rounded-lg transition-all duration-200 {{ request()->routeIs('project.admin.gallery-360.*') ? 'bg-[blue-600] text-white' : '' }}">
                                 <span class="text-sm nav-text">Thư viện ảnh 360</span>
                             </a>

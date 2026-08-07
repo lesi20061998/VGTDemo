@@ -380,7 +380,7 @@
             <div class="mt-auto p-4 border-t border-slate-700">
                 <div class="text-slate-400 text-xs text-center space-y-1">
                     <p class="font-semibold">Version 2.0.0</p>
-                    <p>© 2025 AIM AGENCY</p>
+                    <p>©2025 AIM AGENCY</p>
                     <p class="text-slate-500">All rights reserved</p>
                 </div>
             </div>

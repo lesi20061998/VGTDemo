@@ -103,7 +103,7 @@ Route::prefix('admin')->name('cms.')->middleware(['auth'])->group(function () {
         // [CLEANED]         Route::post('widgets/clear', [\App\Http\Controllers\Admin\WidgetController::class, 'clearArea'])->name('widgets.clear');
         // [CLEANED]         Route::delete('widgets/{widget}', [\App\Http\Controllers\Admin\WidgetController::class, 'destroy'])->name('widgets.destroy');
         // [CLEANED]         Route::post('widgets/clear-cache', [\App\Http\Controllers\Admin\WidgetController::class, 'clearCache'])->name('widgets.clear-cache');
-        // [CLEANED]         Route::post('widgets/preview', [\App\Http\Controllers\Admin\WidgetController::class, 'preview'])->name('widgets.preview');
+        Route::post('widgets/preview', [\App\Http\Controllers\Admin\WidgetController::class, 'preview'])->name('widgets.preview');
         // [CLEANED]         Route::get('widgets/discover', [\App\Http\Controllers\Admin\WidgetController::class, 'discover'])->name('widgets.discover');
         // [CLEANED]         Route::match(['get', 'post'], 'widgets/fields', [\App\Http\Controllers\Admin\WidgetController::class, 'getFields'])->name('widgets.fields');
         // [CLEANED]         Route::post('widgets/toggle', [\App\Http\Controllers\Admin\WidgetController::class, 'toggleWidget'])->name('widgets.toggle');
