@@ -15,7 +15,7 @@ class TailwindContentSeeder extends Seeder
             $project = Project::first();
         }
 
-        $tenantId = session('current_tenant_id') ?? ($project ? $project->tenant_id : 1);
+        $tenantId = session('current_tenant_id') ?? 1;
         $projectId = session('current_project_id') ?? ($project ? $project->id : 1);
 
         $posts = [
@@ -177,6 +177,71 @@ class TailwindContentSeeder extends Seeder
 </div>
 ',
                 'post_type' => 'post',
+                'status' => 'published',
+            ],
+            
+            // ==========================================
+            // DEMO PRODUCT (Sản phẩm Demo)
+            // ==========================================
+            [
+                'title' => 'Sản phẩm Tailwind Demo',
+                'slug' => 'demo-product-tailwind',
+                'excerpt' => 'Sản phẩm mẫu với thiết kế Tailwind cực đẹp.',
+                'content' => '
+<div class="bg-white">
+  <div class="pt-6 pb-16 sm:pb-24">
+    <div class="mt-8 max-w-2xl mx-auto px-4 sm:px-6 lg:max-w-7xl lg:px-8">
+      <div class="lg:grid lg:grid-cols-12 lg:auto-rows-min lg:gap-x-8">
+        <div class="lg:col-start-8 lg:col-span-5">
+          <div class="flex justify-between">
+            <h1 class="text-xl font-medium text-gray-900">Sản phẩm chất lượng cao</h1>
+            <p class="text-xl font-medium text-gray-900">$140</p>
+          </div>
+          <div class="mt-4">
+            <h2 class="sr-only">Reviews</h2>
+            <div class="flex items-center">
+              <p class="text-sm text-gray-700">3.9
+                <span class="sr-only"> out of 5 stars</span>
+              </p>
+              <div class="ml-1 flex items-center">
+                <svg class="text-yellow-400 h-5 w-5 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+                <!-- Add more stars as needed -->
+              </div>
+              <div aria-hidden="true" class="ml-4 text-sm text-gray-300">·</div>
+              <div class="ml-4 flex">
+                <a href="#" class="text-sm font-medium text-indigo-600 hover:text-indigo-500">Xem tất cả 117 đánh giá</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Image gallery -->
+        <div class="mt-8 lg:mt-0 lg:col-start-1 lg:col-span-7 lg:row-start-1 lg:row-span-3">
+          <h2 class="sr-only">Images</h2>
+          <div class="grid grid-cols-1 lg:grid-cols-2 lg:grid-rows-3 lg:gap-8">
+            <img src="https://tailwindui.com/img/ecommerce-images/product-page-01-featured-product-shot.jpg" alt="Featured Image" class="lg:col-span-2 lg:row-span-2 rounded-lg">
+          </div>
+        </div>
+
+        <div class="mt-8 lg:col-span-5">
+          <form>
+            <button type="submit" class="mt-8 w-full bg-indigo-600 border border-transparent rounded-md py-3 px-8 flex items-center justify-center text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Thêm vào giỏ hàng</button>
+          </form>
+          <div class="mt-10">
+            <h2 class="text-sm font-medium text-gray-900">Mô tả sản phẩm</h2>
+            <div class="mt-4 prose prose-sm text-gray-500">
+              <p>Sản phẩm này là một ví dụ về thiết kế chi tiết sản phẩm chuẩn UI/UX từ Tailwind. Bạn có thể sử dụng các components được xây dựng sẵn để làm cho trang web thương mại điện tử của bạn cực kỳ chuyên nghiệp và thu hút.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+',
+                'post_type' => 'product',
                 'status' => 'published',
             ]
         ];
