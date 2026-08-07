@@ -69,10 +69,14 @@ class MediaController extends Controller
             ];
         })->values();
 
-        return response()->json([
-            'folders' => $folders,
-            'files' => $media,
-        ]);
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'folders' => $folders,
+                'files' => $media,
+            ]);
+        }
+
+        return view('cms.media.list');
     }
 
     public function upload(Request $request)

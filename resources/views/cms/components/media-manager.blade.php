@@ -183,7 +183,12 @@ function mediaManager() {
         async loadMedia() {
             this.loading = true;
             try {
-                const response = await fetch(`${this.baseUrl}/media/list?path=${encodeURIComponent(this.currentPath)}`);
+                const response = await fetch(`${this.baseUrl}/media/list?path=${encodeURIComponent(this.currentPath)}`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
                 const data = await response.json();
                 this.folders = data.folders || [];
                 this.mediaItems = data.files || [];
