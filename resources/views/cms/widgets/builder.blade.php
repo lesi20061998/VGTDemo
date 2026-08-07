@@ -700,7 +700,8 @@ function previewWidget() {
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}';
     
     // Request preview from server
-    fetch('{{ route("cms.widgets.preview") }}', {
+    const previewUrl = '{{ request()->routeIs("project.*") ? route("project.admin.widgets.preview", request()->segment(1)) : route("cms.widgets.preview") }}';
+    fetch(previewUrl, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

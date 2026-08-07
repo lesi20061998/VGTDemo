@@ -118,7 +118,7 @@
                 @endforeach
             </div>
             @endif
-            @if($type === 'property')
+            @if(($type ?? $postType ?? '') === 'property')
             <!-- Thư viện ảnh 360 cho Bất động sản -->
             <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
                 <h2 class="font-semibold text-gray-900 mb-4 flex items-center gap-2">
