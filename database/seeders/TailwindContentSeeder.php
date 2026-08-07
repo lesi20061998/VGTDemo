@@ -15,9 +15,19 @@ class TailwindContentSeeder extends Seeder
             $project = Project::first();
         }
 
-        $tenant = DB::table('tenants')->first();
-        $tenantId = session('current_tenant_id') ?? ($tenant ? $tenant->id : null);
         $projectId = session('current_project_id') ?? ($project ? $project->id : 1);
+        $tenantId = session('current_tenant_id') ?? $projectId;
+
+        // Đảm bảo tenant tồn tại để không lỗi foreign key
+        if (!DB::table('tenants')->where('id', $tenantId)->exists()) {
+            DB::table('tenants')->insertOrIgnore([
+                'id' => $tenantId,
+                'name' => 'Project Tenant ' . $tenantId,
+                'domain' => 'tenant' . $tenantId . '.test',
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+        }
 
         $posts = [
             // ==========================================
