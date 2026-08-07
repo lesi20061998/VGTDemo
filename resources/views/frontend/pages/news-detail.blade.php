@@ -21,6 +21,7 @@
             {!! $post->content !!}
         </div>
 
+        {{-- Tags temporarily disabled because tags table is missing
         @if($post->tags->count())
         <div class="news-detail__tags">
             @foreach($post->tags as $tag)
@@ -28,6 +29,7 @@
             @endforeach
         </div>
         @endif
+        --}}
     </article>
 
     @if($relatedPosts->count())

@@ -114,10 +114,10 @@ Route::prefix('{projectCode}/admin')
         Route::get('/', [DashboardController::class, 'projectDashboard'])->name('dashboard');
 
         // Products Management
-        Route::resource('products', ProductController::class);
         Route::post('products/bulk-edit', [ProductController::class, 'bulkEdit'])->name('products.bulk-edit');
         Route::post('products/bulk-update', [ProductController::class, 'bulkUpdate'])->name('products.bulk-update');
         Route::post('products/toggle-badge', [ProductController::class, 'toggleBadge'])->name('products.toggle-badge');
+        Route::resource('products', ProductController::class);
 
         Route::resource('brands', BrandController::class);
 

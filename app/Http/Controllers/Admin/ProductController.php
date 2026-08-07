@@ -236,4 +236,99 @@ class ProductController extends Controller
             
         return redirect($route);
     }
+
+    public function bulkEdit(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        if (empty($ids)) {
+            return response()->json(['success' => false, 'message' => 'Không có sản phẩm nào được chọn']);
+        }
+
+        $products = Post::where('post_type', 'product')->whereIn('id', $ids)->get()->map(function($p) {
+            $metaData = is_string($p->meta_data) ? json_decode($p->meta_data, true) : ($p->meta_data ?? []);
+            return [
+                'id' => $p->id,
+                'name' => $p->title,
+                'sku' => $metaData['sku'] ?? '',
+                'price' => $metaData['price'] ?? 0,
+                'sale_price' => $metaData['sale_price'] ?? 0,
+                'stock_quantity' => $metaData['stock_quantity'] ?? 0,
+            ];
+        });
+
+        $categories = Taxonomy::where('taxonomy', 'product_cat')->get()->map(function($c) {
+            return ['id' => $c->id, 'name' => $c->name];
+        });
+
+        $brands = [];
+        try {
+            $brands = ProjectBrand::get()->map(function($b) {
+                return ['id' => $b->id, 'name' => $b->name];
+            });
+        } catch (\Exception $e) {}
+
+        return response()->json([
+            'success' => true,
+            'products' => $products,
+            'categories' => $categories,
+            'brands' => $brands
+        ]);
+    }
+
+    public function bulkUpdate(Request $request)
+    {
+        $products = $request->input('products', []);
+        if (empty($products)) {
+            return response()->json(['success' => false, 'message' => 'Dữ liệu không hợp lệ']);
+        }
+
+        foreach ($products as $data) {
+            $post = Post::where('post_type', 'product')->find($data['id']);
+            if ($post) {
+                $metaData = is_string($post->meta_data) ? json_decode($post->meta_data, true) : ($post->meta_data ?? []);
+                
+                if (isset($data['sku'])) $metaData['sku'] = $data['sku'];
+                if (isset($data['price'])) $metaData['price'] = $data['price'];
+                if (isset($data['sale_price'])) $metaData['sale_price'] = $data['sale_price'];
+                if (isset($data['stock_quantity'])) $metaData['stock_quantity'] = $data['stock_quantity'];
+
+                $post->title = $data['name'] ?? $post->title;
+                $post->meta_data = $metaData;
+                $post->save();
+
+                if (isset($data['categories']) && is_array($data['categories'])) {
+                    $post->taxonomies()->sync($data['categories']);
+                }
+            }
+        }
+
+        return response()->json(['success' => true, 'message' => 'Đã cập nhật thành công']);
+    }
+
+    public function toggleBadge(Request $request)
+    {
+        $productId = $request->input('product_id');
+        $badgeType = $request->input('badge_type');
+
+        $post = Post::where('post_type', 'product')->find($productId);
+        if (!$post) {
+            return response()->json(['success' => false, 'message' => 'Không tìm thấy sản phẩm']);
+        }
+
+        $metaData = is_string($post->meta_data) ? json_decode($post->meta_data, true) : ($post->meta_data ?? []);
+        
+        $newState = false;
+        if ($badgeType === 'featured') {
+            $newState = !($metaData['is_featured'] ?? false);
+            $metaData['is_featured'] = $newState;
+        } elseif ($badgeType === 'favorite') {
+            $newState = !($metaData['is_favorite'] ?? false);
+            $metaData['is_favorite'] = $newState;
+        }
+
+        $post->meta_data = $metaData;
+        $post->save();
+
+        return response()->json(['success' => true, 'state' => $newState]);
+    }
 }
