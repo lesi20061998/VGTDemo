@@ -1,0 +1,1 @@
+<?php try { $request = Request::create('/HD001/admin/products/demo-product-tailwind/edit', 'GET'); $response = app()->handle($request); echo 'STATUS: ' . $response->getStatusCode(); } catch (\Throwable $e) { echo 'ERROR: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine(); }

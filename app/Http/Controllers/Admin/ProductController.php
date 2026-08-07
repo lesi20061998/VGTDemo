@@ -114,7 +114,10 @@ class ProductController extends Controller
 
     public function edit(Request $request, $projectCode, $id)
     {
-        $product = Post::where('post_type', 'product')->findOrFail($id);
+        $product = Post::where('post_type', 'product')
+            ->where(function($q) use ($id) {
+                $q->where('id', $id)->orWhere('slug', $id);
+            })->firstOrFail();
         
         // Map Post to view variables to minimize blade changes
         $product->name = $product->title;
@@ -173,7 +176,10 @@ class ProductController extends Controller
             'status' => 'required|in:draft,published,archived',
         ]);
 
-        $post = Post::where('post_type', 'product')->findOrFail($id);
+        $post = Post::where('post_type', 'product')
+            ->where(function($q) use ($id) {
+                $q->where('id', $id)->orWhere('slug', $id);
+            })->firstOrFail();
         
         $slug = $request->input('slug') ?: Str::slug($request->name);
         
@@ -224,7 +230,10 @@ class ProductController extends Controller
 
     public function destroy($projectCode, $id)
     {
-        $post = Post::where('post_type', 'product')->findOrFail($id);
+        $post = Post::where('post_type', 'product')
+            ->where(function($q) use ($id) {
+                $q->where('id', $id)->orWhere('slug', $id);
+            })->firstOrFail();
         $title = $post->title;
         $post->delete();
 
@@ -244,7 +253,10 @@ class ProductController extends Controller
             return response()->json(['success' => false, 'message' => 'Không có sản phẩm nào được chọn']);
         }
 
-        $products = Post::where('post_type', 'product')->whereIn('id', $ids)->get()->map(function($p) {
+        $products = Post::where('post_type', 'product')
+            ->where(function($q) use ($ids) {
+                $q->whereIn('id', $ids)->orWhereIn('slug', $ids);
+            })->get()->map(function($p) {
             $metaData = is_string($p->meta_data) ? json_decode($p->meta_data, true) : ($p->meta_data ?? []);
             return [
                 'id' => $p->id,
@@ -283,7 +295,10 @@ class ProductController extends Controller
         }
 
         foreach ($products as $data) {
-            $post = Post::where('post_type', 'product')->find($data['id']);
+            $post = Post::where('post_type', 'product')
+                ->where(function($q) use ($data) {
+                    $q->where('id', $data['id'])->orWhere('slug', $data['id']);
+                })->first();
             if ($post) {
                 $metaData = is_string($post->meta_data) ? json_decode($post->meta_data, true) : ($post->meta_data ?? []);
                 
@@ -309,8 +324,12 @@ class ProductController extends Controller
     {
         $productId = $request->input('product_id');
         $badgeType = $request->input('badge_type');
+        $status = $request->input('status');
 
-        $post = Post::where('post_type', 'product')->find($productId);
+        $post = Post::where('post_type', 'product')
+            ->where(function($q) use ($productId) {
+                $q->where('id', $productId)->orWhere('slug', $productId);
+            })->first();
         if (!$post) {
             return response()->json(['success' => false, 'message' => 'Không tìm thấy sản phẩm']);
         }
