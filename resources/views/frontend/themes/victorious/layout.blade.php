@@ -21,6 +21,16 @@
     {{-- Theme CSS --}}
     <link rel="stylesheet" href="{{ asset('themes/victorious/css/style.css') }}">
     
+    {{-- Tailwind for dynamic header (preflight disabled to not break theme css) --}}
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            corePlugins: {
+                preflight: false,
+            }
+        }
+    </script>
+    
     @stack('styles')
 </head>
 <body>
