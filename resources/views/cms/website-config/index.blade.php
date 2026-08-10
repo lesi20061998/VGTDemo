@@ -172,23 +172,11 @@
                                     @endif
                                 
                                 @elseif($field['type'] === 'image')
-                                    <div class="space-y-3" x-data="{ fieldKey: '{{ $fieldKey }}', imageUrl: '{{ $value }}' }">
-                                        <div x-show="imageUrl" class="mb-3">
-                                            <img :src="imageUrl" alt="{{ $field['label'] }}" class="h-20 object-contain rounded border">
-                                        </div>
-                                        <div class="flex gap-2">
-                                            <input type="text" 
-                                                   :name="fieldKey" 
-                                                   x-model="imageUrl"
-                                                   placeholder="Nhập URL hoặc chọn từ thư viện"
-                                                   class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                                            <div @click="window.dispatchEvent(new CustomEvent('open-media-for-field', { detail: { fieldKey: fieldKey } }))">
-                                                <x-media-manager>
-                                                    Chọn ảnh
-                                                </x-media-manager>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    @include('cms.components.media-picker', [
+                                        'name' => $fieldKey,
+                                        'value' => old($fieldKey, $value),
+                                        'label' => 'Chọn ' . strtolower($field['label'])
+                                    ])
                                 @endif
                             </div>
                         @endforeach
@@ -318,38 +306,7 @@
         document.getElementById('mediaManagerModal').innerHTML = '';
     }
 
-    // Listen for media selection
-    window.addEventListener('media-selected', function(e) {
-        const files = e.detail.files || [];
-        if (files.length > 0) {
-            const selectedImage = files[0];
-            
-            // Dispatch event to update Alpine.js component
-            window.dispatchEvent(new CustomEvent('media-url-selected', {
-                detail: { url: selectedImage.url }
-            }));
-        }
-    });
-    
-    // Listen for Alpine.js field selection
-    let currentAlpineField = null;
-    window.addEventListener('open-media-for-field', function(e) {
-        currentAlpineField = e.detail.fieldKey;
-    });
-    
-    window.addEventListener('media-url-selected', function(e) {
-        if (currentAlpineField) {
-            // Find Alpine component and update
-            const elements = document.querySelectorAll('[x-data]');
-            elements.forEach(el => {
-                const data = Alpine.$data(el);
-                if (data && data.fieldKey === currentAlpineField) {
-                    data.imageUrl = e.detail.url;
-                }
-            });
-            currentAlpineField = null;
-        }
-    });
+
 
     // Initialize on page load
     document.addEventListener('DOMContentLoaded', function() {

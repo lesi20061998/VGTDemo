@@ -11,7 +11,9 @@ class FileMonitorController extends Controller
     public function index(Request $request)
     {
         $projectCode = $request->get('project', 'main');
-        $logs = $this->getFileChangeLogs($projectCode);
+        $startDate = $request->get('start_date');
+        $endDate = $request->get('end_date');
+        $logs = $this->getFileChangeLogs($projectCode, $startDate, $endDate);
         $projects = $this->getAvailableProjects();
         
         // If AJAX request, return JSON
@@ -26,7 +28,7 @@ class FileMonitorController extends Controller
         return view('superadmin.file-monitor.index', compact('logs', 'projects', 'projectCode'));
     }
     
-    private function getFileChangeLogs($projectCode = 'main')
+    private function getFileChangeLogs($projectCode = 'main', $startDate = null, $endDate = null)
     {
         $logPath = storage_path('logs/file-changes-' . $projectCode . '.log');
         
@@ -37,10 +39,30 @@ class FileMonitorController extends Controller
         $content = File::get($logPath);
         $lines = array_filter(explode("\n", $content));
         
-        return collect($lines)->map(function($line) {
+        $collection = collect($lines)->map(function($line) {
             $data = json_decode($line, true);
             return $data ? (object) $data : null;
-        })->filter()->sortByDesc('timestamp')->take(100);
+        })->filter();
+        
+        if ($startDate || $endDate) {
+            $collection = $collection->filter(function($log) use ($startDate, $endDate) {
+                if (empty($log->timestamp)) return false;
+                try {
+                    $logDate = \Carbon\Carbon::parse($log->timestamp)
+                                ->setTimezone(config('app.timezone', 'Asia/Ho_Chi_Minh'))
+                                ->format('Y-m-d');
+                    
+                    if ($startDate && $logDate < $startDate) return false;
+                    if ($endDate && $logDate > $endDate) return false;
+                    
+                    return true;
+                } catch (\Exception $e) {
+                    return false;
+                }
+            });
+        }
+        
+        return $collection->sortByDesc('timestamp')->take(200);
     }
     
     private function getAvailableProjects()

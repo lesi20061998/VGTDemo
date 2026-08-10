@@ -27,7 +27,7 @@ class FileChangeLogger
         $project = $this->detectProject($request);
         
         $logData = [
-            'timestamp' => now()->toISOString(),
+            'timestamp' => now()->timezone('Asia/Ho_Chi_Minh')->toIso8601String(),
             'project_id' => $project['id'] ?? null,
             'project_code' => $project['code'] ?? 'main',
             'user_id' => auth()->id(),

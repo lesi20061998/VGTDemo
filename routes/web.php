@@ -196,7 +196,7 @@ Route::prefix('admin')->name('cms.')->middleware(['auth'])->group(function () {
     Route::post('media/folder', [MediaController::class, 'createFolder'])->name('media.folder.create');
     Route::delete('media/folder', [MediaController::class, 'deleteFolder'])->name('media.folder.delete');
     Route::post('media/move', [MediaController::class, 'move'])->name('media.move');
-    Route::delete('media/{id}', [MediaController::class, 'destroy'])->name('media.destroy');
+    Route::delete('media/{id}', [MediaController::class, 'destroy'])->name('media.destroy')->where('id', '.*');
 
     // Debug endpoint for media authentication
     Route::get('debug/auth', function () {

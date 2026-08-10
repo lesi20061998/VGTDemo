@@ -7,11 +7,20 @@
     // Lấy màu từ website-config (topbar_bg_color) hoặc fallback
     $topbarBg = $getSettingValue('topbar_bg_color', '#1a1a1a');
     $topbarText = $getSettingValue('topbar_text_color', '#ffffff');
+    $topbarTextContent = $getSettingValue('topbar_text', '');
     $headerBg = $getSettingValue('header_bg_color', '#ffffff');
     $headerText = $getSettingValue('header_text_color', '#000000');
+    $headerSticky = (bool) $getSettingValue('header_sticky', 1);
+    $headerLayout = $getSettingValue('header_layout', 'default');
+    $showSearch = (bool) $getSettingValue('show_search', 1);
+    $showCart = (bool) $getSettingValue('show_cart', 1);
+    $showAccount = (bool) $getSettingValue('show_account', 1);
     $logo = $getSettingValue('site_logo', '');
     $siteName = $getSettingValue('site_name', 'Website');
     $hotline = $getSettingValue('hotline', '1900 1234');
+    $navBgColor = $getSettingValue('nav_bg_color', '#98191F');
+    $navTextColor = $getSettingValue('nav_text_color', '#ffffff');
+    $navHoverColor = $getSettingValue('nav_hover_color', '#c0392b');
     
     // Get menus - load tất cả items với children (submenu)
     $topbarMenuId = $getSettingValue('topbar_menu_id', null);
@@ -75,12 +84,14 @@
         @include("frontend.partials.topbars.{$topbarStyle}", [
             'topbarBg' => $topbarBg,
             'topbarText' => $topbarText,
+            'topbarTextContent' => $topbarTextContent,
             'topbarMenu' => $topbarMenu
         ])
     @else
         @include('frontend.partials.topbars.style-1', [
             'topbarBg' => $topbarBg,
             'topbarText' => $topbarText,
+            'topbarTextContent' => $topbarTextContent,
             'topbarMenu' => $topbarMenu
         ])
     @endif
@@ -95,11 +106,19 @@
     }
 @endphp
 @include($headerViewPath, [
-    'headerBg' => $headerBg,
-    'headerText' => $headerText,
-    'logo' => $logo,
-    'siteName' => $siteName,
-    'hotline' => $hotline,
-    'navMenu' => $navMenu,
-    'projectCode' => $projectCode
+    'headerBg'      => $headerBg,
+    'headerText'    => $headerText,
+    'headerSticky'  => $headerSticky,
+    'headerLayout'  => $headerLayout,
+    'showSearch'    => $showSearch,
+    'showCart'      => $showCart,
+    'showAccount'   => $showAccount,
+    'logo'          => $logo,
+    'siteName'      => $siteName,
+    'hotline'       => $hotline,
+    'navMenu'       => $navMenu,
+    'navBgColor'    => $navBgColor,
+    'navTextColor'  => $navTextColor,
+    'navHoverColor' => $navHoverColor,
+    'projectCode'   => $projectCode
 ])

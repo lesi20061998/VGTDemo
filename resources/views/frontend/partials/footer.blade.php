@@ -1,7 +1,8 @@
 @php
-    $footerBg = setting_string('footer_background_color', '#1a1a1a');
-    $footerText = setting_string('footer_text_color', '#ffffff');
+    $footerBg     = setting_string('footer_bg_color', '#1a1a1a');
+    $footerText   = setting_string('footer_text_color', '#d1d5db');
     $footerLayout = setting_string('footer_layout', '3-columns');
+    $footerAbout  = setting_string('footer_about', '');
 @endphp
 
 <footer style="background-color: {{ $footerBg }}; color: {{ $footerText }};" class="py-12">

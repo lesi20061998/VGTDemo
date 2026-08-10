@@ -346,47 +346,22 @@
         
         <!-- History Tab -->
         <div id="history-tab" class="tab-content hidden">
-            <div class="mb-4 flex gap-2">
-                <button type="button" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2" onclick="refreshHistory()">
+            <div class="mb-4 flex flex-wrap gap-2 items-center justify-between">
+                <div class="flex gap-2">
+                    <button type="button" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2" onclick="refreshHistory()">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                     </svg>
                     Refresh
                 </button>
-                <a href="/superadmin/debug-history" target="_blank" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 flex items-center gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                    </svg>
-                    Debug
-                </a>
-                <div class="relative">
-                    <button type="button" onclick="toggleExportMenu()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                        </svg>
-                        Export
-                    </button>
-                    <div id="export-menu" class="hidden absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border z-10">
-                        <div class="p-2">
-                            <a href="{{ route('superadmin.projects.export-viewer', $project) }}" target="_blank" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded font-medium">
-                                👁️ Export Viewer
-                            </a>
-                            <div class="border-t my-1"></div>
-                            <a href="{{ route('superadmin.projects.export-config', $project) }}" target="_blank" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">
-                                📄 View JSON
-                            </a>
-                            <a href="{{ route('superadmin.projects.export-config', $project) }}?format=download" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">
-                                💾 Download JSON
-                            </a>
-                            <a href="{{ route('superadmin.projects.export-config', $project) }}?include_eval=1" target="_blank" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">
-                                🔍 With Eval Detection
-                            </a>
-                            <a href="{{ route('superadmin.projects.export-config', $project) }}?include_eval=1&format=download" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">
-                                🔍💾 Download with Eval
-                            </a>
-                        </div>
-                    </div>
+                </div>
+                <div class="flex items-center gap-3 bg-gray-50 px-3 py-2 rounded-lg border">
+                    <span class="text-sm font-medium text-gray-700 whitespace-nowrap">Khoảng thời gian:</span>
+                    <input type="date" id="history-start-date" class="border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-blue-500 focus:border-blue-500" title="Từ ngày">
+                    <span class="text-gray-400">-</span>
+                    <input type="date" id="history-end-date" class="border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-blue-500 focus:border-blue-500" title="Đến ngày">
+                    <button type="button" onclick="loadHistory()" class="px-3 py-1 bg-gray-600 text-white rounded-md text-sm hover:bg-gray-700 transition-colors">Lọc</button>
+                    <button type="button" onclick="document.getElementById('history-start-date').value=''; document.getElementById('history-end-date').value=''; loadHistory();" class="text-xs text-gray-500 hover:text-red-500">Xóa lọc</button>
                 </div>
             </div>
             
@@ -673,9 +648,27 @@ function toggleAllFeatures() {
 function loadHistory() {
     console.log('Loading history for project: {{ $project->code }}');
     
+    let url = '/superadmin/file-monitor?project={{ $project->code }}';
+    const startDate = document.getElementById('history-start-date');
+    const endDate = document.getElementById('history-end-date');
+    
+    if (startDate && startDate.value && endDate && endDate.value) {
+        if (new Date(startDate.value) > new Date(endDate.value)) {
+            alert('Lỗi: Ngày bắt đầu không được lớn hơn ngày kết thúc!');
+            return;
+        }
+    }
+
+    if (startDate && startDate.value) {
+        url += '&start_date=' + startDate.value;
+    }
+    if (endDate && endDate.value) {
+        url += '&end_date=' + endDate.value;
+    }
+    
     showProcessingStatus(1, 'Khởi tạo kết nối', 'Đang quét file log: storage/logs/file-changes-{{ $project->code }}.log');
     
-    fetch('/superadmin/file-monitor?project={{ $project->code }}', {
+    fetch(url, {
         headers: {
             'Accept': 'application/json',
             'X-Requested-With': 'XMLHttpRequest'
@@ -730,18 +723,20 @@ function displayLogs(logs) {
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                         </svg>
-                        ${log.user_name} (${log.user_email})
+                        ${log.user_name || 'Khách'} ${log.user_email ? `(${log.user_email})` : ''}
                     </span>
                     <span class="flex items-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
-                        ${timeAgo}
+                        ${date.toLocaleString('vi-VN')} <span class="text-xs text-gray-400">(${timeAgo})</span>
                     </span>
                 </div>
                 ${log.data_summary && Object.keys(log.data_summary).length > 0 ? `
-                    <div class="mt-3 p-2 bg-gray-100 rounded text-xs">
-                        <strong>Dữ liệu:</strong> ${JSON.stringify(log.data_summary, null, 2).substring(0, 200)}...
+                    <div class="mt-3 p-2 bg-gray-100 rounded text-xs overflow-x-auto whitespace-pre-wrap max-h-32">
+                        <strong>Dữ liệu:</strong> ${
+                            Object.entries(log.data_summary).map(([key, value]) => `<br/>- <b>${key}:</b> ${value}`).join('')
+                        }
                     </div>
                 ` : ''}
             </div>

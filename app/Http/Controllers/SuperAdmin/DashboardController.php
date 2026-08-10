@@ -81,6 +81,18 @@ class DashboardController extends Controller
             ->orderBy('end_date', 'asc')
             ->get();
 
+        $allProjects = Project::all();
+        $infectedProjects = [];
+        foreach ($allProjects as $p) {
+            $logPath = storage_path('logs/file-changes-' . $p->code . '.log');
+            if (\Illuminate\Support\Facades\File::exists($logPath)) {
+                $content = \Illuminate\Support\Facades\File::get($logPath);
+                if (str_contains($content, 'Độc Hại') || str_contains($content, '\u0110\u1ed9c H\u1ea1i')) {
+                    $infectedProjects[] = $p;
+                }
+            }
+        }
+
         return view('superadmin.dashboard.index', compact(
             'totalEmployees',
             'totalContracts',
@@ -90,7 +102,8 @@ class DashboardController extends Controller
             'expectedRevenue',
             'urgentProjects',
             'projectProgresses',
-            'expiringWebResources'
+            'expiringWebResources',
+            'infectedProjects'
         ));
     }
 

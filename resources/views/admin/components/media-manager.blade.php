@@ -1,8 +1,8 @@
 <!-- Media Manager Modal -->
-<div x-data="mediaManager()" x-cloak>
+<div x-data="mediaManager()" x-cloak @keydown.window.delete="handleGlobalDelete($event)">
     <!-- Trigger Button -->
     <button type="button" @click.prevent="openModal()" class="w-full px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
-        <slot>Chọn từ thư viện</slot>
+        {{ $slot ?? 'Chọn từ thư viện' }}
     </button>
 
     <!-- Modal -->
@@ -161,6 +161,19 @@ function mediaManager() {
         showCreateFolder: false,
         newFolderName: '',
         baseUrl: '{{ request()->route("projectCode") ? "/" . request()->route("projectCode") . "/admin" : "/admin" }}',
+        
+        handleGlobalDelete(event) {
+            if (!this.isOpen) return;
+            if (['INPUT', 'TEXTAREA'].includes(event.target.tagName)) return;
+            if (this.selectedItem) {
+                this.deleteMedia(this.selectedItem.id);
+            }
+        },
+
+        get previewUrl() {
+            if (!this.selectedItem) return null;
+            return this.selectedItem.url;
+        },
         
         openModal() {
             this.isOpen = true;

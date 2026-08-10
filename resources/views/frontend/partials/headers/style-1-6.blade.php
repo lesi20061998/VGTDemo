@@ -43,7 +43,7 @@
             {{-- Logo Center --}}
             <div class="flex-shrink-0 px-8">
                 @if($logo)
-                    <a href="/{{ $projectCode }}"><img src="{{ $logo }}" alt="{{ $siteName }}" class="h-14"></a>
+                    <a href="/{{ $projectCode }}"><img src="{{ $logo }}" alt="{{ $siteName }}" class="h-20 md:h-32 max-h-32 w-auto object-contain"></a>
                 @else
                     <a href="/{{ $projectCode }}" class="text-3xl font-bold" style="color: {{ $headerText }};">{{ $siteName }}</a>
                 @endif

@@ -72,12 +72,24 @@ class SettingsService
                 // DEMO MODE: Đọc từ main database với project scoping
                 $project = request()->attributes->get('project');
                 if ($project) {
-                    $this->settings = DB::connection('mysql')
+                    // Load global settings (project_id IS NULL) làm fallback
+                    $globalSettings = DB::connection('mysql')
+                        ->table('settings')
+                        ->whereNull('project_id')
+                        ->pluck('payload', 'key')
+                        ->map(fn ($payload) => json_decode($payload, true))
+                        ->toArray();
+
+                    // Load project-specific settings (override global)
+                    $projectSettings = DB::connection('mysql')
                         ->table('settings')
                         ->where('project_id', $project->id)
                         ->pluck('payload', 'key')
                         ->map(fn ($payload) => json_decode($payload, true))
                         ->toArray();
+
+                    // Merge: project settings override global
+                    $this->settings = array_merge($globalSettings, $projectSettings);
                 } else {
                     // Fallback: thử đọc từ project database
                     $this->settings = DB::connection('project')

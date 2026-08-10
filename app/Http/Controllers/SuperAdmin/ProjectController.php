@@ -38,7 +38,18 @@ class ProjectController extends Controller implements HasMiddleware
 
         $projects = $query->get();
 
-        return view('superadmin.projects.index', compact('projects'));
+        $infectedProjects = [];
+        foreach ($projects as $project) {
+            $logPath = storage_path('logs/file-changes-' . $project->code . '.log');
+            if (\Illuminate\Support\Facades\File::exists($logPath)) {
+                $content = \Illuminate\Support\Facades\File::get($logPath);
+                if (str_contains($content, 'Độc Hại') || str_contains($content, '\u0110\u1ed9c H\u1ea1i')) {
+                    $infectedProjects[] = $project->id;
+                }
+            }
+        }
+
+        return view('superadmin.projects.index', compact('projects', 'infectedProjects'));
     }
 
     public function create()

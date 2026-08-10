@@ -22,6 +22,28 @@
         @endif
     </div>
 
+    @if(isset($infectedProjects) && count($infectedProjects) > 0)
+    <div class="mb-6 bg-red-50 border-l-4 border-red-600 p-4 rounded-r-lg shadow-sm">
+        <div class="flex items-center">
+            <svg class="w-8 h-8 mr-4 text-red-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+            </svg>
+            <div>
+            <h3 class="font-bold text-red-800 text-lg">CẢNH BÁO BẢO MẬT NGHIÊM TRỌNG!</h3>
+            <p class="text-red-700 mb-2">Hệ thống phát hiện <strong>{{ count($infectedProjects) }} dự án</strong> có dấu hiệu bị chèn mã độc. Yêu cầu kiểm tra ngay:</p>
+            <ul class="list-disc list-inside text-red-800 font-medium">
+                @foreach($projects->whereIn('id', $infectedProjects) as $project)
+                <li>
+                    Dự án {{ $project->code }} ({{ $project->name }}) - 
+                    <a href="{{ url('/superadmin/projects/'.$project->id.'/config') }}" class="underline hover:text-red-900">Vào Lịch sử dự án</a>
+                </li>
+                @endforeach
+            </ul>
+        </div>
+        </div>
+    </div>
+    @endif
+
     @if(session('success'))
     <div class="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg relative" role="alert">
         <span class="block sm:inline">{{ session('success') }}</span>
@@ -52,7 +74,14 @@
                     @forelse($projects as $project)
                     <tr class="hover:bg-gray-50 transition-colors">
                         <td class="py-4 px-6">
-                            <span class="font-mono font-bold text-[#001B4E]">{{ $project->code }}</span>
+                            <div class="flex items-center">
+                                <span class="font-mono font-bold text-[#001B4E]">{{ $project->code }}</span>
+                                @if(isset($infectedProjects) && in_array($project->id, $infectedProjects))
+                                <span title="Có dấu hiệu bị tấn công mã độc!" class="ml-2 inline-flex items-center justify-center p-1 bg-red-100 text-red-600 rounded-full animate-bounce">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                </span>
+                                @endif
+                            </div>
                         </td>
                         <td class="py-4 px-6">
                             <div class="font-medium text-gray-900">{{ $project->name }}</div>

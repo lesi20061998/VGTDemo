@@ -41,12 +41,19 @@ class ProjectSettingModel extends Model
     {
         $project = request()->attributes->get('project');
         $tenantId = session('current_tenant_id');
+        $projectId = $project ? $project->id : null;
 
         // Chuẩn hóa giá trị để so sánh
         $normalizedValue = \is_array($value) ? $value : ['value' => $value];
 
-        // Kiểm tra xem key đã tồn tại chưa
-        $existingSetting = static::where('key', $key)->first();
+        // Kiểm tra xem key đã tồn tại cho project này chưa
+        $query = static::where('key', $key);
+        if ($projectId !== null) {
+            $query->where('project_id', $projectId);
+        } else {
+            $query->whereNull('project_id');
+        }
+        $existingSetting = $query->first();
 
         if ($existingSetting) {
             // Kiểm tra xem giá trị có thay đổi không
@@ -81,8 +88,8 @@ class ProjectSettingModel extends Model
             $data['tenant_id'] = $tenantId;
         }
 
-        if ($project) {
-            $data['project_id'] = $project->id;
+        if ($projectId) {
+            $data['project_id'] = $projectId;
         }
 
         // Sử dụng INSERT IGNORE để bỏ qua lỗi duplicate key
@@ -94,8 +101,14 @@ class ProjectSettingModel extends Model
             array_values($data)
         );
 
-        // Trả về record (có thể là record mới hoặc record đã tồn tại)
-        return static::where('key', $key)->first();
+        // Trả về record
+        $query = static::where('key', $key);
+        if ($projectId !== null) {
+            $query->where('project_id', $projectId);
+        } else {
+            $query->whereNull('project_id');
+        }
+        return $query->first();
     }
 
     public static function getValue($key, $default = null)

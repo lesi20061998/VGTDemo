@@ -10,7 +10,7 @@
         <div class="flex justify-between items-center py-4"><div class="flex items-center gap-6">            {{-- Logo --}}
             <div class="flex-shrink-0">
                 @if($logo)
-                    <a href="/{{ $projectCode }}"><img src="{{ $logo }}" alt="{{ $siteName }}" class="h-12"></a>
+                    <a href="/{{ $projectCode }}"><img src="{{ $logo }}" alt="{{ $siteName }}" class="h-20 md:h-32 max-h-32 w-auto object-contain"></a>
                 @else
                     <a href="/{{ $projectCode }}" class="text-2xl font-bold" style="color: {{ $headerText }};">{{ $siteName }}</a>
                 @endif

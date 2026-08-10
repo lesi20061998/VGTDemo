@@ -21,9 +21,38 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    @php
+        // Theme & background từ website config
+        $themeColor      = setting_string('theme_color', '#98191F');
+        $bgType          = setting_string('bg_type', 'color');
+        $bgColor         = setting_string('bg_color', '#f9fafb');
+        $bgGradStart     = setting_string('bg_gradient_start', '#4F46E5');
+        $bgGradEnd       = setting_string('bg_gradient_end', '#7C3AED');
+        $bgGradDir       = setting_string('bg_gradient_direction', 'to right');
+        $bgImage         = setting_string('bg_image', '');
+        $bgImageSize     = setting_string('bg_image_size', 'cover');
+        $bgImagePosition = setting_string('bg_image_position', 'center');
+        $bgImageRepeat   = setting_string('bg_image_repeat', 'no-repeat');
+
+        $bodyBgStyle = match($bgType) {
+            'gradient' => "background: linear-gradient({$bgGradDir}, {$bgGradStart}, {$bgGradEnd});",
+            'image'    => $bgImage
+                ? "background-image: url('{$bgImage}'); background-size: {$bgImageSize}; background-position: {$bgImagePosition}; background-repeat: {$bgImageRepeat};"
+                : "background-color: {$bgColor};",
+            default    => "background-color: {$bgColor};",
+        };
+    @endphp
+
+    <style>
+        :root {
+            --theme-color: {{ $themeColor }};
+        }
+    </style>
     @stack('styles')
 </head>
-<body class="bg-gray-50">
+<body style="{{ $bodyBgStyle }}">
+
     {{-- Custom Body Code --}}
     @if(setting_string('custom_body_code'))
         {!! setting_string('custom_body_code') !!}

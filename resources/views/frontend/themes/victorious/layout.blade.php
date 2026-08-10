@@ -21,12 +21,54 @@
     {{-- Theme CSS --}}
     <link rel="stylesheet" href="{{ asset('themes/victorious/css/style.css') }}">
     
+    {{-- Cấu hình Style từ Theme Settings (Phần Input Cấu Hình) --}}
+    <style>
+        /* Phần cấu hình biến CSS (Màu sắc, Font chữ) */
+        :root {
+            --theme-primary: {{ setting('theme_primary_color', '#98191F') }};
+            --theme-secondary: {{ setting('theme_secondary_color', '#1F2937') }};
+            --theme-text: {{ setting('theme_text_color', '#374151') }};
+            --theme-bg: {{ setting('theme_bg_color', '#FFFFFF') }};
+            --theme-font-base: {!! setting('theme_font_family', "'Poppins', sans-serif") !!};
+            --theme-font-heading: {!! setting('theme_heading_font_family', "'Montserrat', sans-serif") !!};
+        }
+
+        /* Phần áp dụng Style cho các thẻ cơ bản */
+        body {
+            font-family: var(--theme-font-base);
+            color: var(--theme-text);
+            background-color: var(--theme-bg);
+        }
+
+        h1, h2, h3, h4, h5, h6, .font-heading {
+            font-family: var(--theme-font-heading);
+        }
+        
+        /* Phần class phụ trợ (Tiện ích) */
+        .theme-text-primary { color: var(--theme-primary) !important; }
+        .theme-bg-primary { background-color: var(--theme-primary) !important; }
+    </style>
+
     {{-- Tailwind for dynamic header (preflight disabled to not break theme css) --}}
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             corePlugins: {
                 preflight: false,
+            },
+            theme: {
+                extend: {
+                    colors: {
+                        theme: {
+                            primary: 'var(--theme-primary)',
+                            secondary: 'var(--theme-secondary)',
+                        }
+                    },
+                    fontFamily: {
+                        theme: ['var(--theme-font-base)'],
+                        heading: ['var(--theme-font-heading)'],
+                    }
+                }
             }
         }
     </script>

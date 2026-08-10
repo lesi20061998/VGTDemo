@@ -16,7 +16,7 @@
             {{-- Logo Center --}}
             <div class="flex-shrink-0">
                 @if($logo)
-                    <a href="/{{ $projectCode }}"><img src="{{ $logo }}" alt="{{ $siteName }}" class="h-10"></a>
+                    <a href="/{{ $projectCode }}"><img src="{{ $logo }}" alt="{{ $siteName }}" class="h-20 md:h-32 max-h-32 w-auto object-contain"></a>
                 @else
                     <a href="/{{ $projectCode }}" class="text-xl font-bold" style="color: {{ $headerText }};">{{ $siteName }}</a>
                 @endif
@@ -57,7 +57,7 @@
 <div id="sidebar-menu" class="fixed top-0 left-0 w-72 h-full bg-white shadow-xl z-50 transform -translate-x-full transition-transform duration-300" style="background-color: {{ $headerBg }};">
     <div class="p-4 border-b flex justify-between items-center">
         @if($logo)
-            <img src="{{ $logo }}" alt="{{ $siteName }}" class="h-8">
+            <img src="{{ $logo }}" alt="{{ $siteName }}" class="h-20 md:h-32 max-h-32 w-auto object-contain">
         @else
             <span class="text-xl font-bold" style="color: {{ $headerText }};">{{ $siteName }}</span>
         @endif
