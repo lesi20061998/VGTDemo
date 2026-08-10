@@ -94,13 +94,14 @@ class TocService
     private function renderToc($toc, $config)
     {
         $title = $config['title'] ?? 'Mục lục';
+        $style = $config['style'] ?? 'style-1';
         $showNumbers = $config['show_numbers'] ?? true;
         $collapsible = $config['collapsible'] ?? true;
         $smoothScroll = $config['smooth_scroll'] ?? true;
         $highlightActive = $config['highlight_active'] ?? true;
         $stickyToc = $config['sticky_toc'] ?? false;
         
-        $html = '<div class="toc-container' . ($stickyToc ? ' toc-sticky' : '') . '" id="table-of-contents">';
+        $html = '<div class="toc-container toc-' . htmlspecialchars($style) . ($stickyToc ? ' toc-sticky' : '') . '" id="table-of-contents">';
         $html .= '<div class="toc-header">';
         $html .= '<h3 class="toc-title">' . htmlspecialchars($title) . '</h3>';
         

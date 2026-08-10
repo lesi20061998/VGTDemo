@@ -1,6 +1,6 @@
 @extends('cms.layouts.app')
 
-@section('title', 'Mục lục tự động')
+@section('title', 'Mục lục tự động bài viết')
 @section('page-title', 'Table of Contents - Mục lục bài viết')
 
 @section('content')
@@ -9,206 +9,497 @@
 @php
     $projectCode = request()->route('projectCode') ?? request()->segment(1);
     $settingsSaveUrl = $projectCode ? route('project.admin.settings.save', ['projectCode' => $projectCode]) : url('/admin/settings/save');
+    
+    $toc = setting('toc', []);
+    $enabled = isset($toc['enabled']) ? (bool)$toc['enabled'] : true;
+    $position = $toc['position'] ?? 'before_content';
+    $title = $toc['title'] ?? 'Mục lục bài viết';
+    $minHeadings = (int)($toc['min_headings'] ?? 3);
+    $headingLevels = $toc['heading_levels'] ?? ['h2', 'h3'];
+    $style = $toc['style'] ?? 'style-1';
+    $showNumbers = isset($toc['show_numbers']) ? (bool)$toc['show_numbers'] : true;
+    $collapsible = isset($toc['collapsible']) ? (bool)$toc['collapsible'] : true;
+    $smoothScroll = isset($toc['smooth_scroll']) ? (bool)$toc['smooth_scroll'] : true;
+    $highlightActive = isset($toc['highlight_active']) ? (bool)$toc['highlight_active'] : true;
+    $stickyToc = isset($toc['sticky_toc']) ? (bool)$toc['sticky_toc'] : false;
 @endphp
 
-<div class="bg-white rounded-lg shadow-sm p-6">
+<div x-data="{
+    enabled: {{ $enabled ? 'true' : 'false' }},
+    title: '{{ addslashes($title) }}',
+    position: '{{ $position }}',
+    minHeadings: {{ $minHeadings }},
+    style: '{{ $style }}',
+    showNumbers: {{ $showNumbers ? 'true' : 'false' }},
+    collapsible: {{ $collapsible ? 'true' : 'false' }},
+    smoothScroll: {{ $smoothScroll ? 'true' : 'false' }},
+    highlightActive: {{ $highlightActive ? 'true' : 'false' }},
+    stickyToc: {{ $stickyToc ? 'true' : 'false' }},
+    headingLevels: {{ json_encode($headingLevels) }},
+    activeTab: 'blade'
+}" class="space-y-6">
+
+    @if(session('alert'))
+    <div class="p-4 rounded-lg {{ session('alert.type') === 'success' ? 'bg-green-50 border border-green-200 text-green-800' : 'bg-red-50 border border-red-200 text-red-800' }}">
+        <div class="flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span>{{ session('alert.message') }}</span>
+        </div>
+    </div>
+    @endif
+
     <form action="{{ $settingsSaveUrl }}" method="POST">
         @csrf
-        
-        <div class="space-y-6">
-            @php
-                $toc = setting('toc', []);
-                $enabled = $toc['enabled'] ?? true;
-                $position = $toc['position'] ?? 'before_content';
-                $title = $toc['title'] ?? 'Mục lục';
-                $minHeadings = $toc['min_headings'] ?? 3;
-                $headingLevels = $toc['heading_levels'] ?? ['h2', 'h3'];
-                $showNumbers = $toc['show_numbers'] ?? true;
-                $collapsible = $toc['collapsible'] ?? true;
-                $smoothScroll = $toc['smooth_scroll'] ?? true;
-                $highlightActive = $toc['highlight_active'] ?? true;
-                $stickyToc = $toc['sticky_toc'] ?? false;
-            @endphp
 
-            <!-- Enable TOC -->
-            <div class="border-b pb-4">
-                <label class="flex items-center">
-                    <input type="checkbox" name="toc[enabled]" value="1" {{ $enabled ? 'checked' : '' }} class="mr-2 rounded">
-                    <span class="font-medium text-lg">Bật mục lục tự động</span>
-                </label>
-                <p class="text-sm text-gray-500 mt-1 ml-6">Tự động tạo mục lục từ các thẻ heading trong bài viết</p>
-            </div>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- Left Side: Configuration Form (7 Columns) -->
+            <div class="lg:col-span-7 space-y-6">
+                
+                <!-- Main Status & Toggle Header Card -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h10M4 18h7"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-900">Bật Mục Lục Bài Viết</h3>
+                                <p class="text-xs text-gray-500">Tự động tạo danh mục từ các thẻ tiêu đề (Heading H2, H3...) trong bài viết</p>
+                            </div>
+                        </div>
 
-            <!-- Title -->
-            <div>
-                <label class="block text-sm font-medium mb-2">Tiêu đề mục lục</label>
-                <input type="text" name="toc[title]" value="{{ $title }}" class="w-full px-4 py-2 border rounded-lg">
-                <p class="text-xs text-gray-500 mt-1">Tiêu đề hiển thị ở đầu mục lục</p>
-            </div>
-
-            <!-- Position -->
-            <div>
-                <label class="block text-sm font-medium mb-2">Vị trí hiển thị</label>
-                <select name="toc[position]" class="w-full px-4 py-2 border rounded-lg">
-                    <option value="before_content" {{ $position == 'before_content' ? 'selected' : '' }}>Trước nội dung</option>
-                    <option value="after_title" {{ $position == 'after_title' ? 'selected' : '' }}>Sau tiêu đề bài viết</option>
-                    <option value="sidebar" {{ $position == 'sidebar' ? 'selected' : '' }}>Sidebar (nếu có)</option>
-                    <option value="manual" {{ $position == 'manual' ? 'selected' : '' }}>Thủ công (dùng shortcode)</option>
-                </select>
-                <p class="text-xs text-gray-500 mt-1">Shortcode: <code class="bg-gray-100 px-2 py-1 rounded">[toc]</code></p>
-            </div>
-
-            <!-- Min Headings -->
-            <div>
-                <label class="block text-sm font-medium mb-2">Số heading tối thiểu</label>
-                <input type="number" name="toc[min_headings]" value="{{ $minHeadings }}" min="1" max="10" class="w-full px-4 py-2 border rounded-lg">
-                <p class="text-xs text-gray-500 mt-1">Chỉ hiển thị mục lục khi bài viết có ít nhất số heading này</p>
-            </div>
-
-            <!-- Heading Levels -->
-            <div>
-                <label class="block text-sm font-medium mb-3">Cấp độ heading</label>
-                <div class="space-y-2">
-                    @foreach(['h2' => 'H2 - Tiêu đề cấp 2', 'h3' => 'H3 - Tiêu đề cấp 3', 'h4' => 'H4 - Tiêu đề cấp 4', 'h5' => 'H5 - Tiêu đề cấp 5', 'h6' => 'H6 - Tiêu đề cấp 6'] as $level => $label)
-                    <label class="flex items-center">
-                        <input type="checkbox" name="toc[heading_levels][]" value="{{ $level }}" 
-                               {{ in_array($level, $headingLevels) ? 'checked' : '' }} class="mr-2 rounded">
-                        <span class="text-sm">{{ $label }}</span>
-                    </label>
-                    @endforeach
+                        <!-- Modern iOS Toggle Switch -->
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="hidden" name="toc[enabled]" value="0">
+                            <input type="checkbox" name="toc[enabled]" value="1" x-model="enabled" class="sr-only peer">
+                            <div class="w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
+                    </div>
                 </div>
-                <p class="text-xs text-gray-500 mt-2">Chọn các cấp độ heading sẽ xuất hiện trong mục lục</p>
-            </div>
 
-            <!-- Display Options -->
-            <div class="border-t pt-4">
-                <h3 class="font-medium mb-3">Tùy chọn hiển thị</h3>
-                <div class="space-y-3">
-                    <label class="flex items-center">
-                        <input type="checkbox" name="toc[show_numbers]" value="1" {{ $showNumbers ? 'checked' : '' }} class="mr-2 rounded">
-                        <span class="text-sm">Hiển thị số thứ tự (1, 2, 3...)</span>
-                    </label>
-                    
-                    <label class="flex items-center">
-                        <input type="checkbox" name="toc[collapsible]" value="1" {{ $collapsible ? 'checked' : '' }} class="mr-2 rounded">
-                        <span class="text-sm">Cho phép thu gọn/mở rộng</span>
-                    </label>
-                    
-                    <label class="flex items-center">
-                        <input type="checkbox" name="toc[smooth_scroll]" value="1" {{ $smoothScroll ? 'checked' : '' }} class="mr-2 rounded">
-                        <span class="text-sm">Cuộn mượt khi click vào mục lục</span>
-                    </label>
-                    
-                    <label class="flex items-center">
-                        <input type="checkbox" name="toc[highlight_active]" value="1" {{ $highlightActive ? 'checked' : '' }} class="mr-2 rounded">
-                        <span class="text-sm">Highlight mục đang xem</span>
-                    </label>
-                    
-                    <label class="flex items-center">
-                        <input type="checkbox" name="toc[sticky_toc]" value="1" {{ $stickyToc ? 'checked' : '' }} class="mr-2 rounded">
-                        <span class="text-sm">Mục lục dính (sticky) khi cuộn trang</span>
-                    </label>
+                <!-- Basic Options Card -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-5" x-show="enabled" x-transition>
+                    <h3 class="text-base font-bold text-gray-900 border-b pb-3 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                        Cấu Hình Tiêu Đề & Vị Trí
+                    </h3>
+
+                    <!-- Title -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Tiêu đề mục lục</label>
+                        <input type="text" name="toc[title]" x-model="title" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" placeholder="VD: Mục lục bài viết">
+                        <p class="text-xs text-gray-500 mt-1">Dòng chữ hiển thị làm tiêu đề ở đầu khung mục lục</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Position -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Vị trí chèn tự động</label>
+                            <select name="toc[position]" x-model="position" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
+                                <option value="before_content">Trước nội dung bài viết</option>
+                                <option value="after_first_heading">Sau thẻ Heading đầu tiên</option>
+                                <option value="manual">Thủ công (Dùng Shortcode [toc])</option>
+                            </select>
+                        </div>
+
+                        <!-- Min Headings -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Số Heading tối thiểu</label>
+                            <input type="number" name="toc[min_headings]" x-model="minHeadings" min="1" max="10" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
+                            <p class="text-xs text-gray-500 mt-1">Chỉ hiển thị khi bài viết có từ N heading trở lên</p>
+                        </div>
+                    </div>
+
+                    <!-- Heading Levels -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Cấp độ Heading thu thập</label>
+                        <div class="flex flex-wrap gap-3">
+                            @foreach(['h2' => 'H2 (Cấp 2)', 'h3' => 'H3 (Cấp 3)', 'h4' => 'H4 (Cấp 4)', 'h5' => 'H5 (Cấp 5)'] as $level => $label)
+                            <label class="inline-flex items-center px-3 py-2 border rounded-lg cursor-pointer transition text-sm"
+                                   :class="headingLevels.includes('{{ $level }}') ? 'bg-blue-50 border-blue-300 text-blue-700 font-semibold' : 'bg-gray-50 border-gray-200 text-gray-600'">
+                                <input type="checkbox" name="toc[heading_levels][]" value="{{ $level }}" 
+                                       x-model="headingLevels" class="sr-only">
+                                <span>{{ $label }}</span>
+                            </label>
+                            @endforeach
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
 
-        <div class="mt-6 flex justify-end">
-            <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Lưu cấu hình</button>
-        </div>
-    </form>
-</div>
+                <!-- PRESET LAYOUT STYLES CARD (GIAO DIỆN MẪU CÓ SẴN) -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-4" x-show="enabled" x-transition>
+                    <h3 class="text-base font-bold text-gray-900 border-b pb-3 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
+                        Chọn Giao Diện Mẫu (Preset Style)
+                    </h3>
+                    <input type="hidden" name="toc[style]" :value="style">
 
-<!-- Preview Demo -->
-<div class="bg-gray-50 rounded-lg p-6 mt-6">
-    <h3 class="text-lg font-semibold mb-4">Xem trước (Demo)</h3>
-    
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- TOC Preview -->
-        <div class="lg:col-span-1">
-            <div class="bg-white border-2 border-blue-200 rounded-lg p-4 sticky top-4">
-                <div class="flex items-center justify-between mb-3">
-                    <h4 class="font-semibold text-gray-900">{{ $title }}</h4>
-                    <button type="button" class="text-gray-400 hover:text-gray-600">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                        </svg>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Style 1: Modern Card -->
+                        <div @click="style = 'style-1'" 
+                             class="p-4 border-2 rounded-xl cursor-pointer transition-all duration-200"
+                             :class="style === 'style-1' ? 'border-blue-600 bg-blue-50/50 shadow-md ring-2 ring-blue-200' : 'border-gray-200 hover:border-gray-300 bg-white'">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="font-bold text-sm text-gray-800">1. Style Hiện Đại (Modern)</span>
+                                <span x-show="style === 'style-1'" class="w-3 h-3 rounded-full bg-blue-600"></span>
+                            </div>
+                            <div class="bg-gray-50 border border-blue-200 rounded-lg p-2.5 text-xs text-gray-600">
+                                <div class="font-semibold text-blue-700 border-b border-blue-100 pb-1 mb-1 flex justify-between">
+                                    <span>Mục lục</span><span>▼</span>
+                                </div>
+                                <div class="space-y-1">
+                                    <div class="text-blue-600 font-medium">1. Giới thiệu</div>
+                                    <div class="pl-2 text-gray-500">1.1 Lợi ích</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Style 2: Minimalist Clean -->
+                        <div @click="style = 'style-2'" 
+                             class="p-4 border-2 rounded-xl cursor-pointer transition-all duration-200"
+                             :class="style === 'style-2' ? 'border-blue-600 bg-blue-50/50 shadow-md ring-2 ring-blue-200' : 'border-gray-200 hover:border-gray-300 bg-white'">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="font-bold text-sm text-gray-800">2. Style Tối Giản (Minimal)</span>
+                                <span x-show="style === 'style-2'" class="w-3 h-3 rounded-full bg-blue-600"></span>
+                            </div>
+                            <div class="border-l-4 border-emerald-500 pl-3 py-1 bg-emerald-50/30 text-xs text-gray-600">
+                                <div class="font-bold text-gray-800 mb-1">Mục lục bài viết</div>
+                                <div class="text-emerald-700 font-medium">• 1. Giới thiệu</div>
+                            </div>
+                        </div>
+
+                        <!-- Style 3: Classic Boxed -->
+                        <div @click="style = 'style-3'" 
+                             class="p-4 border-2 rounded-xl cursor-pointer transition-all duration-200"
+                             :class="style === 'style-3' ? 'border-blue-600 bg-blue-50/50 shadow-md ring-2 ring-blue-200' : 'border-gray-200 hover:border-gray-300 bg-white'">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="font-bold text-sm text-gray-800">3. Style Cổ Điển (Classic)</span>
+                                <span x-show="style === 'style-3'" class="w-3 h-3 rounded-full bg-blue-600"></span>
+                            </div>
+                            <div class="bg-amber-50/80 border border-amber-200 rounded p-2 text-xs text-gray-700">
+                                <div class="font-bold text-amber-900 mb-1">Mục Lục</div>
+                                <div>1. Giới thiệu tổng quan</div>
+                            </div>
+                        </div>
+
+                        <!-- Style 4: Floating Card -->
+                        <div @click="style = 'style-4'" 
+                             class="p-4 border-2 rounded-xl cursor-pointer transition-all duration-200"
+                             :class="style === 'style-4' ? 'border-blue-600 bg-blue-50/50 shadow-md ring-2 ring-blue-200' : 'border-gray-200 hover:border-gray-300 bg-white'">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="font-bold text-sm text-gray-800">4. Style Nổi 3D (Floating)</span>
+                                <span x-show="style === 'style-4'" class="w-3 h-3 rounded-full bg-blue-600"></span>
+                            </div>
+                            <div class="bg-white border rounded-xl p-2.5 shadow-sm text-xs text-gray-700">
+                                <div class="font-bold text-purple-700 mb-1 flex items-center justify-between">
+                                    <span>Mục lục</span><span class="bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded text-[10px]">TOC</span>
+                                </div>
+                                <div class="text-purple-600 font-medium">1. Giới thiệu</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Toggles Options List -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-4" x-show="enabled" x-transition>
+                    <h3 class="text-base font-bold text-gray-900 border-b pb-3 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+                        Tính Năng Nâng Cao (Toggles)
+                    </h3>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        
+                        <!-- Toggle 1: Show Numbers -->
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div>
+                                <span class="font-medium text-sm text-gray-800">Hiển thị số thứ tự</span>
+                                <p class="text-xs text-gray-500">Đánh số (1, 1.1, 1.2...)</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="hidden" name="toc[show_numbers]" value="0">
+                                <input type="checkbox" name="toc[show_numbers]" value="1" x-model="showNumbers" class="sr-only peer">
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                            </label>
+                        </div>
+
+                        <!-- Toggle 2: Collapsible -->
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div>
+                                <span class="font-medium text-sm text-gray-800">Cho phép Thu Gọn</span>
+                                <p class="text-xs text-gray-500">Nút ẩn/hiện danh sách</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="hidden" name="toc[collapsible]" value="0">
+                                <input type="checkbox" name="toc[collapsible]" value="1" x-model="collapsible" class="sr-only peer">
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                            </label>
+                        </div>
+
+                        <!-- Toggle 3: Smooth Scroll -->
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div>
+                                <span class="font-medium text-sm text-gray-800">Cuộn mượt (Smooth Scroll)</span>
+                                <p class="text-xs text-gray-500">Hiệu ứng lướt mượt đến mục</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="hidden" name="toc[smooth_scroll]" value="0">
+                                <input type="checkbox" name="toc[smooth_scroll]" value="1" x-model="smoothScroll" class="sr-only peer">
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                            </label>
+                        </div>
+
+                        <!-- Toggle 4: Highlight Active -->
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div>
+                                <span class="font-medium text-sm text-gray-800">Highlight mục đang xem</span>
+                                <p class="text-xs text-gray-500">Đổi màu mục theo vị trí cuộn</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="hidden" name="toc[highlight_active]" value="0">
+                                <input type="checkbox" name="toc[highlight_active]" value="1" x-model="highlightActive" class="sr-only peer">
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                            </label>
+                        </div>
+
+                        <!-- Toggle 5: Sticky TOC -->
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg md:col-span-2">
+                            <div>
+                                <span class="font-medium text-sm text-gray-800">Mục lục dính (Sticky)</span>
+                                <p class="text-xs text-gray-500">Giữ cố định ở góc màn hình khi cuộn bài viết</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="hidden" name="toc[sticky_toc]" value="0">
+                                <input type="checkbox" name="toc[sticky_toc]" value="1" x-model="stickyToc" class="sr-only peer">
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                            </label>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="pt-2">
+                    <button type="submit" class="w-full md:w-auto px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-200 transition-all flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        <span>Lưu Cấu Hình Mục Lục</span>
                     </button>
                 </div>
-                <nav class="space-y-1 text-sm">
-                    <a href="#" class="block py-1.5 px-3 text-blue-600 bg-blue-50 rounded hover:bg-blue-100">
-                        {{ $showNumbers ? '1. ' : '' }}Giới thiệu
-                    </a>
-                    <a href="#" class="block py-1.5 px-3 text-gray-700 hover:bg-gray-100 rounded">
-                        {{ $showNumbers ? '2. ' : '' }}Tính năng chính
-                    </a>
-                    @if(in_array('h3', $headingLevels))
-                    <a href="#" class="block py-1.5 px-3 pl-6 text-gray-600 hover:bg-gray-100 rounded text-xs">
-                        {{ $showNumbers ? '2.1. ' : '' }}Tính năng A
-                    </a>
-                    <a href="#" class="block py-1.5 px-3 pl-6 text-gray-600 hover:bg-gray-100 rounded text-xs">
-                        {{ $showNumbers ? '2.2. ' : '' }}Tính năng B
-                    </a>
-                    @endif
-                    <a href="#" class="block py-1.5 px-3 text-gray-700 hover:bg-gray-100 rounded">
-                        {{ $showNumbers ? '3. ' : '' }}Hướng dẫn sử dụng
-                    </a>
-                    <a href="#" class="block py-1.5 px-3 text-gray-700 hover:bg-gray-100 rounded">
-                        {{ $showNumbers ? '4. ' : '' }}Kết luận
-                    </a>
-                </nav>
+
+            </div>
+
+            <!-- Right Side: Realtime Live Preview (5 Columns) -->
+            <div class="lg:col-span-5 space-y-6">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 sticky top-6">
+                    <div class="flex items-center justify-between border-b pb-3 mb-4">
+                        <h3 class="text-base font-bold text-gray-900 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                            Xem Trước Trực Tiếp (Live Demo)
+                        </h3>
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold"
+                              :class="enabled ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'"
+                              x-text="enabled ? 'Đang bật' : 'Đang tắt'"></span>
+                    </div>
+
+                    <div x-show="!enabled" class="text-center py-10 bg-gray-50 rounded-xl border border-dashed text-gray-400">
+                        <svg class="w-12 h-12 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                        <p class="text-sm font-medium">Mục lục tự động đang TẮT</p>
+                    </div>
+
+                    <div x-show="enabled">
+                        
+                        <!-- STYLE 1 PREVIEW: MODERN CARD -->
+                        <div x-show="style === 'style-1'" class="bg-gradient-to-br from-blue-50/80 to-indigo-50/50 border border-blue-200/80 rounded-2xl p-5 shadow-sm">
+                            <div class="flex items-center justify-between mb-3 border-b border-blue-100 pb-2">
+                                <h4 class="font-bold text-blue-900 text-base flex items-center gap-2">
+                                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h10M4 18h7"/></svg>
+                                    <span x-text="title"></span>
+                                </h4>
+                                <button type="button" x-show="collapsible" class="text-blue-500 hover:text-blue-700 text-xs font-semibold bg-white px-2 py-1 rounded-md border border-blue-200 shadow-xs">Thu gọn ▲</button>
+                            </div>
+                            <nav class="space-y-1.5 text-sm">
+                                <a href="#" class="flex items-center gap-2 py-1.5 px-3 bg-white text-blue-700 font-semibold rounded-lg shadow-xs border border-blue-100">
+                                    <span x-show="showNumbers" class="text-blue-500 text-xs">1.</span> Giới thiệu Đông Y 1
+                                </a>
+                                <a href="#" class="flex items-center gap-2 py-1.5 px-3 text-gray-700 hover:bg-white/80 rounded-lg">
+                                    <span x-show="showNumbers" class="text-gray-400 text-xs">2.</span> Lợi ích của Thảo Dược
+                                </a>
+                                <div x-show="headingLevels.includes('h3')" class="pl-5 space-y-1">
+                                    <a href="#" class="block py-1 text-xs text-gray-600 hover:text-blue-600">
+                                        <span x-show="showNumbers">2.1.</span> Thanh nhiệt giải độc
+                                    </a>
+                                    <a href="#" class="block py-1 text-xs text-gray-600 hover:text-blue-600">
+                                        <span x-show="showNumbers">2.2.</span> Bồi bổ khí huyết
+                                    </a>
+                                </div>
+                                <a href="#" class="flex items-center gap-2 py-1.5 px-3 text-gray-700 hover:bg-white/80 rounded-lg">
+                                    <span x-show="showNumbers" class="text-gray-400 text-xs">3.</span> Hướng dẫn sử dụng
+                                </a>
+                            </nav>
+                        </div>
+
+                        <!-- STYLE 2 PREVIEW: MINIMALIST CLEAN -->
+                        <div x-show="style === 'style-2'" class="border-l-4 border-emerald-500 bg-emerald-50/30 pl-4 pr-3 py-4 rounded-r-xl">
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="font-bold text-gray-900 text-base" x-text="title"></h4>
+                                <span x-show="collapsible" class="text-xs text-emerald-600 cursor-pointer">[Ẩn]</span>
+                            </div>
+                            <nav class="space-y-1 text-sm">
+                                <a href="#" class="block text-emerald-700 font-semibold py-1">
+                                    <span x-show="showNumbers">1. </span>Giới thiệu Đông Y 1
+                                </a>
+                                <a href="#" class="block text-gray-700 hover:text-emerald-600 py-1">
+                                    <span x-show="showNumbers">2. </span>Lợi ích của Thảo Dược
+                                </a>
+                                <div x-show="headingLevels.includes('h3')" class="pl-4 space-y-0.5 text-xs text-gray-500">
+                                    <div><span x-show="showNumbers">2.1 </span>Thanh nhiệt giải độc</div>
+                                    <div><span x-show="showNumbers">2.2 </span>Bồi bổ khí huyết</div>
+                                </div>
+                                <a href="#" class="block text-gray-700 hover:text-emerald-600 py-1">
+                                    <span x-show="showNumbers">3. </span>Hướng dẫn sử dụng
+                                </a>
+                            </nav>
+                        </div>
+
+                        <!-- STYLE 3 PREVIEW: CLASSIC BOXED -->
+                        <div x-show="style === 'style-3'" class="bg-amber-50/80 border border-amber-200/90 rounded-lg p-4">
+                            <div class="flex items-center justify-between border-b border-amber-200/60 pb-2 mb-3">
+                                <h4 class="font-serif font-bold text-amber-900 text-base" x-text="title"></h4>
+                                <span x-show="collapsible" class="text-xs text-amber-700 cursor-pointer">[-]</span>
+                            </div>
+                            <nav class="space-y-1 text-sm font-serif">
+                                <a href="#" class="block text-amber-900 font-bold hover:underline">
+                                    <span x-show="showNumbers">I. </span>Giới thiệu Đông Y 1
+                                </a>
+                                <a href="#" class="block text-amber-800 hover:underline">
+                                    <span x-show="showNumbers">II. </span>Lợi ích của Thảo Dược
+                                </a>
+                                <div x-show="headingLevels.includes('h3')" class="pl-4 text-xs text-amber-700 space-y-1">
+                                    <div><span x-show="showNumbers">1. </span>Thanh nhiệt giải độc</div>
+                                    <div><span x-show="showNumbers">2. </span>Bồi bổ khí huyết</div>
+                                </div>
+                                <a href="#" class="block text-amber-800 hover:underline">
+                                    <span x-show="showNumbers">III. </span>Hướng dẫn sử dụng
+                                </a>
+                            </nav>
+                        </div>
+
+                        <!-- STYLE 4 PREVIEW: FLOATING SHADOW -->
+                        <div x-show="style === 'style-4'" class="bg-white border rounded-2xl p-5 shadow-lg shadow-purple-50">
+                            <div class="flex items-center justify-between mb-3 border-b pb-2">
+                                <h4 class="font-bold text-purple-900 text-base" x-text="title"></h4>
+                                <span class="bg-purple-100 text-purple-700 text-xs px-2 py-0.5 rounded-full font-semibold">TOC</span>
+                            </div>
+                            <nav class="space-y-1.5 text-sm">
+                                <a href="#" class="block py-1.5 px-3 bg-purple-50 text-purple-700 font-semibold rounded-xl">
+                                    <span x-show="showNumbers">1. </span>Giới thiệu Đông Y 1
+                                </a>
+                                <a href="#" class="block py-1.5 px-3 text-gray-600 hover:bg-gray-50 rounded-xl">
+                                    <span x-show="showNumbers">2. </span>Lợi ích của Thảo Dược
+                                </a>
+                                <a href="#" class="block py-1.5 px-3 text-gray-600 hover:bg-gray-50 rounded-xl">
+                                    <span x-show="showNumbers">3. </span>Hướng dẫn sử dụng
+                                </a>
+                            </nav>
+                        </div>
+
+                        <!-- Info Badge -->
+                        <div class="mt-4 p-3 bg-blue-50 border border-blue-100 rounded-xl text-xs text-blue-800 space-y-1">
+                            <p class="font-semibold flex items-center gap-1">
+                                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                Cách hoạt động ngoài Frontend:
+                            </p>
+                            <p>Hệ thống tự động phân tích bài viết, đánh số ID cho các thẻ Heading và sinh ra mục lục theo mẫu giao diện đã chọn.</p>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </form>
+
+    <!-- Code Mẫu Frontend Tích Hợp Đã Code Mẫu Sẵn -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mt-6">
+        <div class="flex items-center justify-between border-b pb-4 mb-4">
+            <div>
+                <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Code Mẫu Frontend Đã Viết Sẵn (Blade & CSS Component)
+                </h3>
+                <p class="text-xs text-gray-500">Sao chép đoạn code mẫu bên dưới để nhúng mục lục vào giao diện chi tiết bài viết (Post Detail)</p>
+            </div>
+            <div class="flex gap-2 bg-gray-100 p-1 rounded-lg">
+                <button type="button" @click="activeTab = 'blade'" class="px-3 py-1.5 rounded-md text-xs font-semibold transition" :class="activeTab === 'blade' ? 'bg-white shadow text-blue-600' : 'text-gray-600'">Blade Component</button>
+                <button type="button" @click="activeTab = 'css'" class="px-3 py-1.5 rounded-md text-xs font-semibold transition" :class="activeTab === 'css' ? 'bg-white shadow text-blue-600' : 'text-gray-600'">CSS Styles</button>
             </div>
         </div>
 
-        <!-- Content Preview -->
-        <div class="lg:col-span-2">
-            <div class="bg-white border rounded-lg p-6 prose max-w-none">
-                <h1 class="text-2xl font-bold mb-4">Tiêu đề bài viết</h1>
-                <h2 class="text-xl font-semibold mt-6 mb-3">Giới thiệu</h2>
-                <p class="text-gray-600 mb-4">Lorem ipsum dolor sit amet, consectetur adipiscing elit...</p>
-                
-                <h2 class="text-xl font-semibold mt-6 mb-3">Tính năng chính</h2>
-                <p class="text-gray-600 mb-4">Sed do eiusmod tempor incididunt ut labore et dolore...</p>
-                
-                @if(in_array('h3', $headingLevels))
-                <h3 class="text-lg font-semibold mt-4 mb-2">Tính năng A</h3>
-                <p class="text-gray-600 mb-3">Ut enim ad minim veniam, quis nostrud exercitation...</p>
-                
-                <h3 class="text-lg font-semibold mt-4 mb-2">Tính năng B</h3>
-                <p class="text-gray-600 mb-3">Duis aute irure dolor in reprehenderit in voluptate...</p>
-                @endif
-                
-                <h2 class="text-xl font-semibold mt-6 mb-3">Hướng dẫn sử dụng</h2>
-                <p class="text-gray-600 mb-4">Excepteur sint occaecat cupidatat non proident...</p>
-                
-                <h2 class="text-xl font-semibold mt-6 mb-3">Kết luận</h2>
-                <p class="text-gray-600 mb-4">Sunt in culpa qui officia deserunt mollit anim...</p>
-            </div>
-        </div>
-    </div>
-</div>
+        <!-- Blade Tab -->
+        <div x-show="activeTab === 'blade'" class="relative">
+            <div class="bg-gray-900 text-gray-100 p-4 rounded-xl overflow-x-auto font-mono text-xs leading-relaxed">
+<pre><code>&lt;!-- Nhúng Mục Lục Bài Viết --&gt;
+&#64;php
+    $tocConfig = setting('toc', []);
+    $tocEnabled = !empty($tocConfig['enabled']);
+    $minHeadings = $tocConfig['min_headings'] ?? 3;
+    $tocStyle = $tocConfig['style'] ?? 'style-1';
+&#64;endphp
 
-<div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-6">
-    <p class="text-sm text-blue-800">
-        <strong>Lưu ý:</strong> Mục lục sẽ tự động tạo anchor links cho các heading. 
-        Hệ thống sẽ tự động thêm ID cho các thẻ heading nếu chưa có.
-    </p>
-</div>
-
-<div class="bg-white rounded-lg shadow-sm p-6 mt-6">
-    <h3 class="font-semibold mb-3">Code mẫu Frontend</h3>
-    <div class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto">
-        <pre class="text-sm"><code>&lt;!-- Thêm vào template bài viết --&gt;
-@if(setting('toc.enabled') && $post->headings_count >= setting('toc.min_headings', 3))
-    &lt;div class="toc-container"&gt;
-        &lt;h3&gt;{{ setting('toc.title', 'Mục lục') }}&lt;/h3&gt;
-        &lt;nav&gt;
-            @foreach($post->toc as $item)
-                &lt;a href="#{{ $item['id'] }}"&gt;{{ $item['text'] }}&lt;/a&gt;
-            @endforeach
+&#64;if($tocEnabled &amp;&amp; isset($post-&gt;toc) &amp;&amp; count($post-&gt;toc) &gt;= $minHeadings)
+    &lt;div class="toc-wrapper toc-{{ $tocStyle }} my-6"&gt;
+        &lt;div class="toc-header flex items-center justify-between"&gt;
+            &lt;h4 class="font-bold text-lg"&gt;{{ $tocConfig['title'] ?? 'Mục lục' }}&lt;/h4&gt;
+            &#64;if(!empty($tocConfig['collapsible']))
+                &lt;button type="button" onclick="this.closest('.toc-wrapper').classList.toggle('collapsed')" class="text-xs opacity-75 hover:opacity-100"&gt;[Ẩn/Hiện]&lt;/button&gt;
+            &#64;endif
+        &lt;/div&gt;
+        &lt;nav class="toc-body mt-3 space-y-1"&gt;
+            &#64;foreach($post-&gt;toc as $index =&gt; $item)
+                &lt;a href="#{{ $item['id'] }}" class="toc-item toc-{{ $item['level'] }} block text-sm transition py-1"&gt;
+                    &#64;if(!empty($tocConfig['show_numbers']))
+                        &lt;span class="toc-num"&gt;{{ $index + 1 }}.&lt;/span&gt;
+                    &#64;endif
+                    {{ $item['text'] }}
+                &lt;/a&gt;
+            &#64;endforeach
         &lt;/nav&gt;
     &lt;/div&gt;
-@endif</code></pre>
+&#64;endif</code></pre>
+            </div>
+            <button type="button" onclick="navigator.clipboard.writeText(this.previousElementSibling.innerText); alert('Đã copy code Blade mẫu!');" class="absolute top-3 right-3 px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                Copy Code
+            </button>
+        </div>
+
+        <!-- CSS Tab -->
+        <div x-show="activeTab === 'css'" class="relative" style="display:none;">
+            <div class="bg-gray-900 text-gray-100 p-4 rounded-xl overflow-x-auto font-mono text-xs leading-relaxed">
+<pre><code>/* Style 1: Modern Card */
+.toc-style-1 { background: linear-gradient(135deg, #f0f7ff, #eef2ff); border: 1px solid #c7d2fe; border-radius: 1rem; padding: 1.25rem; }
+.toc-style-1 .toc-item { color: #1e40af; font-weight: 500; }
+
+/* Style 2: Minimalist Clean */
+.toc-style-2 { border-left: 4px solid #10b981; background-color: #ecfdf5; padding: 1rem 1.25rem; border-radius: 0 0.75rem 0.75rem 0; }
+
+/* Style 3: Classic Boxed */
+.toc-style-3 { background-color: #fffbeb; border: 1px solid #fde68a; border-radius: 0.5rem; padding: 1rem; font-family: serif; }
+
+/* Style 4: Floating Shadow */
+.toc-style-4 { background: #ffffff; border-radius: 1rem; padding: 1.25rem; box-shadow: 0 10px 25px -5px rgba(124, 58, 237, 0.1); }
+</code></pre>
+            </div>
+            <button type="button" onclick="navigator.clipboard.writeText(this.previousElementSibling.innerText); alert('Đã copy code CSS mẫu!');" class="absolute top-3 right-3 px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                Copy CSS
+            </button>
+        </div>
+
     </div>
+
 </div>
 
 @endsection

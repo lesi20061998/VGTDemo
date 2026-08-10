@@ -101,12 +101,20 @@ class SettingsController extends Controller
             \DB::transaction(function () use ($request, $project, &$savedCount) {
                 foreach ($request->except('_token', '_method', 'page') as $key => $value) {
                     // Xử lý đặc biệt cho checkbox
-                    if ($key === 'watermark' && is_array($value)) {
-                        // Đảm bảo enabled được xử lý đúng
-                        if (! isset($value['enabled'])) {
-                            $value['enabled'] = false;
-                        } else {
-                            $value['enabled'] = $value['enabled'] === '1' || $value['enabled'] === 1 || $value['enabled'] === true;
+                    if (($key === 'watermark' || $key === 'toc') && is_array($value)) {
+                        if ($key === 'watermark') {
+                            if (! isset($value['enabled'])) {
+                                $value['enabled'] = false;
+                            } else {
+                                $value['enabled'] = $value['enabled'] === '1' || $value['enabled'] === 1 || $value['enabled'] === true;
+                            }
+                        } elseif ($key === 'toc') {
+                            $value['enabled'] = !empty($value['enabled']);
+                            $value['show_numbers'] = !empty($value['show_numbers']);
+                            $value['collapsible'] = !empty($value['collapsible']);
+                            $value['smooth_scroll'] = !empty($value['smooth_scroll']);
+                            $value['highlight_active'] = !empty($value['highlight_active']);
+                            $value['sticky_toc'] = !empty($value['sticky_toc']);
                         }
                     }
 

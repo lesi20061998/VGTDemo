@@ -211,7 +211,7 @@ class EcommerceSeeder extends Seeder
     private function truncateTable(string $table): void
     {
         if (\Schema::hasTable($table)) {
-            \DB::table($table)->truncate();
+            \DB::statement("DELETE FROM `{$table}`");
         }
     }
 }

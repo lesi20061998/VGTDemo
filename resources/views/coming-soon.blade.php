@@ -151,7 +151,7 @@
         <div class="logo-container">
             <img src="{{ asset('Logo.png') }}" alt="AIM AGENCY">
         </div>
-        <h1>WE ARE<br>CRAFTING<br>SOMETHING EPIC</h1>
+        <h1>WE ARE HERE<br>TO MAKE<br>A DIFFERENCE</h1>
         <p>Hệ thống đang được nâng cấp và phát triển. Hãy quay lại sau nhé!<br>Một trải nghiệm tuyệt vời đang chờ đón bạn.</p>
         
         <button class="notify-btn" onclick="alert('Cảm ơn bạn! Chúng tôi sẽ sớm trở lại.')">Stay Tuned</button>

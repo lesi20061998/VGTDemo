@@ -12,6 +12,7 @@ class DatabaseSeeder extends Seeder
             CmsSystemSeeder::class,
             EcommerceSeeder::class,
             ProjectSeeder::class,
+            WebsiteConfigSeeder::class,
         ]);
     }
 }
