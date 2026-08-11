@@ -8,16 +8,17 @@ use Illuminate\Support\Facades\File;
 class SetupMultiTenant extends Command
 {
     protected $signature = 'setup:multi-tenant';
+
     protected $description = 'Setup multi-tenant architecture for project isolation';
 
     public function handle()
     {
         $this->info('Setting up multi-tenant architecture...');
-        
+
         // Models that need project scoping (exclude global models like User, Employee, etc.)
         $projectScopedModels = [
             'Product',
-            'ProductCategory', 
+            'ProductCategory',
             'Brand',
             'ProductAttribute',
             'ProductAttributeValue',
@@ -34,36 +35,38 @@ class SetupMultiTenant extends Command
             'FormSubmission',
             'Branch',
             'Post',
-            'Tag'
+            'Tag',
         ];
-        
+
         foreach ($projectScopedModels as $model) {
             $this->addProjectScopedTrait($model);
         }
-        
+
         $this->info('Multi-tenant setup completed!');
         $this->info('Each project will now have isolated data.');
-        
+
         return 0;
     }
-    
+
     private function addProjectScopedTrait($modelName)
     {
         $modelPath = app_path("Models/{$modelName}.php");
-        
-        if (!File::exists($modelPath)) {
+
+        if (! File::exists($modelPath)) {
             $this->warn("Model {$modelName} not found, skipping...");
+
             return;
         }
-        
+
         $content = File::get($modelPath);
-        
+
         // Check if ProjectScoped trait is already added
         if (strpos($content, 'ProjectScoped') !== false) {
             $this->info("Model {$modelName} already has ProjectScoped trait");
+
             return;
         }
-        
+
         // Add use statement
         if (strpos($content, 'use App\\Traits\\ProjectScoped;') === false) {
             $content = str_replace(
@@ -72,12 +75,12 @@ class SetupMultiTenant extends Command
                 $content
             );
         }
-        
+
         // Add trait to class
-        $pattern = '/class\s+' . $modelName . '\s+extends\s+Model[^{]*\{[\s\n]*use\s+([^;]+);/';
+        $pattern = '/class\s+'.$modelName.'\s+extends\s+Model[^{]*\{[\s\n]*use\s+([^;]+);/';
         if (preg_match($pattern, $content, $matches)) {
             $existingTraits = $matches[1];
-            $newTraits = $existingTraits . ', ProjectScoped';
+            $newTraits = $existingTraits.', ProjectScoped';
             $content = str_replace(
                 "use {$existingTraits};",
                 "use {$newTraits};",
@@ -86,12 +89,12 @@ class SetupMultiTenant extends Command
         } else {
             // If no existing traits, add after class declaration
             $content = preg_replace(
-                '/class\s+' . $modelName . '\s+extends\s+Model[^{]*\{/',
+                '/class\s+'.$modelName.'\s+extends\s+Model[^{]*\{/',
                 "$0\n    use ProjectScoped;\n",
                 $content
             );
         }
-        
+
         File::put($modelPath, $content);
         $this->info("Added ProjectScoped trait to {$modelName}");
     }

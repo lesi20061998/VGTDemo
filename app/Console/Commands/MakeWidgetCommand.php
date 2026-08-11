@@ -3,12 +3,13 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 
 class MakeWidgetCommand extends Command
 {
     protected $signature = 'make:widget {name} {--category=general} {--force}';
+
     protected $description = 'Create a new widget with metadata and class files';
 
     public function handle(): int
@@ -18,26 +19,28 @@ class MakeWidgetCommand extends Command
         $force = $this->option('force');
 
         // Validate name
-        if (!preg_match('/^[A-Z][a-zA-Z0-9]*$/', $name)) {
+        if (! preg_match('/^[A-Z][a-zA-Z0-9]*$/', $name)) {
             $this->error('Widget name must be in PascalCase (e.g., HeroSection, ContactForm)');
+
             return 1;
         }
 
-        $widgetName = $name . 'Widget';
+        $widgetName = $name.'Widget';
         $categoryDir = Str::studly($category);
         $widgetDir = app_path("Widgets/{$categoryDir}/{$name}");
         $widgetClass = app_path("Widgets/{$categoryDir}/{$name}/{$widgetName}.php");
         $metadataFile = app_path("Widgets/{$categoryDir}/{$name}/widget.json");
 
         // Check if widget already exists
-        if (File::exists($widgetClass) && !$force) {
+        if (File::exists($widgetClass) && ! $force) {
             $this->error("Widget {$widgetName} already exists in {$categoryDir} category!");
-            $this->info("Use --force to overwrite existing widget");
+            $this->info('Use --force to overwrite existing widget');
+
             return 1;
         }
 
         // Create directory
-        if (!File::isDirectory($widgetDir)) {
+        if (! File::isDirectory($widgetDir)) {
             File::makeDirectory($widgetDir, 0755, true);
             $this->info("Created directory: {$widgetDir}");
         }
@@ -51,16 +54,16 @@ class MakeWidgetCommand extends Command
         $this->info("Created metadata file: {$metadataFile}");
 
         // Create view directory
-        $viewDir = $widgetDir . '/views';
-        if (!File::isDirectory($viewDir)) {
+        $viewDir = $widgetDir.'/views';
+        if (! File::isDirectory($viewDir)) {
             File::makeDirectory($viewDir, 0755, true);
-            $this->createDefaultView($viewDir . '/default.blade.php', $name);
+            $this->createDefaultView($viewDir.'/default.blade.php', $name);
             $this->info("Created default view: {$viewDir}/default.blade.php");
         }
 
         // Create assets directory
-        $assetsDir = $widgetDir . '/assets';
-        if (!File::isDirectory($assetsDir)) {
+        $assetsDir = $widgetDir.'/assets';
+        if (! File::isDirectory($assetsDir)) {
             File::makeDirectory($assetsDir, 0755, true);
             $this->createAssetFiles($assetsDir, $name);
             $this->info("Created assets directory: {$assetsDir}");
@@ -69,7 +72,7 @@ class MakeWidgetCommand extends Command
         $this->info("\n✅ Widget '{$widgetName}' created successfully!");
         $this->info("📁 Location: {$widgetDir}");
         $this->info("🔧 Run 'php artisan widget:discover' to register the new widget");
-        
+
         return 0;
     }
 
@@ -149,7 +152,7 @@ class {$className} extends BaseWidget
     protected function createMetadataFile(string $filePath, string $name, string $category): void
     {
         $lowerName = Str::snake($name);
-        
+
         $metadata = [
             'name' => $name,
             'description' => "A customizable {$name} widget for your website",
@@ -160,7 +163,7 @@ class {$className} extends BaseWidget
             'preview_image' => 'preview.jpg',
             'variants' => [
                 'default' => 'Default Layout',
-                'compact' => 'Compact Layout'
+                'compact' => 'Compact Layout',
             ],
             'fields' => [
                 [
@@ -170,7 +173,7 @@ class {$className} extends BaseWidget
                     'required' => true,
                     'default' => 'Default Title',
                     'validation' => 'required|string|max:100',
-                    'help' => 'The main title for the widget'
+                    'help' => 'The main title for the widget',
                 ],
                 [
                     'name' => 'description',
@@ -180,7 +183,7 @@ class {$className} extends BaseWidget
                     'default' => 'Default description',
                     'validation' => 'string|max:500',
                     'help' => 'Optional description text',
-                    'rows' => 3
+                    'rows' => 3,
                 ],
                 [
                     'name' => 'is_active',
@@ -188,7 +191,7 @@ class {$className} extends BaseWidget
                     'type' => 'checkbox',
                     'required' => false,
                     'default' => true,
-                    'help' => 'Enable or disable this widget'
+                    'help' => 'Enable or disable this widget',
                 ],
                 [
                     'name' => 'background_color',
@@ -196,15 +199,15 @@ class {$className} extends BaseWidget
                     'type' => 'color',
                     'required' => false,
                     'default' => '#ffffff',
-                    'help' => 'Background color for the widget'
-                ]
+                    'help' => 'Background color for the widget',
+                ],
             ],
             'settings' => [
                 'cacheable' => true,
                 'cache_duration' => 3600,
                 'permissions' => ['admin', 'editor'],
-                'dependencies' => []
-            ]
+                'dependencies' => [],
+            ],
         ];
 
         File::put($filePath, json_encode($metadata, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
@@ -213,7 +216,7 @@ class {$className} extends BaseWidget
     protected function createDefaultView(string $filePath, string $name): void
     {
         $lowerName = Str::snake($name);
-        
+
         $content = "{{-- Default view for {$name} Widget --}}
 <section class=\"{$lowerName}-widget py-8\">
     <div class=\"container mx-auto px-4\">
@@ -234,7 +237,7 @@ class {$className} extends BaseWidget
     protected function createAssetFiles(string $assetsDir, string $name): void
     {
         $lowerName = Str::snake($name);
-        
+
         // Create CSS file
         $cssContent = "/* Styles for {$name} Widget */
 .{$lowerName}-widget {
@@ -249,7 +252,7 @@ class {$className} extends BaseWidget
     /* Paragraph styles */
 }
 ";
-        File::put($assetsDir . '/styles.css', $cssContent);
+        File::put($assetsDir.'/styles.css', $cssContent);
 
         // Create JS file
         $jsContent = "// JavaScript for {$name} Widget
@@ -265,6 +268,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 ";
-        File::put($assetsDir . '/scripts.js', $jsContent);
+        File::put($assetsDir.'/scripts.js', $jsContent);
     }
 }

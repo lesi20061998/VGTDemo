@@ -2,59 +2,61 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\Project;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use ZipArchive;
 
 class QuickExportProject extends Command
 {
     protected $signature = 'project:quick-export {projectCode}';
+
     protected $description = 'Quick export project configuration and database info';
 
     public function handle()
     {
         $projectCode = $this->argument('projectCode');
-        
+
         $project = Project::where('code', $projectCode)->first();
-        
-        if (!$project) {
+
+        if (! $project) {
             $this->error("Project with code '{$projectCode}' not found!");
+
             return 1;
         }
-        
+
         $this->info("🚀 Quick export for: {$project->name} ({$projectCode})");
-        
+
         // Tạo thư mục export
         $exportDir = storage_path("app/quick-exports/{$projectCode}");
-        
+
         if (File::exists($exportDir)) {
             File::deleteDirectory($exportDir);
         }
         File::makeDirectory($exportDir, 0755, true);
-        
+
         // Tạo các file cấu hình
         $this->createConfigFiles($project, $exportDir);
         $this->createRouteFiles($project, $exportDir);
         $this->createDeploymentGuide($project, $exportDir);
-        
+
         // Tạo zip file
         $zipPath = $this->createZip($projectCode, $exportDir);
-        
-        $this->info("✅ Quick export completed!");
+
+        $this->info('✅ Quick export completed!');
         $this->info("📦 Export: {$zipPath}");
-        
+
         return 0;
     }
-    
+
     private function createConfigFiles($project, $exportDir)
     {
-        $this->info("⚙️  Creating config files...");
-        
+        $this->info('⚙️  Creating config files...');
+
         // .env file
         $envContent = "APP_NAME=\"{$project->name}\"
 APP_ENV=production
-APP_KEY=" . config('app.key') . "
+APP_KEY=".config('app.key')."
 APP_DEBUG=false
 APP_URL=https://{$project->domain}
 
@@ -81,14 +83,14 @@ PROJECT_ID={$project->id}
 PROJECT_NAME=\"{$project->name}\"
 ";
         File::put("{$exportDir}/.env", $envContent);
-        
+
         // Database info
-        $dbInfo = "# Database Information
+        $dbInfo = '# Database Information
 
 ## Current Database (Multi-tenant)
-- Database: project_" . strtolower($project->code) . "
-- Host: " . env('DB_HOST') . "
-- Username: " . env('DB_USERNAME') . "
+- Database: project_'.strtolower($project->code).'
+- Host: '.env('DB_HOST').'
+- Username: '.env('DB_USERNAME')."
 
 ## Standalone Database (After Export)
 - Database: {$project->code}_cms
@@ -97,20 +99,20 @@ PROJECT_NAME=\"{$project->name}\"
 - Password: your_db_password
 
 ## Export Steps
-1. Export current database: project_" . strtolower($project->code) . "
+1. Export current database: project_".strtolower($project->code)."
 2. Create new database: {$project->code}_cms
 3. Import data to new database
 4. Update .env file with new credentials
 ";
         File::put("{$exportDir}/database-info.md", $dbInfo);
     }
-    
+
     private function createRouteFiles($project, $exportDir)
     {
-        $this->info("🛣️  Creating route files...");
-        
+        $this->info('🛣️  Creating route files...');
+
         File::ensureDirectoryExists("{$exportDir}/routes");
-        
+
         // web.php
         $webRoutes = "<?php
 
@@ -161,7 +163,7 @@ Route::get('/products/{product}', [App\\Http\\Controllers\\Frontend\\ProductCont
 Route::get('/categories/{category}', [App\\Http\\Controllers\\Frontend\\CategoryController::class, 'show'])->name('categories.show');
 ";
         File::put("{$exportDir}/routes/web.php", $webRoutes);
-        
+
         // api.php
         $apiRoutes = "<?php
 
@@ -182,11 +184,11 @@ Route::prefix('cms')->group(function () {
 ";
         File::put("{$exportDir}/routes/api.php", $apiRoutes);
     }
-    
+
     private function createDeploymentGuide($project, $exportDir)
     {
-        $this->info("📋 Creating deployment guide...");
-        
+        $this->info('📋 Creating deployment guide...');
+
         $guide = "# {$project->name} - CMS Deployment Guide
 
 ## Overview
@@ -222,7 +224,7 @@ cd {$project->code}-cms
 ### 2. Database Setup
 ```bash
 # Export from original system
-mysqldump -u username -p project_" . strtolower($project->code) . " > {$project->code}_export.sql
+mysqldump -u username -p project_".strtolower($project->code)." > {$project->code}_export.sql
 
 # Create new database
 mysql -u username -p -e \"CREATE DATABASE {$project->code}_cms\"
@@ -283,8 +285,8 @@ chmod -R 755 bootstrap/cache/
 ## Support
 - Project Code: {$project->code}
 - Project ID: {$project->id}
-- Export Date: " . date('Y-m-d H:i:s') . "
-- Original Database: project_" . strtolower($project->code) . "
+- Export Date: ".date('Y-m-d H:i:s').'
+- Original Database: project_'.strtolower($project->code)."
 - New Database: {$project->code}_cms
 
 ## Notes
@@ -293,14 +295,14 @@ chmod -R 755 bootstrap/cache/
 - Remember to update .env with correct database credentials
 - Test all functionality after deployment
 ";
-        
+
         File::put("{$exportDir}/README.md", $guide);
-        
+
         // Deployment checklist
         $checklist = "# Deployment Checklist for {$project->name}
 
 ## Pre-deployment
-- [ ] Export database from project_" . strtolower($project->code) . "
+- [ ] Export database from project_".strtolower($project->code)."
 - [ ] Create new database: {$project->code}_cms
 - [ ] Prepare Laravel application files
 - [ ] Update hosting DNS/domain settings
@@ -330,34 +332,35 @@ chmod -R 755 bootstrap/cache/
 - Check PHP version compatibility
 - Verify all required PHP extensions
 ";
-        
+
         File::put("{$exportDir}/deployment-checklist.md", $checklist);
     }
-    
+
     private function createZip($projectCode, $exportDir)
     {
         $zipPath = storage_path("app/quick-exports/{$projectCode}_config.zip");
-        
-        $zip = new ZipArchive();
-        if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
-            
+
+        $zip = new ZipArchive;
+        if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
+
             $iterator = new \RecursiveIteratorIterator(
                 new \RecursiveDirectoryIterator($exportDir),
                 \RecursiveIteratorIterator::LEAVES_ONLY
             );
-            
+
             foreach ($iterator as $file) {
-                if (!$file->isDir()) {
+                if (! $file->isDir()) {
                     $filePath = $file->getRealPath();
                     $relativePath = substr($filePath, strlen($exportDir) + 1);
                     $zip->addFile($filePath, $relativePath);
                 }
             }
-            
+
             $zip->close();
+
             return $zipPath;
         }
-        
-        throw new \Exception("Cannot create zip file");
+
+        throw new \Exception('Cannot create zip file');
     }
 }

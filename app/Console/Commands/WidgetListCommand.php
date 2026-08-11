@@ -2,13 +2,14 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use App\Widgets\WidgetRegistry;
 use App\Models\Widget;
+use App\Widgets\WidgetRegistry;
+use Illuminate\Console\Command;
 
 class WidgetListCommand extends Command
 {
     protected $signature = 'widget:list {--category= : Filter by category} {--active : Show only active widgets} {--usage : Show widget usage statistics}';
+
     protected $description = 'List all registered widgets with their information';
 
     public function handle(): int
@@ -26,9 +27,10 @@ class WidgetListCommand extends Command
 
         try {
             $widgets = WidgetRegistry::all();
-            
+
             if (empty($widgets)) {
                 $this->warn('No widgets found. Run "php artisan widget:discover" to discover widgets.');
+
                 return 0;
             }
 
@@ -37,9 +39,10 @@ class WidgetListCommand extends Command
                 $widgets = array_filter($widgets, function ($widget) use ($category) {
                     return ($widget['metadata']['category'] ?? 'general') === $category;
                 });
-                
+
                 if (empty($widgets)) {
                     $this->warn("No widgets found in category '{$category}'");
+
                     return 0;
                 }
             }
@@ -58,7 +61,7 @@ class WidgetListCommand extends Command
                 $tableData = [];
                 foreach ($categoryWidgets as $widget) {
                     $metadata = $widget['metadata'];
-                    
+
                     // Get usage count if active filter is used
                     $usageCount = '';
                     if ($activeOnly) {
@@ -72,7 +75,7 @@ class WidgetListCommand extends Command
                         $metadata['version'] ?? 'N/A',
                         $metadata['author'] ?? 'N/A',
                         $widget['class'],
-                        $usageCount
+                        $usageCount,
                     ];
                 }
 
@@ -85,16 +88,17 @@ class WidgetListCommand extends Command
                 $this->line('');
             }
 
-            $this->info('Total widgets: ' . count($widgets));
-            
+            $this->info('Total widgets: '.count($widgets));
+
             // Show available categories
             $categories = array_keys($byCategory);
-            $this->line('Available categories: ' . implode(', ', $categories));
+            $this->line('Available categories: '.implode(', ', $categories));
 
             return 0;
 
         } catch (\Exception $e) {
-            $this->error('Failed to list widgets: ' . $e->getMessage());
+            $this->error('Failed to list widgets: '.$e->getMessage());
+
             return 1;
         }
     }
@@ -113,6 +117,7 @@ class WidgetListCommand extends Command
 
             if ($usageStats->isEmpty()) {
                 $this->warn('No widgets found in database.');
+
                 return 0;
             }
 
@@ -123,13 +128,13 @@ class WidgetListCommand extends Command
             foreach ($usageStats as $stat) {
                 $totalWidgets += $stat->count;
                 $totalActive += $stat->active_count;
-                
+
                 $tableData[] = [
                     $stat->type,
                     $stat->area,
                     $stat->count,
                     $stat->active_count,
-                    $stat->count - $stat->active_count
+                    $stat->count - $stat->active_count,
                 ];
             }
 
@@ -139,10 +144,10 @@ class WidgetListCommand extends Command
             );
 
             $this->line('');
-            $this->info("Summary:");
+            $this->info('Summary:');
             $this->line("Total widgets in database: {$totalWidgets}");
             $this->line("Active widgets: {$totalActive}");
-            $this->line("Inactive widgets: " . ($totalWidgets - $totalActive));
+            $this->line('Inactive widgets: '.($totalWidgets - $totalActive));
 
             // Show area distribution
             $areaStats = Widget::selectRaw('area, COUNT(*) as count')
@@ -172,7 +177,8 @@ class WidgetListCommand extends Command
             return 0;
 
         } catch (\Exception $e) {
-            $this->error('Failed to get usage statistics: ' . $e->getMessage());
+            $this->error('Failed to get usage statistics: '.$e->getMessage());
+
             return 1;
         }
     }

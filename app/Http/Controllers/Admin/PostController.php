@@ -12,13 +12,35 @@ class PostController extends Controller
 {
     use HasAlerts;
 
-    public function index(Request $request)
+    private function resolvePost($projectCodeOrPost, $postId = null): Post
+    {
+        if ($projectCodeOrPost instanceof Post) {
+            return $projectCodeOrPost;
+        }
+
+        if ($postId instanceof Post) {
+            return $postId;
+        }
+
+        $param = $postId ?? $projectCodeOrPost;
+
+        if (is_numeric($param)) {
+            return Post::where('id', $param)->firstOrFail();
+        }
+
+        return Post::where('slug', $param)->orWhere('id', $param)->firstOrFail();
+    }
+
+    public function index(Request $request, $projectCode = null)
     {
         $postType = $request->query('type', 'post');
         $config = config("post_types.{$postType}");
 
         if (! $config) {
-            abort(404, 'Loại nội dung không tồn tại.');
+            $config = [
+                'name' => ucfirst($postType),
+                'singular_name' => ucfirst($postType),
+            ];
         }
 
         $posts = Post::with('author')
@@ -31,13 +53,16 @@ class PostController extends Controller
         return view('cms.posts.index', compact('posts', 'postType', 'config'));
     }
 
-    public function create(Request $request)
+    public function create(Request $request, $projectCode = null)
     {
         $postType = $request->get('type', 'post');
         $config = config("post_types.{$postType}");
 
         if (! $config) {
-            abort(404, 'Loại nội dung không tồn tại.');
+            $config = [
+                'name' => ucfirst($postType),
+                'singular_name' => ucfirst($postType),
+            ];
         }
 
         $languages = setting('languages', []);
@@ -48,13 +73,16 @@ class PostController extends Controller
         return view('cms.posts.create', compact('postType', 'config', 'currentLang'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request, $projectCode = null)
     {
         $postType = $request->input('post_type', 'post');
         $config = config("post_types.{$postType}");
 
         if (! $config) {
-            abort(404, 'Loại nội dung không tồn tại.');
+            $config = [
+                'name' => ucfirst($postType),
+                'singular_name' => ucfirst($postType),
+            ];
         }
 
         // Validate basic fields
@@ -64,7 +92,7 @@ class PostController extends Controller
             'post_type' => 'required|string',
             'status' => 'required|in:draft,published,archived',
             'published_at' => 'nullable|date',
-            'translations' => 'required|array',
+            'translations' => 'nullable|array',
             'translations.*.title' => 'nullable|string|max:255',
             'translations.*.excerpt' => 'nullable|string',
             'translations.*.content' => 'nullable|string',
@@ -76,7 +104,6 @@ class PostController extends Controller
         // Add dynamic validation from config
         if (isset($config['fields'])) {
             foreach ($config['fields'] as $key => $field) {
-                // simple validation mapping (can be expanded)
                 $rules["meta_data.{$key}"] = 'nullable';
             }
         }
@@ -86,16 +113,15 @@ class PostController extends Controller
         $languages = setting('languages', []);
         $defaultLang = collect($languages)->firstWhere('is_default', true)['code'] ?? 'vi';
 
-        $request->validate([
-            "translations.{$defaultLang}.title" => 'required|string|max:255',
-        ]);
+        $defaultTitle = $request->input("translations.{$defaultLang}.title") ?? $request->input('title');
+        if (empty($defaultTitle)) {
+            $defaultTitle = $request->input('name') ?? 'Bài viết mới';
+        }
 
-        $defaultTitle = $request->input("translations.{$defaultLang}.title");
-        $validated['slug'] = $validated['slug'] ?? Str::slug($defaultTitle);
-
+        $validated['slug'] = ! empty($validated['slug']) ? Str::slug($validated['slug']) : Str::slug($defaultTitle);
         $validated['title'] = $defaultTitle;
-        $validated['content'] = $request->input("translations.{$defaultLang}.content", '');
-        $validated['excerpt'] = $request->input("translations.{$defaultLang}.excerpt", '');
+        $validated['content'] = $request->input("translations.{$defaultLang}.content", $request->input('content', ''));
+        $validated['excerpt'] = $request->input("translations.{$defaultLang}.excerpt", $request->input('excerpt', ''));
         $validated['author_id'] = auth()->id();
 
         // Process meta data
@@ -109,19 +135,35 @@ class PostController extends Controller
             $post->saveTranslations($request->input('translations'));
         }
 
-        return redirect()->route('cms.posts.index', ['type' => $postType])->with('alert', [
+        $projectCode = request()->route('projectCode');
+        $route = $projectCode
+            ? route('project.admin.posts.index', ['projectCode' => $projectCode, 'type' => $postType])
+            : route('cms.posts.index', ['type' => $postType]);
+
+        return redirect($route)->with('alert', [
             'type' => 'success',
-            'message' => 'Thêm '.$config['name'].' thành công!',
+            'message' => 'Thêm '.($config['name'] ?? 'bài viết').' thành công!',
         ]);
     }
 
-    public function edit(Request $request, Post $post)
+    public function show(Request $request, $projectCodeOrPost = null, $postId = null)
     {
+        $post = $this->resolvePost($projectCodeOrPost, $postId);
+
+        return view('cms.posts.show', compact('post'));
+    }
+
+    public function edit(Request $request, $projectCodeOrPost = null, $postId = null)
+    {
+        $post = $this->resolvePost($projectCodeOrPost, $postId);
         $postType = $post->post_type;
         $config = config("post_types.{$postType}");
 
         if (! $config) {
-            abort(404, 'Loại nội dung không tồn tại.');
+            $config = [
+                'name' => ucfirst($postType),
+                'singular_name' => ucfirst($postType),
+            ];
         }
 
         $languages = setting('languages', []);
@@ -132,17 +174,25 @@ class PostController extends Controller
         return view('cms.posts.edit', compact('post', 'postType', 'config', 'currentLang'));
     }
 
-    public function update(Request $request, Post $post)
+    public function update(Request $request, $projectCodeOrPost = null, $postId = null)
     {
+        $post = $this->resolvePost($projectCodeOrPost, $postId);
         $postType = $post->post_type;
         $config = config("post_types.{$postType}");
+
+        if (! $config) {
+            $config = [
+                'name' => ucfirst($postType),
+                'singular_name' => ucfirst($postType),
+            ];
+        }
 
         $rules = [
             'slug' => 'nullable|string|unique:posts,slug,'.$post->id,
             'featured_image' => 'nullable|string',
             'status' => 'required|in:draft,published,archived',
             'published_at' => 'nullable|date',
-            'translations' => 'required|array',
+            'translations' => 'nullable|array',
             'translations.*.title' => 'nullable|string|max:255',
             'translations.*.excerpt' => 'nullable|string',
             'translations.*.content' => 'nullable|string',
@@ -156,16 +206,12 @@ class PostController extends Controller
         $languages = setting('languages', []);
         $defaultLang = collect($languages)->firstWhere('is_default', true)['code'] ?? 'vi';
 
-        $request->validate([
-            "translations.{$defaultLang}.title" => 'required|string|max:255',
-        ]);
-
-        $defaultTitle = $request->input("translations.{$defaultLang}.title");
-        $validated['slug'] = $validated['slug'] ?? Str::slug($defaultTitle);
+        $defaultTitle = $request->input("translations.{$defaultLang}.title") ?? $request->input('title', $post->title);
+        $validated['slug'] = ! empty($validated['slug']) ? Str::slug($validated['slug']) : ($post->slug ?: Str::slug($defaultTitle));
 
         $validated['title'] = $defaultTitle;
-        $validated['content'] = $request->input("translations.{$defaultLang}.content", '');
-        $validated['excerpt'] = $request->input("translations.{$defaultLang}.excerpt", '');
+        $validated['content'] = $request->input("translations.{$defaultLang}.content", $request->input('content', $post->content));
+        $validated['excerpt'] = $request->input("translations.{$defaultLang}.excerpt", $request->input('excerpt', $post->excerpt));
 
         if ($request->has('meta_data')) {
             $validated['meta_data'] = $request->input('meta_data');
@@ -177,20 +223,31 @@ class PostController extends Controller
             $post->saveTranslations($request->input('translations'));
         }
 
-        return redirect()->route('cms.posts.edit', $post)->with('alert', [
+        $projectCode = request()->route('projectCode');
+        $route = $projectCode
+            ? route('project.admin.posts.edit', ['projectCode' => $projectCode, 'post' => $post->slug ?: $post->id])
+            : route('cms.posts.edit', $post->slug ?: $post->id);
+
+        return redirect($route)->with('alert', [
             'type' => 'success',
-            'message' => 'Cập nhật '.$config['name'].' thành công!',
+            'message' => 'Cập nhật '.($config['name'] ?? 'bài viết').' thành công!',
         ]);
     }
 
-    public function destroy(Post $post)
+    public function destroy(Request $request, $projectCodeOrPost = null, $postId = null)
     {
+        $post = $this->resolvePost($projectCodeOrPost, $postId);
         $postType = $post->post_type;
         $config = config("post_types.{$postType}");
 
         $post->delete();
 
-        return redirect()->route('cms.posts.index', ['type' => $postType])->with('alert', [
+        $projectCode = request()->route('projectCode');
+        $route = $projectCode
+            ? route('project.admin.posts.index', ['projectCode' => $projectCode, 'type' => $postType])
+            : route('cms.posts.index', ['type' => $postType]);
+
+        return redirect($route)->with('alert', [
             'type' => 'success',
             'message' => 'Xóa '.($config['name'] ?? 'dữ liệu').' thành công!',
         ]);

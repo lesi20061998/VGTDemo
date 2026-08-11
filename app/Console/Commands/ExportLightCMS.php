@@ -2,75 +2,77 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\Project;
+use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Config;
 use ZipArchive;
 
 class ExportLightCMS extends Command
 {
     protected $signature = 'project:export-light {projectCode}';
+
     protected $description = 'Export lightweight CMS (essential files only)';
 
     public function handle()
     {
         $projectCode = $this->argument('projectCode');
-        
+
         $project = Project::where('code', $projectCode)->first();
-        
-        if (!$project) {
+
+        if (! $project) {
             $this->error("Project with code '{$projectCode}' not found!");
+
             return 1;
         }
-        
+
         $this->info("🚀 Exporting LIGHT CMS: {$project->name} ({$projectCode})");
-        
+
         $exportDir = storage_path("app/light-cms/{$projectCode}");
         $this->createExportDirectory($exportDir);
-        
+
         // 1. Copy essential files only
         $this->copyEssentialFiles($exportDir);
-        
+
         // 2. Export database
         $this->exportDatabase($project, $exportDir);
-        
+
         // 3. Create config (AFTER copying files to override)
         $this->createConfig($project, $exportDir);
-        
+
         // 4. Create zip
         $zipPath = $this->createZip($projectCode, $exportDir);
-        
-        $this->info("✅ LIGHT CMS exported!");
+
+        $this->info('✅ LIGHT CMS exported!');
         $this->info("📦 Location: {$zipPath}");
-        
+
         return 0;
     }
-    
+
     private function createExportDirectory($exportDir)
     {
         if (File::exists($exportDir)) {
             File::deleteDirectory($exportDir);
         }
         File::makeDirectory($exportDir, 0755, true);
-        $this->info("📁 Created export directory");
+        $this->info('📁 Created export directory');
     }
-    
+
     private function copyEssentialFiles($exportDir)
     {
-        $this->info("📋 Copying essential files...");
-        
+        $this->info('📋 Copying essential files...');
+
         // Essential directories
         $dirs = ['app', 'config', 'database', 'resources', 'routes'];
-        
+
         foreach ($dirs as $dir) {
             if (File::exists(base_path($dir))) {
                 $this->info("  📂 {$dir}");
                 File::copyDirectory(base_path($dir), "{$exportDir}/{$dir}");
             }
         }
-        
+
         // Essential files
         $files = ['artisan', 'composer.json', 'composer.lock'];
         foreach ($files as $file) {
@@ -78,7 +80,7 @@ class ExportLightCMS extends Command
                 File::copy(base_path($file), "{$exportDir}/{$file}");
             }
         }
-        
+
         // Create minimal structure
         File::makeDirectory("{$exportDir}/storage/logs", 0755, true);
         File::makeDirectory("{$exportDir}/storage/app/public", 0755, true);
@@ -87,7 +89,7 @@ class ExportLightCMS extends Command
         File::makeDirectory("{$exportDir}/storage/framework/views", 0755, true);
         File::makeDirectory("{$exportDir}/bootstrap/cache", 0755, true);
         File::makeDirectory("{$exportDir}/public", 0755, true);
-        
+
         // Copy public essentials
         if (File::exists(public_path('index.php'))) {
             File::copy(public_path('index.php'), "{$exportDir}/public/index.php");
@@ -95,17 +97,17 @@ class ExportLightCMS extends Command
         if (File::exists(public_path('.htaccess'))) {
             File::copy(public_path('.htaccess'), "{$exportDir}/public/.htaccess");
         }
-        
-        $this->info("✅ Essential files copied");
+
+        $this->info('✅ Essential files copied');
     }
-    
+
     private function exportDatabase($project, $exportDir)
     {
-        $this->info("💾 Exporting database...");
-        
-        $dbName = 'project_' . strtolower($project->code);
+        $this->info('💾 Exporting database...');
+
+        $dbName = 'project_'.strtolower($project->code);
         $sqlFile = "{$exportDir}/database.sql";
-        
+
         try {
             Config::set('database.connections.export_project', [
                 'driver' => 'mysql',
@@ -115,22 +117,22 @@ class ExportLightCMS extends Command
                 'username' => env('DB_USERNAME'),
                 'password' => env('DB_PASSWORD'),
             ]);
-            
+
             DB::purge('export_project');
             DB::connection('export_project')->getPdo();
-            
-            $sql = "-- CMS Database: {$dbName}\n-- Generated: " . date('Y-m-d H:i:s') . "\n\n";
-            
+
+            $sql = "-- CMS Database: {$dbName}\n-- Generated: ".date('Y-m-d H:i:s')."\n\n";
+
             $tables = DB::connection('export_project')->select('SHOW TABLES');
-            
+
             foreach ($tables as $table) {
-                $tableName = array_values((array)$table)[0];
-                
+                $tableName = array_values((array) $table)[0];
+
                 // Structure
                 $createTable = DB::connection('export_project')->select("SHOW CREATE TABLE `{$tableName}`");
                 $sql .= "DROP TABLE IF EXISTS `{$tableName}`;\n";
-                $sql .= $createTable[0]->{'Create Table'} . ";\n\n";
-                
+                $sql .= $createTable[0]->{'Create Table'}.";\n\n";
+
                 // Data (limited to avoid huge files)
                 $count = DB::connection('export_project')->table($tableName)->count();
                 if ($count > 0 && $count < 1000) { // Only export small tables
@@ -140,12 +142,12 @@ class ExportLightCMS extends Command
                         foreach ($rows->chunk(25) as $chunk) {
                             $values = [];
                             foreach ($chunk as $row) {
-                                $rowData = array_map(function($value) {
-                                    return $value === null ? 'NULL' : "'" . addslashes($value) . "'";
-                                }, (array)$row);
-                                $values[] = '(' . implode(',', $rowData) . ')';
+                                $rowData = array_map(function ($value) {
+                                    return $value === null ? 'NULL' : "'".addslashes($value)."'";
+                                }, (array) $row);
+                                $values[] = '('.implode(',', $rowData).')';
                             }
-                            $sql .= "INSERT INTO `{$tableName}` VALUES " . implode(',', $values) . ";\n";
+                            $sql .= "INSERT INTO `{$tableName}` VALUES ".implode(',', $values).";\n";
                         }
                         $sql .= "\n";
                     }
@@ -153,24 +155,24 @@ class ExportLightCMS extends Command
                     $sql .= "-- Table {$tableName} has {$count} rows - export manually if needed\n\n";
                 }
             }
-            
+
             File::put($sqlFile, $sql);
-            $this->info("✅ Database exported");
-            
+            $this->info('✅ Database exported');
+
         } catch (\Exception $e) {
-            $this->error("Database export failed: " . $e->getMessage());
+            $this->error('Database export failed: '.$e->getMessage());
             File::put($sqlFile, "-- Database export failed\n-- Please export manually: mysqldump -u user -p {$dbName} > database.sql\n");
         }
     }
-    
+
     private function createConfig($project, $exportDir)
     {
-        $this->info("⚙️  Creating config...");
-        
+        $this->info('⚙️  Creating config...');
+
         // .env for standalone CMS
         $envContent = "APP_NAME=\"{$project->name}\"
 APP_ENV=production
-APP_KEY=" . config('app.key') . "
+APP_KEY=".config('app.key')."
 APP_DEBUG=false
 APP_URL=https://your-domain.com
 
@@ -233,9 +235,9 @@ CMS_NAME=\"{$project->name}\"
 CMS_VERSION=1.0.0
 CMS_STANDALONE=true
 ";
-        
+
         File::put("{$exportDir}/.env.example", $envContent);
-        
+
         // Create standalone routes/web.php (no projectCode dependency)
         $routes = "<?php
 
@@ -366,9 +368,9 @@ Route::prefix('api')->name('api.')->group(function () {
     Route::get('widgets/{area}', [\\App\\Http\\Controllers\\Api\\WidgetController::class, 'getByArea'])->name('widgets.area');
 });
 ";
-        
+
         File::put("{$exportDir}/routes/web.php", $routes);
-        
+
         // Create standalone middleware (no project switching)
         $standaloneMiddleware = "<?php
 
@@ -390,9 +392,9 @@ class StandaloneCMS
     }
 }
 ";
-        
+
         File::put("{$exportDir}/app/Http/Middleware/StandaloneCMS.php", $standaloneMiddleware);
-        
+
         // Create standalone bootstrap/app.php
         $bootstrapApp = "<?php
 
@@ -416,9 +418,9 @@ return Application::configure(basePath: dirname(__DIR__))
         //
     })->create();
 ";
-        
+
         File::put("{$exportDir}/bootstrap/app.php", $bootstrapApp);
-        
+
         // Create simple API routes
         $apiRoutes = "<?php
 
@@ -438,9 +440,9 @@ Route::prefix('cms')->name('cms.')->group(function () {
     Route::get('widgets/{area}', [\\App\\Http\\Controllers\\Api\\WidgetController::class, 'getByArea'])->name('widgets.area');
 });
 ";
-        
+
         File::put("{$exportDir}/routes/api.php", $apiRoutes);
-        
+
         // Create console routes
         $consoleRoutes = "<?php
 
@@ -451,9 +453,9 @@ Artisan::command('inspire', function () {
     \$this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 ";
-        
+
         File::put("{$exportDir}/routes/console.php", $consoleRoutes);
-        
+
         // README for standalone CMS
         $readme = "# {$project->name} - Standalone CMS
 
@@ -627,51 +629,52 @@ server {
 This is a standalone CMS system exported from a multi-tenant Laravel application.
 - **Project**: {$project->name}
 - **Code**: {$project->code}
-- **Export Date**: " . date('Y-m-d H:i:s') . "
-- **Laravel Version**: " . app()->version() . "
+- **Export Date**: ".date('Y-m-d H:i:s').'
+- **Laravel Version**: '.app()->version().'
 
 ## 🎉 Ready to Use!
 
 Your standalone CMS is ready for production deployment.
 No project codes, no multi-tenant complexity - just a clean, working Laravel CMS.
-";
-        
+';
+
         File::put("{$exportDir}/README.md", $readme);
-        
-        $this->info("✅ Config created");
+
+        $this->info('✅ Config created');
     }
-    
+
     private function createZip($projectCode, $exportDir)
     {
-        $this->info("📦 Creating zip...");
-        
+        $this->info('📦 Creating zip...');
+
         $zipPath = storage_path("app/light-cms/{$projectCode}_light_cms.zip");
-        
-        $zip = new ZipArchive();
-        if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
-            
+
+        $zip = new ZipArchive;
+        if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
+
             $iterator = new \RecursiveIteratorIterator(
                 new \RecursiveDirectoryIterator($exportDir),
                 \RecursiveIteratorIterator::LEAVES_ONLY
             );
-            
+
             $fileCount = 0;
             foreach ($iterator as $file) {
-                if (!$file->isDir()) {
+                if (! $file->isDir()) {
                     $filePath = $file->getRealPath();
                     $relativePath = substr($filePath, strlen($exportDir) + 1);
                     $zip->addFile($filePath, $relativePath);
                     $fileCount++;
                 }
             }
-            
+
             $zip->close();
             File::deleteDirectory($exportDir);
-            
+
             $this->info("✅ Zip created with {$fileCount} files");
+
             return $zipPath;
         }
-        
-        throw new \Exception("Cannot create zip file");
+
+        throw new \Exception('Cannot create zip file');
     }
 }

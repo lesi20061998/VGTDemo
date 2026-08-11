@@ -21,8 +21,9 @@ class ResetUserPassword extends Command
 
         $user = User::where('username', $username)->first();
 
-        if (!$user) {
+        if (! $user) {
             $this->error("Không tìm thấy user với username: {$username}");
+
             return Command::FAILURE;
         }
 

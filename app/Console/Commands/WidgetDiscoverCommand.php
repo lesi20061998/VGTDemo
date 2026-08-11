@@ -2,13 +2,13 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Widgets\WidgetRegistry;
-use App\Services\WidgetDiscoveryService;
+use Illuminate\Console\Command;
 
 class WidgetDiscoverCommand extends Command
 {
     protected $signature = 'widget:discover {--clear-cache : Clear widget discovery cache}';
+
     protected $description = 'Discover and register widgets automatically';
 
     public function handle(): int
@@ -19,11 +19,11 @@ class WidgetDiscoverCommand extends Command
         }
 
         $this->info('Discovering widgets...');
-        
+
         try {
             $discovered = WidgetRegistry::discover();
-            $this->info('Discovered ' . count($discovered) . ' widgets');
-            
+            $this->info('Discovered '.count($discovered).' widgets');
+
             // Show discovered widgets
             if (count($discovered) > 0) {
                 $this->table(
@@ -33,32 +33,33 @@ class WidgetDiscoverCommand extends Command
                             $widget['type'],
                             $widget['class'],
                             $widget['metadata']['category'] ?? 'N/A',
-                            $widget['metadata']['name'] ?? 'N/A'
+                            $widget['metadata']['name'] ?? 'N/A',
                         ];
                     })->toArray()
                 );
             }
-            
+
             // Check for conflicts
             $conflicts = WidgetRegistry::validateNamespaces();
             if (count($conflicts) > 0) {
                 $this->warn('Found namespace conflicts:');
                 foreach ($conflicts as $conflict) {
-                    $this->error("Type '{$conflict['type']}' conflicts between: " . implode(', ', $conflict['classes']));
+                    $this->error("Type '{$conflict['type']}' conflicts between: ".implode(', ', $conflict['classes']));
                 }
             }
-            
+
             // Show all widgets by category
             $byCategory = WidgetRegistry::getByCategory();
             $this->info("\nWidgets by category:");
             foreach ($byCategory as $category => $widgets) {
-                $this->line("  {$category}: " . count($widgets) . ' widgets');
+                $this->line("  {$category}: ".count($widgets).' widgets');
             }
-            
+
             return 0;
-            
+
         } catch (\Exception $e) {
-            $this->error('Widget discovery failed: ' . $e->getMessage());
+            $this->error('Widget discovery failed: '.$e->getMessage());
+
             return 1;
         }
     }

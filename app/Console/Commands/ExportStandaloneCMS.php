@@ -2,93 +2,95 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\Project;
+use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Config;
 use ZipArchive;
 
 class ExportStandaloneCMS extends Command
 {
     protected $signature = 'project:export-standalone {projectCode}';
+
     protected $description = 'Export standalone CMS (no projectCode dependency)';
 
     public function handle()
     {
         $projectCode = $this->argument('projectCode');
-        
+
         $project = Project::where('code', $projectCode)->first();
-        
-        if (!$project) {
+
+        if (! $project) {
             $this->error("Project with code '{$projectCode}' not found!");
+
             return 1;
         }
-        
+
         $this->info("🚀 Exporting STANDALONE CMS: {$project->name} ({$projectCode})");
-        
+
         $exportDir = storage_path("app/standalone-cms/{$projectCode}");
         $this->createExportDirectory($exportDir);
-        
+
         // 1. Copy essential files
         $this->copyEssentialFiles($exportDir);
-        
+
         // 2. Create standalone routes (OVERRIDE existing routes)
         $this->createStandaloneRoutes($project, $exportDir);
-        
+
         // 3. Create standalone middleware
         $this->createStandaloneMiddleware($exportDir);
-        
+
         // 4. Create standalone bootstrap
         $this->createStandaloneBootstrap($exportDir);
-        
+
         // 5. Export database
         $this->exportDatabase($project, $exportDir);
-        
+
         // 6. Create environment config
         $this->createEnvironmentConfig($project, $exportDir);
-        
+
         // 7. Create documentation
         $this->createDocumentation($project, $exportDir);
-        
+
         // 8. Create zip
         $zipPath = $this->createZip($projectCode, $exportDir);
-        
-        $this->info("✅ STANDALONE CMS exported!");
+
+        $this->info('✅ STANDALONE CMS exported!');
         $this->info("📦 Location: {$zipPath}");
-        $this->info("🎉 Ready for deployment without projectCode dependency!");
-        
+        $this->info('🎉 Ready for deployment without projectCode dependency!');
+
         return 0;
     }
-    
+
     private function createExportDirectory($exportDir)
     {
         if (File::exists($exportDir)) {
             File::deleteDirectory($exportDir);
         }
         File::makeDirectory($exportDir, 0755, true);
-        $this->info("📁 Created export directory");
+        $this->info('📁 Created export directory');
     }
-    
+
     private function copyEssentialFiles($exportDir)
     {
-        $this->info("📋 Copying essential files...");
-        
+        $this->info('📋 Copying essential files...');
+
         // Essential directories (EXCLUDE bootstrap to avoid overwriting)
         $dirs = ['app', 'config', 'database', 'resources', 'public'];
-        
+
         foreach ($dirs as $dir) {
             if (File::exists(base_path($dir))) {
                 $this->info("  📂 {$dir}");
                 File::copyDirectory(base_path($dir), "{$exportDir}/{$dir}");
             }
         }
-        
+
         // Copy bootstrap but exclude app.php
         if (File::exists(base_path('bootstrap'))) {
-            $this->info("  📂 bootstrap (selective)");
+            $this->info('  📂 bootstrap (selective)');
             File::makeDirectory("{$exportDir}/bootstrap", 0755, true);
-            
+
             // Copy bootstrap files except app.php
             $bootstrapFiles = File::files(base_path('bootstrap'));
             foreach ($bootstrapFiles as $file) {
@@ -96,7 +98,7 @@ class ExportStandaloneCMS extends Command
                     File::copy($file->getPathname(), "{$exportDir}/bootstrap/{$file->getFilename()}");
                 }
             }
-            
+
             // Copy bootstrap/cache directory if it exists
             if (File::exists(base_path('bootstrap/cache'))) {
                 File::copyDirectory(base_path('bootstrap/cache'), "{$exportDir}/bootstrap/cache");
@@ -104,7 +106,7 @@ class ExportStandaloneCMS extends Command
                 File::makeDirectory("{$exportDir}/bootstrap/cache", 0755, true);
             }
         }
-        
+
         // Essential files
         $files = ['artisan', 'composer.json', 'composer.lock'];
         foreach ($files as $file) {
@@ -112,7 +114,7 @@ class ExportStandaloneCMS extends Command
                 File::copy(base_path($file), "{$exportDir}/{$file}");
             }
         }
-        
+
         // Create minimal structure (avoid duplicate bootstrap/cache)
         File::makeDirectory("{$exportDir}/storage/logs", 0755, true);
         File::makeDirectory("{$exportDir}/storage/app/public", 0755, true);
@@ -120,14 +122,14 @@ class ExportStandaloneCMS extends Command
         File::makeDirectory("{$exportDir}/storage/framework/sessions", 0755, true);
         File::makeDirectory("{$exportDir}/storage/framework/views", 0755, true);
         File::makeDirectory("{$exportDir}/routes", 0755, true);
-        
-        $this->info("✅ Essential files copied (routes & bootstrap/app.php will be created separately)");
+
+        $this->info('✅ Essential files copied (routes & bootstrap/app.php will be created separately)');
     }
-    
+
     private function createStandaloneRoutes($project, $exportDir)
     {
-        $this->info("🛣️  Creating standalone routes...");
-        
+        $this->info('🛣️  Creating standalone routes...');
+
         // Create routes/web.php (STANDALONE - no projectCode)
         $webRoutes = "<?php
 
@@ -256,9 +258,9 @@ Route::get('/{slug}', [PageController::class, 'show'])
     ->where('slug', '^(?!admin|login|logout|cart|checkout|products|product|blog|contact).*')
     ->name('pages.show');
 ";
-        
+
         File::put("{$exportDir}/routes/web.php", $webRoutes);
-        
+
         // Create routes/api.php
         $apiRoutes = "<?php
 
@@ -278,9 +280,9 @@ Route::prefix('cms')->name('cms.')->group(function () {
     Route::get('widgets/{area}', [\\App\\Http\\Controllers\\Api\\WidgetController::class, 'getByArea'])->name('widgets.area');
 });
 ";
-        
+
         File::put("{$exportDir}/routes/api.php", $apiRoutes);
-        
+
         // Create routes/console.php
         $consoleRoutes = "<?php
 
@@ -291,16 +293,16 @@ Artisan::command('inspire', function () {
     \$this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 ";
-        
+
         File::put("{$exportDir}/routes/console.php", $consoleRoutes);
-        
-        $this->info("✅ Standalone routes created");
+
+        $this->info('✅ Standalone routes created');
     }
-    
+
     private function createStandaloneMiddleware($exportDir)
     {
-        $this->info("🛡️  Creating standalone middleware...");
-        
+        $this->info('🛡️  Creating standalone middleware...');
+
         $middleware = "<?php
 
 namespace App\\Http\\Middleware;
@@ -330,16 +332,16 @@ class StandaloneCMS
     }
 }
 ";
-        
+
         File::put("{$exportDir}/app/Http/Middleware/StandaloneCMS.php", $middleware);
-        
-        $this->info("✅ Standalone middleware created");
+
+        $this->info('✅ Standalone middleware created');
     }
-    
+
     private function createStandaloneBootstrap($exportDir)
     {
-        $this->info("⚡ Creating standalone bootstrap...");
-        
+        $this->info('⚡ Creating standalone bootstrap...');
+
         $bootstrap = "<?php
 
 use Illuminate\\Foundation\\Application;
@@ -371,19 +373,19 @@ return Application::configure(basePath: dirname(__DIR__))
         //
     })->create();
 ";
-        
+
         File::put("{$exportDir}/bootstrap/app.php", $bootstrap);
-        
-        $this->info("✅ Standalone bootstrap created");
+
+        $this->info('✅ Standalone bootstrap created');
     }
-    
+
     private function exportDatabase($project, $exportDir)
     {
-        $this->info("💾 Exporting database...");
-        
-        $dbName = 'project_' . strtolower($project->code);
+        $this->info('💾 Exporting database...');
+
+        $dbName = 'project_'.strtolower($project->code);
         $sqlFile = "{$exportDir}/database.sql";
-        
+
         try {
             Config::set('database.connections.export_project', [
                 'driver' => 'mysql',
@@ -393,22 +395,22 @@ return Application::configure(basePath: dirname(__DIR__))
                 'username' => env('DB_USERNAME'),
                 'password' => env('DB_PASSWORD'),
             ]);
-            
+
             DB::purge('export_project');
             DB::connection('export_project')->getPdo();
-            
-            $sql = "-- Standalone CMS Database: {$dbName}\n-- Generated: " . date('Y-m-d H:i:s') . "\n-- No project code dependencies\n\n";
-            
+
+            $sql = "-- Standalone CMS Database: {$dbName}\n-- Generated: ".date('Y-m-d H:i:s')."\n-- No project code dependencies\n\n";
+
             $tables = DB::connection('export_project')->select('SHOW TABLES');
-            
+
             foreach ($tables as $table) {
-                $tableName = array_values((array)$table)[0];
-                
+                $tableName = array_values((array) $table)[0];
+
                 // Structure
                 $createTable = DB::connection('export_project')->select("SHOW CREATE TABLE `{$tableName}`");
                 $sql .= "DROP TABLE IF EXISTS `{$tableName}`;\n";
-                $sql .= $createTable[0]->{'Create Table'} . ";\n\n";
-                
+                $sql .= $createTable[0]->{'Create Table'}.";\n\n";
+
                 // Data (limited to avoid huge files)
                 $count = DB::connection('export_project')->table($tableName)->count();
                 if ($count > 0 && $count < 1000) {
@@ -418,10 +420,10 @@ return Application::configure(basePath: dirname(__DIR__))
                         foreach ($rows->chunk(25) as $chunk) {
                             $values = [];
                             foreach ($chunk as $row) {
-                                $rowData = array_map(fn($value) => $value === null ? 'NULL' : "'" . addslashes($value) . "'", (array)$row);
-                                $values[] = '(' . implode(',', $rowData) . ')';
+                                $rowData = array_map(fn ($value) => $value === null ? 'NULL' : "'".addslashes($value)."'", (array) $row);
+                                $values[] = '('.implode(',', $rowData).')';
                             }
-                            $sql .= "INSERT INTO `{$tableName}` VALUES " . implode(',', $values) . ";\n";
+                            $sql .= "INSERT INTO `{$tableName}` VALUES ".implode(',', $values).";\n";
                         }
                         $sql .= "\n";
                     }
@@ -429,23 +431,23 @@ return Application::configure(basePath: dirname(__DIR__))
                     $sql .= "-- Table {$tableName} has {$count} rows - export manually if needed\n\n";
                 }
             }
-            
+
             File::put($sqlFile, $sql);
-            $this->info("✅ Database exported");
-            
+            $this->info('✅ Database exported');
+
         } catch (\Exception $e) {
-            $this->error("Database export failed: " . $e->getMessage());
+            $this->error('Database export failed: '.$e->getMessage());
             File::put($sqlFile, "-- Database export failed\n-- Please export manually: mysqldump -u user -p {$dbName} > database.sql\n");
         }
     }
-    
+
     private function createEnvironmentConfig($project, $exportDir)
     {
-        $this->info("⚙️  Creating environment config...");
-        
+        $this->info('⚙️  Creating environment config...');
+
         $envContent = "APP_NAME=\"{$project->name}\"
 APP_ENV=production
-APP_KEY=" . config('app.key') . "
+APP_KEY=".config('app.key')."
 APP_DEBUG=false
 APP_URL=https://your-domain.com
 
@@ -508,16 +510,16 @@ CMS_STANDALONE=true
 CMS_NAME=\"{$project->name}\"
 CMS_VERSION=1.0.0
 ";
-        
+
         File::put("{$exportDir}/.env.example", $envContent);
-        
-        $this->info("✅ Environment config created");
+
+        $this->info('✅ Environment config created');
     }
-    
+
     private function createDocumentation($project, $exportDir)
     {
-        $this->info("📚 Creating documentation...");
-        
+        $this->info('📚 Creating documentation...');
+
         $readme = "# {$project->name} - Standalone CMS
 
 ## 🎯 Overview
@@ -599,7 +601,7 @@ php artisan view:cache
 - Web server (Apache/Nginx)
 
 ### Architecture
-- **Framework**: Laravel " . app()->version() . "
+- **Framework**: Laravel ".app()->version()."
 - **Database**: Single MySQL database
 - **Sessions**: File-based (no multi-tenant complexity)
 - **Routing**: Direct routes (no project code prefixes)
@@ -684,8 +686,8 @@ server {
 
 - **Original Project**: {$project->name}
 - **Project Code**: {$project->code}
-- **Export Date**: " . date('Y-m-d H:i:s') . "
-- **Laravel Version**: " . app()->version() . "
+- **Export Date**: ".date('Y-m-d H:i:s').'
+- **Laravel Version**: '.app()->version().'
 - **Export Type**: Standalone CMS (no project dependencies)
 
 ## 🎉 Success!
@@ -697,44 +699,45 @@ Your CMS is now completely standalone and ready for production!
 ---
 
 *This CMS was exported from a multi-tenant system and converted to standalone mode.*
-";
-        
+';
+
         File::put("{$exportDir}/README.md", $readme);
-        
-        $this->info("✅ Documentation created");
+
+        $this->info('✅ Documentation created');
     }
-    
+
     private function createZip($projectCode, $exportDir)
     {
-        $this->info("📦 Creating zip...");
-        
+        $this->info('📦 Creating zip...');
+
         $zipPath = storage_path("app/standalone-cms/{$projectCode}_standalone.zip");
-        
-        $zip = new ZipArchive();
-        if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
-            
+
+        $zip = new ZipArchive;
+        if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
+
             $iterator = new \RecursiveIteratorIterator(
                 new \RecursiveDirectoryIterator($exportDir),
                 \RecursiveIteratorIterator::LEAVES_ONLY
             );
-            
+
             $fileCount = 0;
             foreach ($iterator as $file) {
-                if (!$file->isDir()) {
+                if (! $file->isDir()) {
                     $filePath = $file->getRealPath();
                     $relativePath = substr($filePath, strlen($exportDir) + 1);
                     $zip->addFile($filePath, $relativePath);
                     $fileCount++;
                 }
             }
-            
+
             $zip->close();
             File::deleteDirectory($exportDir);
-            
+
             $this->info("✅ Zip created with {$fileCount} files");
+
             return $zipPath;
         }
-        
-        throw new \Exception("Cannot create zip file");
+
+        throw new \Exception('Cannot create zip file');
     }
 }

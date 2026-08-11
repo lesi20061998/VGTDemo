@@ -32,7 +32,8 @@ class CleanDuplicateSettings extends Command
             $cleaned = ProjectSettingModel::cleanDuplicateKeys();
             $this->info("Successfully cleaned {$cleaned} duplicate keys.");
         } catch (\Exception $e) {
-            $this->error('Error cleaning duplicate keys: ' . $e->getMessage());
+            $this->error('Error cleaning duplicate keys: '.$e->getMessage());
+
             return 1;
         }
 

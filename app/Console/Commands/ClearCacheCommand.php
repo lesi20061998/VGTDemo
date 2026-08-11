@@ -8,6 +8,7 @@ use Illuminate\Console\Command;
 class ClearCacheCommand extends Command
 {
     protected $signature = 'cache:clear-app {--type=all}';
+
     protected $description = 'Clear application cache';
 
     public function handle()

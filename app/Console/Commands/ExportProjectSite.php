@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\Project;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
@@ -12,6 +12,7 @@ use ZipArchive;
 class ExportProjectSite extends Command
 {
     protected $signature = 'project:export {projectCode} {--output-path=exports/} {--cms-only : Export only CMS functionality}';
+
     protected $description = 'Export a project as standalone Laravel CMS site';
 
     public function handle()
@@ -19,84 +20,85 @@ class ExportProjectSite extends Command
         $projectCode = $this->argument('projectCode');
         $outputPath = $this->option('output-path');
         $cmsOnly = $this->option('cms-only');
-        
+
         $project = Project::where('code', $projectCode)->first();
-        
-        if (!$project) {
+
+        if (! $project) {
             $this->error("Project with code '{$projectCode}' not found!");
+
             return 1;
         }
-        
+
         $this->info("🚀 Exporting project CMS: {$project->name} ({$projectCode})");
-        
+
         if ($cmsOnly) {
-            $this->info("📋 Exporting CMS-only functionality (no SuperAdmin)");
+            $this->info('📋 Exporting CMS-only functionality (no SuperAdmin)');
         }
-        
+
         // Tạo thư mục export
         $exportDir = storage_path("app/{$outputPath}/{$projectCode}");
         $this->createExportDirectory($exportDir);
-        
+
         // 1. Copy Laravel core files
         $this->copyLaravelCore($exportDir);
-        
+
         // 2. Export database
         $this->exportProjectDatabase($project, $exportDir);
-        
+
         // 3. Generate project-specific config
         $this->generateProjectConfig($project, $exportDir);
-        
+
         // 4. Copy project assets
         $this->copyProjectAssets($project, $exportDir);
-        
+
         // 5. Generate CMS routes and controllers
         $this->generateCMSRoutes($project, $exportDir);
-        
+
         // 6. Copy CMS controllers and middleware
         $this->copyCMSControllers($exportDir);
-        
+
         // 7. Generate deployment files
         $this->generateDeploymentFiles($project, $exportDir);
-        
+
         // 8. Create zip file
         $zipPath = $this->createZipFile($projectCode, $exportDir);
-        
-        $this->info("✅ Project CMS exported successfully!");
+
+        $this->info('✅ Project CMS exported successfully!');
         $this->info("📦 Export location: {$zipPath}");
-        $this->info("🌐 Ready to deploy as standalone CMS site");
-        
+        $this->info('🌐 Ready to deploy as standalone CMS site');
+
         return 0;
     }
-    
+
     private function createExportDirectory($exportDir)
     {
         if (File::exists($exportDir)) {
             File::deleteDirectory($exportDir);
         }
         File::makeDirectory($exportDir, 0755, true);
-        $this->info("📁 Created export directory");
+        $this->info('📁 Created export directory');
     }
-    
+
     private function copyLaravelCore($exportDir)
     {
-        $this->info("📋 Copying essential Laravel files...");
-        
+        $this->info('📋 Copying essential Laravel files...');
+
         // Chỉ copy những thư mục cần thiết, bỏ qua vendor để giảm thời gian
         $essentialDirs = [
             'app',
-            'bootstrap', 
+            'bootstrap',
             'config',
             'database',
             'public',
-            'resources'
+            'resources',
         ];
-        
+
         $coreFiles = [
             'artisan',
             'composer.json',
-            '.htaccess'
+            '.htaccess',
         ];
-        
+
         // Copy directories (bỏ qua vendor và storage để tăng tốc)
         foreach ($essentialDirs as $dir) {
             if (File::exists(base_path($dir))) {
@@ -104,46 +106,46 @@ class ExportProjectSite extends Command
                 File::copyDirectory(base_path($dir), "{$exportDir}/{$dir}");
             }
         }
-        
+
         // Tạo storage structure thay vì copy
         $this->createStorageStructure($exportDir);
-        
+
         // Copy files
         foreach ($coreFiles as $file) {
             if (File::exists(base_path($file))) {
                 File::copy(base_path($file), "{$exportDir}/{$file}");
             }
         }
-        
-        $this->info("✅ Essential Laravel files copied");
+
+        $this->info('✅ Essential Laravel files copied');
         $this->warn("⚠️  Note: vendor/ not copied - run 'composer install' on target server");
     }
-    
+
     private function createStorageStructure($exportDir)
     {
         $storageDirs = [
             'storage/app/public',
             'storage/framework/cache',
-            'storage/framework/sessions', 
+            'storage/framework/sessions',
             'storage/framework/views',
-            'storage/logs'
+            'storage/logs',
         ];
-        
+
         foreach ($storageDirs as $dir) {
             File::ensureDirectoryExists("{$exportDir}/{$dir}");
         }
-        
+
         // Tạo .gitignore cho storage
         File::put("{$exportDir}/storage/logs/.gitignore", "*\n!.gitignore\n");
     }
-    
+
     private function exportProjectDatabase($project, $exportDir)
     {
-        $this->info("💾 Exporting project database...");
-        
-        $dbName = 'project_' . strtolower($project->code);
+        $this->info('💾 Exporting project database...');
+
+        $dbName = 'project_'.strtolower($project->code);
         $sqlFile = "{$exportDir}/database.sql";
-        
+
         try {
             // Setup project database connection
             config(['database.connections.export_project' => [
@@ -154,82 +156,82 @@ class ExportProjectSite extends Command
                 'username' => env('DB_USERNAME'),
                 'password' => env('DB_PASSWORD'),
             ]]);
-            
+
             // Export database structure and data
             $this->exportDatabaseToSQL($dbName, $sqlFile);
-            
-            $this->info("✅ Database exported to database.sql");
-            
+
+            $this->info('✅ Database exported to database.sql');
+
         } catch (\Exception $e) {
-            $this->error("❌ Database export failed: " . $e->getMessage());
+            $this->error('❌ Database export failed: '.$e->getMessage());
         }
     }
-    
+
     private function exportDatabaseToSQL($dbName, $sqlFile)
     {
         // Export qua PHP nếu không có mysqldump
         $this->exportDatabaseViaPHP($dbName, $sqlFile);
     }
-    
+
     private function exportDatabaseViaPHP($dbName, $sqlFile)
     {
         try {
             $tables = DB::connection('export_project')->select('SHOW TABLES');
             $sql = "-- Database Export for {$dbName}\n";
-            $sql .= "-- Generated on " . date('Y-m-d H:i:s') . "\n\n";
-            
+            $sql .= '-- Generated on '.date('Y-m-d H:i:s')."\n\n";
+
             foreach ($tables as $table) {
-                $tableName = array_values((array)$table)[0];
-                
+                $tableName = array_values((array) $table)[0];
+
                 // Get table structure
                 $createTable = DB::connection('export_project')->select("SHOW CREATE TABLE `{$tableName}`");
                 $sql .= "-- Table: {$tableName}\n";
                 $sql .= "DROP TABLE IF EXISTS `{$tableName}`;\n";
-                $sql .= $createTable[0]->{'Create Table'} . ";\n\n";
-                
+                $sql .= $createTable[0]->{'Create Table'}.";\n\n";
+
                 // Get table data
                 $rows = DB::connection('export_project')->table($tableName)->get();
-                
+
                 if ($rows->count() > 0) {
                     $sql .= "-- Data for table {$tableName}\n";
                     $sql .= "INSERT INTO `{$tableName}` VALUES\n";
-                    
+
                     $values = [];
                     foreach ($rows as $row) {
-                        $rowData = array_map(function($value) {
-                            return is_null($value) ? 'NULL' : "'" . addslashes($value) . "'";
-                        }, (array)$row);
-                        $values[] = '(' . implode(',', $rowData) . ')';
+                        $rowData = array_map(function ($value) {
+                            return is_null($value) ? 'NULL' : "'".addslashes($value)."'";
+                        }, (array) $row);
+                        $values[] = '('.implode(',', $rowData).')';
                     }
-                    
-                    $sql .= implode(",\n", $values) . ";\n\n";
+
+                    $sql .= implode(",\n", $values).";\n\n";
                 }
             }
-            
+
             File::put($sqlFile, $sql);
         } catch (\Exception $e) {
-            $this->warn("Database export via PHP failed: " . $e->getMessage());
+            $this->warn('Database export via PHP failed: '.$e->getMessage());
             // Tạo file SQL trống
             File::put($sqlFile, "-- Database export failed\n-- Please export manually\n");
         }
     }
-    
+
     private function generateProjectConfig($project, $exportDir)
     {
-        $this->info("⚙️  Generating project-specific config...");
-        
+        $this->info('⚙️  Generating project-specific config...');
+
         // Tạo .env file cho project
         $envContent = $this->generateProjectEnv($project);
         File::put("{$exportDir}/.env", $envContent);
-        
-        $this->info("✅ Project config generated");
+
+        $this->info('✅ Project config generated');
     }
-    
+
     private function generateProjectEnv($project)
     {
         return "APP_NAME=\"{$project->name}\"
 APP_ENV=production
-APP_KEY=" . config('app.key') . "
+APP_KEY=".config('app.key')."
 APP_DEBUG=false
 APP_URL=https://{$project->domain}
 
@@ -256,7 +258,7 @@ PROJECT_ID={$project->id}
 PROJECT_NAME=\"{$project->name}\"
 ";
     }
-    
+
     private function generateCMSRoutes($project, $exportDir)
     {
         // Tạo routes/web.php cho CMS project
@@ -316,9 +318,9 @@ Route::prefix('api')->group(function () {
     Route::get('widgets/{area}', [\App\Http\Controllers\Api\WidgetController::class, 'getByArea']);
 });
 ";
-        
+
         File::put("{$exportDir}/routes/web.php", $routesContent);
-        
+
         // Tạo routes/api.php đơn giản
         $apiRoutesContent = "<?php
 
@@ -338,18 +340,18 @@ Route::prefix('cms')->group(function () {
     Route::get('widgets/{area}', [\App\Http\Controllers\Api\WidgetController::class, 'getByArea']);
 });
 ";
-        
+
         File::put("{$exportDir}/routes/api.php", $apiRoutesContent);
     }
-    
+
     private function copyCMSControllers($exportDir)
     {
-        $this->info("📋 Copying CMS controllers...");
-        
+        $this->info('📋 Copying CMS controllers...');
+
         // Controllers cần thiết cho CMS
         $cmsControllers = [
             'Admin/DashboardController.php',
-            'Admin/ProductController.php', 
+            'Admin/ProductController.php',
             'Admin/CategoryController.php',
             'Admin/BrandController.php',
             'Admin/OrderController.php',
@@ -367,45 +369,45 @@ Route::prefix('cms')->group(function () {
             'Api/PostController.php',
             'Api/MenuController.php',
             'Api/WidgetController.php',
-            'HomeController.php'
+            'HomeController.php',
         ];
-        
+
         foreach ($cmsControllers as $controller) {
             $sourcePath = app_path("Http/Controllers/{$controller}");
             $destPath = "{$exportDir}/app/Http/Controllers/{$controller}";
-            
+
             if (File::exists($sourcePath)) {
                 // Tạo thư mục nếu chưa có
                 File::ensureDirectoryExists(dirname($destPath));
                 File::copy($sourcePath, $destPath);
             }
         }
-        
-        $this->info("✅ CMS controllers copied");
+
+        $this->info('✅ CMS controllers copied');
     }
-    
+
     private function copyProjectAssets($project, $exportDir)
     {
-        $this->info("🎨 Copying project assets...");
-        
+        $this->info('🎨 Copying project assets...');
+
         // Copy project-specific uploads
         $uploadsPath = storage_path("app/public/projects/{$project->code}");
         if (File::exists($uploadsPath)) {
             File::copyDirectory($uploadsPath, "{$exportDir}/storage/app/public/uploads");
         }
-        
+
         // Copy compiled assets
         if (File::exists(public_path('build'))) {
             File::copyDirectory(public_path('build'), "{$exportDir}/public/build");
         }
-        
-        $this->info("✅ Project assets copied");
+
+        $this->info('✅ Project assets copied');
     }
-    
+
     private function generateDeploymentFiles($project, $exportDir)
     {
-        $this->info("🚀 Generating deployment files...");
-        
+        $this->info('🚀 Generating deployment files...');
+
         // Tạo README.md cho CMS
         $readmeContent = "# {$project->name} - CMS
 
@@ -461,15 +463,15 @@ php artisan view:cache
 - Name: {$project->name}
 - Domain: {$project->domain}
 - Type: Standalone CMS
-- Exported: " . date('Y-m-d H:i:s') . "
+- Exported: ".date('Y-m-d H:i:s').'
 
 ## Note
 This is a standalone CMS export. SuperAdmin functionality is not included.
 Each project operates independently with its own database and users.
-";
-        
+';
+
         File::put("{$exportDir}/README.md", $readmeContent);
-        
+
         // Tạo deployment script
         $deployScript = "#!/bin/bash
 # CMS Deployment script for {$project->name}
@@ -499,46 +501,46 @@ php artisan view:cache
 echo \"✅ CMS Deployment completed!\"
 echo \"🌐 Access admin panel at: /admin\"
 ";
-        
+
         File::put("{$exportDir}/deploy.sh", $deployScript);
         chmod("{$exportDir}/deploy.sh", 0755);
-        
-        $this->info("✅ Deployment files generated");
+
+        $this->info('✅ Deployment files generated');
     }
-    
+
     private function createZipFile($projectCode, $exportDir)
     {
-        $this->info("📦 Creating zip file...");
-        
+        $this->info('📦 Creating zip file...');
+
         $zipPath = storage_path("app/exports/{$projectCode}_cms.zip");
-        
+
         // Tạo thư mục exports nếu chưa có
         File::ensureDirectoryExists(dirname($zipPath));
-        
-        $zip = new ZipArchive();
-        if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
-            
+
+        $zip = new ZipArchive;
+        if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
+
             $iterator = new \RecursiveIteratorIterator(
                 new \RecursiveDirectoryIterator($exportDir),
                 \RecursiveIteratorIterator::LEAVES_ONLY
             );
-            
+
             foreach ($iterator as $file) {
-                if (!$file->isDir()) {
+                if (! $file->isDir()) {
                     $filePath = $file->getRealPath();
                     $relativePath = substr($filePath, strlen($exportDir) + 1);
                     $zip->addFile($filePath, $relativePath);
                 }
             }
-            
+
             $zip->close();
-            
+
             // Cleanup export directory
             File::deleteDirectory($exportDir);
-            
+
             return $zipPath;
         }
-        
-        throw new \Exception("Cannot create zip file");
+
+        throw new \Exception('Cannot create zip file');
     }
 }
