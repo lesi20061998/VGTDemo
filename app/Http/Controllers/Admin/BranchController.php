@@ -11,6 +11,7 @@ class BranchController extends Controller
     public function index()
     {
         $branches = Branch::all();
+
         return view('cms.branches.index', compact('branches'));
     }
 
@@ -28,6 +29,7 @@ class BranchController extends Controller
         ]);
 
         Branch::create($validated);
+
         return redirect()->route('cms.branches.index')->with('success', 'Branch created');
     }
 
@@ -45,13 +47,14 @@ class BranchController extends Controller
         ]);
 
         $branch->update($validated);
+
         return redirect()->route('cms.branches.index')->with('success', 'Branch updated');
     }
 
     public function destroy(Branch $branch)
     {
         $branch->delete();
+
         return redirect()->route('cms.branches.index')->with('success', 'Branch deleted');
     }
 }
-

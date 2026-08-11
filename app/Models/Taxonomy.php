@@ -68,4 +68,23 @@ class Taxonomy extends Model
     {
         return 'slug';
     }
+
+    public function getLevelAttribute(): int
+    {
+        return $this->meta_data['level'] ?? 0;
+    }
+
+    public function getImageAttribute(): ?string
+    {
+        return $this->meta_data['image'] ?? null;
+    }
+
+    public function getIsActiveAttribute(): bool
+    {
+        if (isset($this->meta_data['is_active'])) {
+            return (bool) $this->meta_data['is_active'];
+        }
+
+        return $this->status === 'published';
+    }
 }

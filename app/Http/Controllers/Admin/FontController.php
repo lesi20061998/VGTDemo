@@ -11,18 +11,20 @@ class FontController extends Controller
     public function index()
     {
         $fonts = setting('fonts', []);
+
         return view('cms.settings.fonts', compact('fonts'));
     }
 
     public function getGoogleFonts(Request $request)
     {
-        $response = Http::get("https://www.googleapis.com/webfonts/v1/webfonts", [
+        $response = Http::get('https://www.googleapis.com/webfonts/v1/webfonts', [
             'key' => 'AIzaSyC5t_7sZdp8KqF0HqYzKjHqYqZqYqZqYqY',
-            'sort' => 'popularity'
+            'sort' => 'popularity',
         ]);
 
         if ($response->successful()) {
             $fonts = collect($response->json()['items'] ?? [])->take(100);
+
             return response()->json($fonts->values());
         }
 
@@ -49,7 +51,7 @@ class FontController extends Controller
         ]);
 
         $fonts = setting('fonts', []);
-        
+
         $fonts[] = [
             'id' => uniqid(),
             'key' => $request->key,
@@ -68,36 +70,40 @@ class FontController extends Controller
     public function toggle(Request $request)
     {
         $fonts = setting('fonts', []);
-        $fonts = collect($fonts)->map(function($font) use ($request) {
+        $fonts = collect($fonts)->map(function ($font) use ($request) {
             if ($font['id'] === $request->id) {
-                $font['is_active'] = !$font['is_active'];
+                $font['is_active'] = ! $font['is_active'];
             }
+
             return $font;
         })->toArray();
 
         setting(['fonts' => $fonts]);
+
         return back()->with('success', 'Đã cập nhật');
     }
 
     public function setDefault(Request $request)
     {
         $fonts = setting('fonts', []);
-        $fonts = collect($fonts)->map(function($font) use ($request) {
+        $fonts = collect($fonts)->map(function ($font) use ($request) {
             $font['is_default'] = $font['id'] === $request->id;
+
             return $font;
         })->toArray();
 
         setting(['fonts' => $fonts]);
+
         return back()->with('success', 'Đã đặt mặc định. Chạy: npm run build')->with('warning', 'Cần rebuild CSS!');
     }
 
     public function destroy(Request $request)
     {
         $fonts = setting('fonts', []);
-        $fonts = collect($fonts)->reject(fn($font) => $font['id'] === $request->id)->values()->toArray();
+        $fonts = collect($fonts)->reject(fn ($font) => $font['id'] === $request->id)->values()->toArray();
 
         setting(['fonts' => $fonts]);
+
         return back()->with('success', 'Đã xóa');
     }
 }
-

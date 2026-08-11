@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('orders')) {
+        if (! Schema::hasTable('orders')) {
             Schema::create('orders', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('tenant_id')->nullable();
@@ -38,7 +38,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('order_items')) {
+        if (! Schema::hasTable('order_items')) {
             Schema::create('order_items', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('tenant_id')->nullable();
@@ -56,7 +56,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('order_status_histories')) {
+        if (! Schema::hasTable('order_status_histories')) {
             Schema::create('order_status_histories', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('tenant_id')->nullable();
@@ -70,7 +70,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('product_attribute_value_mappings')) {
+        if (! Schema::hasTable('product_attribute_value_mappings')) {
             Schema::create('product_attribute_value_mappings', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('tenant_id')->nullable();
@@ -101,11 +101,11 @@ return new class extends Migration
         foreach ($tables as $tableName) {
             if (Schema::hasTable($tableName)) {
                 Schema::table($tableName, function (Blueprint $table) use ($tableName) {
-                    if (!Schema::hasColumn($tableName, 'tenant_id')) {
+                    if (! Schema::hasColumn($tableName, 'tenant_id')) {
                         $table->unsignedBigInteger('tenant_id')->nullable()->after('id');
                         $table->index('tenant_id');
                     }
-                    if (!Schema::hasColumn($tableName, 'project_id')) {
+                    if (! Schema::hasColumn($tableName, 'project_id')) {
                         $table->unsignedBigInteger('project_id')->nullable()->after('tenant_id');
                         $table->index('project_id');
                     }

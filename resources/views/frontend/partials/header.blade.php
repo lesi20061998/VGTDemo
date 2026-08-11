@@ -15,6 +15,11 @@
     $showSearch = (bool) $getSettingValue('show_search', 1);
     $showCart = (bool) $getSettingValue('show_cart', 1);
     $showAccount = (bool) $getSettingValue('show_account', 1);
+    $showHotlineBadge = (bool) $getSettingValue('show_hotline_badge', 1);
+    $showMobileMenuText = (bool) $getSettingValue('show_mobile_menu_text', 0);
+    $mobileMenuBtnText = $getSettingValue('mobile_menu_button_text', 'MENU');
+    $showMobileMenuText = (bool) $getSettingValue('show_mobile_menu_text', 0);
+    $mobileMenuBtnText = $getSettingValue('mobile_menu_button_text', 'MENU');
     $logo = $getSettingValue('site_logo', '');
     $siteName = $getSettingValue('site_name', 'Website');
     $hotline = $getSettingValue('hotline', '1900 1234');
@@ -43,6 +48,9 @@
     // Load navigation menu với tất cả items và children (submenu đa cấp)
     $navMenu = null;
     try {
+        if (!$navMenuId) {
+            $navMenuId = \App\Models\Menu::first()?->id;
+        }
         $navMenu = $navMenuId ? \App\Models\Menu::with(['items' => function($query) {
             $query->whereNull('parent_id')
                   ->orderBy('order')
@@ -57,12 +65,31 @@
         // Bỏ qua lỗi nếu bảng menus không tồn tại
     }
     
-    // Get styles from theme options
-    $themeTopbar = setting('theme_option_topbar', []);
-    $topbarStyle = is_array($themeTopbar) ? ($themeTopbar['topbar_style'] ?? 'style-1') : 'style-1';
+    // Get styles from website-config first, then fallback to old theme options
+    $topbarStyleConfig = $getSettingValue('topbar_style', '');
+    if (!empty($topbarStyleConfig)) {
+        $topbarStyle = $topbarStyleConfig;
+    } else {
+        $themeTopbar = setting('theme_option_topbar', []);
+        $topbarStyle = is_array($themeTopbar) ? ($themeTopbar['topbar_style'] ?? 'style-1') : 'style-1';
+    }
     
-    $themeHeader = setting('theme_option_header', []);
-    $headerStyle = is_array($themeHeader) ? ($themeHeader['header_style'] ?? 'style-1') : 'style-1';
+    $layoutMap = [
+        'style-1' => 'style-1',
+        'style-2' => 'style-2',
+        'style-3' => 'style-3',
+        'style-4' => 'style-4',
+        'default' => 'style-1',
+        'centered' => 'style-2',
+        'minimal' => 'style-3',
+        'fullwidth_glass' => 'style-4',
+    ];
+
+    $headerLayoutConfig = $getSettingValue('header_layout', 'style-1');
+    $headerStyle = $layoutMap[$headerLayoutConfig] ?? 'style-1';
+
+
+
     
     // Project code for URLs
     $projectCode = request()->route('projectCode');
@@ -99,6 +126,11 @@
 
 <!-- Header -->
 @php
+    $headerHeight = (int) $getSettingValue('header_height', 60);
+    if ($headerHeight <= 0) {
+        $headerHeight = 60;
+    }
+
     // Fallback to style-1 if selected style doesn't exist
     $headerViewPath = 'frontend.partials.headers.' . $headerStyle;
     if (!view()->exists($headerViewPath)) {
@@ -109,10 +141,14 @@
     'headerBg'      => $headerBg,
     'headerText'    => $headerText,
     'headerSticky'  => $headerSticky,
+    'headerHeight'  => $headerHeight,
     'headerLayout'  => $headerLayout,
     'showSearch'    => $showSearch,
     'showCart'      => $showCart,
     'showAccount'   => $showAccount,
+    'showHotlineBadge' => $showHotlineBadge,
+    'showMobileMenuText' => $showMobileMenuText,
+    'mobileMenuBtnText'  => $mobileMenuBtnText,
     'logo'          => $logo,
     'siteName'      => $siteName,
     'hotline'       => $hotline,

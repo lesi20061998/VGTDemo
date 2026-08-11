@@ -58,7 +58,7 @@ class ProjectSettingModel extends Model
         if ($existingSetting) {
             // Kiểm tra xem giá trị có thay đổi không
             $existingValue = $existingSetting->payload;
-            
+
             // Nếu giá trị giống nhau thì không cần update
             if ($existingValue === $normalizedValue && $existingSetting->group === $group) {
                 return $existingSetting;
@@ -108,6 +108,7 @@ class ProjectSettingModel extends Model
         } else {
             $query->whereNull('project_id');
         }
+
         return $query->first();
     }
 

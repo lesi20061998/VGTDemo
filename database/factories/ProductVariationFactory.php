@@ -2,13 +2,13 @@
 
 namespace Database\Factories;
 
-use App\Models\ProductVariation;
 use App\Models\Product;
+use App\Models\ProductVariation;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ProductVariation>
+ * @extends Factory<ProductVariation>
  */
 class ProductVariationFactory extends Factory
 {

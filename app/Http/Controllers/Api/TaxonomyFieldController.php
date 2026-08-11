@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Category;
 use App\Models\Brand;
+use App\Models\Category;
 use Illuminate\Http\Request;
 
 class TaxonomyFieldController extends Controller
@@ -33,7 +33,7 @@ class TaxonomyFieldController extends Controller
             ->orderBy('sort_order')
             ->get();
 
-        return $categories->map(fn($c) => [
+        return $categories->map(fn ($c) => [
             'id' => $c->id,
             'name' => $c->name,
             'slug' => $c->slug,
@@ -50,7 +50,7 @@ class TaxonomyFieldController extends Controller
             ->orderBy('name')
             ->get();
 
-        return $brands->map(fn($b) => [
+        return $brands->map(fn ($b) => [
             'id' => $b->id,
             'name' => $b->name,
             'slug' => $b->slug,

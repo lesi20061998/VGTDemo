@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\PageBuilderController;
 use App\Http\Controllers\Admin\ThemeOptionController;
+use App\Http\Controllers\Admin\WidgetController;
 use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Api\NewsletterController;
 use App\Http\Controllers\Api\ProjectBridgeController;
@@ -103,9 +104,9 @@ Route::prefix('admin')->name('cms.')->middleware(['auth'])->group(function () {
         // [CLEANED]         Route::post('widgets/clear', [\App\Http\Controllers\Admin\WidgetController::class, 'clearArea'])->name('widgets.clear');
         // [CLEANED]         Route::delete('widgets/{widget}', [\App\Http\Controllers\Admin\WidgetController::class, 'destroy'])->name('widgets.destroy');
         // [CLEANED]         Route::post('widgets/clear-cache', [\App\Http\Controllers\Admin\WidgetController::class, 'clearCache'])->name('widgets.clear-cache');
-        Route::post('widgets/preview', [\App\Http\Controllers\Admin\WidgetController::class, 'preview'])->name('widgets.preview');
+        Route::post('widgets/preview', [WidgetController::class, 'preview'])->name('widgets.preview');
         // [CLEANED]         Route::get('widgets/discover', [\App\Http\Controllers\Admin\WidgetController::class, 'discover'])->name('widgets.discover');
-        // [CLEANED]         Route::match(['get', 'post'], 'widgets/fields', [\App\Http\Controllers\Admin\WidgetController::class, 'getFields'])->name('widgets.fields');
+        Route::match(['get', 'post'], 'widgets/fields', [WidgetController::class, 'getFields'])->name('widgets.fields');
         // [CLEANED]         Route::post('widgets/toggle', [\App\Http\Controllers\Admin\WidgetController::class, 'toggleWidget'])->name('widgets.toggle');
         // [CLEANED]         Route::get('widgets/permissions', [\App\Http\Controllers\Admin\WidgetController::class, 'getPermissions'])->name('widgets.permissions');
         // [CLEANED]         Route::get('widgets/export', [\App\Http\Controllers\Admin\WidgetController::class, 'export'])->name('widgets.export');

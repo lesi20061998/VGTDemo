@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Widgets\WidgetRegistry;
 use Illuminate\Database\Eloquent\Model;
 
 class Widget extends Model
@@ -19,9 +20,9 @@ class Widget extends Model
      */
     public function getRenderedContent(): string
     {
-        return \App\Widgets\WidgetRegistry::render(
-            $this->type, 
-            $this->settings ?? [], 
+        return WidgetRegistry::render(
+            $this->type,
+            $this->settings ?? [],
             $this->variant ?? 'default'
         );
     }
@@ -32,11 +33,13 @@ class Widget extends Model
     public function validateSettings(): bool
     {
         try {
-            $widgetClass = \App\Widgets\WidgetRegistry::get($this->type);
+            $widgetClass = WidgetRegistry::get($this->type);
             if ($widgetClass) {
                 $widget = new $widgetClass($this->settings ?? [], $this->variant ?? 'default');
+
                 return $widget->validateSettings();
             }
+
             return true;
         } catch (\Exception $e) {
             return false;
@@ -48,9 +51,9 @@ class Widget extends Model
      */
     public function getPreview(): string
     {
-        return \App\Widgets\WidgetRegistry::getPreview(
-            $this->type, 
-            $this->settings ?? [], 
+        return WidgetRegistry::getPreview(
+            $this->type,
+            $this->settings ?? [],
             $this->variant ?? 'default'
         );
     }
@@ -60,7 +63,6 @@ class Widget extends Model
      */
     public function getWidgetMetadata(): ?array
     {
-        return \App\Widgets\WidgetRegistry::getConfig($this->type);
+        return WidgetRegistry::getConfig($this->type);
     }
 }
-

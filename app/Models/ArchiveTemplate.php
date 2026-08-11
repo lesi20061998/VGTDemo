@@ -35,7 +35,7 @@ class ArchiveTemplate extends Model
         });
 
         static::creating(function ($template) {
-            if (!$template->tenant_id && session('current_tenant_id')) {
+            if (! $template->tenant_id && session('current_tenant_id')) {
                 $template->tenant_id = session('current_tenant_id');
             }
         });
@@ -82,7 +82,7 @@ class ArchiveTemplate extends Model
 
                 // Inject CSS
                 if ($this->template_css) {
-                    $html = "<style>{$this->template_css}</style>" . $html;
+                    $html = "<style>{$this->template_css}</style>".$html;
                 }
 
                 // Inject JS
@@ -98,6 +98,7 @@ class ArchiveTemplate extends Model
             if (config('app.debug')) {
                 return "<div class='bg-red-100 p-4 rounded'>Archive Template Error: {$e->getMessage()}</div>";
             }
+
             return '';
         }
     }
@@ -108,6 +109,7 @@ class ArchiveTemplate extends Model
     public function getCss(): string
     {
         $path = resource_path("views/archives/{$this->type}/{$this->slug}/style.css");
+
         return \File::exists($path) ? \File::get($path) : ($this->template_css ?? '');
     }
 
@@ -117,6 +119,7 @@ class ArchiveTemplate extends Model
     public function getJs(): string
     {
         $path = resource_path("views/archives/{$this->type}/{$this->slug}/script.js");
+
         return \File::exists($path) ? \File::get($path) : ($this->template_js ?? '');
     }
 }

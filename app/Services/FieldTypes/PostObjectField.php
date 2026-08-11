@@ -18,10 +18,10 @@ class PostObjectField implements FieldTypeInterface
         $required = $config['required'] ?? false;
         $help = $config['help'] ?? '';
         $postType = $config['post_type'] ?? 'product';
-        
+
         $selectedId = is_array($value) ? ($value[0] ?? '') : ($value ?? '');
         $requiredAttr = $required ? 'required' : '';
-        
+
         // Determine API base URL based on context
         $projectCode = session('current_project')['code'] ?? null;
         $apiBase = $projectCode ? "/{$projectCode}/api" : '/api';
@@ -162,13 +162,14 @@ class PostObjectField implements FieldTypeInterface
     public function validate(mixed $value, array $rules = []): bool
     {
         if (empty($value)) {
-            return !in_array('required', $rules);
+            return ! in_array('required', $rules);
         }
+
         return is_numeric($value);
     }
 
     public function transform(mixed $value): mixed
     {
-        return $value ? (int)$value : null;
+        return $value ? (int) $value : null;
     }
 }

@@ -15,7 +15,7 @@ return new class extends Migration
             $table->string('slug')->unique();
             $table->string('color')->nullable();
             $table->timestamps();
-            
+
             $table->index(['slug']);
         });
 
@@ -35,7 +35,7 @@ return new class extends Migration
             $table->timestamp('published_at')->nullable();
             $table->foreignId('author_id')->constrained('users')->onDelete('cascade');
             $table->timestamps();
-            
+
             $table->index(['status', 'published_at']);
             $table->index(['slug']);
             $table->index(['author_id']);
@@ -47,7 +47,7 @@ return new class extends Migration
             $table->foreignId('post_id')->constrained()->onDelete('cascade');
             $table->foreignId('tag_id')->constrained()->onDelete('cascade');
             $table->timestamps();
-            
+
             $table->unique(['post_id', 'tag_id']);
         });
 
@@ -59,7 +59,7 @@ return new class extends Migration
             $table->integer('sort_order')->default(0);
             $table->enum('status', ['draft', 'published'])->default('draft');
             $table->timestamps();
-            
+
             $table->index(['status', 'sort_order']);
         });
 
@@ -75,7 +75,7 @@ return new class extends Migration
             $table->text('meta_description')->nullable();
             $table->json('seo_data')->nullable();
             $table->timestamps();
-            
+
             $table->index(['status']);
             $table->index(['slug']);
         });
@@ -89,7 +89,7 @@ return new class extends Migration
             $table->integer('order')->default(0);
             $table->boolean('is_active')->default(true);
             $table->timestamps();
-            
+
             $table->index(['page_id', 'order']);
         });
     }

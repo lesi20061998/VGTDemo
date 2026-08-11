@@ -26,4 +26,3 @@ class VoltServiceProvider extends ServiceProvider
         ]);
     }
 }
-

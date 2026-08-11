@@ -11,7 +11,7 @@ return new class extends Migration
         // Tables that need project_id for multi-tenant support
         $tables = [
             'products_enhanced',
-            'product_categories', 
+            'product_categories',
             'brands',
             'product_attributes',
             'product_attribute_values',
@@ -28,11 +28,11 @@ return new class extends Migration
             'form_submissions',
             'branches',
             'posts',
-            'tags'
+            'tags',
         ];
-        
+
         foreach ($tables as $table) {
-            if (Schema::hasTable($table) && !Schema::hasColumn($table, 'project_id')) {
+            if (Schema::hasTable($table) && ! Schema::hasColumn($table, 'project_id')) {
                 Schema::table($table, function (Blueprint $table) {
                     $table->unsignedBigInteger('project_id')->nullable()->after('id');
                     $table->index('project_id');
@@ -45,7 +45,7 @@ return new class extends Migration
     {
         $tables = [
             'products_enhanced',
-            'product_categories', 
+            'product_categories',
             'brands',
             'product_attributes',
             'product_attribute_values',
@@ -62,9 +62,9 @@ return new class extends Migration
             'form_submissions',
             'branches',
             'posts',
-            'tags'
+            'tags',
         ];
-        
+
         foreach ($tables as $table) {
             if (Schema::hasTable($table) && Schema::hasColumn($table, 'project_id')) {
                 Schema::table($table, function (Blueprint $table) {

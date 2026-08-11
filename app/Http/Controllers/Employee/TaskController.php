@@ -13,13 +13,14 @@ class TaskController extends Controller
     {
         $employee = Employee::where('user_id', auth()->id())->first();
         $tasks = Task::where('assigned_to', $employee->id)->with('project')->latest()->get();
+
         return view('employee.tasks.index', compact('tasks'));
     }
 
     public function updateStatus(Request $request, Task $task)
     {
         $employee = Employee::where('user_id', auth()->id())->first();
-        
+
         if ($task->assigned_to != $employee->id) {
             abort(403, 'Không có quyền cập nhật task này.');
         }
@@ -29,8 +30,7 @@ class TaskController extends Controller
 
         return back()->with('alert', [
             'type' => 'success',
-            'message' => 'Cập nhật trạng thái thành công!'
+            'message' => 'Cập nhật trạng thái thành công!',
         ]);
     }
 }
-

@@ -16,7 +16,7 @@ class PropertyCategoryController extends Controller
         $query = Taxonomy::where('taxonomy', 'property_category');
 
         if ($request->has('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%');
+            $query->where('name', 'like', '%'.$request->search.'%');
         }
 
         $categories = $query->orderBy('order', 'asc')->get();
@@ -35,9 +35,9 @@ class PropertyCategoryController extends Controller
     public function create()
     {
         $parentCategories = Taxonomy::where('taxonomy', 'property_category')
-                                    ->whereNull('parent_id')
-                                    ->orderBy('name')
-                                    ->get();
+            ->whereNull('parent_id')
+            ->orderBy('name')
+            ->get();
 
         return view('cms.property-categories.create', compact('parentCategories'));
     }
@@ -63,14 +63,14 @@ class PropertyCategoryController extends Controller
         $metaData = [];
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('taxonomies', 'public');
-            $metaData['image'] = '/storage/' . $path;
+            $metaData['image'] = '/storage/'.$path;
         }
         $validated['meta_data'] = $metaData;
 
         Taxonomy::create($validated);
 
         return redirect()->route('project.admin.property-categories.index', session('current_project')->code)
-                         ->with('success', 'Tạo danh mục bất động sản thành công.');
+            ->with('success', 'Tạo danh mục bất động sản thành công.');
     }
 
     /**
@@ -80,10 +80,10 @@ class PropertyCategoryController extends Controller
     {
         $category = Taxonomy::findOrFail($id);
         $parentCategories = Taxonomy::where('taxonomy', 'property_category')
-                                    ->whereNull('parent_id')
-                                    ->where('id', '!=', $id) // Không chọn chính nó làm cha
-                                    ->orderBy('name')
-                                    ->get();
+            ->whereNull('parent_id')
+            ->where('id', '!=', $id) // Không chọn chính nó làm cha
+            ->orderBy('name')
+            ->get();
 
         return view('cms.property-categories.edit', compact('category', 'parentCategories'));
     }
@@ -94,7 +94,7 @@ class PropertyCategoryController extends Controller
     public function update(Request $request, $id)
     {
         $category = Taxonomy::findOrFail($id);
-        
+
         $validated = $request->validate([
             'name' => 'required|max:255',
             'slug' => 'required|max:255',
@@ -106,14 +106,14 @@ class PropertyCategoryController extends Controller
         $metaData = $category->meta_data ?? [];
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('taxonomies', 'public');
-            $metaData['image'] = '/storage/' . $path;
+            $metaData['image'] = '/storage/'.$path;
         }
         $validated['meta_data'] = $metaData;
 
         $category->update($validated);
 
         return redirect()->route('project.admin.property-categories.index', session('current_project')->code)
-                         ->with('success', 'Cập nhật danh mục bất động sản thành công.');
+            ->with('success', 'Cập nhật danh mục bất động sản thành công.');
     }
 
     /**
@@ -127,14 +127,15 @@ class PropertyCategoryController extends Controller
         $category->delete();
 
         return redirect()->route('project.admin.property-categories.index', session('current_project')->code)
-                         ->with('success', 'Xóa danh mục bất động sản thành công.');
+            ->with('success', 'Xóa danh mục bất động sản thành công.');
     }
 
     /**
      * Build nested tree for categories
      */
-    private function buildTree($elements, $parentId = null) {
-        $branch = array();
+    private function buildTree($elements, $parentId = null)
+    {
+        $branch = [];
         foreach ($elements as $element) {
             if ($element->parent_id == $parentId) {
                 $children = $this->buildTree($elements, $element->id);
@@ -144,13 +145,15 @@ class PropertyCategoryController extends Controller
                 $branch[] = $element;
             }
         }
+
         return $branch;
     }
 
     /**
      * Flatten nested tree for table rendering
      */
-    private function flattenTree($elements, $level = 0, &$result = []) {
+    private function flattenTree($elements, $level = 0, &$result = [])
+    {
         foreach ($elements as $element) {
             $element->level = $level;
             $result[] = $element;
@@ -158,6 +161,7 @@ class PropertyCategoryController extends Controller
                 $this->flattenTree($element->children, $level + 1, $result);
             }
         }
+
         return $result;
     }
 }

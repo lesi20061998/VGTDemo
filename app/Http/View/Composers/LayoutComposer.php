@@ -18,14 +18,13 @@ class LayoutComposer
     {
         $headerStyle = $this->settings->get('header_style', ['template' => 'default']);
         $footerStyle = $this->settings->get('footer_style', ['template' => 'default']);
-        
-        $headerPath = 'layouts.headers.' . ($headerStyle['template'] ?? 'default');
-        $footerPath = 'layouts.footers.' . ($footerStyle['template'] ?? 'default');
-        
+
+        $headerPath = 'layouts.headers.'.($headerStyle['template'] ?? 'default');
+        $footerPath = 'layouts.footers.'.($footerStyle['template'] ?? 'default');
+
         $view->with([
             'headerPath' => $headerPath,
             'footerPath' => $footerPath,
         ]);
     }
 }
-

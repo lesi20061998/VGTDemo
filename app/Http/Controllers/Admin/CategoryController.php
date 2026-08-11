@@ -71,12 +71,12 @@ class CategoryController extends Controller
     public function store(CategoryRequest $request)
     {
         $data = $request->validated();
-        
+
         $slug = empty($data['slug']) ? $this->generateUniqueSlug($data['name']) : $this->generateUniqueSlug($data['slug']);
 
         $metaData = [];
-        
-        if ($request->has('image') && !empty($request->input('image'))) {
+
+        if ($request->has('image') && ! empty($request->input('image'))) {
             $metaData['image'] = $request->input('image');
         }
 
@@ -88,7 +88,7 @@ class CategoryController extends Controller
             if (! $parent) {
                 return back()->withInput()->with('alert', ['type' => 'error', 'message' => 'Danh mục cha không tồn tại!']);
             }
-            
+
             $parentMeta = is_string($parent->meta_data) ? json_decode($parent->meta_data, true) : ($parent->meta_data ?? []);
             $parentLevel = $parentMeta['level'] ?? 0;
             $parentPath = $parentMeta['path'] ?? $parent->slug;
@@ -148,11 +148,11 @@ class CategoryController extends Controller
         $id = $categoryId ?? $projectCodeOrId;
         $category = $this->getCategoryQuery()->findOrFail($id);
         $data = $request->validated();
-        
+
         $slug = empty($data['slug']) ? $this->generateUniqueSlug($data['name'], $category->id) : $this->generateUniqueSlug($data['slug'], $category->id);
 
         $metaData = is_string($category->meta_data) ? json_decode($category->meta_data, true) : ($category->meta_data ?? []);
-        
+
         if ($request->has('image')) {
             $imageValue = $request->input('image');
             if (! empty($imageValue) && $imageValue !== 'null' && $imageValue !== '') {

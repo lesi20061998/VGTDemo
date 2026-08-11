@@ -34,79 +34,200 @@
     
     <!-- Cột giữa: Chọn lựa -->
     <div class="col-span-4 bg-white rounded-lg shadow-sm p-4">
-        <h3 class="font-semibold text-lg mb-4">Chọn lựa</h3>
+        <h3 class="font-semibold text-lg mb-4 flex items-center justify-between">
+            <span>Chọn lựa nguồn dữ liệu</span>
+            <span class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded font-normal">7 Nguồn</span>
+        </h3>
         
         @if($selectedMenu)
-        <div class="space-y-4">
-            <!-- Trang Nội Dung -->
-            <div class="border rounded-lg">
-                <button onclick="toggleSection('pages')" class="w-full p-3 flex justify-between items-center hover:bg-gray-50">
-                    <span class="font-medium">Trang Nội Dung</span>
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+        <div class="space-y-3 max-h-[650px] overflow-y-auto pr-1">
+            
+            <!-- 1. Trang Tĩnh (Pages) -->
+            <div class="border rounded-lg shadow-xs overflow-hidden">
+                <button onclick="toggleSection('pages')" class="w-full p-3 flex justify-between items-center bg-gray-50 hover:bg-gray-100 text-left font-medium text-gray-800 text-sm">
+                    <span class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        Trang Tĩnh (Pages)
+                    </span>
+                    <span class="text-xs text-gray-500 font-normal">({{ count($pages ?? []) }}) ▼</span>
                 </button>
-                <div id="pages-section" class="p-3 border-t max-h-60 overflow-y-auto">
-                    @foreach($pages ?? [] as $page)
-                    <label class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer">
-                        <input type="checkbox" class="mr-2" data-type="page" data-id="{{ $page->id }}" data-title="{{ $page->title }}">
-                        <span class="text-sm">{{ $page->title }}</span>
+                <div id="pages-section" class="p-3 border-t max-h-56 overflow-y-auto space-y-1">
+                    @forelse($pages ?? [] as $page)
+                    <label class="flex items-center p-2 hover:bg-blue-50/50 rounded cursor-pointer transition">
+                        <input type="checkbox" class="mr-2 rounded border-gray-300 text-blue-600" data-type="page" data-id="{{ $page->id }}" data-title="{{ $page->title }}" data-url="/HD001/page/{{ $page->slug ?? $page->id }}">
+                        <span class="text-sm text-gray-700">{{ $page->title }}</span>
                     </label>
-                    @endforeach
-                    <button onclick="addSelectedItems('page')" class="mt-2 w-full px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">Thêm vào menu</button>
+                    @empty
+                    <p class="text-gray-400 text-xs text-center py-2">Chưa có trang tĩnh</p>
+                    @endforelse
+                    @if(!empty($pages) && count($pages) > 0)
+                    <button onclick="addSelectedItems('page')" class="mt-2 w-full px-3 py-2 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 shadow-xs">Thêm trang vào menu</button>
+                    @endif
                 </div>
             </div>
-            
-            <!-- Danh mục sản phẩm -->
-            <div class="border rounded-lg">
-                <button onclick="toggleSection('product-categories')" class="w-full p-3 flex justify-between items-center hover:bg-gray-50">
-                    <span class="font-medium">Danh mục sản phẩm</span>
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+
+            <!-- 2. Bài Viết (Posts) -->
+            <div class="border rounded-lg shadow-xs overflow-hidden">
+                <button onclick="toggleSection('posts')" class="w-full p-3 flex justify-between items-center bg-gray-50 hover:bg-gray-100 text-left font-medium text-gray-800 text-sm">
+                    <span class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
+                        Bài Viết & Tin Tức (Posts)
+                    </span>
+                    <span class="text-xs text-gray-500 font-normal">({{ count($posts ?? []) }}) ▼</span>
                 </button>
-                <div id="product-categories-section" class="hidden p-3 border-t max-h-60 overflow-y-auto">
+                <div id="posts-section" class="hidden p-3 border-t max-h-56 overflow-y-auto space-y-1">
+                    @forelse($posts ?? [] as $postItem)
+                    <label class="flex items-center p-2 hover:bg-emerald-50/50 rounded cursor-pointer transition">
+                        <input type="checkbox" class="mr-2 rounded border-gray-300 text-emerald-600" data-type="post" data-id="{{ $postItem->id }}" data-title="{{ $postItem->title }}" data-url="/HD001/post/{{ $postItem->slug ?? $postItem->id }}">
+                        <span class="text-sm text-gray-700 truncate">{{ $postItem->title }}</span>
+                    </label>
+                    @empty
+                    <p class="text-gray-400 text-xs text-center py-2">Chưa có bài viết</p>
+                    @endforelse
+                    @if(!empty($posts) && count($posts) > 0)
+                    <button onclick="addSelectedItems('post')" class="mt-2 w-full px-3 py-2 bg-emerald-600 text-white text-xs font-semibold rounded-lg hover:bg-emerald-700 shadow-xs">Thêm bài viết vào menu</button>
+                    @endif
+                </div>
+            </div>
+
+            <!-- 3. Danh Mục Bài Viết (Post Categories) -->
+            <div class="border rounded-lg shadow-xs overflow-hidden">
+                <button onclick="toggleSection('post-categories')" class="w-full p-3 flex justify-between items-center bg-gray-50 hover:bg-gray-100 text-left font-medium text-gray-800 text-sm">
+                    <span class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+                        Danh Mục Bài Viết (Blog Categories)
+                    </span>
+                    <span class="text-xs text-gray-500 font-normal">({{ count($postCategories ?? []) }}) ▼</span>
+                </button>
+                <div id="post-categories-section" class="hidden p-3 border-t max-h-56 overflow-y-auto space-y-1">
+                    @forelse($postCategories ?? [] as $cat)
+                    <label class="flex items-center p-2 hover:bg-purple-50/50 rounded cursor-pointer transition">
+                        <input type="checkbox" class="mr-2 rounded border-gray-300 text-purple-600" data-type="postcategory" data-id="{{ $cat->id }}" data-title="{{ $cat->name }}" data-url="/HD001/blog/category/{{ $cat->slug ?? $cat->id }}">
+                        <span class="text-sm text-gray-700">{{ $cat->name }}</span>
+                    </label>
+                    @empty
+                    <p class="text-gray-400 text-xs text-center py-2">Chưa có danh mục bài viết</p>
+                    @endforelse
+                    @if(!empty($postCategories) && count($postCategories) > 0)
+                    <button onclick="addSelectedItems('postcategory')" class="mt-2 w-full px-3 py-2 bg-purple-600 text-white text-xs font-semibold rounded-lg hover:bg-purple-700 shadow-xs">Thêm danh mục tin vào menu</button>
+                    @endif
+                </div>
+            </div>
+
+            <!-- 4. Danh Mục Sản Phẩm (Product Categories) -->
+            <div class="border rounded-lg shadow-xs overflow-hidden">
+                <button onclick="toggleSection('product-categories')" class="w-full p-3 flex justify-between items-center bg-gray-50 hover:bg-gray-100 text-left font-medium text-gray-800 text-sm">
+                    <span class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                        Danh Mục Sản Phẩm (Product Categories)
+                    </span>
+                    <span class="text-xs text-gray-500 font-normal">({{ count($productCategories ?? []) }}) ▼</span>
+                </button>
+                <div id="product-categories-section" class="hidden p-3 border-t max-h-56 overflow-y-auto">
                     @if(isset($productCategories) && $productCategories->count() > 0)
                     @foreach($productCategories as $category)
-                    <div class="mb-2">
-                        <label class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer font-medium">
-                            <input type="checkbox" class="mr-2" data-type="productcategory" data-id="{{ $category->id }}" data-title="{{ $category->name }}">
+                    <div class="mb-1">
+                        <label class="flex items-center p-1.5 hover:bg-amber-50/50 rounded cursor-pointer font-medium text-gray-800">
+                            <input type="checkbox" class="mr-2 rounded border-gray-300 text-amber-600" data-type="productcategory" data-id="{{ $category->id }}" data-title="{{ $category->name }}" data-url="/HD001/category/{{ $category->slug ?? $category->id }}">
                             <span class="text-sm">{{ $category->name }}</span>
                         </label>
                         @if($category->children && $category->children->count() > 0)
-                        <div class="ml-6 space-y-1">
+                        <div class="ml-6 space-y-0.5 border-l-2 border-amber-100 pl-2">
                             @foreach($category->children as $child)
-                            <label class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer">
-                                <input type="checkbox" class="mr-2" data-type="productcategory" data-id="{{ $child->id }}" data-title="{{ $child->name }}">
-                                <span class="text-sm text-gray-600">↳ {{ $child->name }}</span>
+                            <label class="flex items-center p-1 hover:bg-amber-50/50 rounded cursor-pointer">
+                                <input type="checkbox" class="mr-2 rounded border-gray-300 text-amber-600" data-type="productcategory" data-id="{{ $child->id }}" data-title="{{ $child->name }}" data-url="/HD001/category/{{ $child->slug ?? $child->id }}">
+                                <span class="text-xs text-gray-600">↳ {{ $child->name }}</span>
                             </label>
                             @endforeach
                         </div>
                         @endif
                     </div>
                     @endforeach
-                    <button onclick="addSelectedItems('productcategory')" class="mt-2 w-full px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">Thêm vào menu</button>
+                    <button onclick="addSelectedItems('productcategory')" class="mt-2 w-full px-3 py-2 bg-amber-600 text-white text-xs font-semibold rounded-lg hover:bg-amber-700 shadow-xs">Thêm DM sản phẩm vào menu</button>
                     @else
-                    <p class="text-gray-500 text-sm text-center py-4">Chưa có danh mục sản phẩm</p>
+                    <p class="text-gray-400 text-xs text-center py-2">Chưa có danh mục sản phẩm</p>
                     @endif
                 </div>
             </div>
-            
-            <!-- Liên kết -->
-            <div class="border rounded-lg">
-                <button onclick="toggleSection('link')" class="w-full p-3 flex justify-between items-center hover:bg-gray-50">
-                    <span class="font-medium">Liên kết</span>
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+
+            <!-- 5. Sản Phẩm Chi Tiết (Products) -->
+            <div class="border rounded-lg shadow-xs overflow-hidden">
+                <button onclick="toggleSection('products')" class="w-full p-3 flex justify-between items-center bg-gray-50 hover:bg-gray-100 text-left font-medium text-gray-800 text-sm">
+                    <span class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                        Sản Phẩm Chi Tiết (Products)
+                    </span>
+                    <span class="text-xs text-gray-500 font-normal">({{ count($products ?? []) }}) ▼</span>
                 </button>
-                <div id="link-section" class="hidden p-3 border-t">
-                    <form onsubmit="addCustomLink(event)">
-                        <input type="text" id="link-title" placeholder="Tiêu đề" class="w-full px-3 py-2 border rounded mb-2" required>
-                        <input type="text" id="link-slug" placeholder="Slug (vd: about, contact)" class="w-full px-3 py-2 border rounded mb-2" required>
-                        <button type="submit" class="w-full px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">Thêm liên kết</button>
+                <div id="products-section" class="hidden p-3 border-t max-h-56 overflow-y-auto space-y-1">
+                    @forelse($products ?? [] as $prod)
+                    <label class="flex items-center p-2 hover:bg-rose-50/50 rounded cursor-pointer transition">
+                        <input type="checkbox" class="mr-2 rounded border-gray-300 text-rose-600" data-type="product" data-id="{{ $prod->id }}" data-title="{{ $prod->name }}" data-url="/HD001/product/{{ $prod->slug ?? $prod->id }}">
+                        <span class="text-sm text-gray-700 truncate">{{ $prod->name }}</span>
+                    </label>
+                    @empty
+                    <p class="text-gray-400 text-xs text-center py-2">Chưa có sản phẩm</p>
+                    @endforelse
+                    @if(!empty($products) && count($products) > 0)
+                    <button onclick="addSelectedItems('product')" class="mt-2 w-full px-3 py-2 bg-rose-600 text-white text-xs font-semibold rounded-lg hover:bg-rose-700 shadow-xs">Thêm sản phẩm vào menu</button>
+                    @endif
+                </div>
+            </div>
+
+            <!-- 6. Thương Hiệu (Brands) -->
+            <div class="border rounded-lg shadow-xs overflow-hidden">
+                <button onclick="toggleSection('brands')" class="w-full p-3 flex justify-between items-center bg-gray-50 hover:bg-gray-100 text-left font-medium text-gray-800 text-sm">
+                    <span class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+                        Thương Hiệu (Brands)
+                    </span>
+                    <span class="text-xs text-gray-500 font-normal">({{ count($brands ?? []) }}) ▼</span>
+                </button>
+                <div id="brands-section" class="hidden p-3 border-t max-h-56 overflow-y-auto space-y-1">
+                    @forelse($brands ?? [] as $brand)
+                    <label class="flex items-center p-2 hover:bg-cyan-50/50 rounded cursor-pointer transition">
+                        <input type="checkbox" class="mr-2 rounded border-gray-300 text-cyan-600" data-type="brand" data-id="{{ $brand->id }}" data-title="{{ $brand->name }}" data-url="/HD001/brand/{{ $brand->slug ?? $brand->id }}">
+                        <span class="text-sm text-gray-700">{{ $brand->name }}</span>
+                    </label>
+                    @empty
+                    <p class="text-gray-400 text-xs text-center py-2">Chưa có thương hiệu</p>
+                    @endforelse
+                    @if(!empty($brands) && count($brands) > 0)
+                    <button onclick="addSelectedItems('brand')" class="mt-2 w-full px-3 py-2 bg-cyan-600 text-white text-xs font-semibold rounded-lg hover:bg-cyan-700 shadow-xs">Thêm thương hiệu vào menu</button>
+                    @endif
+                </div>
+            </div>
+
+            <!-- 7. Liên kết Tùy Chỉnh (Custom Links) -->
+            <div class="border rounded-lg shadow-xs overflow-hidden">
+                <button onclick="toggleSection('link')" class="w-full p-3 flex justify-between items-center bg-gray-50 hover:bg-gray-100 text-left font-medium text-gray-800 text-sm">
+                    <span class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                        Liên Kết Tùy Chỉnh (Custom URL)
+                    </span>
+                    <span class="text-xs text-gray-500 font-normal">URL ▼</span>
+                </button>
+                <div id="link-section" class="hidden p-3 border-t bg-gray-50/30">
+                    <form onsubmit="addCustomLink(event)" class="space-y-2">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Tên nhãn đường dẫn</label>
+                            <input type="text" id="link-title" placeholder="VD: Trang Khuyến Mãi" class="w-full px-3 py-1.5 border rounded-lg text-sm" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Đường dẫn / URL</label>
+                            <input type="text" id="link-slug" placeholder="VD: /khuyen-mai hoặc https://..." class="w-full px-3 py-1.5 border rounded-lg text-sm" required>
+                        </div>
+                        <button type="submit" class="w-full px-3 py-2 bg-indigo-600 text-white text-xs font-semibold rounded-lg hover:bg-indigo-700 shadow-xs">Thêm liên kết tùy chỉnh</button>
                     </form>
                 </div>
             </div>
+
         </div>
         @else
         <p class="text-gray-500 text-center py-8">Chọn hoặc tạo menu để bắt đầu</p>
         @endif
     </div>
+
     
     <!-- Cột phải: Cấu trúc menu -->
     <div class="col-span-5 bg-white rounded-lg shadow-sm p-4">
@@ -335,21 +456,37 @@ function addMenuToList(menu) {
 function addSelectedItems(type) {
     const checkboxes = document.querySelectorAll(`input[data-type="${type}"]:checked`);
     checkboxes.forEach(cb => {
-        let modelName = type.charAt(0).toUpperCase() + type.slice(1);
-        if(type === 'productcategory') {
+        let modelName = 'Post';
+        let customUrl = cb.dataset.url || null;
+
+        if (type === 'productcategory') {
             modelName = 'ProductCategory';
-        } else if(type === 'page') {
+        } else if (type === 'page' || type === 'post') {
             modelName = 'Post';
+        } else if (type === 'postcategory') {
+            modelName = 'Taxonomy';
+        } else if (type === 'product') {
+            modelName = 'Product';
+        } else if (type === 'brand') {
+            modelName = 'Brand';
         }
-        addMenuItem({
+
+        const itemPayload = {
             title: cb.dataset.title,
             linkable_type: 'App\\Models\\' + modelName,
             linkable_id: cb.dataset.id,
             target: '_self'
-        });
+        };
+
+        if (customUrl) {
+            itemPayload.url = customUrl;
+        }
+
+        addMenuItem(itemPayload);
         cb.checked = false;
     });
 }
+
 
 function addCustomLink(e) {
     e.preventDefault();

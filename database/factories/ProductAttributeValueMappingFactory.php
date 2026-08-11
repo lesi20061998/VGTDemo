@@ -2,14 +2,14 @@
 
 namespace Database\Factories;
 
-use App\Models\ProductAttributeValueMapping;
 use App\Models\Product;
 use App\Models\ProductAttribute;
 use App\Models\ProductAttributeValue;
+use App\Models\ProductAttributeValueMapping;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ProductAttributeValueMapping>
+ * @extends Factory<ProductAttributeValueMapping>
  */
 class ProductAttributeValueMappingFactory extends Factory
 {

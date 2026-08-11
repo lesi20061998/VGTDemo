@@ -12,11 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('products_enhanced', function (Blueprint $table) {
-            if (!Schema::hasColumn('products_enhanced', 'language_id')) {
+            if (! Schema::hasColumn('products_enhanced', 'language_id')) {
                 $table->unsignedBigInteger('language_id')->default(1)->after('product_type');
             }
             // Add index if it doesn't exist
-            if (!Schema::hasIndex('products_enhanced', ['language_id', 'status'])) {
+            if (! Schema::hasIndex('products_enhanced', ['language_id', 'status'])) {
                 $table->index(['language_id', 'status']); // Add index for better performance
             }
         });

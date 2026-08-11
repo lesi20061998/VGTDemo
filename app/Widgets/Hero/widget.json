@@ -51,19 +51,27 @@
       "help": "URL where the button should link to"
     },
     {
-      "name": "bg_color",
-      "label": "Background Color",
+      "name": "bg_type",
+      "label": "Background Type",
       "type": "select",
       "required": false,
-      "default": "bg-gradient-to-r from-blue-600 to-purple-600",
+      "default": "color",
       "options": {
-        "bg-gradient-to-r from-blue-600 to-purple-600": "Blue to Purple",
-        "bg-gradient-to-r from-green-600 to-blue-600": "Green to Blue",
-        "bg-gradient-to-r from-purple-600 to-pink-600": "Purple to Pink",
-        "bg-gray-900": "Dark Gray",
-        "bg-white": "White"
+        "color": "Color",
+        "image": "Image"
       },
-      "help": "Background color or gradient for the hero section"
+      "help": "Choose background type: Color or Image"
+    },
+    {
+      "name": "bg_color",
+      "label": "Background Color",
+      "type": "color",
+      "required": false,
+      "default": "",
+      "help": "Pick any background color (can paste hex code, gradient, rgb, hsl, or color names)",
+      "show_if": {
+        "bg_type": "color"
+      }
     },
     {
       "name": "background_image",
@@ -71,7 +79,30 @@
       "type": "image",
       "required": false,
       "validation": "string",
-      "help": "Optional background image (will overlay with background color)"
+      "help": "Upload or select background image",
+      "show_if": {
+        "bg_type": "image"
+      }
+    },
+    {
+      "name": "body_code",
+      "label": "Body Code (Thêm sau <body>)",
+      "type": "textarea",
+      "required": false,
+      "default": "",
+      "validation": "string",
+      "help": "Custom code to add after opening body tag (HTML/JavaScript)",
+      "placeholder": "<!-- Thêm code tuỳ chỉnh ở đây -->"
+    },
+    {
+      "name": "footer_code",
+      "label": "Footer Code (Thêm trước </body>)",
+      "type": "textarea",
+      "required": false,
+      "default": "",
+      "validation": "string",
+      "help": "Custom code to add before closing body tag (HTML/JavaScript/Tracking)",
+      "placeholder": "<!-- Thêm tracking code hoặc script ở đây -->"
     }
   ],
   "settings": {

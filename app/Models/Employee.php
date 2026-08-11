@@ -43,9 +43,10 @@ class Employee extends Model
         $positionMap = [
             'staff' => 'Nhân viên',
             'team_lead' => 'Trưởng nhóm',
-            'manager' => 'Quản lý'
+            'manager' => 'Quản lý',
         ];
         $position = $positionMap[$this->position] ?? $this->position;
+
         return $this->role ? "{$position} - {$this->role}" : $position;
     }
 
@@ -60,4 +61,3 @@ class Employee extends Model
             ->where('id', '!=', $this->id);
     }
 }
-

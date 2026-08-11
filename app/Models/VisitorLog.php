@@ -3,8 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class VisitorLog extends Model
 {
@@ -14,11 +14,11 @@ class VisitorLog extends Model
         'url',
         'method',
         'user_id',
-        'visited_at'
+        'visited_at',
     ];
 
     protected $casts = [
-        'visited_at' => 'datetime'
+        'visited_at' => 'datetime',
     ];
 
     public $timestamps = false;
@@ -46,7 +46,7 @@ class VisitorLog extends Model
                     ->groupBy('url')
                     ->orderBy('visits', 'desc')
                     ->limit(5)
-                    ->get()
+                    ->get(),
             ];
         });
     }

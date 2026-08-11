@@ -19,7 +19,7 @@ class ProjectPasswordServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new ProjectPasswordService();
+        $this->service = new ProjectPasswordService;
     }
 
     public function test_can_get_plain_password(): void
@@ -55,7 +55,7 @@ class ProjectPasswordServiceTest extends TestCase
 
         $this->assertTrue($result);
         $project->refresh();
-        
+
         $this->assertTrue(Hash::check($newPassword, $project->project_admin_password));
         $this->assertEquals($newPassword, $this->service->getPlainPassword($project));
         $this->assertNotNull($project->password_updated_at);
@@ -71,7 +71,7 @@ class ProjectPasswordServiceTest extends TestCase
 
         $this->assertNotEmpty($generatedPassword);
         $this->assertGreaterThanOrEqual(8, strlen($generatedPassword));
-        
+
         $project->refresh();
         $this->assertTrue(Hash::check($generatedPassword, $project->project_admin_password));
         $this->assertEquals($generatedPassword, $this->service->getPlainPassword($project));
@@ -110,7 +110,7 @@ class ProjectPasswordServiceTest extends TestCase
         $projectWithPassword = Project::factory()->create([
             'project_admin_password_plain' => encrypt('test-password'),
         ]);
-        
+
         $projectWithoutPassword = Project::factory()->create([
             'project_admin_password_plain' => null,
         ]);
@@ -147,7 +147,7 @@ class ProjectPasswordServiceTest extends TestCase
         $migrated = $this->service->migrateExistingPasswords();
 
         $this->assertEquals(2, $migrated);
-        
+
         foreach ($projects as $project) {
             $project->refresh();
             $this->assertNotNull($project->project_admin_password_plain);

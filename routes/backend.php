@@ -4,6 +4,7 @@
 // All CMS functionality moved to project-specific routes: /{projectCode}/admin/*
 
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\SuperAdmin\ProjectController;
 use Illuminate\Support\Facades\Route;
 
 // Super Admin Routes - Global system management only
@@ -13,7 +14,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
     Route::get('/', [DashboardController::class, 'superAdminDashboard'])->name('dashboard');
 
     // Project Management (Super Admin only)
-    Route::resource('projects', \App\Http\Controllers\SuperAdmin\ProjectController::class);
+    Route::resource('projects', ProjectController::class);
 
     // Global System Settings (Super Admin only) - TODO: Create controllers
     // Route::get('system-settings', [\App\Http\Controllers\SuperAdmin\SystemController::class, 'index'])->name('system.settings');

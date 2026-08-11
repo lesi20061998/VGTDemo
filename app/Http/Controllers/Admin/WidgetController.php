@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Project;
 use App\Models\Widget;
-use App\Widgets\WidgetRegistry;
 use App\Services\FieldTypeService;
+use App\Services\WidgetImportExportService;
 use App\Services\WidgetPermissionService;
+use App\Widgets\WidgetRegistry;
 use Illuminate\Http\Request;
 
 class WidgetController extends Controller
@@ -15,7 +17,7 @@ class WidgetController extends Controller
     {
         // Get user from request attributes (project context) or auth (web context)
         $user = request()->attributes->get('auth_user') ?? auth()->user();
-        
+
         // Debug log
         \Log::info('Widget index - auth debug', [
             'auth_user_from_request' => request()->attributes->get('auth_user') ? 'YES' : 'NO',
@@ -26,13 +28,13 @@ class WidgetController extends Controller
             'session_project_user_id' => session('project_user_id'),
             'env' => config('app.env'),
         ]);
-        
+
         // Skip permission check entirely in local environment
         if (config('app.env') !== 'local') {
-            $permissionService = new WidgetPermissionService();
-            
+            $permissionService = new WidgetPermissionService;
+
             // Check if user can manage widgets
-            if (!$permissionService->canManageWidgets($user)) {
+            if (! $permissionService->canManageWidgets($user)) {
                 \Log::error('Widget permission denied', [
                     'user' => $user ? $user->toArray() : null,
                     'can_manage' => $permissionService->canManageWidgets($user),
@@ -46,6 +48,7 @@ class WidgetController extends Controller
             ->get()
             ->groupBy('area')
             ->map(fn ($widgets) => $widgets->map(fn ($w) => [
+                'id' => $w->id,
                 'type' => $w->type,
                 'name' => $w->name,
                 'area' => $w->area,
@@ -56,9 +59,9 @@ class WidgetController extends Controller
             ]));
 
         // Get only accessible widgets for current user
-        $permissionService = new WidgetPermissionService();
+        $permissionService = new WidgetPermissionService;
         $availableWidgets = $permissionService->getAccessibleWidgetsByCategory($user);
-        
+
         // Debug: dd available widgets
         // dd([
         //     'availableWidgets' => $availableWidgets,
@@ -69,12 +72,12 @@ class WidgetController extends Controller
         // Check if we're in project context
         $projectCode = request()->route('projectCode');
         $currentProject = null;
-        
+
         if ($projectCode) {
-            $currentProject = \App\Models\Project::where('code', $projectCode)->first();
+            $currentProject = Project::where('code', $projectCode)->first();
         }
 
-        $permissionSummary = config('app.env') === 'local' ? 
+        $permissionSummary = config('app.env') === 'local' ?
             ['can_manage_widgets' => true, 'can_toggle_widgets' => true, 'accessible_widget_count' => 999, 'total_widget_count' => 999, 'is_super_admin' => true] :
             $permissionService->getPermissionSummary();
 
@@ -88,13 +91,13 @@ class WidgetController extends Controller
 
     public function store(Request $request)
     {
-        $permissionService = new WidgetPermissionService();
-        
+        $permissionService = new WidgetPermissionService;
+
         // Check if user can manage widgets
-        if (!$permissionService->canManageWidgets()) {
+        if (! $permissionService->canManageWidgets()) {
             return response()->json([
                 'success' => false,
-                'message' => 'You do not have permission to create widgets'
+                'message' => 'You do not have permission to create widgets',
             ], 403);
         }
 
@@ -109,35 +112,35 @@ class WidgetController extends Controller
         ]);
 
         // Validate widget type exists in registry or custom templates
-        if (!WidgetRegistry::exists($validated['type'])) {
+        if (! WidgetRegistry::exists($validated['type'])) {
             return response()->json([
                 'success' => false,
-                'message' => "Widget type '{$validated['type']}' not found"
+                'message' => "Widget type '{$validated['type']}' not found",
             ], 422);
         }
 
         // Check if user can access this widget type
-        if (!$permissionService->canAccessWidget($validated['type'])) {
+        if (! $permissionService->canAccessWidget($validated['type'])) {
             return response()->json([
                 'success' => false,
-                'message' => "You do not have permission to use '{$validated['type']}' widget"
+                'message' => "You do not have permission to use '{$validated['type']}' widget",
             ], 403);
         }
 
         // Check if widget is enabled
-        if (!$permissionService->isWidgetEnabled($validated['type'])) {
+        if (! $permissionService->isWidgetEnabled($validated['type'])) {
             return response()->json([
                 'success' => false,
-                'message' => "Widget type '{$validated['type']}' is currently disabled"
+                'message' => "Widget type '{$validated['type']}' is currently disabled",
             ], 422);
         }
 
         // Validate dependencies
         $dependencyErrors = $permissionService->validateDependencies($validated['type']);
-        if (!empty($dependencyErrors)) {
+        if (! empty($dependencyErrors)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Widget dependencies not met: ' . implode(', ', $dependencyErrors)
+                'message' => 'Widget dependencies not met: '.implode(', ', $dependencyErrors),
             ], 422);
         }
 
@@ -152,34 +155,65 @@ class WidgetController extends Controller
         }
         unset($validated['config']);
 
-        Widget::create($validated);
+        $newWidget = Widget::create($validated);
         clear_widget_cache($validated['area']);
 
         if ($request->expectsJson()) {
-            return response()->json(['success' => true, 'message' => 'Widget saved successfully']);
+            return response()->json(['success' => true, 'message' => 'Widget saved successfully', 'widget' => $newWidget]);
         }
 
         return redirect()->back()->with('success', 'Widget created successfully');
     }
 
-    public function edit(Widget $widget)
+    public function edit($arg1, $arg2 = null)
     {
+        $widget = $arg2 ?? $arg1;
+        if (! $widget instanceof Widget) {
+            $widget = Widget::findOrFail($widget);
+        }
+
         return view('cms.widgets.edit', compact('widget'));
     }
 
-    public function update(Request $request, Widget $widget)
+    public function update(Request $request, $arg1, $arg2 = null)
     {
+        $widget = $arg2 ?? $arg1;
+        if (! $widget instanceof Widget) {
+            $widget = Widget::findOrFail($widget);
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'type' => 'required|string',
             'area' => 'required|string',
-            'settings' => 'nullable|json',
+            'settings' => 'nullable',
             'sort_order' => 'nullable|integer',
             'is_active' => 'boolean',
         ]);
 
+        while (\is_string($validated['settings'] ?? null) && ! empty($validated['settings'])) {
+            $decoded = json_decode($validated['settings'], true);
+            if (json_last_error() === JSON_ERROR_NONE && (\is_array($decoded) || \is_string($decoded))) {
+                $validated['settings'] = $decoded;
+            } else {
+                break;
+            }
+        }
+        if (! \is_array($validated['settings'] ?? null)) {
+            $validated['settings'] = [];
+        }
+
+        if (! empty($validated['config'])) {
+            $validated['settings'] = [...($validated['settings'] ?? []), 'config' => $validated['config']];
+        }
+        unset($validated['config']);
+
         $widget->update($validated);
         clear_widget_cache($widget->area);
+
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Widget updated successfully', 'widget' => $widget]);
+        }
 
         $projectCode = request()->route('projectCode');
         $route = $projectCode
@@ -189,11 +223,20 @@ class WidgetController extends Controller
         return redirect($route)->with('success', 'Widget updated successfully');
     }
 
-    public function destroy(Widget $widget)
+    public function destroy($arg1, $arg2 = null)
     {
+        $widget = $arg2 ?? $arg1;
+        if (! $widget instanceof Widget) {
+            $widget = Widget::findOrFail($widget);
+        }
+
         $area = $widget->area;
         $widget->delete();
         clear_widget_cache($area);
+
+        if (request()->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Widget deleted successfully']);
+        }
 
         $projectCode = request()->route('projectCode');
         $route = $projectCode
@@ -245,7 +288,7 @@ class WidgetController extends Controller
                     $successCount++;
                 } catch (\Exception $e) {
                     $errorCount++;
-                    $errors[] = "Widget '{$widgetData['name']}': " . $e->getMessage();
+                    $errors[] = "Widget '{$widgetData['name']}': ".$e->getMessage();
                 }
             }
 
@@ -258,7 +301,7 @@ class WidgetController extends Controller
                 return response()->json([
                     'success' => true,
                     'message' => "Successfully saved {$successCount} widgets",
-                    'saved' => $successCount
+                    'saved' => $successCount,
                 ]);
             } else {
                 return response()->json([
@@ -266,14 +309,14 @@ class WidgetController extends Controller
                     'message' => "Saved {$successCount} widgets, {$errorCount} failed",
                     'saved' => $successCount,
                     'failed' => $errorCount,
-                    'errors' => $errors
+                    'errors' => $errors,
                 ], 422);
             }
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error saving widgets: ' . $e->getMessage()
+                'message' => 'Error saving widgets: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -284,7 +327,7 @@ class WidgetController extends Controller
     public function clearArea(Request $request)
     {
         $area = $request->input('area', 'homepage-main');
-        
+
         // Get tenant_id from session
         $currentProject = session('current_project');
         $tenantId = null;
@@ -293,19 +336,19 @@ class WidgetController extends Controller
         } elseif (\is_object($currentProject)) {
             $tenantId = $currentProject->id ?? null;
         }
-        
+
         $query = Widget::where('area', $area);
         if ($tenantId) {
             $query->where('tenant_id', $tenantId);
         }
-        
+
         $count = $query->count();
         $query->delete();
         clear_widget_cache($area);
 
         return response()->json([
             'success' => true,
-            'message' => "Cleared {$count} widgets from {$area}"
+            'message' => "Cleared {$count} widgets from {$area}",
         ]);
     }
 
@@ -316,6 +359,7 @@ class WidgetController extends Controller
     {
         clear_widget_cache();
         WidgetRegistry::clearCache(); // Clear discovery cache
+
         return response()->json(['success' => true, 'message' => 'Widget cache cleared']);
     }
 
@@ -331,19 +375,19 @@ class WidgetController extends Controller
             'settings' => 'nullable',
             'sort_order' => 'nullable|integer',
             'is_active' => 'nullable|boolean',
-            'variant' => 'nullable|string'
+            'variant' => 'nullable|string',
         ];
 
         $validator = \Validator::make($data, $rules);
-        
+
         if ($validator->fails()) {
-            throw new \Exception('Validation failed: ' . implode(', ', $validator->errors()->all()));
+            throw new \Exception('Validation failed: '.implode(', ', $validator->errors()->all()));
         }
 
         $validated = $validator->validated();
 
         // Validate widget type exists
-        if (!WidgetRegistry::exists($validated['type'])) {
+        if (! WidgetRegistry::exists($validated['type'])) {
             throw new \Exception("Widget type '{$validated['type']}' not found in registry");
         }
 
@@ -353,7 +397,7 @@ class WidgetController extends Controller
         }
 
         // Validate settings against widget metadata (only if settings are provided)
-        if (!empty($validated['settings'])) {
+        if (! empty($validated['settings'])) {
             try {
                 $widgetClass = WidgetRegistry::get($validated['type']);
                 if ($widgetClass) {
@@ -362,10 +406,10 @@ class WidgetController extends Controller
                 }
             } catch (\Exception $e) {
                 // Log warning but don't fail - allow saving with potentially invalid settings
-                \Log::warning("Widget settings validation warning for {$validated['type']}: " . $e->getMessage());
+                \Log::warning("Widget settings validation warning for {$validated['type']}: ".$e->getMessage());
                 // Only throw if it's a critical error, not just validation
                 if (str_contains($e->getMessage(), 'not found') || str_contains($e->getMessage(), 'class')) {
-                    throw new \Exception('Widget settings validation failed: ' . $e->getMessage());
+                    throw new \Exception('Widget settings validation failed: '.$e->getMessage());
                 }
             }
         }
@@ -385,25 +429,38 @@ class WidgetController extends Controller
     {
         $validated = $request->validate([
             'type' => 'required|string',
-            'settings' => 'nullable|array',
-            'variant' => 'nullable|string'
+            'settings' => 'nullable',
+            'variant' => 'nullable|string',
         ]);
+
+        $settings = $validated['settings'] ?? [];
+        while (\is_string($settings) && ! empty($settings)) {
+            $decoded = json_decode($settings, true);
+            if (json_last_error() === JSON_ERROR_NONE && (\is_array($decoded) || \is_string($decoded))) {
+                $settings = $decoded;
+            } else {
+                break;
+            }
+        }
+        if (! \is_array($settings)) {
+            $settings = [];
+        }
 
         try {
             $preview = WidgetRegistry::getPreview(
                 $validated['type'],
-                $validated['settings'] ?? [],
+                $settings,
                 $validated['variant'] ?? 'default'
             );
 
             return response()->json([
                 'success' => true,
-                'preview' => $preview
+                'preview' => $preview,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Preview generation failed: ' . $e->getMessage()
+                'message' => 'Preview generation failed: '.$e->getMessage(),
             ], 422);
         }
     }
@@ -421,12 +478,12 @@ class WidgetController extends Controller
                 'success' => true,
                 'discovered' => count($discovered),
                 'widgets' => $discovered,
-                'conflicts' => $conflicts
+                'conflicts' => $conflicts,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Widget discovery failed: ' . $e->getMessage()
+                'message' => 'Widget discovery failed: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -438,36 +495,44 @@ class WidgetController extends Controller
     {
         $type = $request->input('type') ?? $request->get('type');
         $settings = $request->input('settings') ?? $request->get('settings', []);
-        
+
         // Parse settings if it's a JSON string
-        if (is_string($settings)) {
-            $settings = json_decode($settings, true) ?? [];
+        while (\is_string($settings) && ! empty($settings)) {
+            $decoded = json_decode($settings, true);
+            if (json_last_error() === JSON_ERROR_NONE && (\is_array($decoded) || \is_string($decoded))) {
+                $settings = $decoded;
+            } else {
+                break;
+            }
         }
-        
-        if (!$type || !WidgetRegistry::exists($type)) {
+        if (! \is_array($settings)) {
+            $settings = [];
+        }
+
+        if (! $type || ! WidgetRegistry::exists($type)) {
             return response()->json([
                 'success' => false,
-                'message' => "Widget type '{$type}' not found"
+                'message' => "Widget type '{$type}' not found",
             ], 404);
         }
 
         try {
             $config = WidgetRegistry::getConfig($type);
             $fields = $config['fields'] ?? [];
-            
-            $fieldTypeService = new FieldTypeService();
+
+            $fieldTypeService = new FieldTypeService;
             $formHtml = $fieldTypeService->renderForm($fields, $settings);
 
             return response()->json([
                 'success' => true,
                 'fields' => $fields,
                 'form_html' => $formHtml,
-                'variants' => $config['variants'] ?? ['default' => 'Default']
+                'variants' => $config['variants'] ?? ['default' => 'Default'],
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to get widget fields: ' . $e->getMessage()
+                'message' => 'Failed to get widget fields: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -479,20 +544,20 @@ class WidgetController extends Controller
     {
         $type = $request->get('type');
         $enabled = $request->boolean('enabled');
-        
-        $permissionService = new WidgetPermissionService();
-        
-        if (!$permissionService->canToggleWidgets()) {
+
+        $permissionService = new WidgetPermissionService;
+
+        if (! $permissionService->canToggleWidgets()) {
             return response()->json([
                 'success' => false,
-                'message' => 'You do not have permission to toggle widgets'
+                'message' => 'You do not have permission to toggle widgets',
             ], 403);
         }
 
-        if (!WidgetRegistry::exists($type)) {
+        if (! WidgetRegistry::exists($type)) {
             return response()->json([
                 'success' => false,
-                'message' => "Widget type '{$type}' not found"
+                'message' => "Widget type '{$type}' not found",
             ], 404);
         }
 
@@ -508,18 +573,18 @@ class WidgetController extends Controller
             if ($result) {
                 return response()->json([
                     'success' => true,
-                    'message' => $message
+                    'message' => $message,
                 ]);
             } else {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Failed to toggle widget state'
+                    'message' => 'Failed to toggle widget state',
                 ], 500);
             }
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error toggling widget: ' . $e->getMessage()
+                'message' => 'Error toggling widget: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -529,11 +594,11 @@ class WidgetController extends Controller
      */
     public function getPermissions()
     {
-        $permissionService = new WidgetPermissionService();
-        
+        $permissionService = new WidgetPermissionService;
+
         return response()->json([
             'success' => true,
-            'permissions' => $permissionService->getPermissionSummary()
+            'permissions' => $permissionService->getPermissionSummary(),
         ]);
     }
 
@@ -542,35 +607,35 @@ class WidgetController extends Controller
      */
     public function export(Request $request)
     {
-        $permissionService = new WidgetPermissionService();
-        
-        if (!$permissionService->canManageWidgets()) {
+        $permissionService = new WidgetPermissionService;
+
+        if (! $permissionService->canManageWidgets()) {
             return response()->json([
                 'success' => false,
-                'message' => 'You do not have permission to export widgets'
+                'message' => 'You do not have permission to export widgets',
             ], 403);
         }
 
         try {
-            $importExportService = new \App\Services\WidgetImportExportService();
-            
+            $importExportService = new WidgetImportExportService;
+
             $options = [
                 'areas' => $request->get('areas'),
                 'types' => $request->get('types'),
-                'include_metadata' => $request->boolean('include_metadata', true)
+                'include_metadata' => $request->boolean('include_metadata', true),
             ];
-            
+
             $exportData = $importExportService->exportWidgets($options);
-            
+
             return response()->json([
                 'success' => true,
-                'data' => $exportData
+                'data' => $exportData,
             ]);
-            
+
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Export failed: ' . $e->getMessage()
+                'message' => 'Export failed: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -580,37 +645,37 @@ class WidgetController extends Controller
      */
     public function import(Request $request)
     {
-        $permissionService = new WidgetPermissionService();
-        
-        if (!$permissionService->canManageWidgets()) {
+        $permissionService = new WidgetPermissionService;
+
+        if (! $permissionService->canManageWidgets()) {
             return response()->json([
                 'success' => false,
-                'message' => 'You do not have permission to import widgets'
+                'message' => 'You do not have permission to import widgets',
             ], 403);
         }
 
         $validated = $request->validate([
             'import_data' => 'required|array',
             'overwrite_existing' => 'boolean',
-            'validate_only' => 'boolean'
+            'validate_only' => 'boolean',
         ]);
 
         try {
-            $importExportService = new \App\Services\WidgetImportExportService();
-            
+            $importExportService = new WidgetImportExportService;
+
             $options = [
                 'overwrite_existing' => $validated['overwrite_existing'] ?? false,
-                'validate_only' => $validated['validate_only'] ?? false
+                'validate_only' => $validated['validate_only'] ?? false,
             ];
-            
+
             $result = $importExportService->importWidgets($validated['import_data'], $options);
-            
+
             return response()->json($result);
-            
+
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Import failed: ' . $e->getMessage()
+                'message' => 'Import failed: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -620,31 +685,31 @@ class WidgetController extends Controller
      */
     public function createBackup(Request $request)
     {
-        $permissionService = new WidgetPermissionService();
-        
-        if (!$permissionService->canManageWidgets()) {
+        $permissionService = new WidgetPermissionService;
+
+        if (! $permissionService->canManageWidgets()) {
             return response()->json([
                 'success' => false,
-                'message' => 'You do not have permission to create backups'
+                'message' => 'You do not have permission to create backups',
             ], 403);
         }
 
         try {
-            $importExportService = new \App\Services\WidgetImportExportService();
+            $importExportService = new WidgetImportExportService;
             $backupName = $request->get('name');
-            
+
             $backupPath = $importExportService->createBackup($backupName);
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'Backup created successfully',
-                'backup_path' => basename($backupPath)
+                'backup_path' => basename($backupPath),
             ]);
-            
+
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Backup failed: ' . $e->getMessage()
+                'message' => 'Backup failed: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -654,28 +719,28 @@ class WidgetController extends Controller
      */
     public function getBackups()
     {
-        $permissionService = new WidgetPermissionService();
-        
-        if (!$permissionService->canManageWidgets()) {
+        $permissionService = new WidgetPermissionService;
+
+        if (! $permissionService->canManageWidgets()) {
             return response()->json([
                 'success' => false,
-                'message' => 'You do not have permission to view backups'
+                'message' => 'You do not have permission to view backups',
             ], 403);
         }
 
         try {
-            $importExportService = new \App\Services\WidgetImportExportService();
+            $importExportService = new WidgetImportExportService;
             $backups = $importExportService->getAvailableBackups();
-            
+
             return response()->json([
                 'success' => true,
-                'backups' => $backups
+                'backups' => $backups,
             ]);
-            
+
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to get backups: ' . $e->getMessage()
+                'message' => 'Failed to get backups: '.$e->getMessage(),
             ], 500);
         }
     }

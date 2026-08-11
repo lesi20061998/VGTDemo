@@ -10,7 +10,7 @@ use Illuminate\Support\Collection;
 
 /**
  * Service để quản lý Product Attributes
- * 
+ *
  * Xử lý logic của cấu trúc 3 lớp:
  * 1. ProductAttribute - Loại thuộc tính (Color, Size)
  * 2. ProductAttributeValue - Giá trị (Red, Blue, M, L)
@@ -20,7 +20,7 @@ class ProductAttributeService
 {
     /**
      * Gán attribute values cho sản phẩm
-     * 
+     *
      * Ví dụ:
      * $service->assignAttributes($product, [
      *     'color' => [1, 2],  // Color attribute: Red (1), Blue (2)
@@ -39,7 +39,7 @@ class ProductAttributeService
                 ? $attributeIdOrSlug
                 : ProductAttribute::where('slug', $attributeIdOrSlug)->value('id');
 
-            if (!$attributeId) {
+            if (! $attributeId) {
                 continue;
             }
 
@@ -56,17 +56,17 @@ class ProductAttributeService
 
     /**
      * Lấy danh sách attributes của product theo format
-     * 
+     *
      * @return array [
-     *     'color' => [
-     *         'name' => 'Màu sắc',
-     *         'values' => ['Red', 'Blue']
-     *     ],
-     *     'size' => [
-     *         'name' => 'Kích thước',
-     *         'values' => ['M', 'L']
-     *     ]
-     * ]
+     *               'color' => [
+     *               'name' => 'Màu sắc',
+     *               'values' => ['Red', 'Blue']
+     *               ],
+     *               'size' => [
+     *               'name' => 'Kích thước',
+     *               'values' => ['M', 'L']
+     *               ]
+     *               ]
      */
     public function getProductAttributesFormatted(Product $product): array
     {
@@ -76,7 +76,7 @@ class ProductAttributeService
         foreach ($mappings as $mapping) {
             $slug = $mapping->attribute->slug;
 
-            if (!isset($result[$slug])) {
+            if (! isset($result[$slug])) {
                 $result[$slug] = [
                     'name' => $mapping->attribute->name,
                     'type' => $mapping->attribute->type,
@@ -97,34 +97,34 @@ class ProductAttributeService
 
     /**
      * Kiểm tra product có attribute value cụ thể không
-     * 
+     *
      * Ví dụ: $service->hasAttributeValue($product, 'color', 1)
      */
     public function hasAttributeValue(Product $product, string $attributeSlug, int $valueId): bool
     {
         return $product->attributeMappings()
-            ->whereHas('attribute', fn($q) => $q->where('slug', $attributeSlug))
+            ->whereHas('attribute', fn ($q) => $q->where('slug', $attributeSlug))
             ->where('product_attribute_value_id', $valueId)
             ->exists();
     }
 
     /**
      * Lấy danh sách values của 1 attribute cho product
-     * 
+     *
      * Ví dụ: $service->getAttributeValues($product, 'color')
      * Kết quả: [1, 2] (ID của Red, Blue)
      */
     public function getAttributeValueIds(Product $product, string $attributeSlug): array
     {
         return $product->attributeMappings()
-            ->whereHas('attribute', fn($q) => $q->where('slug', $attributeSlug))
+            ->whereHas('attribute', fn ($q) => $q->where('slug', $attributeSlug))
             ->pluck('product_attribute_value_id')
             ->toArray();
     }
 
     /**
      * Thêm 1 attribute value cho product
-     * 
+     *
      * Ví dụ: $service->addAttributeValue($product, $attribute, $value)
      */
     public function addAttributeValue(Product $product, ProductAttribute $attribute, ProductAttributeValue $value): ProductAttributeValueMapping
@@ -158,7 +158,7 @@ class ProductAttributeService
         // Lấy từ products trong category
         return ProductAttribute::whereHas(
             'products',
-            fn($q) => $q->where('product_category_id', $categoryId)
+            fn ($q) => $q->where('product_category_id', $categoryId)
         )->distinct()->get();
     }
 
@@ -170,4 +170,3 @@ class ProductAttributeService
         $product->attributeMappings()->delete();
     }
 }
-

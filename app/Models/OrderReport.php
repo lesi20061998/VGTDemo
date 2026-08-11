@@ -10,7 +10,7 @@ class OrderReport extends Model
 
     protected $fillable = [
         'order_id', 'total_sales', 'total_orders', 'average_order_value',
-        'total_customers', 'report_date', 'report_type'
+        'total_customers', 'report_date', 'report_type',
     ];
 
     protected $casts = [
@@ -24,4 +24,3 @@ class OrderReport extends Model
         return $this->belongsTo(Order::class);
     }
 }
-

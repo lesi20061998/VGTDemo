@@ -2,6 +2,7 @@
 
 namespace App\Widgets\Victorious;
 
+use App\Models\Product;
 use App\Widgets\BaseWidget;
 
 class RoomCategoriesWidget extends BaseWidget
@@ -29,20 +30,20 @@ class RoomCategoriesWidget extends BaseWidget
     {
         $roomsInput = $this->settings['rooms'] ?? '';
         $roomIds = [];
-        if (!empty($roomsInput)) {
+        if (! empty($roomsInput)) {
             if (is_array($roomsInput)) {
                 $roomIds = $roomsInput;
             } else {
                 $roomIds = array_filter(array_map('trim', explode(',', $roomsInput)));
             }
         }
-        
+
         $rooms = [];
-        if (!empty($roomIds)) {
-            $rooms = \App\Models\Product::whereIn('id', $roomIds)->get();
+        if (! empty($roomIds)) {
+            $rooms = Product::whereIn('id', $roomIds)->get();
         } else {
             // Get some default rooms if none specified
-            $rooms = \App\Models\Product::where('status', 'published')
+            $rooms = Product::where('status', 'published')
                 ->limit(6)
                 ->get();
         }

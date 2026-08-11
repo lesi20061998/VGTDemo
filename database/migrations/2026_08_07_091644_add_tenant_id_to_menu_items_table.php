@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('menu_items', function (Blueprint $table) {
-            if (!Schema::hasColumn('menu_items', 'tenant_id')) {
+            if (! Schema::hasColumn('menu_items', 'tenant_id')) {
                 $table->unsignedBigInteger('tenant_id')->nullable()->after('order');
                 $table->index('tenant_id');
             }

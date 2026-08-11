@@ -78,11 +78,15 @@ class WidgetRegistry implements WidgetRegistryInterface
             return self::$discoveredWidgets;
         }
 
-        $cacheKey = 'widget_discovery_'.md5(app_path('Widgets'));
-
-        self::$discoveredWidgets = Cache::remember($cacheKey, 3600, function () {
-            return self::performDiscovery();
-        });
+        // Skip cache in development mode
+        if (config('app.debug')) {
+            self::$discoveredWidgets = self::performDiscovery();
+        } else {
+            $cacheKey = 'widget_discovery_'.md5(app_path('Widgets'));
+            self::$discoveredWidgets = Cache::remember($cacheKey, 3600, function () {
+                return self::performDiscovery();
+            });
+        }
 
         self::$discoveryComplete = true;
 

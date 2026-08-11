@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\ProductAttributeValue;
 use Illuminate\Foundation\Http\FormRequest;
 
 class AttributeValueRequest extends FormRequest
@@ -24,7 +25,7 @@ class AttributeValueRequest extends FormRequest
                 'max:255',
                 // Ensure value is unique within the same attribute
                 function ($attribute, $value, $fail) use ($attributeId, $valueId) {
-                    $query = \App\Models\ProductAttributeValue::where('product_attribute_id', $attributeId)
+                    $query = ProductAttributeValue::where('product_attribute_id', $attributeId)
                         ->where('value', $value);
 
                     // Exclude current record when updating

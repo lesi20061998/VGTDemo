@@ -1,18 +1,19 @@
 <?php
+
 // MODIFIED: 2025-01-21
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Builder;
 
 class AttributeGroup extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'name', 'slug', 'description', 'sort_order', 'is_active'
+        'name', 'slug', 'description', 'sort_order', 'is_active',
     ];
 
     protected $casts = [

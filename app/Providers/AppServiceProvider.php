@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Services\DynamicWidgetRenderer;
+use App\Services\ProjectPasswordService;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
@@ -14,8 +16,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->singleton(\App\Services\ProjectPasswordService::class);
-        $this->app->singleton(\App\Services\DynamicWidgetRenderer::class);
+        $this->app->singleton(ProjectPasswordService::class);
+        $this->app->singleton(DynamicWidgetRenderer::class);
     }
 
     /**
@@ -23,7 +25,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        if (!app()->runningInConsole()) {
+        if (! app()->runningInConsole()) {
             header('X-Powered-By: VGTCRM');
         }
 
@@ -43,4 +45,3 @@ class AppServiceProvider extends ServiceProvider
         });
     }
 }
-

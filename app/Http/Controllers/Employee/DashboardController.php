@@ -3,17 +3,17 @@
 namespace App\Http\Controllers\Employee;
 
 use App\Http\Controllers\Controller;
+use App\Models\Contract;
 use App\Models\Employee;
 use App\Models\Task;
-use App\Models\Contract;
 
 class DashboardController extends Controller
 {
     public function index()
     {
         $employee = Employee::where('user_id', auth()->id())->first();
-        
-        if (!$employee) {
+
+        if (! $employee) {
             abort(403, 'Không tìm thấy thông tin nhân viên.');
         }
 
@@ -39,4 +39,3 @@ class DashboardController extends Controller
         return view('employee.dashboard', compact('employee', 'myTasks', 'myContracts', 'taskStats'));
     }
 }
-

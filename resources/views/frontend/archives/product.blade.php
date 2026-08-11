@@ -3,14 +3,15 @@
 @section('title', $title ?? 'Sản phẩm')
 
 @section('content')
-<div class="container mx-auto px-4 py-8">
-    {{-- Header --}}
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-800 mb-2">{{ $title ?? 'Tất cả sản phẩm' }}</h1>
-        @if(isset($category))
-            <p class="text-gray-600">{{ $category->description }}</p>
-        @endif
-    </div>
+
+{{-- Banner Đầu Trang --}}
+@include('frontend.partials.page-banner', [
+    'title' => $title ?? 'Tất cả sản phẩm',
+    'description' => isset($category) ? $category->description : 'Khám phá các sản phẩm chất lượng hàng đầu',
+    'type' => 'product_category'
+])
+
+<div class="container mx-auto px-4 py-6">
 
     <div class="flex flex-col lg:flex-row gap-8">
         {{-- Sidebar Filters --}}

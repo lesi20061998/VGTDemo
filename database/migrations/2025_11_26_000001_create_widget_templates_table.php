@@ -23,7 +23,7 @@ return new class extends Migration
             $table->boolean('is_premium')->default(false);
             $table->integer('sort_order')->default(0);
             $table->timestamps();
-            
+
             $table->index(['tenant_id', 'category']);
             $table->index(['is_active', 'sort_order']);
         });

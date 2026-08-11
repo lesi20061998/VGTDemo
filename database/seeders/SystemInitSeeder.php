@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class SystemInitSeeder extends Seeder
 {
@@ -148,12 +148,12 @@ class SystemInitSeeder extends Seeder
             ['product_attribute_id' => 1, 'value' => '40', 'slug' => '40'],
             ['product_attribute_id' => 1, 'value' => '41', 'slug' => '41'],
             ['product_attribute_id' => 1, 'value' => '42', 'slug' => '42'],
-            
+
             // Colors
             ['product_attribute_id' => 2, 'value' => 'Đỏ', 'slug' => 'do', 'color_code' => '#FF0000'],
             ['product_attribute_id' => 2, 'value' => 'Xanh', 'slug' => 'xanh', 'color_code' => '#0000FF'],
             ['product_attribute_id' => 2, 'value' => 'Đen', 'slug' => 'den', 'color_code' => '#000000'],
-            
+
             // Materials
             ['product_attribute_id' => 3, 'value' => 'Da thật', 'slug' => 'da-that'],
             ['product_attribute_id' => 3, 'value' => 'Vải canvas', 'slug' => 'vai-canvas'],

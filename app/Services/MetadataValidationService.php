@@ -28,6 +28,8 @@ class MetadataValidationService
         'fields.*.validation' => 'nullable|string',
         'fields.*.help' => 'nullable|string|max:500',
         'fields.*.placeholder' => 'nullable|string|max:255',
+        'fields.*.show_if' => 'nullable|array',
+        'fields.*.show_if.*' => 'string',
         'fields.*.options' => 'nullable|array',
         'fields.*.options.*' => 'string',
         'fields.*.max_items' => 'nullable|integer|min:1|max:100',
@@ -47,7 +49,7 @@ class MetadataValidationService
      */
     protected array $supportedFieldTypes = [
         'text',
-        'textarea', 
+        'textarea',
         'image',
         'gallery',
         'select',
@@ -59,7 +61,7 @@ class MetadataValidationService
         'email',
         'date',
         'color',
-        'range'
+        'range',
     ];
 
     /**
@@ -70,7 +72,7 @@ class MetadataValidationService
         $validator = Validator::make($metadata, $this->schemaRules);
 
         if ($validator->fails()) {
-            throw new \InvalidArgumentException('Invalid widget metadata: ' . $validator->errors()->first());
+            throw new \InvalidArgumentException('Invalid widget metadata: '.$validator->errors()->first());
         }
 
         // Additional custom validations
@@ -88,21 +90,21 @@ class MetadataValidationService
     {
         foreach ($fields as $index => $field) {
             $fieldType = $field['type'] ?? '';
-            
-            if (!in_array($fieldType, $this->supportedFieldTypes)) {
+
+            if (! in_array($fieldType, $this->supportedFieldTypes)) {
                 throw new \InvalidArgumentException("Unsupported field type '{$fieldType}' in field {$index}");
             }
 
             // Type-specific validations
             switch ($fieldType) {
                 case 'select':
-                    if (empty($field['options']) || !is_array($field['options'])) {
+                    if (empty($field['options']) || ! is_array($field['options'])) {
                         throw new \InvalidArgumentException("Select field '{$field['name']}' must have options array");
                     }
                     break;
 
                 case 'repeatable':
-                    if (empty($field['fields']) || !is_array($field['fields'])) {
+                    if (empty($field['fields']) || ! is_array($field['fields'])) {
                         throw new \InvalidArgumentException("Repeatable field '{$field['name']}' must have fields array");
                     }
                     // Recursively validate nested fields
@@ -110,7 +112,7 @@ class MetadataValidationService
                     break;
 
                 case 'nested':
-                    if (empty($field['fields']) || !is_array($field['fields'])) {
+                    if (empty($field['fields']) || ! is_array($field['fields'])) {
                         throw new \InvalidArgumentException("Nested field '{$field['name']}' must have fields array");
                     }
                     // Recursively validate nested fields
@@ -118,7 +120,7 @@ class MetadataValidationService
                     break;
 
                 case 'range':
-                    if (!isset($field['min']) || !isset($field['max'])) {
+                    if (! isset($field['min']) || ! isset($field['max'])) {
                         throw new \InvalidArgumentException("Range field '{$field['name']}' must have min and max values");
                     }
                     if ($field['min'] >= $field['max']) {
@@ -141,7 +143,7 @@ class MetadataValidationService
     protected function validateFieldDependencies(array $fields): void
     {
         $fieldNames = array_column($fields, 'name');
-        
+
         foreach ($fields as $field) {
             // Check for duplicate field names
             $nameCount = array_count_values($fieldNames)[$field['name']] ?? 0;
@@ -151,7 +153,7 @@ class MetadataValidationService
 
             // Validate conditional field dependencies
             if (isset($field['depends_on'])) {
-                if (!in_array($field['depends_on'], $fieldNames)) {
+                if (! in_array($field['depends_on'], $fieldNames)) {
                     throw new \InvalidArgumentException("Field '{$field['name']}' depends on non-existent field '{$field['depends_on']}'");
                 }
             }
@@ -168,13 +170,13 @@ class MetadataValidationService
         }
 
         // Ensure 'default' variant exists
-        if (!array_key_exists('default', $variants)) {
+        if (! array_key_exists('default', $variants)) {
             throw new \InvalidArgumentException("Widget must have a 'default' variant");
         }
 
         // Validate variant names
         foreach (array_keys($variants) as $variantName) {
-            if (!preg_match('/^[a-z][a-z0-9_]*$/', $variantName)) {
+            if (! preg_match('/^[a-z][a-z0-9_]*$/', $variantName)) {
                 throw new \InvalidArgumentException("Invalid variant name '{$variantName}'. Must be lowercase with underscores only.");
             }
         }
@@ -201,7 +203,7 @@ class MetadataValidationService
             case 'text':
                 $rules[] = 'string';
                 if (isset($fieldConfig['max_length'])) {
-                    $rules[] = 'max:' . $fieldConfig['max_length'];
+                    $rules[] = 'max:'.$fieldConfig['max_length'];
                 }
                 break;
 
@@ -220,10 +222,10 @@ class MetadataValidationService
             case 'number':
                 $rules[] = 'numeric';
                 if (isset($fieldConfig['min'])) {
-                    $rules[] = 'min:' . $fieldConfig['min'];
+                    $rules[] = 'min:'.$fieldConfig['min'];
                 }
                 if (isset($fieldConfig['max'])) {
-                    $rules[] = 'max:' . $fieldConfig['max'];
+                    $rules[] = 'max:'.$fieldConfig['max'];
                 }
                 break;
 
@@ -238,16 +240,16 @@ class MetadataValidationService
             case 'gallery':
                 $rules[] = 'array';
                 if (isset($fieldConfig['max_items'])) {
-                    $rules[] = 'max:' . $fieldConfig['max_items'];
+                    $rules[] = 'max:'.$fieldConfig['max_items'];
                 }
                 if (isset($fieldConfig['min_items'])) {
-                    $rules[] = 'min:' . $fieldConfig['min_items'];
+                    $rules[] = 'min:'.$fieldConfig['min_items'];
                 }
                 break;
 
             case 'select':
                 if (isset($fieldConfig['options']) && is_array($fieldConfig['options'])) {
-                    $rules[] = 'in:' . implode(',', array_keys($fieldConfig['options']));
+                    $rules[] = 'in:'.implode(',', array_keys($fieldConfig['options']));
                 }
                 break;
 
@@ -258,31 +260,32 @@ class MetadataValidationService
             case 'repeatable':
                 $rules[] = 'array';
                 if (isset($fieldConfig['max_items'])) {
-                    $rules[] = 'max:' . $fieldConfig['max_items'];
+                    $rules[] = 'max:'.$fieldConfig['max_items'];
                 }
                 if (isset($fieldConfig['min_items'])) {
-                    $rules[] = 'min:' . $fieldConfig['min_items'];
+                    $rules[] = 'min:'.$fieldConfig['min_items'];
                 }
                 break;
 
             case 'color':
                 $rules[] = 'string';
-                $rules[] = 'regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/';
+                // Allow hex colors, gradients, and CSS color values
+                $rules[] = 'regex:/^(#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})|linear-gradient|radial-gradient|rgba?|hsla?|[a-z]+).*$/i';
                 break;
 
             case 'range':
                 $rules[] = 'numeric';
                 if (isset($fieldConfig['min'])) {
-                    $rules[] = 'min:' . $fieldConfig['min'];
+                    $rules[] = 'min:'.$fieldConfig['min'];
                 }
                 if (isset($fieldConfig['max'])) {
-                    $rules[] = 'max:' . $fieldConfig['max'];
+                    $rules[] = 'max:'.$fieldConfig['max'];
                 }
                 break;
         }
 
         // Custom validation rules
-        if (!empty($fieldConfig['validation'])) {
+        if (! empty($fieldConfig['validation'])) {
             $customRules = explode('|', $fieldConfig['validation']);
             $rules = array_merge($rules, $customRules);
         }
@@ -292,7 +295,7 @@ class MetadataValidationService
             [$fieldName => implode('|', array_unique($rules))]
         );
 
-        return !$validator->fails();
+        return ! $validator->fails();
     }
 
     /**
@@ -302,6 +305,7 @@ class MetadataValidationService
     {
         try {
             $this->validateFieldValue($fieldConfig, $value);
+
             return [];
         } catch (\Exception $e) {
             return [$e->getMessage()];

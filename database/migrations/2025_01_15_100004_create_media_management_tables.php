@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('parent_id')->nullable();
             $table->string('path');
             $table->timestamps();
-            
+
             $table->foreign('parent_id')->references('id')->on('media_folders')->onDelete('cascade');
             $table->index(['parent_id', 'name']);
             $table->index(['path']);
@@ -36,7 +36,7 @@ return new class extends Migration
             $table->string('alt_text')->nullable();
             $table->text('description')->nullable();
             $table->timestamps();
-            
+
             $table->index(['mime_type']);
             $table->index(['folder_id']);
             $table->index(['created_at']);
@@ -58,7 +58,7 @@ return new class extends Migration
             $table->foreignId('media_file_id')->constrained()->onDelete('cascade');
             $table->integer('sort_order')->default(0);
             $table->timestamps();
-            
+
             $table->unique(['collection_id', 'media_file_id']);
             $table->index(['collection_id', 'sort_order']);
         });

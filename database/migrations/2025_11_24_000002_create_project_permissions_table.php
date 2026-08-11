@@ -17,7 +17,7 @@ return new class extends Migration
             $table->boolean('can_edit')->default(false);
             $table->boolean('can_delete')->default(false);
             $table->timestamps();
-            
+
             $table->unique(['project_id', 'module']);
         });
     }

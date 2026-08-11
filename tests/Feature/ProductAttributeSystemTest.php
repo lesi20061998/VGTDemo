@@ -2,11 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Models\AttributeGroup;
 use App\Models\Product;
 use App\Models\ProductAttribute;
 use App\Models\ProductAttributeValue;
-use App\Models\ProductAttributeValueMapping;
-use App\Models\AttributeGroup;
 use App\Services\ProductAttributeService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

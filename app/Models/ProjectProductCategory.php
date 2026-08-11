@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class ProjectProductCategory extends Model
 {
@@ -39,13 +40,13 @@ class ProjectProductCategory extends Model
 
         static::creating(function ($category) {
             if (empty($category->slug)) {
-                $category->slug = \Illuminate\Support\Str::slug($category->name);
+                $category->slug = Str::slug($category->name);
             }
         });
 
         static::updating(function ($category) {
             if (empty($category->slug)) {
-                $category->slug = \Illuminate\Support\Str::slug($category->name);
+                $category->slug = Str::slug($category->name);
             }
         });
     }

@@ -2,10 +2,13 @@
 
 namespace Database\Factories;
 
+use App\Models\Project;
+use App\Models\ProjectPasswordAudit;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ProjectPasswordAudit>
+ * @extends Factory<ProjectPasswordAudit>
  */
 class ProjectPasswordAuditFactory extends Factory
 {
@@ -17,8 +20,8 @@ class ProjectPasswordAuditFactory extends Factory
     public function definition(): array
     {
         return [
-            'project_id' => \App\Models\Project::factory(),
-            'user_id' => \App\Models\User::factory(),
+            'project_id' => Project::factory(),
+            'user_id' => User::factory(),
             'action' => $this->faker->randomElement(['viewed', 'generated', 'updated']),
             'ip_address' => $this->faker->ipv4(),
             'user_agent' => $this->faker->userAgent(),

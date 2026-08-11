@@ -2,15 +2,14 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\Post;
-use App\Models\PostType;
 use App\Models\Category;
-use App\Models\PostMeta;
 use App\Models\Page;
 use App\Models\PageSection;
 use App\Models\PageSectionItem;
-use Illuminate\Support\Str;
+use App\Models\Post;
+use App\Models\PostMeta;
+use App\Models\PostType;
+use Illuminate\Database\Seeder;
 
 class SampleDataSeeder extends Seeder
 {
@@ -69,8 +68,8 @@ class SampleDataSeeder extends Seeder
             $article = Post::create([
                 'title' => "Ra mắt bộ sưu tập giày cỏ nhân tạo {$i}",
                 'slug' => "ra-mat-bo-suu-tap-giay-co-nhan-tao-{$i}",
-                'content' => "Khám phá chương trình ưu đãi đặc biệt dành riêng cho tín đồ bóng đá tháng 9 này. Sở hữu đôi Phantom 6 Academy với mức giá ưu đãi và nhiều quà tặng kèm hấp dẫn.",
-                'excerpt' => "Khám phá chương trình ưu đãi đặc biệt dành riêng cho tín đồ bóng đá",
+                'content' => 'Khám phá chương trình ưu đãi đặc biệt dành riêng cho tín đồ bóng đá tháng 9 này. Sở hữu đôi Phantom 6 Academy với mức giá ưu đãi và nhiều quà tặng kèm hấp dẫn.',
+                'excerpt' => 'Khám phá chương trình ưu đãi đặc biệt dành riêng cho tín đồ bóng đá',
                 'status' => 'published',
                 'post_type_id' => $articleType->id,
                 'featured_image' => "/assets/img/products/product-article-{$i}.png",
@@ -121,7 +120,7 @@ class SampleDataSeeder extends Seeder
                 'hours' => 9,
                 'minutes' => 30,
                 'seconds' => 59,
-                'banner' => '/assets/img/top/fsale_banner.jpg'
+                'banner' => '/assets/img/top/fsale_banner.jpg',
             ]),
             'order' => 1,
         ]);

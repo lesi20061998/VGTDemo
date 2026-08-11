@@ -3,8 +3,8 @@
 namespace App\Traits;
 
 use App\Models\Tenant;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 trait BelongsToTenant
 {

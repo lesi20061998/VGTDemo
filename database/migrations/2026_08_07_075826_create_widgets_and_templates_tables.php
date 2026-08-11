@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (!Schema::hasTable('widget_templates')) {
+        if (! Schema::hasTable('widget_templates')) {
             Schema::create('widget_templates', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('tenant_id')->nullable();
@@ -27,21 +27,21 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('widgets')) {
+        if (! Schema::hasTable('widgets')) {
             Schema::create('widgets', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('tenant_id')->nullable();
                 $table->unsignedBigInteger('project_id')->nullable();
                 $table->string('name');
-                $table->string('type'); 
-                $table->string('area'); 
+                $table->string('type');
+                $table->string('area');
                 $table->json('settings')->nullable();
                 $table->integer('sort_order')->default(0);
                 $table->boolean('is_active')->default(true);
                 $table->string('variant')->nullable();
                 $table->json('meta_data')->nullable();
                 $table->timestamps();
-                
+
                 $table->index(['area', 'is_active', 'sort_order']);
             });
         }

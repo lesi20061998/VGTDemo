@@ -11,11 +11,11 @@ class PostController extends Controller
     public function index(Request $request)
     {
         $type = $request->get('type', 'post'); // post hoặc page
-        
+
         $posts = Post::where('post_type', $type)
             ->when($request->search, function ($query, $search) {
                 $query->where('title', 'like', "%{$search}%")
-                      ->orWhere('content', 'like', "%{$search}%");
+                    ->orWhere('content', 'like', "%{$search}%");
             })
             ->when($request->status, function ($query, $status) {
                 $query->where('status', $status);
@@ -29,6 +29,7 @@ class PostController extends Controller
     public function create(Request $request)
     {
         $type = $request->get('type', 'post');
+
         return view('cms.posts.create', compact('type'));
     }
 
@@ -52,8 +53,8 @@ class PostController extends Controller
         }
 
         $validated['author_id'] = auth()->id();
-        
-        if ($validated['status'] === 'published' && !isset($validated['published_at'])) {
+
+        if ($validated['status'] === 'published' && ! isset($validated['published_at'])) {
             $validated['published_at'] = now();
         }
 
@@ -61,7 +62,7 @@ class PostController extends Controller
 
         return redirect()
             ->route('cms.posts.index', ['type' => $validated['post_type']])
-            ->with('success', ucfirst($validated['post_type']) . ' đã được tạo thành công!');
+            ->with('success', ucfirst($validated['post_type']).' đã được tạo thành công!');
     }
 
     public function show(Post $post)
@@ -78,7 +79,7 @@ class PostController extends Controller
     {
         $validated = $request->validate([
             'title' => 'required|max:255',
-            'slug' => 'required|unique:posts,slug,' . $post->id,
+            'slug' => 'required|unique:posts,slug,'.$post->id,
             'excerpt' => 'nullable',
             'content' => 'required',
             'template' => 'nullable',
@@ -96,7 +97,7 @@ class PostController extends Controller
 
         return redirect()
             ->route('cms.posts.index', ['type' => $post->post_type])
-            ->with('success', ucfirst($post->post_type) . ' đã được cập nhật thành công!');
+            ->with('success', ucfirst($post->post_type).' đã được cập nhật thành công!');
     }
 
     public function destroy(Post $post)
@@ -106,6 +107,6 @@ class PostController extends Controller
 
         return redirect()
             ->route('cms.posts.index', ['type' => $type])
-            ->with('success', ucfirst($type) . ' đã được xóa thành công!');
+            ->with('success', ucfirst($type).' đã được xóa thành công!');
     }
 }

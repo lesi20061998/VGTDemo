@@ -35,11 +35,11 @@ return new class extends Migration
             'page_sections', 'product_attributes', 'product_attribute_values',
             'product_attribute_value_mappings', 'attribute_groups', 'product_variations',
             'form_submissions', 'activity_logs', 'roles', 'projects', 'employees',
-            'contracts', 'tasks', 'project_tickets', 'project_settings', 'project_permissions'
+            'contracts', 'tasks', 'project_tickets', 'project_settings', 'project_permissions',
         ];
 
         foreach ($tables as $table) {
-            if (Schema::hasTable($table) && !Schema::hasColumn($table, 'tenant_id')) {
+            if (Schema::hasTable($table) && ! Schema::hasColumn($table, 'tenant_id')) {
                 Schema::table($table, function (Blueprint $table) {
                     $table->unsignedBigInteger('tenant_id')->nullable()->after('id');
                     $table->foreign('tenant_id')->references('id')->on('tenants')->onDelete('cascade');
@@ -57,7 +57,7 @@ return new class extends Migration
             'page_sections', 'product_attributes', 'product_attribute_values',
             'product_attribute_value_mappings', 'attribute_groups', 'product_variations',
             'form_submissions', 'activity_logs', 'roles', 'projects', 'employees',
-            'contracts', 'tasks', 'project_tickets', 'project_settings', 'project_permissions'
+            'contracts', 'tasks', 'project_tickets', 'project_settings', 'project_permissions',
         ];
 
         foreach ($tables as $table) {

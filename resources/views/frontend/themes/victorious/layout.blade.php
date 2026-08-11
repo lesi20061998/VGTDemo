@@ -1,11 +1,19 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="{{ app()->getLocale() }}" prefix="og: https://ogp.me/ns#">
 <head>
     <meta charset="UTF-8">
-    <link rel="icon" type="image/svg+xml" href="{{ asset('themes/victorious/favicon.svg') }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Victorious Cruise')</title>
-    <meta name="description" content="@yield('description', 'Victorious Cruise - Luxury Cruise Experience')">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    
+    {{-- SEO Meta Tags Component --}}
+    <x-seo-meta 
+        :title="$seoTitle ?? null"
+        :description="$seoDescription ?? null"
+        :keywords="$seoKeywords ?? null"
+        :image="$seoImage ?? null"
+        :url="$seoUrl ?? null"
+        :breadcrumbs="$breadcrumbs ?? []"
+    />
     
     {{-- Fonts --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -71,7 +79,9 @@
                 }
             }
         }
-    </script>
+    <!-- Alpine.js Collapse Plugin & Core -->
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     
     @stack('styles')
 </head>

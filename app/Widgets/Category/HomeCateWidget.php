@@ -9,30 +9,31 @@ class HomeCateWidget extends BaseWidget
     public function render(): string
     {
         $title = $this->get('title', 'Danh mục sản phẩm');
-        
+
         $categories = [
             ['name' => 'Laptop & Máy tính', 'icon' => '💻', 'count' => 45, 'slug' => 'laptop-may-tinh'],
             ['name' => 'Điện thoại', 'icon' => '📱', 'count' => 32, 'slug' => 'dien-thoai'],
             ['name' => 'Tablet & iPad', 'icon' => '📱', 'count' => 18, 'slug' => 'tablet-ipad'],
             ['name' => 'Phụ kiện', 'icon' => '🎧', 'count' => 67, 'slug' => 'phu-kien'],
         ];
-        
+
         $projectCode = request()->route('projectCode');
-        $html = "<section class=\"home-cate-widget py-16 bg-gray-50\">";
-        $html .= "<div class=\"container mx-auto px-4\">";
+        $html = '<section class="home-cate-widget py-16 bg-gray-50">';
+        $html .= '<div class="container mx-auto px-4">';
         $html .= "<h2 class=\"text-4xl font-bold text-center mb-12\">{$title}</h2>";
-        $html .= "<div class=\"grid md:grid-cols-2 lg:grid-cols-4 gap-6\">";
-        
+        $html .= '<div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">';
+
         foreach ($categories as $category) {
             $categoryUrl = $projectCode ? "/{$projectCode}/category/{$category['slug']}" : "/category/{$category['slug']}";
             $html .= "<div class=\"category-card bg-white rounded-lg p-6 text-center hover:shadow-lg transition cursor-pointer\" onclick=\"location.href='{$categoryUrl}'\">";
             $html .= "<div class=\"text-4xl mb-4\">{$category['icon']}</div>";
             $html .= "<h3 class=\"font-bold mb-2\">{$category['name']}</h3>";
             $html .= "<p class=\"text-gray-500 text-sm\">{$category['count']} sản phẩm</p>";
-            $html .= "</div>";
+            $html .= '</div>';
         }
-        
-        $html .= "</div></div></section>";
+
+        $html .= '</div></div></section>';
+
         return $html;
     }
 
@@ -68,7 +69,7 @@ class HomeCateWidget extends BaseWidget
             'icon' => '<path d="M4 6h16M4 12h16M4 18h16"/>',
             'fields' => [
                 ['name' => 'title', 'label' => 'Title', 'type' => 'text', 'default' => 'Danh mục sản phẩm'],
-            ]
+            ],
         ];
     }
 }

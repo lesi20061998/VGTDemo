@@ -1,107 +1,83 @@
-{{-- Header Style 3: Sidebar menu trái (hamburger) --}}
+{{-- Header Style 3: Minimal Search Header (Khung Tìm Kiếm Rộng Trung Tâm) - Logo High Visibility 150px --}}
 @php
-    $showSearch = setting('show_search', true);
-    $showCart = setting('show_cart', true);
-    $showAccount = setting('show_account', false);
+    $showSearch = $showSearch ?? true;
+    $showCart = $showCart ?? true;
+    $showAccount = $showAccount ?? true;
+    $headerHeight = (int) ($headerHeight ?? 60);
+    if ($headerHeight <= 0) $headerHeight = 60;
+
+    $scale = max(0.65, min(1.2, $headerHeight / 60));
+    $iconSize = round(16 * $scale, 1);
+    $btnPadding = round(6 * $scale, 1);
+    $siteNameFontSize = round(20 * $scale, 1);
+    $inputFontSize = round(12.5 * $scale, 1);
 @endphp
 
-<header class="shadow-sm relative z-50" style="background-color: {{ $headerBg }}; color: {{ $headerText }};">
-    <div class="container mx-auto px-4">
-        <div class="flex justify-between items-center py-4">
-            {{-- Hamburger Menu --}}
-            <button type="button" class="p-2 hover:bg-gray-100 rounded" onclick="toggleSidebar()">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-            </button>
+<header class="{{ $headerSticky ? 'sticky top-0 z-50 shadow-md' : 'relative z-50 shadow-sm' }}" style="background-color: {{ $headerBg }}; color: {{ $headerText }};">
+    <div class="container mx-auto px-4 py-2">
+        <div class="flex items-center justify-between gap-4">
             
-            {{-- Logo Center --}}
-            <div class="flex-shrink-0">
+            {{-- Left: Logo --}}
+            <div class="flex-shrink-0 flex items-center gap-3 py-1">
                 @if($logo)
-                    <a href="/{{ $projectCode }}"><img src="{{ $logo }}" alt="{{ $siteName }}" class="h-20 md:h-32 max-h-32 w-auto object-contain"></a>
+                    <a href="/{{ $projectCode }}" class="inline-block">
+                        <img src="{{ $logo }}" alt="{{ $siteName }}" class="w-auto object-contain transition-all duration-200" style="height: 150px; max-height: 150px;">
+                    </a>
                 @else
-                    <a href="/{{ $projectCode }}" class="text-xl font-bold" style="color: {{ $headerText }};">{{ $siteName }}</a>
+                    <a href="/{{ $projectCode }}" class="font-extrabold tracking-tight" style="color: {{ $headerText }}; font-size: {{ $siteNameFontSize }}px;">{{ $siteName }}</a>
                 @endif
             </div>
-            
-            {{-- Right Icons --}}
-            <div class="flex items-center gap-3">
-                {{-- Search --}}
-                @if($showSearch)
-                <button type="button" onclick="toggleSearchModal()" class="p-2 hover:bg-gray-100 rounded-full" title="Tìm kiếm">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                </button>
+
+            {{-- Center: Expanded Search Bar --}}
+            @if($showSearch)
+            <div class="flex-1 max-w-xl hidden md:block">
+                <form action="/{{ $projectCode }}/search" method="GET" class="relative">
+                    <input type="text" name="q" placeholder="Tìm kiếm sản phẩm, bài viết..." 
+                           class="w-full pl-9 pr-4 py-1.5 bg-gray-100 hover:bg-gray-100/90 border border-gray-200 focus:border-blue-600 focus:bg-white rounded-xl font-medium transition duration-200 focus:outline-none text-xs"
+                           style="font-size: {{ $inputFontSize }}px;">
+                    <div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                        <svg style="width: {{ round(15 * $scale, 1) }}px; height: {{ round(15 * $scale, 1) }}px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    </div>
+                </form>
+            </div>
+            @endif
+
+            {{-- Right: Actions & Nav --}}
+            <div class="flex items-center gap-4">
+                {{-- Desktop Nav Menu Items --}}
+                @if($navMenu?->items)
+                <div class="hidden lg:block">
+                    @include('frontend.partials.navigation.desktop-menu', ['navMenu' => $navMenu, 'headerText' => $headerText, 'headerHeight' => $headerHeight])
+                </div>
                 @endif
-                
-                {{-- Account --}}
-                @if($showAccount)
-                <a href="/{{ $projectCode }}/account" class="p-2 hover:bg-gray-100 rounded-full" title="Tài khoản">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                </a>
-                @endif
-                
-                {{-- Cart --}}
+
                 @if($showCart)
-                <a href="/{{ $projectCode }}/cart" class="p-2 hover:bg-gray-100 rounded-full relative" title="Giỏ hàng">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-                    <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center cart-count">0</span>
+                <a href="/{{ $projectCode }}/cart" class="bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-full transition relative flex items-center justify-center" 
+                   style="padding: {{ $btnPadding }}px;" title="Giỏ hàng">
+                    <div class="relative">
+                        <svg style="width: {{ $iconSize }}px; height: {{ $iconSize }}px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                        <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] w-3.5 h-3.5 rounded-full flex items-center justify-center font-bold cart-count">0</span>
+                    </div>
                 </a>
                 @endif
+
+                <button type="button" class="lg:hidden flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-xl shadow-xs hover:shadow-md transition font-bold" onclick="toggleMobileMenu()">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                    @if(!empty($showMobileMenuText))
+                        <span class="text-xs uppercase tracking-wider font-extrabold">{{ $mobileMenuBtnText ?? 'MENU' }}</span>
+                    @endif
+                </button>
             </div>
+
         </div>
     </div>
+
+    {{-- Mobile Menu --}}
+    @include('frontend.partials.navigation.mobile-menu', ['navMenu' => $navMenu, 'headerText' => $headerText])
 </header>
 
-{{-- Sidebar Overlay --}}
-<div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden" onclick="toggleSidebar()"></div>
-
-{{-- Sidebar Menu --}}
-<div id="sidebar-menu" class="fixed top-0 left-0 w-72 h-full bg-white shadow-xl z-50 transform -translate-x-full transition-transform duration-300" style="background-color: {{ $headerBg }};">
-    <div class="p-4 border-b flex justify-between items-center">
-        @if($logo)
-            <img src="{{ $logo }}" alt="{{ $siteName }}" class="h-20 md:h-32 max-h-32 w-auto object-contain">
-        @else
-            <span class="text-xl font-bold" style="color: {{ $headerText }};">{{ $siteName }}</span>
-        @endif
-        <button type="button" onclick="toggleSidebar()" class="p-2 hover:bg-gray-100 rounded">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-        </button>
-    </div>
-    
-    {{-- Sidebar Search --}}
-    @if($showSearch)
-    <div class="p-4 border-b">
-        <form action="/{{ $projectCode }}/search" method="GET">
-            <div class="relative">
-                <input type="text" name="q" placeholder="Tìm kiếm..." class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
-                <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-500">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                </button>
-            </div>
-        </form>
-    </div>
-    @endif
-    
-    <div class="p-4 overflow-y-auto" style="max-height: calc(100vh - 200px);">
-        @include('frontend.partials.navigation.mobile-menu', ['navMenu' => $navMenu, 'headerText' => $headerText])
-    </div>
-    
-    <div class="absolute bottom-0 left-0 right-0 p-4 border-t bg-gray-50">
-        <a href="tel:{{ $hotline }}" class="flex items-center gap-2 text-blue-600 hover:underline">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
-            <span class="font-bold">{{ $hotline }}</span>
-        </a>
-    </div>
-</div>
-
-{{-- Search Modal --}}
-@if($showSearch)
-@include('frontend.partials.search-modal', ['projectCode' => $projectCode])
-@endif
-
 <script>
-function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar-menu');
-    const overlay = document.getElementById('sidebar-overlay');
-    sidebar.classList.toggle('-translate-x-full');
-    overlay.classList.toggle('hidden');
+function toggleMobileMenu() {
+    window.dispatchEvent(new CustomEvent('toggle-mobile-menu'));
 }
 </script>

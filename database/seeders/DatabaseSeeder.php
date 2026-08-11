@@ -10,6 +10,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             CmsSystemSeeder::class,
+            CmsAdminDataSeeder::class,
             EcommerceSeeder::class,
             ProjectSeeder::class,
             WebsiteConfigSeeder::class,

@@ -9,23 +9,23 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('menus', function (Blueprint $table) {
-            if (!Schema::hasColumn('menus', 'location')) {
+            if (! Schema::hasColumn('menus', 'location')) {
                 $table->string('location')->default('header')->after('slug');
             }
-            if (!Schema::hasColumn('menus', 'is_active')) {
+            if (! Schema::hasColumn('menus', 'is_active')) {
                 $table->boolean('is_active')->default(true)->after('location');
             }
-            if (!Schema::hasColumn('menus', 'tenant_id')) {
+            if (! Schema::hasColumn('menus', 'tenant_id')) {
                 $table->unsignedBigInteger('tenant_id')->nullable()->after('id');
             }
         });
 
         Schema::table('menu_items', function (Blueprint $table) {
-            if (!Schema::hasColumn('menu_items', 'parent_id')) {
+            if (! Schema::hasColumn('menu_items', 'parent_id')) {
                 $table->unsignedBigInteger('parent_id')->nullable()->after('menu_id');
                 $table->foreign('parent_id')->references('id')->on('menu_items')->onDelete('cascade');
             }
-            if (!Schema::hasColumn('menu_items', 'tenant_id')) {
+            if (! Schema::hasColumn('menu_items', 'tenant_id')) {
                 $table->unsignedBigInteger('tenant_id')->nullable()->after('id');
             }
         });

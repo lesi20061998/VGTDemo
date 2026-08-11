@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\WidgetRenderingService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -15,12 +16,12 @@ class PageSection extends Model
         'type',
         'settings',
         'order',
-        'is_active'
+        'is_active',
     ];
 
     protected $casts = [
         'settings' => 'array',
-        'is_active' => 'boolean'
+        'is_active' => 'boolean',
     ];
 
     /**
@@ -52,8 +53,8 @@ class PageSection extends Model
      */
     public function getRenderedContent(): string
     {
-        $renderingService = new \App\Services\WidgetRenderingService();
-        
+        $renderingService = new WidgetRenderingService;
+
         return $renderingService->render(
             $this->type,
             $this->settings ?? [],
@@ -75,10 +76,10 @@ class PageSection extends Model
             $tempOrder = $this->order;
             $this->order = $previousSection->order;
             $previousSection->order = $tempOrder;
-            
+
             $this->save();
             $previousSection->save();
-            
+
             return true;
         }
 
@@ -99,10 +100,10 @@ class PageSection extends Model
             $tempOrder = $this->order;
             $this->order = $nextSection->order;
             $nextSection->order = $tempOrder;
-            
+
             $this->save();
             $nextSection->save();
-            
+
             return true;
         }
 

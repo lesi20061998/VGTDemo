@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Brand>
+ * @extends Factory<Brand>
  */
 class BrandFactory extends Factory
 {
@@ -15,7 +15,7 @@ class BrandFactory extends Factory
 
     public function definition(): array
     {
-        $name = $this->faker->word() . ' ' . $this->faker->word();
+        $name = $this->faker->word().' '.$this->faker->word();
 
         return [
             'name' => $name,

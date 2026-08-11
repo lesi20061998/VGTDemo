@@ -12,7 +12,7 @@ class NewsletterWidget extends BaseWidget
         $subtitle = $this->get('subtitle', 'Nhận thông tin mới nhất về sản phẩm và dịch vụ');
         $placeholder = $this->get('placeholder', 'Nhập email của bạn');
         $buttonText = $this->get('button_text', 'Đăng ký');
-        
+
         return "
         <section class=\"newsletter-widget py-16 bg-gradient-to-r from-purple-600 to-blue-600 text-white\">
             <div class=\"container mx-auto px-4 text-center\">
@@ -81,8 +81,7 @@ class NewsletterWidget extends BaseWidget
                 ['name' => 'subtitle', 'label' => 'Subtitle', 'type' => 'text', 'default' => 'Get the latest updates delivered to your inbox'],
                 ['name' => 'placeholder', 'label' => 'Placeholder', 'type' => 'text', 'default' => 'Enter your email'],
                 ['name' => 'button_text', 'label' => 'Button Text', 'type' => 'text', 'default' => 'Subscribe'],
-            ]
+            ],
         ];
     }
 }
-

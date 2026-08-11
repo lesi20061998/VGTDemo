@@ -1,1239 +1,1194 @@
 @extends('cms.layouts.app')
 
-@section('title', 'Widget Builder')
-@section('page-title', 'Widget Builder - Drag & Drop')
+@section('title', 'Quản lý Widget')
+@section('page-title', 'Widget Manager')
 
-@push('head-scripts')
-<script>
-// Declare functions early so onclick handlers work
-let draggedElement = null;
-let existingWidgetsGrouped = [];
-let widgets = [];
-let draggedWidgetItem = null;
-let currentArea = 'homepage-main';
-const usedWidgets = new Set();
+@php
+    $projectCode = request()->route('projectCode');
+    $baseUrl     = $projectCode ? "/{$projectCode}/admin" : '/admin';
 
-function switchArea(area) {
-    currentArea = area;
-    
-    // Update tabs
-    document.querySelectorAll('.area-tab').forEach(tab => {
-        tab.classList.remove('bg-blue-500', 'text-white');
-        tab.classList.add('bg-gray-200', 'text-gray-700');
-        tab.querySelector('span:last-child')?.classList.remove('bg-white/20');
-        tab.querySelector('span:last-child')?.classList.add('bg-gray-300');
-    });
-    
-    const activeTab = document.getElementById('tab-' + area);
-    if (activeTab) {
-        activeTab.classList.remove('bg-gray-200', 'text-gray-700');
-        activeTab.classList.add('bg-blue-500', 'text-white');
-        activeTab.querySelector('span:last-child')?.classList.remove('bg-gray-300');
-        activeTab.querySelector('span:last-child')?.classList.add('bg-white/20');
-    }
-    
-    // Update zones
-    document.querySelectorAll('.drop-zone-container').forEach(zone => {
-        zone.classList.remove('active');
-        zone.classList.add('hidden');
-    });
-    
-    const activeZone = document.getElementById('zone-' + area);
-    if (activeZone) {
-        activeZone.classList.remove('hidden');
-        activeZone.classList.add('active');
-    }
-}
-
-function toggleCategory(category) {
-    const content = document.getElementById('category-' + category);
-    const arrow = document.getElementById('arrow-' + category);
-    
-    if (content && arrow) {
-        content.classList.toggle('collapsed');
-        arrow.classList.toggle('collapsed');
-    }
-}
-
-function filterWidgets(query) {
-    const templates = document.querySelectorAll('.widget-template');
-    const categories = document.querySelectorAll('.widget-category');
-    query = query.toLowerCase();
-    
-    templates.forEach(template => {
-        const name = template.dataset.name?.toLowerCase() || '';
-        const type = template.dataset.type?.toLowerCase() || '';
-        const matches = name.includes(query) || type.includes(query);
-        template.style.display = matches ? '' : 'none';
-    });
-    
-    categories.forEach(category => {
-        const visibleWidgets = category.querySelectorAll('.widget-template:not([style*="display: none"])');
-        category.style.display = visibleWidgets.length > 0 ? '' : 'none';
-        
-        if (visibleWidgets.length > 0) {
-            const content = category.querySelector('.category-content');
-            const arrow = category.querySelector('.category-arrow');
-            if (content) content.classList.remove('collapsed');
-            if (arrow) arrow.classList.remove('collapsed');
-        }
-    });
-}
-</script>
-@endpush
+    $widgetAreas = [
+        'homepage-main' => ['label' => 'Trang chủ', 'icon' => 'home'],
+        'sidebar'        => ['label' => 'Sidebar', 'icon' => 'view-list'],
+        'footer'         => ['label' => 'Footer', 'icon' => 'template'],
+        'blog-sidebar'   => ['label' => 'Blog Sidebar', 'icon' => 'document-text'],
+    ];
+@endphp
 
 @section('content')
-{{-- Media Picker Modal --}}
 <x-media-picker-modal />
 
-<div class="flex gap-4 h-[calc(100vh-180px)]">
-    <!-- Widget Templates Sidebar - Fixed Left -->
-    <div class="w-80 flex-shrink-0 bg-white rounded-lg shadow-sm flex flex-col overflow-hidden">
-        <div class="p-4 border-b bg-gray-50">
-            <h3 class="font-bold text-lg flex items-center justify-between">
-                <span>Widget Templates</span>
-                <span class="bg-blue-500 text-white text-xs px-2 py-1 rounded-full">{{ array_sum(array_map('count', $availableWidgets)) }}</span>
-            </h3>
-            <input type="text" id="widgetSearch" placeholder="Tìm widget..." 
-                   class="mt-3 w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500"
-                   onkeyup="filterWidgets(this.value)">
-        </div>
-        
-        <div class="flex-1 overflow-y-auto p-3 space-y-3" id="widgetTemplatesList">
-            @foreach($availableWidgets as $category => $widgets)
-            <div class="widget-category" data-category="{{ $category }}">
-                <button type="button" onclick="toggleCategory('{{ $category }}')" 
-                        class="w-full flex items-center justify-between p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition">
-                    <span class="font-medium text-sm flex items-center gap-2">
-                        <svg class="w-4 h-4 transition-transform category-arrow" id="arrow-{{ $category }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                        </svg>
-                        {{ ucfirst(str_replace('_', ' ', $category)) }}
-                    </span>
-                    <span class="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full">{{ count($widgets) }}</span>
-                </button>
-                
-                <div class="category-content mt-2 space-y-2" id="category-{{ $category }}">
-                    @foreach($widgets as $widget)
-                    <div class="widget-template border border-gray-200 rounded-lg p-3 cursor-move hover:border-blue-400 hover:bg-blue-50 hover:shadow-sm transition-all" 
-                         draggable="true" 
-                         data-type="{{ $widget['type'] }}"
-                         data-name="{{ $widget['metadata']['name'] ?? $widget['name'] }}"
-                         data-category="{{ $category }}"
-                         title="{{ $widget['metadata']['description'] ?? $widget['description'] ?? 'No description' }}">
-                        <div class="flex items-center gap-2">
-                            <div class="w-8 h-8 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center flex-shrink-0">
-                                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    {!! $widget['icon'] ?? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>' !!}
-                                </svg>
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <h4 class="font-medium text-sm truncate">{{ $widget['metadata']['name'] ?? $widget['name'] }}</h4>
-                                <p class="text-xs text-gray-500 truncate">{{ $widget['type'] }}</p>
-                            </div>
-                            <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/>
-                            </svg>
-                        </div>
-                    </div>
-                    @endforeach
-                </div>
-            </div>
-            @endforeach
-        </div>
-    </div>
-
-    <!-- Drop Zones - Right Side with Tabs -->
-    <div class="flex-1 flex flex-col min-w-0">
-        <!-- Header with Save Button -->
-        <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center gap-2">
-                <!-- Area Tabs -->
-                <button onclick="switchArea('homepage-main')" id="tab-homepage-main" 
-                        class="area-tab px-4 py-2 rounded-lg font-medium transition-all bg-blue-500 text-white">
-                    <span class="flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-                        </svg>
-                        Homepage
-                        <span class="bg-white/20 text-xs px-1.5 py-0.5 rounded" id="count-homepage-main">0</span>
-                    </span>
-                </button>
-                <button onclick="switchArea('sidebar')" id="tab-sidebar" 
-                        class="area-tab px-4 py-2 rounded-lg font-medium transition-all bg-gray-200 text-gray-700 ">
-                    <span class="flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
-                        </svg>
-                        Sidebar
-                        <span class="bg-gray-300 text-xs px-1.5 py-0.5 rounded" id="count-sidebar">0</span>
-                    </span>
-                </button>
-                <button onclick="switchArea('footer')" id="tab-footer" 
-                        class="area-tab px-4 py-2 rounded-lg font-medium transition-all bg-gray-200 text-gray-700 ">
-                    <span class="flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
-                        </svg>
-                        Footer
-                        <span class="bg-gray-300 text-xs px-1.5 py-0.5 rounded" id="count-footer">0</span>
-                    </span>
-                </button>
-            </div>
-            
-            <div class="flex items-center gap-2">
-                <button onclick="clearCurrentArea()" class="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition flex items-center gap-1">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                    </svg>
-                    Xóa tất cả
-                </button>
-                <button onclick="saveWidgets(event)" class="px-4 py-2 bg-[#98191F] text-white rounded-lg hover:bg-[#7a1419] transition flex items-center gap-2 font-medium">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
-                    </svg>
-                    Lưu tất cả
-                </button>
-            </div>
-        </div>
-
-        <!-- Drop Zone Container -->
-        <div class="flex-1 bg-white rounded-lg shadow-sm overflow-hidden flex flex-col min-h-0">
-            <!-- Homepage Main Zone -->
-            <div id="zone-homepage-main" class="drop-zone-container flex-1 flex flex-col min-h-0" data-area="homepage-main">
-                <div class="p-4 border-b bg-gray-50 flex items-center justify-between flex-shrink-0">
-                    <h3 class="font-semibold text-gray-700">Homepage Main Content</h3>
-                    <span class="text-sm text-gray-500">Kéo widget vào đây</span>
-                </div>
-                <div class="flex-1 overflow-y-auto p-4 min-h-0">
-                    <div id="dropZone" class="min-h-[200px] border-2 border-dashed border-gray-200 rounded-lg transition-colors p-4" data-area="homepage-main">
-                        <p class="empty-message text-gray-400 text-center py-16">
-                            <svg class="w-16 h-16 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                            </svg>
-                            Kéo widget từ bên trái vào đây<br>
-                            <small class="text-xs">Có thể sắp xếp lại bằng cách kéo thả</small>
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Sidebar Zone (Hidden by default) -->
-            <div id="zone-sidebar" class="drop-zone-container flex-1 flex-col hidden min-h-0" data-area="sidebar">
-                <div class="p-4 border-b bg-gray-50 flex items-center justify-between flex-shrink-0">
-                    <h3 class="font-semibold text-gray-700">Sidebar Widgets</h3>
-                    <span class="text-sm text-gray-500">Kéo widget vào đây</span>
-                </div>
-                <div class="flex-1 overflow-y-auto p-4 min-h-0">
-                    <div id="sidebarZone" class="min-h-[200px] border-2 border-dashed border-gray-200 rounded-lg transition-colors p-4" data-area="sidebar">
-                        <p class="empty-message text-gray-400 text-center py-16">
-                            <svg class="w-16 h-16 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                            </svg>
-                            Kéo widget cho Sidebar vào đây
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Footer Zone (Hidden by default) -->
-            <div id="zone-footer" class="drop-zone-container flex-1 flex-col hidden min-h-0" data-area="footer">
-                <div class="p-4 border-b bg-gray-50 flex items-center justify-between flex-shrink-0">
-                    <h3 class="font-semibold text-gray-700">Footer Widgets</h3>
-                    <span class="text-sm text-gray-500">Kéo widget vào đây</span>
-                </div>
-                <div class="flex-1 overflow-y-auto p-4 min-h-0">
-                    <div id="footerZone" class="min-h-[200px] border-2 border-dashed border-gray-200 rounded-lg transition-colors p-4" data-area="footer">
-                        <p class="empty-message text-gray-400 text-center py-16">
-                            <svg class="w-16 h-16 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                            </svg>
-                            Kéo widget cho Footer vào đây
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
+{{-- Toast Notification --}}
+<div id="wm-toast" class="fixed top-5 right-5 z-[9999] hidden">
+    <div id="wm-toast-inner" class="flex items-center gap-3 px-4 py-3 rounded-xl shadow-xl text-sm font-medium text-white min-w-[280px]">
+        <svg id="wm-toast-icon" class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"></svg>
+        <span id="wm-toast-msg"></span>
     </div>
 </div>
 
-<!-- Config Modal -->
-<div id="configModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-xl font-bold">Configure Widget</h3>
-            <button onclick="closeConfig()" class="text-gray-500 hover:text-gray-700">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+{{-- ================================================================ --}}
+{{-- CONFIG MODAL — Full-screen: Left = Form | Right = Live Preview   --}}
+{{-- ================================================================ --}}
+<div id="config-drawer" class="fixed inset-0 z-[100] hidden flex-col" style="background:rgba(15,23,42,0.7);">
+    <div class="absolute inset-4 bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+
+        {{-- ── Top bar ──────────────────────────────────────────── --}}
+        <div class="flex items-center gap-3 px-5 py-3 bg-gray-900 text-white flex-shrink-0">
+            <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="font-bold text-sm leading-tight truncate" id="drawer-title">Cấu hình Widget</p>
+                <p class="text-xs text-gray-400 leading-tight truncate" id="drawer-subtitle"></p>
+            </div>
+            {{-- Viewport buttons --}}
+            <div class="flex items-center gap-1 bg-gray-800 rounded-lg p-1 flex-shrink-0">
+                <button data-vp-width="375" class="modal-vp-btn text-gray-400 hover:text-white flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition" title="Mobile (375px)">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                    </svg>
+                    Mobile
+                </button>
+                <button data-vp-width="768" class="modal-vp-btn text-gray-400 hover:text-white flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition" title="Tablet (768px)">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                    </svg>
+                    Tablet
+                </button>
+                <button data-vp-width="1280" class="modal-vp-btn text-white bg-blue-600 flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition" title="Desktop (1280px)">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                    </svg>
+                    Desktop
+                </button>
+            </div>
+            <button id="btn-close-drawer" class="ml-1 p-2 hover:bg-gray-700 rounded-lg transition flex-shrink-0" title="Đóng (ESC)">
+                <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                 </svg>
             </button>
         </div>
-        <form id="configForm"></form>
-        <div class="flex justify-end gap-3 mt-6">
-            <button type="button" onclick="closeConfig()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">Cancel</button>
-            <button type="button" onclick="previewWidget()" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">Preview</button>
-            <button type="button" onclick="saveConfig()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Save</button>
+
+        {{-- ── Main: Form (left) + Preview (right) ─────────────── --}}
+        <div class="flex flex-1 overflow-hidden">
+
+            {{-- Left: Config Form --}}
+            <div class="w-80 flex-shrink-0 flex flex-col border-r border-gray-200 bg-gray-50">
+                <div class="flex-1 overflow-y-auto px-5 py-4" id="drawer-body">
+                    <div class="flex flex-col items-center justify-center h-40 text-gray-400">
+                        <svg class="w-5 h-5 animate-spin mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                        </svg>
+                        <span class="text-sm">Đang tải form...</span>
+                    </div>
+                </div>
+                {{-- Action bar --}}
+                <div class="flex-shrink-0 px-4 py-3 border-t border-gray-200 bg-white flex flex-col gap-2">
+                    <div class="flex items-center gap-2">
+                        <button id="btn-cancel-drawer"
+                                class="flex-1 py-2 px-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium text-sm rounded-lg transition">
+                            Huỷ
+                        </button>
+                        <button id="btn-save-config"
+                                class="flex-[2] flex items-center justify-center gap-2 py-2 px-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Lưu cấu hình
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Right: Live Preview --}}
+            <div class="flex-1 flex flex-col bg-[#f1f5f9] overflow-hidden relative">
+                
+                {{-- Toolbar inside preview --}}
+                <div class="absolute top-0 inset-x-0 z-10 flex items-center gap-3 px-4 py-2 bg-white/80 backdrop-blur border-b border-gray-200 shadow-sm">
+                    <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Live Preview</span>
+                    <span class="text-xs text-gray-500 bg-gray-200 px-2 py-0.5 rounded-md font-medium" id="modal-vp-size-label">
+                        Desktop (1280px)
+                    </span>
+                    <div class="flex-1"></div>
+                    <span class="text-xs text-gray-400">Preview có thể khác một chút so với thực tế</span>
+                </div>
+
+                {{-- Scrollable Container --}}
+                <div class="flex-1 overflow-auto p-6 pt-16 flex items-start justify-center">
+                    
+                    {{-- Device Wrapper --}}
+                    <div id="modal-preview-wrapper" class="relative transition-all duration-300" style="width: 1280px; min-height: 400px;">
+                        
+                        {{-- Loading Overlay --}}
+                        <div id="modal-preview-loading" class="absolute inset-0 bg-white/90 backdrop-blur-sm flex flex-col items-center justify-center z-20 rounded-xl shadow-xl hidden">
+                            <svg class="w-8 h-8 text-blue-500 animate-spin mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                            </svg>
+                            <span class="text-sm font-medium text-gray-600">Đang render preview...</span>
+                        </div>
+
+                        {{-- Frame & Content --}}
+                        <iframe id="modal-preview-content" class="bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-200 w-full" style="height: 800px;" scrolling="auto"></iframe>
+
+                    </div>
+                </div>
+
+            </div>
         </div>
     </div>
 </div>
 
-<style>
-.widget-dragging { 
-    opacity: 0.5; 
-    transform: scale(0.95); 
-}
 
-.widget-template {
-    transition: all 0.2s ease;
-}
+{{-- Page Heading --}}
+<div class="mb-6">
+    {{-- Breadcrumb --}}
+    <nav class="flex items-center gap-2 text-xs text-gray-400 mb-3">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+        </svg>
+        <span>Quản trị</span>
+        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+        </svg>
+        <span>Giao diện</span>
+        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+        </svg>
+        <span class="text-gray-600 font-medium">Widget Manager</span>
+    </nav>
 
-.widget-template:hover {
-    transform: translateX(4px);
-}
-
-.widget-item {
-    transition: all 0.2s ease;
-}
-
-.widget-item:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.widget-item.opacity-50 {
-    opacity: 0.5;
-    transform: rotate(2deg);
-}
-
-.drag-handle {
-    transition: all 0.2s ease;
-}
-
-.drag-handle:hover {
-    transform: scale(1.1);
-}
-
-.drop-zone-active {
-    background-color: #dbeafe !important;
-    border-color: #3b82f6 !important;
-    border-style: solid !important;
-}
-
-.widget-item[draggable="true"] {
-    cursor: grab;
-}
-
-.widget-item[draggable="true"]:active {
-    cursor: grabbing;
-}
-
-.category-arrow {
-    transition: transform 0.2s ease;
-}
-
-.category-arrow.collapsed {
-    transform: rotate(-90deg);
-}
-
-.category-content.collapsed {
-    display: none;
-}
-
-.area-tab.active {
-    background-color: #3b82f6;
-    color: white;
-}
-
-.drop-zone-container {
-    display: none;
-}
-
-.drop-zone-container.active {
-    display: flex;
-}
-</style>
-
-<script>
-// Initialize data from server
-existingWidgetsGrouped = @json($existingWidgets ?? []);
-
-// Flatten grouped widgets
-Object.values(existingWidgetsGrouped).forEach(group => {
-    widgets = widgets.concat(group);
-});
-
-// Clear current area widgets
-function clearCurrentArea() {
-    if (!confirm('Xóa tất cả widget trong khu vực này?')) return;
-    
-    widgets = widgets.filter(w => w.area !== currentArea);
-    renderWidgets();
-    updateWidgetCounts();
-}
-
-// Update widget counts in tabs
-function updateWidgetCounts() {
-    const counts = {
-        'homepage-main': widgets.filter(w => w.area === 'homepage-main').length,
-        'sidebar': widgets.filter(w => w.area === 'sidebar').length,
-        'footer': widgets.filter(w => w.area === 'footer').length
-    };
-    
-    Object.entries(counts).forEach(([area, count]) => {
-        const countEl = document.getElementById('count-' + area);
-        if (countEl) countEl.textContent = count;
-    });
-}
-
-document.querySelectorAll('.widget-template').forEach(template => {
-    template.addEventListener('dragstart', (e) => {
-        draggedElement = e.target.closest('.widget-template');
-        e.target.classList.add('widget-dragging');
-    });
-    
-    template.addEventListener('dragend', (e) => {
-        e.target.classList.remove('widget-dragging');
-    });
-});
-
-const dropZone = document.getElementById('dropZone');
-const sidebarZone = document.getElementById('sidebarZone');
-const footerZone = document.getElementById('footerZone');
-
-[dropZone, sidebarZone, footerZone].forEach(zone => {
-    if (!zone) return;
-    
-    zone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        zone.classList.add('bg-blue-50', 'border-blue-500');
-    });
-
-    zone.addEventListener('dragleave', () => {
-        zone.classList.remove('bg-blue-50', 'border-blue-500');
-    });
-
-    zone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        zone.classList.remove('bg-blue-50', 'border-blue-500');
-        
-        if (draggedElement) {
-            const type = draggedElement.dataset.type;
-            const area = zone.dataset.area;
-            addWidget(type, area);
-            draggedElement = null;
-            updateWidgetCounts();
-        }
-    });
-});
-
-function addWidget(type, area = 'homepage-main') {
-    // Switch to the target area tab
-    switchArea(area);
-    
-    const widget = {
-        type: type,
-        name: type.charAt(0).toUpperCase() + type.slice(1) + ' Widget',
-        area: area,
-        sort_order: widgets.filter(w => w.area === area).length,
-        is_active: true,
-        settings: getDefaultSettings(type)
-    };
-    
-    widgets.push(widget);
-    renderWidgets();
-}
-
-function getDefaultSettings(type) {
-    const defaults = {
-        hero: {
-            title: 'Chào mừng đến với Doanh nghiệp của chúng tôi',
-            subtitle: 'Giải pháp công nghệ hàng đầu cho doanh nghiệp hiện đại',
-            button_text: 'Khám phá ngay',
-            button_link: '/products'
-        },
-        features: {
-            title: 'Tại sao chọn chúng tôi',
-            features: [
-                {icon: 'rocket', title: 'Tốc độ nhanh', desc: 'Hiệu suất vượt trội với công nghệ tiên tiến'},
-                {icon: 'shield', title: 'Bảo mật cao', desc: 'Hệ thống bảo mật đa lớp đảm bảo an toàn'},
-                {icon: 'star', title: 'Hỗ trợ 24/7', desc: 'Đội ngũ chuyên gia sẵn sàng hỗ trợ mọi lúc'}
-            ]
-        },
-        cta: {
-            title: 'Sẵn sàng bắt đầu?',
-            subtitle: 'Hơn 1000+ khách hàng đã tin tưởng sử dụng dịch vụ',
-            button_text: 'Liên hệ ngay',
-            button_link: '/contact'
-        },
-        post_list: {
-            title: 'Tin tức & Cập nhật',
-            limit: 6,
-            layout: 'grid'
-        },
-        post_slider: {
-            title: 'Câu chuyện thành công',
-            limit: 5
-        },
-        newsletter: {
-            title: 'Đăng ký nhận tin',
-            subtitle: 'Nhận thông tin mới nhất về sản phẩm và dịch vụ',
-            placeholder: 'Nhập email của bạn',
-            button_text: 'Đăng ký'
-        },
-        testimonial: {
-            title: 'Khách hàng nói gì về chúng tôi',
-            testimonials: [
-                {name: 'Nguyễn Văn A', role: 'Giám đốc Công ty ABC', content: 'Dịch vụ tuyệt vời, đội ngũ chuyên nghiệp. Chúng tôi rất hài lòng!'},
-                {name: 'Trần Thị B', role: 'Trưởng phòng Marketing', content: 'Giải pháp hiệu quả, tiết kiệm thời gian và chi phí đáng kể.'},
-                {name: 'Lê Minh C', role: 'CTO Startup XYZ', content: 'Công nghệ tiên tiến, hỗ trợ tận tình. Đáng đầu tư!'}
-            ]
-        },
-        analytics: {
-            title: 'Thống kê truy cập',
-            show_title: true,
-            style: 'default',
-            columns: '2'
-        }
-    };
-    return defaults[type] || {};
-}
-
-function renderWidgets() {
-    const homepageWidgets = widgets.filter(w => w.area === 'homepage-main');
-    const sidebarWidgets = widgets.filter(w => w.area === 'sidebar');
-    const footerWidgets = widgets.filter(w => w.area === 'footer');
-    
-    const emptyHtml = (text) => `
-        <p class="empty-message text-gray-400 text-center py-16">
-            <svg class="w-16 h-16 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+    {{-- Title row --}}
+    <div class="flex items-start justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Widget Manager</h1>
+            <p class="text-sm text-gray-500 mt-1">Thêm, cấu hình và xem trước các block nội dung cho từng khu vực website.</p>
+        </div>
+        <button id="btn-clear-cache" class="flex-shrink-0 px-3 py-2 text-xs text-gray-600 hover:bg-gray-100 rounded-lg border border-gray-200 transition flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
             </svg>
-            ${text}
-        </p>
-    `;
-    
-    // Render homepage widgets with sortable functionality
-    if (homepageWidgets.length === 0) {
-        dropZone.innerHTML = emptyHtml('Kéo widget từ bên trái vào đây<br><small class="text-xs">Có thể sắp xếp lại bằng cách kéo thả</small>');
-    } else {
-        dropZone.innerHTML = homepageWidgets.map((widget) => {
-            const globalIndex = widgets.indexOf(widget);
-            return renderWidgetItem(widget, globalIndex, true);
-        }).join('');
-        makeSortable(dropZone, 'homepage-main');
-    }
-    
-    // Render sidebar widgets with sortable functionality
-    if (sidebarWidgets.length === 0) {
-        sidebarZone.innerHTML = emptyHtml('Kéo widget cho Sidebar vào đây');
-    } else {
-        sidebarZone.innerHTML = sidebarWidgets.map((widget) => {
-            const globalIndex = widgets.indexOf(widget);
-            return renderWidgetItem(widget, globalIndex, true);
-        }).join('');
-        makeSortable(sidebarZone, 'sidebar');
-    }
-  
-    // Render footer widgets with sortable functionality
-    if (footerWidgets.length === 0) {
-        footerZone.innerHTML = emptyHtml('Kéo widget cho Footer vào đây');
-    } else {
-        footerZone.innerHTML = footerWidgets.map((widget) => {
-            const globalIndex = widgets.indexOf(widget);
-            return renderWidgetItem(widget, globalIndex, true);
-        }).join('');
-        makeSortable(footerZone, 'footer');
-    }
-    
-    // Update counts
-    updateWidgetCounts();
-}
+            Xoá cache
+        </button>
+    </div>
 
-function renderWidgetItem(widget, globalIndex, sortable = false) {
-    const dragHandle = sortable ? `
-        <div class="drag-handle cursor-move text-gray-400 hover:text-gray-600 mr-2" title="Kéo để sắp xếp">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path>
+    {{-- Stats bar --}}
+    @php
+        $totalActive = collect($existingWidgets)->sum(fn($ws) => $ws->count());
+        $totalAvailable = array_sum(array_map('count', $availableWidgets));
+        $totalAreas = count($widgetAreas);
+    @endphp
+    <div class="flex flex-wrap items-center gap-3 mt-4">
+        <div class="flex items-center gap-2 bg-white border border-gray-100 rounded-lg px-3 py-2 shadow-sm">
+            <div class="w-6 h-6 bg-blue-50 rounded-md flex items-center justify-center">
+                <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+                </svg>
+            </div>
+            <div>
+                <p class="text-xs text-gray-500 leading-none">Khu vực</p>
+                <p class="text-sm font-bold text-gray-800 leading-tight">{{ $totalAreas }}</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-2 bg-white border border-gray-100 rounded-lg px-3 py-2 shadow-sm">
+            <div class="w-6 h-6 bg-emerald-50 rounded-md flex items-center justify-center">
+                <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+            <div>
+                <p class="text-xs text-gray-500 leading-none">Đang active</p>
+                <p class="text-sm font-bold text-gray-800 leading-tight" id="stat-active">{{ $totalActive }}</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-2 bg-white border border-gray-100 rounded-lg px-3 py-2 shadow-sm">
+            <div class="w-6 h-6 bg-purple-50 rounded-md flex items-center justify-center">
+                <svg class="w-3.5 h-3.5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                </svg>
+            </div>
+            <div>
+                <p class="text-xs text-gray-500 leading-none">Widget có sẵn</p>
+                <p class="text-sm font-bold text-gray-800 leading-tight">{{ $totalAvailable }}</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-1.5 text-xs text-gray-400 ml-auto">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
+            Di chuột vào widget bên phải để xem trước giao diện
         </div>
-    ` : '';
-    
-    return `
-        <div class="widget-item mb-3 border border-gray-200 rounded-lg p-4 bg-white hover:shadow-md transition-shadow" data-widget-index="${globalIndex}" ${sortable ? 'draggable="true"' : ''}>
-            <div class="flex justify-between items-center">
-                <div class="flex items-center gap-2">
-                    ${dragHandle}
-                    <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-                        </svg>
+    </div>
+</div>
+
+{{-- Main 3-Column Layout --}}
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
+
+    {{-- COL 1: Widget Areas (5/12) --}}
+    <div class="xl:col-span-5 space-y-4">
+        @foreach($widgetAreas as $areaKey => $areaInfo)
+            @php $areaWidgets = $existingWidgets[$areaKey] ?? collect([]); @endphp
+
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                {{-- Area Header --}}
+                <div class="flex items-center gap-3 px-4 py-3 bg-gray-50 border-b">
+                    <div class="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                        @if($areaInfo['icon'] === 'home')
+                            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                            </svg>
+                        @elseif($areaInfo['icon'] === 'view-list')
+                            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+                            </svg>
+                        @elseif($areaInfo['icon'] === 'template')
+                            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>
+                            </svg>
+                        @else
+                            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                        @endif
                     </div>
-                    <div>
-                        <span class="font-medium text-gray-800">${widget.name}</span>
-                        <p class="text-xs text-gray-500">${widget.type}</p>
+                    <div class="flex-1 min-w-0">
+                        <h3 class="font-semibold text-sm text-gray-800">{{ $areaInfo['label'] }}</h3>
+                        <p class="text-xs text-gray-400">{{ $areaKey }}</p>
                     </div>
+                    <span class="bg-blue-50 text-blue-600 text-xs font-medium px-2.5 py-0.5 rounded-full" id="badge-{{ $areaKey }}">
+                        {{ $areaWidgets->count() }} widget
+                    </span>
                 </div>
-                <div class="flex items-center gap-1">
-                    <button onclick="editWidget(${globalIndex})" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition" title="Chỉnh sửa">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                        </svg>
-                    </button>
-                    <button onclick="removeWidget(${globalIndex})" class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition" title="Xóa">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
-}
 
-// Add sortable functionality to widget areas
-function makeSortable(container, area) {
-    const widgetItems = container.querySelectorAll('.widget-item');
-    
-    widgetItems.forEach(item => {
-        item.addEventListener('dragstart', (e) => {
-            e.dataTransfer.setData('text/plain', '');
-            item.classList.add('opacity-50');
-            draggedWidgetItem = item;
-        });
-        
-        item.addEventListener('dragend', (e) => {
-            item.classList.remove('opacity-50');
-            draggedWidgetItem = null;
-        });
-        
-        item.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            const afterElement = getDragAfterElement(container, e.clientY);
-            if (afterElement == null) {
-                container.appendChild(draggedWidgetItem);
-            } else {
-                container.insertBefore(draggedWidgetItem, afterElement);
-            }
-        });
-    });
-    
-    // Update sort order when drag ends
-    container.addEventListener('drop', (e) => {
-        e.preventDefault();
-        updateSortOrder(area);
-    });
-}
-
-function getDragAfterElement(container, y) {
-    const draggableElements = [...container.querySelectorAll('.widget-item:not(.opacity-50)')];
-    
-    return draggableElements.reduce((closest, child) => {
-        const box = child.getBoundingClientRect();
-        const offset = y - box.top - box.height / 2;
-        
-        if (offset < 0 && offset > closest.offset) {
-            return { offset: offset, element: child };
-        } else {
-            return closest;
-        }
-    }, { offset: Number.NEGATIVE_INFINITY }).element;
-}
-
-function updateSortOrder(area) {
-    const areaWidgets = widgets.filter(w => w.area === area);
-    const container = area === 'homepage-main' ? dropZone : 
-                     area === 'sidebar' ? sidebarZone : footerZone;
-    
-    const widgetItems = container.querySelectorAll('.widget-item');
-    
-    widgetItems.forEach((item, index) => {
-        const widgetIndex = parseInt(item.dataset.widgetIndex);
-        const widget = widgets[widgetIndex];
-        if (widget) {
-            widget.sort_order = index;
-        }
-    });
-    
-    // Re-render to reflect new order
-    renderWidgets();
-}
-
-function removeWidget(index) {
-    if (!confirm('Xóa widget này?')) return;
-    widgets.splice(index, 1);
-    renderWidgets();
-}
-
-let currentEditIndex = null;
-
-function editWidget(index) {
-    currentEditIndex = index;
-    const widget = widgets[index];
-    const modal = document.getElementById('configModal');
-    const form = document.getElementById('configForm');
-    
-    // Show loading state
-    form.innerHTML = '<div class="text-center py-4">Loading widget configuration...</div>';
-    modal.classList.remove('hidden');
-    
-    renderConfigForm(widget);
-}
-
-function previewWidget() {
-    if (currentEditIndex === null) return;
-    
-    const widget = widgets[currentEditIndex];
-    const form = document.getElementById('configForm');
-    const formData = new FormData(form);
-    
-    // Collect current form data
-    const settings = {};
-    for (let [key, value] of formData.entries()) {
-        settings[key] = value;
-    }
-    
-    // Get variant
-    const variantSelect = document.getElementById('cfg_variant');
-    const variant = variantSelect ? variantSelect.value : 'default';
-    
-    // Get CSRF token from meta tag (more reliable than inline token)
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}';
-    
-    // Request preview from server
-    const previewUrl = '{{ request()->routeIs("project.*") ? route("project.admin.widgets.preview", request()->segment(1)) : route("cms.widgets.preview") }}';
-    fetch(previewUrl, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': csrfToken,
-            'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-            type: widget.type,
-            settings: settings,
-            variant: variant
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showPreviewModal(data.preview);
-        } else {
-            alert('Preview failed: ' + data.message);
-        }
-    })
-    .catch(error => {
-        console.error('Preview error:', error);
-        alert('Preview failed: Network error');
-    });
-}
-
-function showPreviewModal(previewHtml) {
-    // Create preview modal
-    const previewModal = document.createElement('div');
-    previewModal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
-    previewModal.innerHTML = `
-        <div class="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold">Widget Preview</h3>
-                <button onclick="closePreviewModal()" class="text-gray-500 hover:text-gray-700">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                </button>
-            </div>
-            <div class="border rounded-lg p-4 bg-gray-50">
-                ${previewHtml}
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(previewModal);
-    window.currentPreviewModal = previewModal;
-}
-
-function closePreviewModal() {
-    if (window.currentPreviewModal) {
-        document.body.removeChild(window.currentPreviewModal);
-        window.currentPreviewModal = null;
-    }
-}
-
-function renderConfigForm(widget) {
-    const widgetType = widget.type;
-    const form = document.getElementById('configForm');
-    const currentSettings = widget.settings || {};
-    
-    // Use POST to send settings (avoid URL length limits and encoding issues)
-    const fieldsUrl = '{{ isset($currentProject) ? route("project.admin.widgets.fields", $currentProject->code) : route("cms.widgets.fields") }}';
-    
-    console.log('Loading fields from:', fieldsUrl, 'for type:', widgetType);
-    
-    fetch(fieldsUrl, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}',
-            'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-            type: widgetType,
-            settings: currentSettings
-        })
-    })
-        .then(response => {
-            console.log('Response status:', response.status);
-            return response.json();
-        })
-        .then(data => {
-            console.log('Fields response:', data);
-            
-            if (data.success) {
-                let formHtml = data.form_html;
-                
-                // Populate form with HTML from server (already has values)
-                form.innerHTML = formHtml;
-                
-                // Initialize Alpine.js on dynamically added content
-                if (window.Alpine) {
-                    Alpine.initTree(form);
-                }
-                
-                // Set values for standard form fields (backup)
-                const fields = data.fields || [];
-                fields.forEach(field => {
-                    const fieldName = field.name;
-                    const fieldValue = currentSettings[fieldName];
-                    const fieldElement = form.querySelector(`[name="${fieldName}"]`);
-                    
-                    if (fieldElement && fieldValue !== undefined) {
-                        if (fieldElement.type === 'checkbox') {
-                            fieldElement.checked = fieldValue;
-                        } else if (fieldElement.tagName === 'SELECT') {
-                            fieldElement.value = fieldValue;
-                        } else if (typeof fieldValue === 'string') {
-                            fieldElement.value = fieldValue;
-                        }
-                    }
-                });
-                
-                // Add variant selector if available
-                if (data.variants && Object.keys(data.variants).length > 1) {
-                    const variantHtml = `
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Widget Variant</label>
-                            <select id="cfg_variant" name="variant" class="w-full px-3 py-2 border rounded-lg">
-                                ${Object.entries(data.variants).map(([key, label]) => 
-                                    `<option value="${key}" ${widget.variant === key ? 'selected' : ''}>${label}</option>`
-                                ).join('')}
-                            </select>
+                {{-- Widget List --}}
+                <div class="widget-area-list divide-y divide-gray-50" id="area-list-{{ $areaKey }}" data-area="{{ $areaKey }}">
+                    @forelse($areaWidgets as $w)
+                        <div class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50/80 transition group widget-row"
+                             data-id="{{ $w['id'] ?? '' }}"
+                             data-type="{{ $w['type'] }}"
+                             data-area="{{ $areaKey }}"
+                             data-name="{{ $w['name'] }}">
+                            <div class="w-1 h-8 bg-blue-400 rounded-full flex-shrink-0"></div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-gray-800 truncate">{{ $w['name'] }}</p>
+                                <p class="text-xs text-gray-400 truncate">{{ $w['type'] }}</p>
+                            </div>
+                            <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
+                                <button class="btn-open-config p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg transition"
+                                        data-id="{{ $w['id'] ?? '' }}"
+                                        data-type="{{ $w['type'] }}"
+                                        data-name="{{ $w['name'] }}"
+                                        data-settings="{{ htmlspecialchars(json_encode($w['settings'] ?? []), ENT_QUOTES) }}"
+                                        data-variant="{{ $w['variant'] ?? 'default' }}"
+                                        title="Cấu hình">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                    </svg>
+                                </button>
+                                <button class="btn-remove-widget p-1.5 text-red-400 hover:bg-red-50 rounded-lg transition"
+                                        data-id="{{ $w['id'] ?? '' }}"
+                                        data-area="{{ $areaKey }}"
+                                        title="Xoá">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
-                    `;
-                    form.insertAdjacentHTML('afterbegin', variantHtml);
-                }
-            } else {
-                console.error('Fields API error:', data.message);
-                // Fallback to legacy form rendering
-                renderLegacyConfigForm(widget);
+                    @empty
+                        <div class="px-4 py-8 text-center empty-area-placeholder" id="empty-{{ $areaKey }}">
+                            <svg class="w-8 h-8 text-gray-200 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+                            </svg>
+                            <p class="text-xs text-gray-400">Chưa có widget. Chọn từ danh sách bên phải để thêm.</p>
+                        </div>
+                    @endforelse
+                </div>
+            </div>
+        @endforeach
+    </div>
+
+    {{-- COL 2: Available Widgets (4/12) --}}
+    <div class="xl:col-span-4 sticky top-4">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            {{-- Header --}}
+            <div class="px-4 py-3 bg-gray-50 border-b flex items-center gap-2">
+                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                </svg>
+                <h3 class="font-semibold text-sm text-gray-800 flex-1">Widget có sẵn</h3>
+                <span class="bg-blue-100 text-blue-700 text-xs font-medium px-2 py-0.5 rounded-full">
+                    {{ array_sum(array_map('count', $availableWidgets)) }}
+                </span>
+            </div>
+
+            {{-- Search --}}
+            <div class="px-3 py-2.5 border-b">
+                <div class="relative">
+                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/>
+                    </svg>
+                    <input type="text" id="widgetSearch"
+                           placeholder="Tìm widget..."
+                           class="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none">
+                </div>
+            </div>
+
+            {{-- Area Selector --}}
+            <div class="px-3 py-2.5 border-b bg-blue-50/40">
+                <label class="flex items-center gap-1.5 text-xs font-medium text-gray-600 mb-1.5">
+                    <svg class="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                    Thêm vào khu vực:
+                </label>
+                <select id="targetArea" class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 bg-white outline-none">
+                    @foreach($widgetAreas as $areaKey => $areaInfo)
+                        <option value="{{ $areaKey }}">{{ $areaInfo['label'] }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            {{-- Widget Categories List --}}
+            <div class="overflow-y-auto max-h-[calc(100vh-380px)]" id="widgetTemplatesList">
+                @forelse($availableWidgets as $category => $categoryWidgets)
+                    <div class="widget-category" data-category="{{ $category }}">
+                        {{-- Category toggle button --}}
+                        <button type="button"
+                                data-cat="{{ $category }}"
+                                class="btn-toggle-category w-full flex items-center justify-between px-4 py-2.5 text-left hover:bg-gray-50 transition border-b border-gray-100">
+                            <span class="flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                <svg class="w-3.5 h-3.5 transition-transform duration-200 category-arrow" id="arrow-{{ $category }}"
+                                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                </svg>
+                                {{ ucfirst(str_replace('_', ' ', $category)) }}
+                            </span>
+                            <span class="bg-gray-100 text-gray-500 text-xs px-2 py-0.5 rounded-full">{{ count($categoryWidgets) }}</span>
+                        </button>
+
+                        {{-- Category items --}}
+                        <div class="category-content hidden divide-y divide-gray-50" id="category-{{ $category }}">
+                            @foreach($categoryWidgets as $widget)
+                                <div class="widget-template flex items-center gap-3 px-4 py-2.5 cursor-pointer hover:bg-blue-50 transition group border-l-2 border-transparent hover:border-blue-400"
+                                     data-type="{{ $widget['type'] }}"
+                                     data-name="{{ $widget['metadata']['name'] ?? ($widget['name'] ?? $widget['type']) }}"
+                                     data-cat="{{ $category }}">
+                                    <div class="w-7 h-7 bg-gray-100 rounded-md flex items-center justify-center flex-shrink-0 group-hover:bg-blue-100 transition">
+                                        <svg class="w-3.5 h-3.5 text-gray-500 group-hover:text-blue-600 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                                        </svg>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-medium text-gray-700 truncate group-hover:text-blue-700 transition">
+                                            {{ $widget['metadata']['name'] ?? ($widget['name'] ?? $widget['type']) }}
+                                        </p>
+                                        <p class="text-xs text-gray-400 truncate">{{ $widget['type'] }}</p>
+                                    </div>
+                                    <svg class="w-4 h-4 text-gray-300 group-hover:text-blue-500 flex-shrink-0 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                    </svg>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @empty
+                    <div class="p-8 text-center text-gray-400">
+                        <svg class="w-10 h-10 mx-auto mb-2 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                        </svg>
+                        <p class="text-sm">Không có widget nào khả dụng</p>
+                    </div>
+                @endforelse
+            </div>
+        </div>
+    </div>
+    {{-- COL 3: Widget Preview (3/12) --}}
+    <div class="xl:col-span-3 sticky top-4">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            {{-- Preview Header --}}
+            <div class="px-4 py-3 bg-gray-50 border-b flex items-center gap-2">
+                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                </svg>
+                <h3 class="font-semibold text-sm text-gray-800 flex-1">Xem trước</h3>
+                <span class="text-xs text-gray-400" id="preview-widget-type"></span>
+            </div>
+
+            {{-- Preview Body --}}
+            <div id="preview-body" class="min-h-[200px] overflow-auto">
+                {{-- Empty state --}}
+                <div id="preview-empty" class="flex flex-col items-center justify-center py-12 px-4 text-center">
+                    <div class="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center mb-3">
+                        <svg class="w-7 h-7 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                        </svg>
+                    </div>
+                    <p class="text-sm font-medium text-gray-500">Xem trước giao diện</p>
+                    <p class="text-xs text-gray-400 mt-1">Di chuột hoặc click vào một widget ở danh sách bên trái để xem trước</p>
+                </div>
+
+                {{-- Loading state (hidden by default) --}}
+                <div id="preview-loading" class="hidden flex flex-col items-center justify-center py-12 px-4">
+                    <svg class="w-6 h-6 text-blue-400 animate-spin mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                    <p class="text-xs text-gray-400">Đang tải xem trước...</p>
+                </div>
+
+                {{-- Preview content (hidden by default) --}}
+                <div id="preview-content" class="hidden">
+                    {{-- Widget name badge --}}
+                    <div class="px-3 py-2 bg-blue-50 border-b border-blue-100 flex items-center gap-2">
+                        <svg class="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/>
+                        </svg>
+                        <span class="text-xs font-medium text-blue-700" id="preview-widget-name"></span>
+                    </div>
+                    {{-- Scaled iframe preview --}}
+                    <div class="relative bg-gray-50 overflow-hidden" style="height: 420px;">
+                        <div id="preview-scale-wrapper" style="width: 1280px; transform-origin: top left;">
+                            <div id="preview-html" class="w-full"></div>
+                        </div>
+                    </div>
+                    {{-- Add button --}}
+                    <div class="px-3 py-2.5 border-t bg-gray-50">
+                        <button id="btn-add-previewed-widget"
+                                class="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                            </svg>
+                            Thêm widget này vào khu vực
+                        </button>
+                    </div>
+                </div>
+
+                {{-- Error state (hidden by default) --}}
+                <div id="preview-error" class="hidden flex flex-col items-center justify-center py-12 px-4 text-center">
+                    <svg class="w-8 h-8 text-red-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                    <p class="text-sm text-gray-500">Widget này chưa có preview</p>
+                    <p class="text-xs text-gray-400 mt-1" id="preview-error-msg"></p>
+                </div>
+            </div>
+        </div>
+    {{-- Global Media Picker Modal --}}
+    <x-media-picker-modal />
+</div>
+@endsection
+
+@push('scripts')
+<script>
+(function () {
+    'use strict';
+
+    const BASE_URL = '{{ $baseUrl }}';
+    const CSRF     = document.querySelector('meta[name="csrf-token"]')?.content || '';
+
+    // ── SAFE JSON ────────────────────────────────────────────────────────
+    // Safely parse JSON — throws descriptive error if server returns HTML
+    function safeJson(r) {
+        var ct = r.headers.get('content-type') || '';
+        if (! ct.includes('application/json') && ! ct.includes('text/json')) {
+            return r.text().then(function (body) {
+                var hint = '';
+                if (r.status === 419) { hint = ' (CSRF token hết hạn — thử reload trang)'; }
+                else if (r.status === 401 || r.status === 302) { hint = ' (chưa đăng nhập)'; }
+                else if (r.status === 500) { hint = ' (lỗi server — kiểm tra log)'; }
+                throw new Error('HTTP ' + r.status + hint + '. Body: ' + body.substring(0, 120));
+            });
+        }
+        return r.json();
+    }
+
+    // ── SAFE JSON (ok-only routes: DELETE, PUT) ───────────────────────────
+    // For routes that return 204/200 on success and JSON only on error
+    function safeJsonOrOk(r) {
+        if (r.ok || r.redirected) { return Promise.resolve({ success: true }); }
+        return safeJson(r);
+    }
+
+    let drawerWidgetId   = null;
+    let drawerWidgetType = null;
+    let drawerWidgetArea = null;
+    let previewedType    = null;
+    let previewedName    = null;
+    let previewTimer     = null;
+    let modalPreviewTimer = null;
+
+    // ── TOAST ──────────────────────────────────────────────────────
+    const TOAST_ICONS = {
+        success: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>',
+        error:   '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>',
+        info:    '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>',
+    };
+    const TOAST_BG = { success: 'bg-emerald-500', error: 'bg-red-500', info: 'bg-blue-500' };
+
+    function showToast(msg, type) {
+        type = type || 'success';
+        const t   = document.getElementById('wm-toast');
+        const inn = document.getElementById('wm-toast-inner');
+        const ico = document.getElementById('wm-toast-icon');
+        const tx  = document.getElementById('wm-toast-msg');
+        inn.className = 'flex items-center gap-3 px-4 py-3 rounded-xl shadow-xl text-sm font-medium text-white min-w-[280px] ' + (TOAST_BG[type] || TOAST_BG.success);
+        ico.innerHTML = TOAST_ICONS[type] || TOAST_ICONS.success;
+        tx.textContent = msg;
+        t.classList.remove('hidden');
+        clearTimeout(window._wmt);
+        window._wmt = setTimeout(function () { t.classList.add('hidden'); }, 3500);
+    }
+
+    // ── HELPERS ────────────────────────────────────────────────────
+    function escAttr(s) {
+        return String(s)
+            .replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+    }
+
+    function updateBadge(area) {
+        var list  = document.getElementById('area-list-' + area);
+        var badge = document.getElementById('badge-' + area);
+        if (!list || !badge) { return; }
+        badge.textContent = list.querySelectorAll('.widget-row').length + ' widget';
+    }
+
+    function checkEmptyArea(area) {
+        var list = document.getElementById('area-list-' + area);
+        if (!list || list.querySelector('.widget-row')) { return; }
+        var empty = document.createElement('div');
+        empty.id = 'empty-' + area;
+        empty.className = 'px-4 py-8 text-center empty-area-placeholder';
+        empty.innerHTML =
+            '<svg class="w-8 h-8 text-gray-200 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">' +
+            '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>' +
+            '</svg>' +
+            '<p class="text-xs text-gray-400">Chưa có widget. Chọn từ danh sách bên phải để thêm.</p>';
+        list.appendChild(empty);
+    }
+
+    function buildWidgetRow(area, widget) {
+        var row = document.createElement('div');
+        row.className = 'flex items-center gap-3 px-4 py-3 hover:bg-gray-50/80 transition group widget-row';
+        row.dataset.id   = widget.id || '';
+        row.dataset.type = widget.type;
+        row.dataset.area = area;
+        row.dataset.name = widget.name;
+        row.innerHTML =
+            '<div class="w-1 h-8 bg-blue-400 rounded-full flex-shrink-0"></div>' +
+            '<div class="flex-1 min-w-0">' +
+                '<p class="text-sm font-medium text-gray-800 truncate">' + escAttr(widget.name) + '</p>' +
+                '<p class="text-xs text-gray-400 truncate">' + escAttr(widget.type) + '</p>' +
+            '</div>' +
+            '<div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">' +
+                '<button class="btn-open-config p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg transition"' +
+                    ' data-id="' + escAttr(widget.id || '') + '"' +
+                    ' data-type="' + escAttr(widget.type) + '"' +
+                    ' data-name="' + escAttr(widget.name) + '"' +
+                    ' data-settings="' + escAttr(JSON.stringify(widget.settings || {})) + '"' +
+                    ' data-variant="' + escAttr(widget.variant || 'default') + '"' +
+                    ' title="Cấu hình">' +
+                    '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">' +
+                    '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>' +
+                    '</svg></button>' +
+                '<button class="btn-remove-widget p-1.5 text-red-400 hover:bg-red-50 rounded-lg transition"' +
+                    ' data-id="' + escAttr(widget.id || '') + '"' +
+                    ' data-area="' + escAttr(area) + '"' +
+                    ' title="Xoá">' +
+                    '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">' +
+                    '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>' +
+                    '</svg></button>' +
+            '</div>';
+        return row;
+    }
+
+    // ── ADD WIDGET ─────────────────────────────────────────────────
+    function addWidget(type, name) {
+        var area = document.getElementById('targetArea').value;
+        if (!area) { showToast('Vui lòng chọn khu vực', 'error'); return; }
+
+        fetch(BASE_URL + '/widgets', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' },
+            body: JSON.stringify({ name: name, type: type, area: area, sort_order: 999, is_active: true })
+        })
+        .then(safeJson)
+        .then(function (data) {
+            if (data.success === false) { showToast(data.message || 'Lỗi khi thêm widget', 'error'); return; }
+            var id = (data.widget && data.widget.id) ? data.widget.id : (data.id || '');
+            showToast('Đã thêm widget vào khu vực', 'success');
+            var list = document.getElementById('area-list-' + area);
+            if (list) {
+                var empty = document.getElementById('empty-' + area);
+                if (empty) { empty.remove(); }
+                list.appendChild(buildWidgetRow(area, { id: id, type: type, name: name, settings: {}, variant: 'default' }));
+                updateBadge(area);
             }
         })
-        .catch(error => {
-            console.error('Error loading widget fields:', error);
-            renderLegacyConfigForm(widget);
-        });
-}
-
-function renderLegacyConfigForm(widget) {
-    const form = document.getElementById('configForm');
-    let html = '';
-    
-    if (widget.type === 'hero') {
-        html = `
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium mb-1">Title</label>
-                    <input type="text" name="title" value="${widget.settings.title || ''}" class="w-full px-3 py-2 border rounded-lg">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1">Subtitle</label>
-                    <input type="text" name="subtitle" value="${widget.settings.subtitle || ''}" class="w-full px-3 py-2 border rounded-lg">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1">Button Text</label>
-                    <input type="text" name="button_text" value="${widget.settings.button_text || ''}" class="w-full px-3 py-2 border rounded-lg">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1">Button Link</label>
-                    <input type="text" name="button_link" value="${widget.settings.button_link || ''}" class="w-full px-3 py-2 border rounded-lg">
-                </div>
-            </div>
-        `;
-    } else if (widget.type === 'features') {
-        html = `
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium mb-1">Title</label>
-                    <input type="text" name="title" value="${widget.settings.title || ''}" class="w-full px-3 py-2 border rounded-lg">
-                </div>
-                ${(widget.settings.features || []).map((f, i) => `
-                    <div class="border-t pt-3">
-                        <h4 class="font-medium mb-2">Feature ${i + 1}</h4>
-                        <input type="text" name="features[${i}][title]" value="${f.title || ''}" placeholder="Title" class="w-full px-3 py-2 border rounded-lg mb-2">
-                        <input type="text" name="features[${i}][desc]" value="${f.desc || ''}" placeholder="Description" class="w-full px-3 py-2 border rounded-lg">
-                    </div>
-                `).join('')}
-            </div>
-        `;
-    } else if (widget.type === 'cta') {
-        html = `
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium mb-1">Title</label>
-                    <input type="text" name="title" value="${widget.settings.title || ''}" class="w-full px-3 py-2 border rounded-lg">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1">Subtitle</label>
-                    <input type="text" name="subtitle" value="${widget.settings.subtitle || ''}" class="w-full px-3 py-2 border rounded-lg">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1">Button Text</label>
-                    <input type="text" name="button_text" value="${widget.settings.button_text || ''}" class="w-full px-3 py-2 border rounded-lg">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1">Button Link</label>
-                    <input type="text" name="button_link" value="${widget.settings.button_link || ''}" class="w-full px-3 py-2 border rounded-lg">
-                </div>
-            </div>
-        `;
-    } else if (widget.type === 'analytics') {
-        html = `
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium mb-1">Title</label>
-                    <input type="text" name="title" value="${widget.settings.title || 'Thống kê truy cập'}" class="w-full px-3 py-2 border rounded-lg">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1">Show Title</label>
-                    <input type="checkbox" name="show_title" ${widget.settings.show_title !== false ? 'checked' : ''} class="rounded">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1">Style</label>
-                    <select name="style" class="w-full px-3 py-2 border rounded-lg">
-                        <option value="default" ${widget.settings.style === 'default' ? 'selected' : ''}>Mặc định</option>
-                        <option value="cards" ${widget.settings.style === 'cards' ? 'selected' : ''}>Thẻ card</option>
-                        <option value="compact" ${widget.settings.style === 'compact' ? 'selected' : ''}>Gọn gàng</option>
-                        <option value="modern" ${widget.settings.style === 'modern' ? 'selected' : ''}>Hiện đại</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1">Columns</label>
-                    <select name="columns" class="w-full px-3 py-2 border rounded-lg">
-                        <option value="1" ${widget.settings.columns === '1' ? 'selected' : ''}>1 cột</option>
-                        <option value="2" ${widget.settings.columns === '2' ? 'selected' : ''}>2 cột</option>
-                        <option value="3" ${widget.settings.columns === '3' ? 'selected' : ''}>3 cột</option>
-                        <option value="4" ${widget.settings.columns === '4' ? 'selected' : ''}>4 cột</option>
-                    </select>
-                </div>
-            </div>
-        `;
-    } else {
-        html = `<div class="text-gray-500 text-center py-4">No configuration available for this widget type.</div>`;
+        .catch(function () { showToast('Lỗi kết nối server', 'error'); });
     }
-    
-    form.innerHTML = html;
-}
 
-function saveConfig() {
-    const widget = widgets[currentEditIndex];
-    const form = document.getElementById('configForm');
-    const formData = new FormData(form);
-    
-    // Reset settings to avoid stale data
-    const newSettings = {};
-    
-    // First, collect all array field names to initialize them
-    const arrayFields = new Set();
-    for (let [key, value] of formData.entries()) {
-        if (key.includes('[')) {
-            const fieldName = key.match(/^([^\[]+)/)[1];
-            arrayFields.add(fieldName);
-        }
+    // ── REMOVE WIDGET ──────────────────────────────────────────────
+    function removeWidget(btn) {
+        var id   = btn.dataset.id;
+        var area = btn.dataset.area;
+        if (!id) { showToast('Không tìm thấy ID widget', 'error'); return; }
+        if (!confirm('Xoá widget này khỏi khu vực?')) { return; }
+
+        fetch(BASE_URL + '/widgets/' + id, {
+            method: 'DELETE',
+            headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' }
+        })
+        .then(safeJsonOrOk)
+        .then(function (data) {
+            if (data && data.success === false) { showToast(data.message || 'Lỗi', 'error'); return; }
+            var row = btn.closest('.widget-row');
+            if (row) { row.remove(); }
+            updateBadge(area);
+            checkEmptyArea(area);
+            showToast('Đã xoá widget', 'success');
+        })
+        .catch(function () { showToast('Lỗi kết nối', 'error'); });
     }
-    
-    // Initialize array fields
-    arrayFields.forEach(fieldName => {
-        newSettings[fieldName] = [];
-    });
-    
-    // Process form data
-    for (let [key, value] of formData.entries()) {
-        if (key === 'variant') continue; // Skip variant, handled separately
+
+    // ── CONDITIONAL FIELDS ─────────────────────────────────────────
+    function initConditionalFields() {
+        var conditionalFields = document.querySelectorAll('[data-show-if]');
         
-        if (key.includes('[')) {
-            // Handle array fields
-            const simpleArrayMatch = key.match(/^([^\[]+)\[(\d+)\]$/);
-            const nestedArrayMatch = key.match(/^([^\[]+)\[(\d+)\]\[([^\]]+)\]$/);
+        conditionalFields.forEach(function(fieldWrapper) {
+            var showIf = JSON.parse(fieldWrapper.dataset.showIf);
             
-            if (nestedArrayMatch) {
-                const fieldName = nestedArrayMatch[1];
-                const index = parseInt(nestedArrayMatch[2]);
-                const subField = nestedArrayMatch[3];
+            // Get the controlling field
+            Object.keys(showIf).forEach(function(controlFieldName) {
+                var controlField = document.querySelector('[name="' + controlFieldName + '"]');
+                if (!controlField) return;
                 
-                if (!newSettings[fieldName]) newSettings[fieldName] = [];
-                if (!newSettings[fieldName][index]) newSettings[fieldName][index] = {};
-                newSettings[fieldName][index][subField] = value;
-            } else if (simpleArrayMatch) {
-                const fieldName = simpleArrayMatch[1];
-                const index = parseInt(simpleArrayMatch[2]);
+                // Check initial state
+                checkConditional(fieldWrapper, controlField, showIf);
                 
-                if (!newSettings[fieldName]) newSettings[fieldName] = [];
-                newSettings[fieldName][index] = value;
-            }
-        } else {
-            // Simple field
-            newSettings[key] = value;
-        }
-    }
-    
-    // Clean up arrays
-    for (let key in newSettings) {
-        if (Array.isArray(newSettings[key])) {
-            newSettings[key] = newSettings[key].filter(item => item !== undefined && item !== null);
-        }
-    }
-    
-    // Also get data from Alpine.js components
-    const alpineComponents = form.querySelectorAll('[x-data]');
-    alpineComponents.forEach(el => {
-        if (el._x_dataStack && el._x_dataStack[0]) {
-            const data = el._x_dataStack[0];
-            
-            if (typeof data.imageUrl !== 'undefined' && data.fieldName) {
-                newSettings[data.fieldName] = data.imageUrl;
-            }
-            if (typeof data.images !== 'undefined' && data.fieldName) {
-                newSettings[data.fieldName] = data.images;
-            }
-        }
-    });
-    
-    // Get all input values directly (backup for fields not in FormData)
-    const allInputs = form.querySelectorAll('input[name], select[name], textarea[name]');
-    allInputs.forEach(input => {
-        const name = input.name;
-        if (!name || name === 'variant' || name.includes('[')) return;
-        
-        if (input.type === 'checkbox') {
-            newSettings[name] = input.checked;
-        } else if (input.type === 'radio') {
-            if (input.checked) {
-                newSettings[name] = input.value;
-            }
-        } else if (!newSettings.hasOwnProperty(name) || newSettings[name] === '') {
-            // Only set if not already set or empty
-            newSettings[name] = input.value;
-        }
-    });
-    
-    // Merge with existing settings
-    widget.settings = { ...widget.settings, ...newSettings };
-    
-    // Handle checkboxes (they don't appear in FormData if unchecked)
-    const checkboxes = form.querySelectorAll('input[type="checkbox"]');
-    checkboxes.forEach(checkbox => {
-        const name = checkbox.name;
-        if (name && !name.includes('[')) {
-            widget.settings[name] = checkbox.checked;
-        }
-    });
-    
-    // Update variant if available
-    const variantSelect = document.getElementById('cfg_variant');
-    if (variantSelect) {
-        widget.variant = variantSelect.value;
-    }
-    
-    console.log('=== SAVE CONFIG DEBUG ===');
-    console.log('Widget type:', widget.type);
-    console.log('Final widget.settings:', JSON.stringify(widget.settings, null, 2));
-    console.log('=========================');
-    
-    closeConfig();
-    renderWidgets();
-    
-    // Mark as unsaved - change save button appearance
-    markUnsavedChanges();
-}
-
-function markUnsavedChanges() {
-    const saveBtn = document.querySelector('button[onclick*="saveWidgets"]');
-    if (saveBtn && !saveBtn.classList.contains('ring-2')) {
-        saveBtn.classList.add('ring-2', 'ring-yellow-400', 'ring-offset-2');
-        saveBtn.title = 'Có thay đổi chưa lưu - Click để lưu';
-    }
-}
-
-function closeConfig() {
-    document.getElementById('configModal').classList.add('hidden');
-    currentEditIndex = null;
-}
-
-// Load existing widgets on page load
-window.addEventListener('DOMContentLoaded', () => {
-    // Initialize first tab as active
-    switchArea('homepage-main');
-    
-    // Render widgets if any exist
-    if (widgets.length > 0) {
-        renderWidgets();
-    }
-    
-    // Update counts
-    updateWidgetCounts();
-});
-
-let isSaving = false;
-
-async function saveWidgets(e) {
-    if (isSaving) return;
-    isSaving = true;
-    
-    const btn = e?.target || document.querySelector('button[onclick*="saveWidgets"]');
-    if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Đang lưu...';
-    }
-    
-    console.log('=== SAVE WIDGETS DEBUG ===');
-    console.log('Widgets to save:', JSON.stringify(widgets, null, 2));
-    
-    const baseUrl = '{{ isset($currentProject) ? route("project.admin.widgets.save-all", $currentProject->code) : route("cms.widgets.save-all") }}';
-    
-    try {
-        const response = await fetch(baseUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({ widgets: widgets })
+                // Listen to changes
+                controlField.addEventListener('change', function() {
+                    checkConditional(fieldWrapper, controlField, showIf);
+                    // Trigger preview reload when conditional field changes
+                    clearTimeout(window.previewTimeout);
+                    window.previewTimeout = setTimeout(function() {
+                        loadModalPreview();
+                    }, 300);
+                });
+            });
         });
+    }
+    
+    function checkConditional(targetWrapper, controlField, showIf) {
+        var controlFieldName = controlField.getAttribute('name');
+        var expectedValue = showIf[controlFieldName];
+        var currentValue = controlField.value;
         
-        if (!response.ok) {
-            const errorText = await response.text();
-            let errorMessage = 'HTTP ' + response.status;
-            try {
-                const errorJson = JSON.parse(errorText);
-                errorMessage += ': ' + (errorJson.message || errorText.substring(0, 500));
-            } catch (parseErr) {
-                errorMessage += ': ' + errorText.substring(0, 500);
-            }
-            throw new Error(errorMessage);
-        }
-        
-        const result = await response.json();
-        
-        if (result.success) {
-            if (btn) {
-                btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Đã lưu!';
-                btn.classList.remove('bg-[#98191F]', 'ring-2', 'ring-yellow-400', 'ring-offset-2');
-                btn.classList.add('bg-green-600');
-            }
-            showAlert(result.message || 'Lưu thành công!', 'success');
+        if (currentValue === expectedValue) {
+            targetWrapper.style.display = '';
         } else {
-            if (btn) {
-                btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg> Lỗi!';
-                btn.classList.remove('bg-[#98191F]');
-                btn.classList.add('bg-red-600');
-            }
-            showAlert(result.message || 'Lưu thất bại', 'error');
-            if (result.errors) {
-                alert('Lỗi:\n' + result.errors.join('\n'));
-            }
-        }
-    } catch (error) {
-        console.error('Error saving widgets:', error);
-        alert('Lỗi: ' + error.message);
-        if (btn) {
-            btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg> Lỗi!';
-            btn.classList.remove('bg-[#98191F]');
-            btn.classList.add('bg-red-600');
+            targetWrapper.style.display = 'none';
         }
     }
     
-    setTimeout(() => {
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg> Lưu tất cả';
-            btn.classList.remove('bg-green-600', 'bg-red-600', 'ring-2', 'ring-yellow-400', 'ring-offset-2');
-            btn.classList.add('bg-[#98191F]');
-        }
-        isSaving = false;
-    }, 2000);
-}
+    function initFormInputListeners() {
+        var drawerBody = document.getElementById('drawer-body');
+        if (!drawerBody || drawerBody._hasInputListeners) return;
+        drawerBody._hasInputListeners = true;
 
-// Simple alert function
-function showAlert(message, type = 'info') {
-    // Create alert element
-    const alertDiv = document.createElement('div');
-    alertDiv.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
-        type === 'success' ? 'bg-green-100 text-green-800 border border-green-200' :
-        type === 'error' ? 'bg-red-100 text-red-800 border border-red-200' :
-        'bg-blue-100 text-blue-800 border border-blue-200'
-    }`;
-    alertDiv.textContent = message;
-    
-    document.body.appendChild(alertDiv);
-    
-    // Auto remove after 3 seconds
-    setTimeout(() => {
-        if (alertDiv.parentNode) {
-            alertDiv.parentNode.removeChild(alertDiv);
-        }
-    }, 3000);
-}
-
-// Global media selection handler for widget config forms
-window.addEventListener('media-selected', function(e) {
-    const { field, urls } = e.detail;
-    if (!field) return;
-    
-    // Find the input field in the config form
-    const form = document.getElementById('configForm');
-    if (!form) return;
-    
-    const url = Array.isArray(urls) ? urls[0] : urls;
-    
-    // Try to find input by name
-    let input = form.querySelector(`[name="${field}"]`);
-    
-    if (input) {
-        input.value = url;
-        // Trigger input event for Alpine.js reactivity
-        input.dispatchEvent(new Event('input', { bubbles: true }));
+        ['input', 'change', 'keyup'].forEach(function(evtName) {
+            drawerBody.addEventListener(evtName, function(e) {
+                clearTimeout(window.previewTimeout);
+                window.previewTimeout = setTimeout(function() {
+                    loadModalPreview();
+                }, 200);
+            });
+        });
     }
-    
-    // Also update Alpine data if available
-    const alpineEl = form.querySelector('[x-data]');
-    if (alpineEl && alpineEl._x_dataStack) {
-        const data = alpineEl._x_dataStack[0];
-        // Update the specific field in Alpine data
-        if (data && field) {
-            // Handle nested field names like 'settings.video_url'
-            const fieldParts = field.split('.');
-            let target = data;
-            for (let i = 0; i < fieldParts.length - 1; i++) {
-                if (target[fieldParts[i]] === undefined) {
-                    target[fieldParts[i]] = {};
+
+    // ── OPEN CONFIG DRAWER ─────────────────────────────────────────
+    function openConfig(btn) {
+        drawerWidgetId   = btn.dataset.id;
+        drawerWidgetType = btn.dataset.type;
+        var row = btn.closest('.widget-row');
+        drawerWidgetArea = row ? row.dataset.area : null;
+
+        var settings = {};
+        var rawSettings = btn.dataset.settings || '{}';
+        for (var i = 0; i < 3; i++) {
+            if (typeof rawSettings === 'string' && rawSettings.trim().length > 0) {
+                try {
+                    var parsed = JSON.parse(rawSettings);
+                    if (typeof parsed === 'object' && parsed !== null) {
+                        settings = parsed;
+                        break;
+                    } else {
+                        rawSettings = parsed;
+                    }
+                } catch (e) {
+                    break;
                 }
-                target = target[fieldParts[i]];
+            } else if (typeof rawSettings === 'object' && rawSettings !== null) {
+                settings = rawSettings;
+                break;
             }
-            target[fieldParts[fieldParts.length - 1]] = url;
         }
+
+        document.getElementById('drawer-title').textContent    = btn.dataset.name || drawerWidgetType;
+        document.getElementById('drawer-subtitle').textContent = drawerWidgetType;
+        document.getElementById('drawer-body').innerHTML =
+            '<div class="flex items-center justify-center h-32 text-gray-400">' +
+            '<svg class="w-5 h-5 animate-spin mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">' +
+            '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>' +
+            '<span class="text-sm">Đang tải form...</span></div>';
+
+        // Reset modal preview
+        var previewContent = document.getElementById('modal-preview-content');
+        if (previewContent && previewContent.contentWindow) {
+            var doc = previewContent.contentWindow.document;
+            var styles = Array.from(document.querySelectorAll('link[rel="stylesheet"], style')).map(function(el) { return el.outerHTML; }).join('');
+            doc.open();
+            doc.write('<html><head>' + styles + '<style>body{margin:0;padding:0;background:transparent;}</style></head><body>' +
+                '<div class="flex flex-col items-center justify-center py-20 px-4 text-center text-gray-400">' +
+                '<svg class="w-12 h-12 mb-3 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">' +
+                '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>' +
+                '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>' +
+                '</svg><p class="text-sm font-medium text-gray-500">Đang tải preview...</p></div></body></html>');
+            doc.close();
+        }
+
+        var drawer = document.getElementById('config-drawer');
+        drawer.classList.remove('hidden');
+        drawer.classList.add('flex'); // Make it flex-col
+
+        var params = new URLSearchParams({ type: drawerWidgetType, settings: JSON.stringify(settings) });
+        fetch(BASE_URL + '/widgets/fields?' + params.toString(), { headers: { 'Accept': 'application/json' } })
+        .then(safeJson)
+        .then(function (data) {
+            if (!data.success) { showToast(data.message || 'Không tải được form', 'error'); return; }
+            document.getElementById('drawer-body').innerHTML = data.form_html || '<p class="text-gray-500 text-sm p-4">Widget này không có trường cấu hình.</p>';
+            if (window.Alpine) {
+                try { window.Alpine.initTree(document.getElementById('drawer-body')); } catch(e) {}
+            }
+            document.dispatchEvent(new CustomEvent('widget-form-loaded'));
+            // Init conditional fields
+            initConditionalFields();
+            // Init form input listeners for live preview
+            initFormInputListeners();
+            // Auto load preview after form is loaded
+            loadModalPreview();
+        })
+        .catch(function () {
+            document.getElementById('drawer-body').innerHTML = '<p class="text-red-500 text-sm p-4">Lỗi khi tải form cấu hình.</p>';
+        });
     }
-    
-    console.log('Media selected for field:', field, 'URL:', url);
-});
+
+    function closeDrawer() {
+        var drawer = document.getElementById('config-drawer');
+        drawer.classList.add('hidden');
+        drawer.classList.remove('flex');
+        drawerWidgetId = null;
+        drawerWidgetType = null;
+        drawerWidgetArea = null;
+        iframeInitialized = false; // Reset iframe state
+    }
+
+    // ── FORM SETTINGS & MODAL PREVIEW ──────────────────────────────
+    function getFormSettings() {
+        var settings = {};
+        var drawerBody = document.getElementById('drawer-body');
+        if (!drawerBody) return settings;
+
+        // First, trigger Alpine to sync all x-model bindings
+        if (window.Alpine) {
+            window.Alpine.nextTick(function() {
+                // Alpine has updated all bindings
+            });
+        }
+
+        drawerBody.querySelectorAll('input, textarea, select').forEach(function (input) {
+            if (!input.name) { return; }
+
+            // Skip hidden conditional fields (check if parent wrapper is hidden)
+            var wrapper = input.closest('.widget-field') || input.closest('[data-show-if]');
+            if (wrapper && wrapper.style.display === 'none') {
+                return; // Skip this field, it's hidden by conditional logic
+            }
+
+            // For Alpine.js bound fields, try to get the value from Alpine component
+            var alpineComponent = input.closest('[x-data]');
+            if (alpineComponent && alpineComponent.tagName !== 'BODY') {
+                var alpineData = window.Alpine ? window.Alpine.$data(alpineComponent) : (alpineComponent._x_dataStack ? alpineComponent._x_dataStack[0] : null);
+                if (alpineData) {
+                    if (alpineData.imageUrl !== undefined && (input.type === 'hidden' || input.type === 'text')) {
+                        settings[input.name] = alpineData.imageUrl || input.value;
+                        return;
+                    }
+                    if (alpineData.currentValue !== undefined && input.type === 'hidden') {
+                        settings[input.name] = alpineData.currentValue || input.value;
+                        return;
+                    }
+                }
+            }
+
+            if (input.type === 'checkbox') {
+                settings[input.name] = input.checked;
+            } else if (input.type === 'radio') {
+                if (input.checked) { settings[input.name] = input.value; }
+            } else {
+                settings[input.name] = input.value;
+            }
+        });
+
+        return settings;
+    }
+
+    var iframeInitialized = false;
+
+    function adjustIframeHeight(iframe) {
+        if (!iframe || !iframe.contentWindow) return;
+        var doc = iframe.contentWindow.document;
+        if (!doc || !doc.body) return;
+
+        // Get actual content height
+        var height = Math.max(
+            doc.body.scrollHeight,
+            doc.body.offsetHeight,
+            doc.documentElement.scrollHeight,
+            doc.documentElement.offsetHeight,
+            250
+        );
+
+        // Add some padding
+        iframe.style.height = (height + 20) + 'px';
+    }
+
+    function loadModalPreview() {
+        if (!drawerWidgetType) return;
+        var settings = getFormSettings();
+        var loadingOverlay = document.getElementById('modal-preview-loading');
+        if (loadingOverlay) loadingOverlay.classList.remove('hidden');
+
+        fetch(BASE_URL + '/widgets/preview', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' },
+            body: JSON.stringify({ type: drawerWidgetType, settings: settings, variant: 'default' })
+        })
+        .then(safeJson)
+        .then(function (data) {
+            var iframe = document.getElementById('modal-preview-content');
+            if (!iframe || !iframe.contentWindow) return;
+            var doc = iframe.contentWindow.document;
+
+            if (! data.success || ! data.preview) {
+                doc.open();
+                doc.write('<div style="padding: 1.5rem; color: #ef4444; font-family: sans-serif;">Lỗi preview: ' + (data.message || 'Lỗi không xác định') + '</div>');
+                doc.close();
+                iframeInitialized = false;
+            } else {
+                // Re-init iframe document if needed
+                var wrapper = doc.getElementById('preview-inner-wrapper');
+                if (!iframeInitialized || !wrapper) {
+                    var tailwindScript = '<script src="https://cdn.tailwindcss.com"><\/script>';
+                    var styles = tailwindScript + Array.from(document.querySelectorAll('head link[rel="stylesheet"], head style')).map(function(el) { return el.outerHTML; }).join('');
+                    doc.open();
+                    doc.write('<html><head>' + styles + '<style>body{margin:0;padding:0;background:transparent;} [x-cloak] { display: none !important; }</style></head><body><div id="preview-inner-wrapper" style="overflow: hidden; min-height: 250px;"></div></body></html>');
+                    doc.close();
+                    iframeInitialized = true;
+                    wrapper = doc.getElementById('preview-inner-wrapper');
+                }
+
+                // Update inner content
+                if (wrapper) {
+                    wrapper.innerHTML = data.preview;
+                    
+                    // Re-execute scripts
+                    var scripts = wrapper.querySelectorAll('script');
+                    scripts.forEach(function(oldScript) {
+                        var newScript = doc.createElement('script');
+                        Array.from(oldScript.attributes).forEach(function(attr) { newScript.setAttribute(attr.name, attr.value); });
+                        newScript.appendChild(doc.createTextNode(oldScript.innerHTML));
+                        oldScript.parentNode.replaceChild(newScript, oldScript);
+                    });
+                    
+                    // Adjust iframe height
+                    adjustIframeHeight(iframe);
+                    
+                    // Auto-resize iframe when content changes
+                    var resizeObserver = new MutationObserver(function() {
+                        adjustIframeHeight(iframe);
+                    });
+                    resizeObserver.observe(wrapper, { childList: true, subtree: true, attributes: true });
+                }
+            }
+        })
+        .catch(function (err) {
+            console.error('Preview fetch error:', err);
+            var iframe = document.getElementById('modal-preview-content');
+            if (iframe && iframe.contentWindow) {
+                var doc = iframe.contentWindow.document;
+                if (!iframeInitialized) {
+                    doc.open();
+                    doc.write('<div style="padding: 1.5rem; color: #ef4444; font-family: sans-serif;">Lỗi kết nối khi tải preview: ' + err.message + '</div>');
+                    doc.close();
+                } else {
+                    var wrapper = doc.getElementById('preview-inner-wrapper');
+                    if (wrapper) wrapper.innerHTML = '<div style="padding: 1.5rem; color: #ef4444; font-family: sans-serif;">Lỗi kết nối khi tải preview: ' + err.message + '</div>';
+                }
+            }
+        })
+        .finally(function() {
+            if (loadingOverlay) loadingOverlay.classList.add('hidden');
+        });
+    }
+
+    // ── SAVE CONFIG ────────────────────────────────────────────────
+    function saveWidgetConfig() {
+        if (!drawerWidgetId) { showToast('Không có widget nào được chọn', 'error'); return; }
+        var settings = getFormSettings();
+
+        var btn      = document.getElementById('btn-save-config');
+        var origHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML =
+            '<svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">' +
+            '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Đang lưu...';
+
+        fetch(BASE_URL + '/widgets/' + drawerWidgetId, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' },
+            body: JSON.stringify({
+                name: document.getElementById('drawer-title').textContent,
+                type: drawerWidgetType,
+                area: drawerWidgetArea || 'homepage-main',
+                settings: JSON.stringify(settings),
+                is_active: true
+            })
+        })
+        .then(safeJson)
+        .then(function (data) {
+            showToast('Đã lưu cấu hình widget', 'success');
+            // Update dataset on config button and row so reopening drawer reflects new state
+            var configBtn = document.querySelector('.btn-open-config[data-id="' + drawerWidgetId + '"]');
+            if (!configBtn && drawerWidgetId) {
+                configBtn = document.querySelector('.widget-row[data-id="' + drawerWidgetId + '"] .btn-open-config');
+            }
+            if (configBtn && data.widget) {
+                var updatedSettings = data.widget.settings || settings;
+                if (typeof updatedSettings === 'string') {
+                    try { updatedSettings = JSON.parse(updatedSettings); } catch(e) {}
+                }
+                configBtn.dataset.settings = JSON.stringify(updatedSettings);
+                configBtn.dataset.name = data.widget.name || document.getElementById('drawer-title').textContent;
+                var row = configBtn.closest('.widget-row');
+                if (row) {
+                    row.dataset.name = configBtn.dataset.name;
+                    var rowName = row.querySelector('.font-medium');
+                    if (rowName) rowName.textContent = configBtn.dataset.name;
+                }
+            }
+            closeDrawer();
+        })
+        .catch(function () { showToast('Lỗi khi lưu', 'error'); })
+        .finally(function () { btn.disabled = false; btn.innerHTML = origHtml; });
+    }
+
+    // ── CLEAR CACHE ────────────────────────────────────────────────
+    function clearCache() {
+        fetch(BASE_URL + '/widgets/clear-cache', {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' }
+        })
+        .then(safeJson)
+        .then(function () { showToast('Đã xoá cache widget', 'success'); })
+        .catch(function () { showToast('Lỗi khi xoá cache', 'error'); });
+    }
+
+    // ── CATEGORY TOGGLE ────────────────────────────────────────────
+    function toggleCategory(cat) {
+        var el    = document.getElementById('category-' + cat);
+        var arrow = document.getElementById('arrow-' + cat);
+        if (!el) { return; }
+        el.classList.toggle('hidden');
+        if (arrow) { arrow.style.transform = el.classList.contains('hidden') ? '' : 'rotate(90deg)'; }
+    }
+
+    // ── SEARCH ─────────────────────────────────────────────────────
+    function filterWidgets(q) {
+        q = q.toLowerCase().trim();
+        document.querySelectorAll('.widget-template').forEach(function (el) {
+            var show = !q || (el.dataset.name || '').toLowerCase().includes(q) || (el.dataset.type || '').toLowerCase().includes(q);
+            el.style.display = show ? '' : 'none';
+        });
+        document.querySelectorAll('.widget-category').forEach(function (cat) {
+            var visible = cat.querySelectorAll('.widget-template:not([style*="display: none"])');
+            cat.style.display = visible.length ? '' : 'none';
+            if (q && visible.length) {
+                var catKey = cat.dataset.category;
+                var el     = document.getElementById('category-' + catKey);
+                var arrow  = document.getElementById('arrow-' + catKey);
+                if (el) { el.classList.remove('hidden'); if (arrow) { arrow.style.transform = 'rotate(90deg)'; } }
+            }
+        });
+    }
+
+    // ── PREVIEW ────────────────────────────────────────────────────
+    function showPreviewState(state) {
+        var states = ['preview-empty', 'preview-loading', 'preview-content', 'preview-error'];
+        states.forEach(function (id) {
+            var el = document.getElementById(id);
+            if (el) { el.classList.toggle('hidden', id !== state); }
+        });
+    }
+
+    function rescalePreview() {
+        var wrapper   = document.getElementById('preview-scale-wrapper');
+        var container = wrapper ? wrapper.parentElement : null;
+        if (!wrapper || !container) { return; }
+        var scale = container.offsetWidth / 1280;
+        wrapper.style.transform = 'scale(' + scale + ')';
+        wrapper.style.height    = Math.ceil(wrapper.scrollHeight) + 'px';
+        container.style.height  = Math.ceil(wrapper.scrollHeight * scale) + 'px';
+    }
+
+    function loadPreview(type, name) {
+        if (previewedType === type) { return; }
+        previewedType = type;
+        previewedName = name;
+
+        document.getElementById('preview-widget-type').textContent = type;
+        showPreviewState('preview-loading');
+
+        fetch(BASE_URL + '/widgets/preview', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' },
+            body: JSON.stringify({ type: type, settings: [], variant: 'default' })
+        })
+        .then(safeJson)
+        .then(function (data) {
+            if (! data.success || ! data.preview) {
+                document.getElementById('preview-error-msg').textContent = data.message || '';
+                showPreviewState('preview-error');
+                return;
+            }
+            document.getElementById('preview-widget-name').textContent = name;
+            document.getElementById('preview-html').innerHTML = data.preview;
+            showPreviewState('preview-content');
+            // Scale after content renders
+            setTimeout(rescalePreview, 50);
+        })
+        .catch(function () {
+            document.getElementById('preview-error-msg').textContent = 'Không thể kết nối server';
+            showPreviewState('preview-error');
+        });
+    }
+
+    // ── EVENT DELEGATION ───────────────────────────────────────────
+    document.addEventListener('click', function (e) {
+        // Open config
+        var configBtn = e.target.closest('.btn-open-config');
+        if (configBtn) { openConfig(configBtn); return; }
+
+        // Remove widget
+        var removeBtn = e.target.closest('.btn-remove-widget');
+        if (removeBtn) { removeWidget(removeBtn); return; }
+
+        // Category toggle
+        var catBtn = e.target.closest('.btn-toggle-category');
+        if (catBtn) { toggleCategory(catBtn.dataset.cat); return; }
+
+        // Widget template click → add + load preview
+        var tpl = e.target.closest('.widget-template');
+        if (tpl) { addWidget(tpl.dataset.type, tpl.dataset.name); loadPreview(tpl.dataset.type, tpl.dataset.name); return; }
+
+        // Drawer close
+        if (e.target.id === 'drawer-backdrop' || e.target.closest('#btn-close-drawer') || e.target.closest('#btn-cancel-drawer')) {
+            closeDrawer();
+            return;
+        }
+    });
+
+    // Hover on widget template → preview (debounced 300ms)
+    document.addEventListener('mouseover', function (e) {
+        var tpl = e.target.closest('.widget-template');
+        if (!tpl) { return; }
+        clearTimeout(previewTimer);
+        var type = tpl.dataset.type;
+        var name = tpl.dataset.name;
+        previewTimer = setTimeout(function () { loadPreview(type, name); }, 300);
+    });
+
+    // Add previewed widget button
+    document.getElementById('btn-add-previewed-widget').addEventListener('click', function () {
+        if (previewedType && previewedName) {
+            addWidget(previewedType, previewedName);
+        }
+    });
+
+    // Rescale on window resize
+    window.addEventListener('resize', rescalePreview);
+
+    // Search input
+    document.getElementById('widgetSearch').addEventListener('input', function () {
+        filterWidgets(this.value);
+    });
+
+    // Save config button
+    var btnSaveConfig = document.getElementById('btn-save-config');
+    if (btnSaveConfig) btnSaveConfig.addEventListener('click', saveWidgetConfig);
+
+    // Clear cache button
+    var btnClearCache = document.getElementById('btn-clear-cache');
+    if (btnClearCache) btnClearCache.addEventListener('click', clearCache);
+
+    // Auto-refresh modal preview on input change
+    document.getElementById('drawer-body').addEventListener('input', function (e) {
+        if (e.target.matches('input, textarea, select')) {
+            clearTimeout(modalPreviewTimer);
+            modalPreviewTimer = setTimeout(loadModalPreview, 400);
+        }
+    });
+    document.getElementById('drawer-body').addEventListener('change', function (e) {
+        if (e.target.matches('input[type="checkbox"], input[type="radio"], select')) {
+            clearTimeout(modalPreviewTimer);
+            modalPreviewTimer = setTimeout(loadModalPreview, 100);
+        }
+    });
+
+    // Viewport switcher
+    document.querySelectorAll('.modal-vp-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            // Update active state
+            document.querySelectorAll('.modal-vp-btn').forEach(function(b) {
+                b.classList.remove('bg-blue-600', 'text-white');
+                b.classList.add('text-gray-400');
+            });
+            this.classList.remove('text-gray-400');
+            this.classList.add('bg-blue-600', 'text-white');
+            
+            // Set wrapper width
+            var w = this.dataset.vpWidth;
+            var wrapper = document.getElementById('modal-preview-wrapper');
+            var label = document.getElementById('modal-vp-size-label');
+            if (wrapper) wrapper.style.width = w + 'px';
+            if (label) {
+                if (w === '375') label.textContent = 'Mobile (375px)';
+                else if (w === '768') label.textContent = 'Tablet (768px)';
+                else label.textContent = 'Desktop (1280px)';
+            }
+        });
+    });
+
+    // ESC key
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') { closeDrawer(); }
+    });
+}());
 </script>
-@endsection
+@endpush

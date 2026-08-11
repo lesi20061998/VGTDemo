@@ -8,21 +8,21 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (!Schema::hasTable('roles')) {
+        if (! Schema::hasTable('roles')) {
             Schema::create('roles', function (Blueprint $table) {
-            $table->id();
-            $table->string('name')->unique();
-            $table->string('display_name');
-            $table->text('description')->nullable();
-            $table->timestamps();
+                $table->id();
+                $table->string('name')->unique();
+                $table->string('display_name');
+                $table->text('description')->nullable();
+                $table->timestamps();
             });
         }
 
-        if (!Schema::hasTable('user_roles')) {
+        if (! Schema::hasTable('user_roles')) {
             Schema::create('user_roles', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('role_id')->constrained()->onDelete('cascade');
+                $table->id();
+                $table->foreignId('user_id')->constrained()->onDelete('cascade');
+                $table->foreignId('role_id')->constrained()->onDelete('cascade');
                 $table->timestamps();
             });
         }

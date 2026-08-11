@@ -13,14 +13,15 @@ class EmployeeController extends Controller
     {
         $user = auth()->user();
         $query = Employee::with('manager')->withCount('contracts');
-        
+
         // Nếu là quản lý bộ phận, chỉ xem nhân sự trong bộ phận (không bao gồm bản thân)
         if ($user->employee && $user->employee->is_department_manager && $user->level > 1) {
             $query->where('department', $user->employee->department)
-                  ->where('id', '!=', $user->employee->id);
+                ->where('id', '!=', $user->employee->id);
         }
-        
+
         $employees = $query->latest()->get();
+
         return view('superadmin.employees.index', compact('employees'));
     }
 
@@ -29,7 +30,7 @@ class EmployeeController extends Controller
         $user = auth()->user();
         $isDepartmentManager = $user->employee && $user->employee->is_department_manager && $user->level > 1;
         $userDepartment = $isDepartmentManager ? $user->employee->department : null;
-        
+
         return view('superadmin.employees.create', compact('isDepartmentManager', 'userDepartment'));
     }
 
@@ -37,12 +38,12 @@ class EmployeeController extends Controller
     {
         $user = auth()->user();
         $isDepartmentManager = $user->employee && $user->employee->is_department_manager && $user->level > 1;
-        
+
         // Nếu là quản lý bộ phận, chỉ cho phép tạo trong bộ phận của mình
         if ($isDepartmentManager && $request->department !== $user->employee->department) {
             return back()->withErrors(['department' => 'Bạn chỉ có thể tạo nhân sự trong bộ phận của mình.'])->withInput();
         }
-        
+
         $request->validate([
             'code' => 'required|string|unique:employees,code|max:50',
             'name' => 'required|string|max:255',
@@ -91,7 +92,7 @@ class EmployeeController extends Controller
 
         return redirect()->route('superadmin.employees.index')->with('alert', [
             'type' => 'success',
-            'message' => 'Tạo nhân sự và tài khoản thành công!'
+            'message' => 'Tạo nhân sự và tài khoản thành công!',
         ]);
     }
 
@@ -99,23 +100,23 @@ class EmployeeController extends Controller
     {
         $user = auth()->user();
         $isDepartmentManager = $user->employee && $user->employee->is_department_manager && $user->level > 1;
-        
+
         // Nếu là quản lý bộ phận, chỉ cho phép sửa nhân viên trong bộ phận
         if ($isDepartmentManager && $employee->department !== $user->employee->department) {
             abort(403, 'Bạn chỉ có thể sửa nhân sự trong bộ phận của mình.');
         }
-        
+
         $userDepartment = $isDepartmentManager ? $user->employee->department : null;
-        
+
         return view('superadmin.employees.edit', compact('employee', 'isDepartmentManager', 'userDepartment'));
     }
 
     public function update(Request $request, Employee $employee)
     {
         $request->validate([
-            'code' => 'required|string|max:50|unique:employees,code,' . $employee->id,
+            'code' => 'required|string|max:50|unique:employees,code,'.$employee->id,
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:employees,email,' . $employee->id,
+            'email' => 'required|email|unique:employees,email,'.$employee->id,
             'phone' => 'nullable|string|max:20',
             'position' => 'nullable|in:Nhân viên,Trưởng nhóm,Giám đốc',
             'department' => 'required|in:truyen_thong,ky_thuat,thiet_ke,hanh_chanh,ke_toan,kinh_doanh',
@@ -157,17 +158,17 @@ class EmployeeController extends Controller
 
         return redirect()->route('superadmin.employees.index')->with('alert', [
             'type' => 'success',
-            'message' => 'Cập nhật nhân sự thành công!'
+            'message' => 'Cập nhật nhân sự thành công!',
         ]);
     }
 
     public function destroy(Employee $employee)
     {
         $employee->delete();
+
         return redirect()->route('superadmin.employees.index')->with('alert', [
             'type' => 'success',
-            'message' => 'Xóa nhân sự thành công!'
+            'message' => 'Xóa nhân sự thành công!',
         ]);
     }
 }
-

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
             $table->text('admin_note')->nullable();
             $table->timestamps();
-            
+
             $table->index('form_name');
             $table->index('status');
             $table->index('created_at');

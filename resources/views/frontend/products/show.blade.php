@@ -8,60 +8,68 @@
 
 @section('product-content')
 <!-- Breadcrumb -->
-<nav class="text-sm mb-6">
-    <ol class="flex items-center space-x-2">
-        <li><a href="/{{ $projectCode }}" class="text-gray-500 hover:text-blue-600">Trang chủ</a></li>
-        <li><span class="text-gray-400">/</span></li>
-        <li><a href="/{{ $projectCode }}/san-pham" class="text-gray-500 hover:text-blue-600">Sản phẩm</a></li>
+<nav class="mb-6">
+    <ol class="flex items-center space-x-2 text-sm text-gray-500">
+        <li><a href="/{{ $projectCode }}" class="hover:text-blue-600 transition-colors">Trang chủ</a></li>
         @if($product->category)
-        <li><span class="text-gray-400">/</span></li>
-        <li><a href="/{{ $projectCode }}/danh-muc/{{ $product->category->slug }}" class="text-gray-500 hover:text-blue-600">{{ $product->category->name }}</a></li>
+        <li><span class="mx-2">/</span></li>
+        <li><a href="/{{ $projectCode }}/danh-muc/{{ $product->category->slug }}" class="hover:text-blue-600 transition-colors">{{ $product->category->name }}</a></li>
         @endif
-        <li><span class="text-gray-400">/</span></li>
+        <li><span class="mx-2">/</span></li>
         <li class="text-gray-900 font-medium">{{ $product->name }}</li>
     </ol>
 </nav>
 
-<div class="bg-white rounded-lg shadow-sm p-6 mb-8">
-    <div class="grid md:grid-cols-2 gap-8">
+<div class="bg-white rounded-2xl shadow-sm p-8 mb-8 border border-gray-100">
+    <div class="grid lg:grid-cols-2 gap-10">
         <!-- Product Images -->
         <div class="product-gallery" x-data="{ mainImage: '{{ $product->featured_image ?? '/assets/img/placeholder-images-image_large.webp' }}' }">
-            <div class="relative mb-4">
-                <img :src="mainImage" alt="{{ $product->name }}" class="w-full rounded-lg shadow-sm">
+            <!-- Main Image -->
+            <div class="relative rounded-2xl overflow-hidden shadow-lg mb-4 bg-gray-50 aspect-[4/3]">
+                <img :src="mainImage" alt="{{ $product->name }}" class="w-full h-full object-cover">
                 
                 <!-- Badges -->
                 <div class="absolute top-4 left-4 flex flex-col gap-2">
                     @if($product->is_featured)
-                    <span class="bg-yellow-400 text-yellow-900 text-sm px-3 py-1 rounded-full">⭐ Nổi bật</span>
+                    <span class="bg-yellow-400 text-yellow-900 text-sm px-4 py-2 rounded-full font-bold shadow-lg">⭐ Nổi bật</span>
                     @endif
                     @if($product->is_bestseller)
-                    <span class="bg-green-500 text-white text-sm px-3 py-1 rounded-full">📈 Bán chạy</span>
+                    <span class="bg-green-500 text-white text-sm px-4 py-2 rounded-full font-bold shadow-lg">🔥 Bán chạy</span>
                     @endif
                     @if($product->sale_price && $product->sale_price < $product->price)
                     @php $discount = round((($product->price - $product->sale_price) / $product->price) * 100); @endphp
-                    <span class="bg-red-500 text-white text-sm px-3 py-1 rounded-full">-{{ $discount }}%</span>
+                    <span class="bg-red-500 text-white text-sm px-4 py-2 rounded-full font-bold shadow-lg">-{{ $discount }}%</span>
                     @endif
                 </div>
             </div>
             
+            <!-- Gallery Thumbnails -->
             @php
                 $gallery = $product->gallery;
                 if (is_string($gallery)) {
                     $gallery = json_decode($gallery, true) ?? [];
                 }
+                $galleryImages = !empty($gallery) && is_array($gallery) ? $gallery : [];
+                if ($product->featured_image && !in_array($product->featured_image, $galleryImages)) {
+                    array_unshift($galleryImages, $product->featured_image);
+                }
             @endphp
             
-            @if(!empty($gallery) && is_array($gallery))
-            <div class="grid grid-cols-5 gap-2">
-                <img src="{{ $product->featured_image }}" 
-                     @click="mainImage = '{{ $product->featured_image }}'"
-                     class="w-full h-20 object-cover rounded cursor-pointer border-2 hover:border-blue-500 transition"
-                     :class="mainImage === '{{ $product->featured_image }}' ? 'border-blue-500' : 'border-transparent'">
-                @foreach($gallery as $img)
-                <img src="{{ $img }}" 
-                     @click="mainImage = '{{ $img }}'"
-                     class="w-full h-20 object-cover rounded cursor-pointer border-2 hover:border-blue-500 transition"
-                     :class="mainImage === '{{ $img }}' ? 'border-blue-500' : 'border-transparent'">
+            @if(!empty($galleryImages) && is_array($galleryImages))
+            <div class="grid grid-cols-5 gap-3">
+                <button @click="mainImage = '{{ $product->featured_image }}'"
+                        class="relative rounded-lg overflow-hidden border-2 transition-all hover:border-blue-500"
+                        :class="mainImage === '{{ $product->featured_image }}' ? 'border-blue-500' : 'border-transparent'">
+                    <img src="{{ $product->featured_image }}" class="w-full h-24 object-cover">
+                </button>
+                @foreach($galleryImages as $img)
+                @if($img !== $product->featured_image)
+                <button @click="mainImage = '{{ $img }}'"
+                        class="relative rounded-lg overflow-hidden border-2 transition-all hover:border-blue-500"
+                        :class="mainImage === '{{ $img }}' ? 'border-blue-500' : 'border-transparent'">
+                    <img src="{{ $img }}" class="w-full h-24 object-cover">
+                </button>
+                @endif
                 @endforeach
             </div>
             @endif
@@ -69,136 +77,176 @@
         
         <!-- Product Info -->
         <div>
-            <h1 class="text-2xl md:text-3xl font-bold mb-4">{{ $product->name }}</h1>
+            <h1 class="text-3xl md:text-4xl font-bold mb-4 text-gray-900 leading-tight">{{ $product->name }}</h1>
             
-            <!-- SKU & Stock -->
-            <div class="flex items-center gap-4 text-sm text-gray-600 mb-4">
+            <!-- SKU & Meta Info -->
+            <div class="flex items-center gap-6 text-sm text-gray-600 mb-6">
                 @if($product->sku)
-                <span>SKU: <strong>{{ $product->sku }}</strong></span>
+                <span class="text-gray-500">SKU: <strong class="text-gray-900">{{ $product->sku }}</strong></span>
                 @endif
-                <span class="{{ $product->stock_quantity > 0 ? 'text-green-600' : 'text-red-600' }}">
+                @if($product->stock_quantity !== null)
+                <span class="{{ $product->stock_quantity > 0 ? 'text-green-600 font-medium' : 'text-red-600 font-medium' }}">
                     {{ $product->stock_quantity > 0 ? '✓ Còn hàng' : '✗ Hết hàng' }}
                 </span>
+                @endif
                 @if($product->views)
-                <span>👁 {{ number_format($product->views) }} lượt xem</span>
+                <span class="text-gray-500">👁 {{ number_format($product->views) }} lượt xem</span>
                 @endif
             </div>
             
-            <!-- Price -->
-            <div class="mb-6 p-4 bg-gray-50 rounded-lg">
+            <!-- Price Box -->
+            <div class="mb-8 p-6 bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl border border-gray-200">
                 @if($product->sale_price && $product->sale_price < $product->price)
-                <div class="flex items-center gap-3">
-                    <span class="text-3xl font-bold text-red-600">{{ number_format($product->sale_price) }}đ</span>
-                    <span class="text-xl text-gray-400 line-through">{{ number_format($product->price) }}đ</span>
-                    <span class="px-2 py-1 bg-red-100 text-red-600 text-sm font-medium rounded">Tiết kiệm {{ number_format($product->price - $product->sale_price) }}đ</span>
+                <div class="flex items-center gap-4">
+                    <span class="text-4xl font-bold text-red-600">{{ number_format($product->sale_price, 0, ',', '.') }}đ</span>
+                    <span class="text-2xl text-gray-400 line-through">{{ number_format($product->price, 0, ',', '.') }}đ</span>
+                    <span class="px-4 py-2 bg-red-100 text-red-600 font-bold rounded-full">
+                        Tiết kiệm {{ number_format($product->price - $product->sale_price, 0, ',', '.') }}đ
+                    </span>
                 </div>
                 @else
-                <span class="text-3xl font-bold text-blue-600">{{ number_format($product->price ?? 0) }}đ</span>
+                <span class="text-4xl font-bold text-blue-600">{{ number_format($product->price ?? 0, 0, ',', '.') }}đ</span>
                 @endif
             </div>
             
             <!-- Short Description -->
             @if($product->short_description)
-            <div class="mb-6 text-gray-700 leading-relaxed">
+            <div class="mb-6 text-gray-700 leading-relaxed text-lg">
                 {!! $product->short_description !!}
             </div>
             @endif
             
-            <!-- Add to Cart Form -->
-            <form action="/{{ $projectCode }}/cart/add" method="POST" class="space-y-4">
-                @csrf
-                <input type="hidden" name="id" value="{{ $product->id }}">
-                <input type="hidden" name="slug" value="{{ $product->slug }}">
-                <input type="hidden" name="name" value="{{ $product->name }}">
-                <input type="hidden" name="sku" value="{{ $product->sku }}">
-                <input type="hidden" name="price" value="{{ $product->sale_price ?? $product->price }}">
-                <input type="hidden" name="image" value="{{ $product->featured_image }}">
-                
-                <div class="flex items-center gap-4">
-                    <label class="font-medium">Số lượng:</label>
-                    <div class="flex items-center border rounded-lg">
-                        <button type="button" onclick="this.nextElementSibling.stepDown()" class="px-4 py-2 hover:bg-gray-100">-</button>
-                        <input type="number" name="quantity" value="1" min="1" max="{{ $product->stock_quantity ?? 99 }}" 
-                               class="w-16 text-center border-x py-2 focus:outline-none">
-                        <button type="button" onclick="this.previousElementSibling.stepUp()" class="px-4 py-2 hover:bg-gray-100">+</button>
-                    </div>
-                </div>
-                
-                <div class="flex gap-3">
-                    <button type="submit" class="flex-1 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 font-bold transition flex items-center justify-center gap-2"
-                            {{ $product->stock_quantity <= 0 ? 'disabled' : '' }}>
-                        🛒 Thêm vào giỏ hàng
+            <!-- Quantity Selector -->
+            <div class="mb-6">
+                <label class="block font-medium text-gray-700 mb-3">Số lượng:</label>
+                <div class="flex items-center border-2 border-gray-200 rounded-lg w-40">
+                    <button type="button" onclick="decreaseQuantity()" class="px-5 py-3 hover:bg-gray-100 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
+                        </svg>
                     </button>
-                    <button type="submit" formaction="/{{ $projectCode }}/checkout" class="flex-1 bg-orange-500 text-white py-3 rounded-lg hover:bg-orange-600 font-bold transition">
-                        ⚡ Mua ngay
+                    <input type="number" id="quantity" name="quantity" value="1" min="1" max="{{ $product->stock_quantity ?? 99 }}" 
+                           class="w-16 text-center border-0 py-3 focus:outline-none font-medium" readonly>
+                    <button type="button" onclick="increaseQuantity()" class="px-5 py-3 hover:bg-gray-100 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
                     </button>
                 </div>
-            </form>
+            </div>
             
-            <!-- Contact -->
-            <div class="mt-6 p-4 bg-blue-50 rounded-lg">
-                <p class="text-sm text-gray-700">
-                    📞 Hotline: <a href="tel:{{ setting_string('hotline', '1900 1234') }}" class="font-bold text-blue-600">{{ setting_string('hotline', '1900 1234') }}</a>
-                </p>
+            <!-- Action Buttons -->
+            <div class="flex gap-4 mb-8">
+                <button type="submit" form="productForm" 
+                        class="flex-1 bg-blue-600 text-white py-4 rounded-xl hover:bg-blue-700 font-bold text-lg transition-all transform hover:scale-105 flex items-center justify-center gap-2 shadow-lg"
+                        {{ $product->stock_quantity <= 0 ? 'disabled' : '' }}>
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                    </svg>
+                    Thêm vào giỏ hàng
+                </button>
+                <button type="submit" form="productForm" formaction="/{{ $projectCode }}/checkout" 
+                        class="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 text-white py-4 rounded-xl hover:from-orange-600 hover:to-orange-700 font-bold text-lg transition-all transform hover:scale-105 shadow-lg">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                    </svg>
+                    Mua ngay
+                </button>
+            </div>
+            
+            <!-- Contact Info -->
+            <div class="p-4 bg-blue-50 rounded-xl border border-blue-100">
+                <div class="flex items-center gap-3 text-blue-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                    </svg>
+                    <span class="font-medium">
+                        Cần hỗ trợ? Gọi ngay: 
+                        <a href="tel:{{ setting_string('hotline', '1900 1234') }}" class="font-bold underline decoration-blue-400">
+                            {{ setting_string('hotline', '1900 1234') }}
+                        </a>
+                    </span>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Product Tabs -->
-<div class="bg-white rounded-lg shadow-sm" x-data="{ activeTab: 'description' }">
+<div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden" x-data="{ activeTab: 'description' }">
+    <!-- Tabs Navigation -->
     <div class="border-b">
         <nav class="flex">
             <button @click="activeTab = 'description'" 
-                    :class="activeTab === 'description' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600'"
-                    class="px-6 py-4 font-medium hover:text-blue-600 transition">
+                    :class="activeTab === 'description' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500 hover:text-gray-700'"
+                    class="px-8 py-5 font-medium text-lg transition-colors">
                 Mô tả sản phẩm
             </button>
             <button @click="activeTab = 'specs'" 
-                    :class="activeTab === 'specs' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600'"
-                    class="px-6 py-4 font-medium hover:text-blue-600 transition">
+                    :class="activeTab === 'specs' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500 hover:text-gray-700'"
+                    class="px-8 py-5 font-medium text-lg transition-colors">
                 Thông số kỹ thuật
             </button>
             <button @click="activeTab = 'reviews'" 
-                    :class="activeTab === 'reviews' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600'"
-                    class="px-6 py-4 font-medium hover:text-blue-600 transition">
+                    :class="activeTab === 'reviews' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500 hover:text-gray-700'"
+                    class="px-8 py-5 font-medium text-lg transition-colors">
                 Đánh giá ({{ $reviews->count() ?? 0 }})
             </button>
         </nav>
     </div>
     
-    <div class="p-6">
+    <!-- Tab Content -->
+    <div class="p-8">
         <!-- Description Tab -->
-        <div x-show="activeTab === 'description'" class="prose max-w-none">
-            {!! $product->description ?? '<p class="text-gray-500">Chưa có mô tả</p>' !!}
+        <div x-show="activeTab === 'description'" x-cloak class="prose max-w-none text-gray-700 leading-relaxed">
+            {!! $product->description ?? '<p class="text-gray-500 italic">Chưa có mô tả chi tiết cho sản phẩm này.</p>' !!}
         </div>
         
         <!-- Specs Tab -->
         <div x-show="activeTab === 'specs'" x-cloak>
             @if($product->specifications)
-            <div class="prose max-w-none">{!! $product->specifications !!}</div>
+            <div class="prose max-w-none text-gray-700">
+                {!! $product->specifications !!}
+            </div>
             @else
-            <p class="text-gray-500">Chưa có thông số kỹ thuật</p>
+            <div class="text-center py-12">
+                <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                <p class="text-gray-500">Chưa có thông số kỹ thuật</p>
+            </div>
             @endif
         </div>
         
         <!-- Reviews Tab -->
         <div x-show="activeTab === 'reviews'" x-cloak>
             @if(isset($reviews) && $reviews->count() > 0)
-            <div class="space-y-4">
+            <div class="space-y-6">
                 @foreach($reviews as $review)
-                <div class="border-b pb-4">
-                    <div class="flex items-center gap-2 mb-2">
-                        <span class="font-bold">{{ $review->name }}</span>
-                        <span class="text-yellow-500">{{ str_repeat('⭐', $review->rating) }}</span>
-                        <span class="text-sm text-gray-500">{{ $review->created_at->diffForHumans() }}</span>
+                <div class="border-b border-gray-100 pb-6 last:border-0">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                            {{ strtoupper(substr($review->name, 0, 1)) }}
+                        </div>
+                        <div>
+                            <span class="font-bold text-gray-900">{{ $review->name }}</span>
+                            <div class="flex items-center gap-1">
+                                <span class="text-yellow-400">{{ str_repeat('⭐', (int)$review->rating) }}</span>
+                                <span class="text-gray-400 text-sm">({{ $review->created_at->diffForHumans() }})</span>
+                            </div>
+                        </div>
                     </div>
-                    <p class="text-gray-700">{{ $review->content }}</p>
+                    <p class="text-gray-700 leading-relaxed">{{ $review->content }}</p>
                 </div>
                 @endforeach
             </div>
             @else
-            <p class="text-gray-500">Chưa có đánh giá nào</p>
+            <div class="text-center py-12">
+                <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path>
+                </svg>
+                <p class="text-gray-500">Chưa có đánh giá nào cho sản phẩm này</p>
+            </div>
             @endif
         </div>
     </div>
@@ -206,23 +254,33 @@
 
 <!-- Related Products -->
 @if(isset($relatedProducts) && $relatedProducts->count() > 0)
-<div class="mt-8">
-    <h2 class="text-2xl font-bold mb-6">Sản phẩm liên quan</h2>
-    <div class="grid md:grid-cols-4 gap-6">
-        @foreach($relatedProducts as $related)
-        <div class="bg-white rounded-lg shadow hover:shadow-lg transition overflow-hidden">
-            <a href="/{{ $projectCode }}/san-pham/{{ $related->slug }}">
-                <img src="{{ $related->featured_image ?? '/assets/img/placeholder-images-image_large.webp' }}" 
-                     alt="{{ $related->title }}" class="w-full h-40 object-cover">
+<div class="mt-16">
+    <h2 class="text-3xl font-bold mb-8 text-gray-900">Sản phẩm liên quan</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        @foreach($relatedProducts->take(4) as $related)
+        <div class="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
+            <a href="/{{ $projectCode }}/san-pham/{{ $related->slug }}" class="block">
+                <div class="relative overflow-hidden">
+                    <img src="{{ $related->featured_image ?? '/assets/img/placeholder-images-image_large.webp' }}" 
+                         alt="{{ $related->title }}" class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500">
+                    @if($related->sale_price && $related->sale_price < ($related->meta_data['price'] ?? 0))
+                    @php $discount = round((($related->meta_data['price'] - $related->sale_price) / $related->meta_data['price']) * 100); @endphp
+                    <span class="absolute top-3 right-3 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full">-{{ $discount }}%</span>
+                    @endif
+                </div>
             </a>
-            <div class="p-4">
-                <a href="/{{ $projectCode }}/san-pham/{{ $related->slug }}" class="font-bold hover:text-blue-600 line-clamp-2">{{ $related->title }}</a>
-                <div class="mt-2">
+            <div class="p-5">
+                <a href="/{{ $projectCode }}/san-pham/{{ $related->slug }}" class="font-bold hover:text-blue-600 line-clamp-2 mb-2 block">
+                    {{ $related->title }}
+                </a>
+                <div class="flex items-center justify-between">
                     @if(!empty($related->meta_data['sale_price']) && $related->meta_data['sale_price'] < ($related->meta_data['price'] ?? 0))
-                    <span class="text-red-600 font-bold">{{ number_format($related->meta_data['sale_price']) }}đ</span>
-                    <span class="text-gray-400 line-through text-sm ml-1">{{ number_format($related->meta_data['price'] ?? 0) }}đ</span>
+                    <div>
+                        <span class="text-red-600 font-bold text-lg">{{ number_format($related->meta_data['sale_price']) }}đ</span>
+                        <span class="text-gray-400 text-sm line-through">{{ number_format($related->meta_data['price'] ?? 0) }}đ</span>
+                    </div>
                     @else
-                    <span class="text-blue-600 font-bold">{{ number_format($related->meta_data['price'] ?? 0) }}đ</span>
+                    <span class="text-blue-600 font-bold text-lg">{{ number_format($related->meta_data['price'] ?? 0) }}đ</span>
                     @endif
                 </div>
             </div>
@@ -231,13 +289,30 @@
     </div>
 </div>
 @endif
+
+<script>
+function increaseQuantity() {
+    const input = document.getElementById('quantity');
+    const max = {{ $product->stock_quantity ?? 99 }};
+    if (input.value < max) {
+        input.value = parseInt(input.value) + 1;
+    }
+}
+
+function decreaseQuantity() {
+    const input = document.getElementById('quantity');
+    if (input.value > 1) {
+        input.value = parseInt(input.value) - 1;
+    }
+}
+</script>
 @endsection
 
 @section('sidebar')
 <div class="space-y-6">
-    <!-- Categories -->
-    <div class="bg-white rounded-lg shadow-sm p-4">
-        <h3 class="font-bold mb-3 text-lg">Danh mục sản phẩm</h3>
+    <!-- Categories Widget -->
+    <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+        <h3 class="font-bold mb-4 text-lg text-gray-900">Danh mục sản phẩm</h3>
         <ul class="space-y-2">
             @php
                 $categories = \App\Models\Taxonomy::where('taxonomy', 'product_cat')->where('status', 'published')->orderBy('order')->get();
@@ -245,17 +320,19 @@
             @foreach($categories as $cat)
             <li>
                 <a href="/{{ $projectCode }}/danh-muc/{{ $cat->slug }}" 
-                   class="flex items-center py-2 px-3 rounded hover:bg-gray-50 {{ isset($product) && $product->taxonomies->contains('id', $cat->id) ? 'bg-blue-50 text-blue-600' : '' }}">
-                    {{ $cat->name }}
+                   class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors {{ isset($product) && $product->taxonomies->contains('id', $cat->id) ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-700' }}">
+                    <span>{{ $cat->name }}</span>
                 </a>
             </li>
             @endforeach
         </ul>
     </div>
     
-    <!-- Hot Products -->
-    <div class="bg-white rounded-lg shadow-sm p-4">
-        <h3 class="font-bold mb-3 text-lg">🔥 Sản phẩm hot</h3>
+    <!-- Hot Products Widget -->
+    <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+        <h3 class="font-bold mb-4 text-lg text-gray-900 flex items-center gap-2">
+            <span>🔥</span> Sản phẩm hot
+        </h3>
         <div class="space-y-3">
             @php
                 $hotProducts = \App\Models\Post::where('post_type', 'product')
@@ -265,21 +342,36 @@
                     ->get();
             @endphp
             @foreach($hotProducts as $hot)
-            <a href="/{{ $projectCode }}/san-pham/{{ $hot->slug }}" class="flex gap-3 hover:bg-gray-50 p-2 rounded transition">
+            <a href="/{{ $projectCode }}/san-pham/{{ $hot->slug }}" class="flex gap-3 hover:bg-gray-50 p-2 rounded-lg transition-colors">
                 <img src="{{ $hot->featured_image ?? '/assets/img/placeholder-images-image_large.webp' }}" 
-                     alt="{{ $hot->title }}" class="w-16 h-16 object-cover rounded">
+                     alt="{{ $hot->title }}" class="w-16 h-16 object-cover rounded-lg">
                 <div class="flex-1">
-                    <h4 class="font-medium text-sm line-clamp-2">{{ $hot->title }}</h4>
-                    <span class="text-blue-600 font-bold text-sm">{{ number_format($hot->meta_data['sale_price'] ?? ($hot->meta_data['price'] ?? 0)) }}đ</span>
+                    <h4 class="font-medium text-sm line-clamp-2 mb-1">{{ $hot->title }}</h4>
+                    @if($hot->meta_data['sale_price'] ?? 0)
+                    <span class="text-red-600 font-bold text-sm">{{ number_format($hot->meta_data['sale_price']) }}đ</span>
+                    <span class="text-gray-400 text-xs line-through ml-1">{{ number_format($hot->meta_data['price'] ?? 0) }}đ</span>
+                    @else
+                    <span class="text-blue-600 font-bold text-sm">{{ number_format($hot->meta_data['price'] ?? 0) }}đ</span>
+                    @endif
                 </div>
             </a>
             @endforeach
         </div>
     </div>
+    
+    <!-- Shipping Info Widget -->
+    <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl shadow-sm p-5 border border-green-100">
+        <h3 class="font-bold mb-3 text-lg text-gray-900 flex items-center gap-2">
+            <span>🚚</span> Giao hàng
+        </h3>
+        <p class="text-sm text-gray-700 mb-2">
+            Miễn phí vận chuyển cho đơn hàng từ {{ setting_string('free_shipping_threshold', '500,000') }}đ
+        </p>
+        <div class="text-xs text-gray-600 space-y-1">
+            <p>✓ Giao hàng toàn quốc</p>
+            <p>✓ Kiểm tra hàng trước khi thanh toán</p>
+            <p>✓ Hoàn tiền 100% nếu sản phẩm không đúng</p>
+        </div>
+    </div>
 </div>
 @endsection
-
-<style>
-.line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-[x-cloak] { display: none !important; }
-</style>

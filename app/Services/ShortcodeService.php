@@ -2,8 +2,10 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\Blade;
-use Illuminate\Support\Facades\View;
+use App\Models\Category;
+use App\Models\Media;
+use App\Models\Post;
+use App\Models\Product;
 
 class ShortcodeService
 {
@@ -22,9 +24,12 @@ class ShortcodeService
         // Widget shortcode: [widget type="hero" title="Hello"]
         $this->register('widget', function ($attrs) {
             $type = $attrs['type'] ?? '';
-            if (!$type) return '';
-            
+            if (! $type) {
+                return '';
+            }
+
             unset($attrs['type']);
+
             return render_widget($type, $attrs);
         });
 
@@ -89,23 +94,24 @@ class ShortcodeService
     {
         // Pattern: [shortcode attr="value" attr2="value2"]
         $pattern = '/\[(\w+)([^\]]*)\]/';
-        
+
         return preg_replace_callback($pattern, function ($matches) {
             $tag = $matches[1];
             $attrString = $matches[2];
-            
-            if (!isset($this->shortcodes[$tag])) {
+
+            if (! isset($this->shortcodes[$tag])) {
                 return $matches[0]; // Return original if shortcode not found
             }
-            
+
             $attrs = $this->parseAttributes($attrString);
-            
+
             try {
                 return call_user_func($this->shortcodes[$tag], $attrs);
             } catch (\Exception $e) {
                 if (config('app.debug')) {
                     return "<!-- Shortcode Error [{$tag}]: {$e->getMessage()} -->";
                 }
+
                 return '';
             }
         }, $content);
@@ -117,14 +123,14 @@ class ShortcodeService
     protected function parseAttributes(string $attrString): array
     {
         $attrs = [];
-        
+
         // Pattern: attr="value" or attr='value' or attr=value
         preg_match_all('/(\w+)=["\']?([^"\'>\s]+)["\']?/', $attrString, $matches, PREG_SET_ORDER);
-        
+
         foreach ($matches as $match) {
             $attrs[$match[1]] = $match[2];
         }
-        
+
         return $attrs;
     }
 
@@ -140,9 +146,9 @@ class ShortcodeService
         $order = $attrs['order'] ?? 'desc';
         $template = $attrs['template'] ?? 'grid';
 
-        $query = \App\Models\Product::query()
+        $query = Product::query()
             ->where('status', 'published')
-            ->when($categoryId, fn($q) => $q->where('category_id', $categoryId))
+            ->when($categoryId, fn ($q) => $q->where('category_id', $categoryId))
             ->orderBy($orderBy, $order)
             ->limit($limit);
 
@@ -166,10 +172,10 @@ class ShortcodeService
         $postType = $attrs['type'] ?? 'post';
         $template = $attrs['template'] ?? 'grid';
 
-        $query = \App\Models\Post::query()
+        $query = Post::query()
             ->where('status', 'published')
             ->where('post_type', $postType)
-            ->when($category, fn($q) => $q->whereHas('categories', fn($c) => $c->where('slug', $category)))
+            ->when($category, fn ($q) => $q->whereHas('categories', fn ($c) => $c->where('slug', $category)))
             ->orderBy('created_at', 'desc')
             ->limit($limit);
 
@@ -191,7 +197,7 @@ class ShortcodeService
         $limit = (int) ($attrs['limit'] ?? 6);
         $template = $attrs['template'] ?? 'grid';
 
-        $categories = \App\Models\Category::query()
+        $categories = Category::query()
             ->where('is_active', true)
             ->withCount('products')
             ->orderBy('sort_order')
@@ -253,9 +259,11 @@ class ShortcodeService
         $ids = array_filter(explode(',', $attrs['ids'] ?? ''));
         $columns = (int) ($attrs['columns'] ?? 3);
 
-        if (empty($ids)) return '';
+        if (empty($ids)) {
+            return '';
+        }
 
-        $media = \App\Models\Media::whereIn('id', $ids)->get();
+        $media = Media::whereIn('id', $ids)->get();
 
         return view('components.shortcodes.gallery', [
             'media' => $media,
@@ -292,7 +300,7 @@ class ShortcodeService
     {
         $type = $attrs['type'] ?? 'product';
         $template = $attrs['template'] ?? 'default';
-        
+
         return view("components.shortcodes.archive-{$type}", [
             'template' => $template,
             'attrs' => $attrs,

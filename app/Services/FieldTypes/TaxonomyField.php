@@ -20,12 +20,12 @@ class TaxonomyField implements FieldTypeInterface
         $taxonomy = $config['taxonomy'] ?? 'category'; // category, brand, tag
         $multiple = $config['multiple'] ?? false;
         $displayType = $config['display'] ?? 'select'; // select, checkbox, radio
-        
+
         $selectedIds = is_array($value) ? $value : ($value ? [$value] : []);
         $selectedJson = json_encode($selectedIds);
         $multipleAttr = $multiple ? 'multiple' : '';
         $requiredAttr = $required ? 'required' : '';
-        
+
         // Determine API base URL based on context
         $projectCode = session('current_project')['code'] ?? null;
         $apiBase = $projectCode ? "/{$projectCode}/api" : '/api';
@@ -110,8 +110,9 @@ class TaxonomyField implements FieldTypeInterface
     public function validate(mixed $value, array $rules = []): bool
     {
         if (empty($value)) {
-            return !in_array('required', $rules);
+            return ! in_array('required', $rules);
         }
+
         return is_numeric($value) || is_array($value);
     }
 
@@ -120,6 +121,7 @@ class TaxonomyField implements FieldTypeInterface
         if (is_array($value)) {
             return array_map('intval', $value);
         }
-        return $value ? (int)$value : null;
+
+        return $value ? (int) $value : null;
     }
 }

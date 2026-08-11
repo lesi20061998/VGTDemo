@@ -3,23 +3,23 @@
 namespace App\Services;
 
 use App\Contracts\FieldTypeInterface;
-use App\Services\FieldTypes\TextField;
-use App\Services\FieldTypes\TextareaField;
-use App\Services\FieldTypes\SelectField;
 use App\Services\FieldTypes\CheckboxField;
-use App\Services\FieldTypes\ImageField;
-use App\Services\FieldTypes\VideoField;
-use App\Services\FieldTypes\GalleryField;
-use App\Services\FieldTypes\RepeatableField;
-use App\Services\FieldTypes\UrlField;
-use App\Services\FieldTypes\NumberField;
-use App\Services\FieldTypes\EmailField;
-use App\Services\FieldTypes\DateField;
 use App\Services\FieldTypes\ColorField;
+use App\Services\FieldTypes\DateField;
+use App\Services\FieldTypes\EmailField;
+use App\Services\FieldTypes\GalleryField;
+use App\Services\FieldTypes\ImageField;
+use App\Services\FieldTypes\NumberField;
+use App\Services\FieldTypes\PostObjectField;
 use App\Services\FieldTypes\RangeField;
 use App\Services\FieldTypes\RelationshipField;
-use App\Services\FieldTypes\PostObjectField;
+use App\Services\FieldTypes\RepeatableField;
+use App\Services\FieldTypes\SelectField;
 use App\Services\FieldTypes\TaxonomyField;
+use App\Services\FieldTypes\TextareaField;
+use App\Services\FieldTypes\TextField;
+use App\Services\FieldTypes\UrlField;
+use App\Services\FieldTypes\VideoField;
 use App\Services\FieldTypes\WysiwygField;
 
 class FieldTypeService
@@ -37,32 +37,32 @@ class FieldTypeService
     protected function registerDefaultFieldTypes(): void
     {
         // Basic fields
-        $this->register(new TextField());
-        $this->register(new TextareaField());
-        $this->register(new WysiwygField());
-        $this->register(new NumberField());
-        $this->register(new EmailField());
-        $this->register(new UrlField());
-        $this->register(new DateField());
-        
+        $this->register(new TextField);
+        $this->register(new TextareaField);
+        $this->register(new WysiwygField);
+        $this->register(new NumberField);
+        $this->register(new EmailField);
+        $this->register(new UrlField);
+        $this->register(new DateField);
+
         // Choice fields
-        $this->register(new SelectField());
-        $this->register(new CheckboxField());
-        
+        $this->register(new SelectField);
+        $this->register(new CheckboxField);
+
         // Media fields
-        $this->register(new ImageField());
-        $this->register(new VideoField());
-        $this->register(new GalleryField());
-        $this->register(new ColorField());
-        
+        $this->register(new ImageField);
+        $this->register(new VideoField);
+        $this->register(new GalleryField);
+        $this->register(new ColorField);
+
         // Relational fields (ACF-like)
-        $this->register(new RelationshipField());
-        $this->register(new PostObjectField());
-        $this->register(new TaxonomyField());
-        
+        $this->register(new RelationshipField);
+        $this->register(new PostObjectField);
+        $this->register(new TaxonomyField);
+
         // Layout fields
-        $this->register(new RepeatableField());
-        $this->register(new RangeField());
+        $this->register(new RepeatableField);
+        $this->register(new RangeField);
     }
 
     /**
@@ -113,7 +113,7 @@ class FieldTypeService
         $type = $fieldConfig['type'] ?? 'text';
         $fieldType = $this->get($type);
 
-        if (!$fieldType) {
+        if (! $fieldType) {
             throw new \InvalidArgumentException("Field type '{$type}' not found");
         }
 
@@ -128,7 +128,7 @@ class FieldTypeService
         $type = $fieldConfig['type'] ?? 'text';
         $fieldType = $this->get($type);
 
-        if (!$fieldType) {
+        if (! $fieldType) {
             // Unknown field type - skip validation
             return true;
         }
@@ -154,7 +154,7 @@ class FieldTypeService
         $type = $fieldConfig['type'] ?? 'text';
         $fieldType = $this->get($type);
 
-        if (!$fieldType) {
+        if (! $fieldType) {
             return $value;
         }
 
@@ -176,10 +176,10 @@ class FieldTypeService
                 $html .= $this->renderField($field, $fieldValue);
             } catch (\Exception $e) {
                 // Log error and show fallback
-                \Log::error("Field render error for {$fieldName}: " . $e->getMessage());
-                $html .= "<div class=\"mb-4 p-3 bg-red-50 border border-red-200 rounded\">";
-                $html .= "<p class=\"text-red-600 text-sm\">Error rendering field '{$fieldName}': " . htmlspecialchars($e->getMessage()) . "</p>";
-                $html .= "</div>";
+                \Log::error("Field render error for {$fieldName}: ".$e->getMessage());
+                $html .= '<div class="mb-4 p-3 bg-red-50 border border-red-200 rounded">';
+                $html .= "<p class=\"text-red-600 text-sm\">Error rendering field '{$fieldName}': ".htmlspecialchars($e->getMessage()).'</p>';
+                $html .= '</div>';
             }
         }
 
@@ -200,6 +200,7 @@ class FieldTypeService
             // Check required fields
             if (($field['required'] ?? false) && empty($fieldValue)) {
                 $errors[$fieldName] = "Field '{$field['label']}' is required";
+
                 continue;
             }
 
@@ -209,7 +210,7 @@ class FieldTypeService
             }
 
             // Validate field value
-            if (!$this->validateField($field, $fieldValue)) {
+            if (! $this->validateField($field, $fieldValue)) {
                 $errors[$fieldName] = "Field '{$field['label']}' has invalid value";
             }
         }
@@ -247,7 +248,7 @@ class FieldTypeService
             $info[$type] = [
                 'name' => $type,
                 'class' => get_class($fieldType),
-                'description' => $this->getFieldTypeDescription($type)
+                'description' => $this->getFieldTypeDescription($type),
             ];
         }
 

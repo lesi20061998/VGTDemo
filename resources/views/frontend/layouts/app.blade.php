@@ -19,8 +19,53 @@
         :breadcrumbs="$breadcrumbs ?? []"
     />
     
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind CSS Framework CDN & Config -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio,container-queries"></script>
+    {{-- Google Fonts Injection --}}
+    @php
+        $headingFont = setting_string('heading_font', 'Inter');
+        $bodyFont = setting_string('body_font', 'Inter');
+        $headingWeights = setting_string('heading_font_weight', '400,700');
+        $bodyWeights = setting_string('body_font_weight', '400,500,600,700');
+        $bodyFontSize = setting_string('body_font_size', '1rem');
+
+        // Build Google Fonts URL with saved weights
+        $fontEntries = collect([
+            ['font' => $headingFont, 'weights' => $headingWeights],
+            ['font' => $bodyFont, 'weights' => $bodyWeights],
+        ])->unique('font')->filter(fn($e) => !empty($e['font']))->map(function($e) {
+            $family = str_replace(' ', '+', $e['font']);
+            $wStr = str_replace(',', ';', $e['weights'] ?: '400;700');
+            return "{$family}:wght@{$wStr}";
+        })->join('&family=');
+        $googleFontsUrl = $fontEntries ? "https://fonts.googleapis.com/css2?family={$fontEntries}&display=swap" : null;
+    @endphp
+    @if($googleFontsUrl)
+        <link href="{{ $googleFontsUrl }}" rel="stylesheet">
+    @endif
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#fdf2f2',
+                            100: '#fde8e8',
+                            500: '#98191f',
+                            600: '#801318',
+                            700: '#680e12',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Alpine.js Collapse Plugin & Core -->
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
 
     @php
         // Theme & background từ website config
@@ -45,10 +90,14 @@
     @endphp
 
     <style>
-        :root {
-            --theme-color: {{ $themeColor }};
-        }
-    </style>
+    :root {
+        --theme-color: {{ $themeColor }};
+        --heading-font: '{{ $headingFont }}', sans-serif;
+        --body-font: '{{ $bodyFont }}', sans-serif;
+    }
+    body { font-family: var(--body-font); }
+    h1, h2, h3, h4, h5, h6 { font-family: var(--heading-font); }
+</style>
     @stack('styles')
 </head>
 <body style="{{ $bodyBgStyle }}">
@@ -77,6 +126,9 @@
     
     <!-- Fake Notifications -->
     @include('frontend.partials.fake-notifications')
+    
+    <!-- Floating Cart Widget -->
+    @include('frontend.partials.floating-cart')
     
     @stack('scripts')
     

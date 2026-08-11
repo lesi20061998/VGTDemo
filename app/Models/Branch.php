@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use App\Traits\ProjectScoped;
+use Illuminate\Database\Eloquent\Model;
 use Spatie\Translatable\HasTranslations;
 
 class Branch extends Model
@@ -23,10 +23,9 @@ class Branch extends Model
         });
 
         static::creating(function ($branch) {
-            if (!$branch->tenant_id && session('current_tenant_id')) {
+            if (! $branch->tenant_id && session('current_tenant_id')) {
                 $branch->tenant_id = session('current_tenant_id');
             }
         });
     }
 }
-

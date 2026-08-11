@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\SettingsService;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
@@ -18,7 +19,7 @@ class SetProjectDatabase
         if ($project) {
             // Enable database switching for project context
             $this->setProjectDatabase($project, $request);
-            
+
             Log::debug("Project database context set for: {$project->code}");
         }
 
@@ -56,7 +57,7 @@ class SetProjectDatabase
 
         // Clear settings cache để load lại từ project database
         if (class_exists('\App\Services\SettingsService')) {
-            \App\Services\SettingsService::getInstance()->clearCache();
+            SettingsService::getInstance()->clearCache();
         }
 
         // SHARED HOSTING MODE: Always use main database with project_id scoping
@@ -75,22 +76,22 @@ class SetProjectDatabase
 
         try {
             DB::purge('project');
-            
+
             // Test connection before switching
             DB::connection('project')->getPdo();
-            
+
             // Set default connection to project for this request
             DB::setDefaultConnection('project');
             Config::set('database.default', 'project');
-            
+
             // Set project context for scoped queries
             app()->instance('current_project_id', $project->id);
             session(['current_project_id' => $project->id]);
-            
+
             Log::info("Successfully using shared database for project: {$code}");
-            
+
         } catch (\Exception $e) {
-            Log::error("Failed to setup shared database for project {$code}: " . $e->getMessage());
+            Log::error("Failed to setup shared database for project {$code}: ".$e->getMessage());
             $this->fallbackToMainDatabase($project);
         }
     }
@@ -119,20 +120,20 @@ class SetProjectDatabase
 
         try {
             DB::purge('project');
-            
+
             // Test connection before switching
             DB::connection('project')->getPdo();
-            
+
             // Set default connection to project for this request
             DB::setDefaultConnection('project');
             Config::set('database.default', 'project');
-            
+
             // Set project context for multisite queries
             app()->instance('current_project_id', $project->id);
             session(['current_project_id' => $project->id]);
-            
+
             Log::info("Successfully connected to multisite database for project: {$code}");
-            
+
         } catch (\Exception $e) {
             Log::error("Failed to connect to multisite database for project {$code}: " . $e->getMessage());
             $this->fallbackToMainDatabase($project);
@@ -143,11 +144,11 @@ class SetProjectDatabase
     private function fallbackToMainDatabase($project)
     {
         Log::warning("Falling back to main database with project scoping for project: {$project->code}");
-        
+
         // Use main database but set project context
         Config::set('database.connections.project', config('database.connections.mysql'));
         DB::purge('project');
-        
+
         // Set project ID for scoping queries
         app()->instance('current_project_id', $project->id);
         session(['fallback_project_id' => $project->id]);

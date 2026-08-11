@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\ProjectSetting;
+use App\Models\Setting;
+use App\Services\SettingsService;
 use Illuminate\Http\Request;
 
 class SettingsController extends Controller
@@ -15,7 +18,7 @@ class SettingsController extends Controller
         if ($project) {
             \DB::setDefaultConnection('mysql');
 
-            $enabledSettings = \App\Models\ProjectSetting::where('project_id', $project->id)
+            $enabledSettings = ProjectSetting::where('project_id', $project->id)
                 ->where('value', '1')
                 ->pluck('key')
                 ->toArray();
@@ -109,12 +112,12 @@ class SettingsController extends Controller
                                 $value['enabled'] = $value['enabled'] === '1' || $value['enabled'] === 1 || $value['enabled'] === true;
                             }
                         } elseif ($key === 'toc') {
-                            $value['enabled'] = !empty($value['enabled']);
-                            $value['show_numbers'] = !empty($value['show_numbers']);
-                            $value['collapsible'] = !empty($value['collapsible']);
-                            $value['smooth_scroll'] = !empty($value['smooth_scroll']);
-                            $value['highlight_active'] = !empty($value['highlight_active']);
-                            $value['sticky_toc'] = !empty($value['sticky_toc']);
+                            $value['enabled'] = ! empty($value['enabled']);
+                            $value['show_numbers'] = ! empty($value['show_numbers']);
+                            $value['collapsible'] = ! empty($value['collapsible']);
+                            $value['smooth_scroll'] = ! empty($value['smooth_scroll']);
+                            $value['highlight_active'] = ! empty($value['highlight_active']);
+                            $value['sticky_toc'] = ! empty($value['sticky_toc']);
                         }
                     }
 
@@ -144,14 +147,14 @@ class SettingsController extends Controller
                             'updated_at' => now(),
                         ]);
                     } else {
-                        \App\Models\Setting::set($key, $value);
+                        Setting::set($key, $value);
                     }
-                    
+
                     $savedCount++;
                 }
             });
 
-            \App\Services\SettingsService::getInstance()->clearCache();
+            SettingsService::getInstance()->clearCache();
 
             return back()->with('alert', [
                 'type' => 'success',
@@ -177,7 +180,7 @@ class SettingsController extends Controller
         $mainDb = config('database.connections.mysql.database');
         \DB::setDefaultConnection('mysql');
 
-        $enabledSettings = \App\Models\ProjectSetting::where('project_id', $project->id)
+        $enabledSettings = ProjectSetting::where('project_id', $project->id)
             ->where('value', '1')
             ->pluck('key')
             ->toArray();

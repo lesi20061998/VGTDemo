@@ -10,6 +10,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Traits\HasAlerts;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Cache;
 
 class OrderController extends Controller
@@ -25,7 +26,7 @@ class OrderController extends Controller
                 ->latest()
                 ->paginate(config('app.admin_per_page', 20));
         } catch (\Exception $e) {
-            $orders = new \Illuminate\Pagination\LengthAwarePaginator([], 0, config('app.admin_per_page', 20), 1, ['path' => $request->url()]);
+            $orders = new LengthAwarePaginator([], 0, config('app.admin_per_page', 20), 1, ['path' => $request->url()]);
         }
 
         return view('cms.orders.index', compact('orders'));
@@ -168,7 +169,7 @@ class OrderController extends Controller
             });
         } catch (\Exception $e) {
             $reportData = [
-                'total_sales' => 0, 'total_orders' => 0, 'orders_by_status' => collect(), 'daily_revenue' => collect(), 'top_products' => collect()
+                'total_sales' => 0, 'total_orders' => 0, 'orders_by_status' => collect(), 'daily_revenue' => collect(), 'top_products' => collect(),
             ];
         }
 

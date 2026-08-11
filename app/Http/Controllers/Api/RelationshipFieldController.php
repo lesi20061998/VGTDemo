@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Product;
 use App\Models\Post;
+use App\Models\Product;
 use Illuminate\Http\Request;
 
 class RelationshipFieldController extends Controller
@@ -61,14 +61,15 @@ class RelationshipFieldController extends Controller
         if (\is_array($currentProject)) {
             return $currentProject['id'] ?? null;
         }
+
         return $currentProject->id ?? null;
     }
 
     protected function searchProducts(string $query, int $limit, ?int $tenantId): array
     {
         $products = Product::query()
-            ->when($tenantId, fn($q) => $q->where('tenant_id', $tenantId))
-            ->when($query, fn($q) => $q->where(function($sub) use ($query) {
+            ->when($tenantId, fn ($q) => $q->where('tenant_id', $tenantId))
+            ->when($query, fn ($q) => $q->where(function ($sub) use ($query) {
                 $sub->where('name', 'like', "%{$query}%")
                     ->orWhere('sku', 'like', "%{$query}%");
             }))
@@ -77,7 +78,7 @@ class RelationshipFieldController extends Controller
             ->limit($limit)
             ->get();
 
-        return $products->map(fn($p) => [
+        return $products->map(fn ($p) => [
             'id' => $p->id,
             'title' => $p->name,
             'type' => 'Sản phẩm',
@@ -93,15 +94,15 @@ class RelationshipFieldController extends Controller
     protected function searchPosts(string $query, int $limit, string $postType, ?int $tenantId): array
     {
         $posts = Post::query()
-            ->when($tenantId, fn($q) => $q->where('tenant_id', $tenantId))
-            ->when($query, fn($q) => $q->where('title', 'like', "%{$query}%"))
+            ->when($tenantId, fn ($q) => $q->where('tenant_id', $tenantId))
+            ->when($query, fn ($q) => $q->where('title', 'like', "%{$query}%"))
             ->where('type', $postType)
             ->where('status', 'published')
             ->orderBy('title')
             ->limit($limit)
             ->get();
 
-        return $posts->map(fn($p) => [
+        return $posts->map(fn ($p) => [
             'id' => $p->id,
             'title' => $p->title,
             'type' => $postType === 'post' ? 'Bài viết' : 'Trang',
@@ -115,10 +116,10 @@ class RelationshipFieldController extends Controller
     {
         $products = Product::query()
             ->whereIn('id', $ids)
-            ->when($tenantId, fn($q) => $q->where('tenant_id', $tenantId))
+            ->when($tenantId, fn ($q) => $q->where('tenant_id', $tenantId))
             ->get();
 
-        return $products->map(fn($p) => [
+        return $products->map(fn ($p) => [
             'id' => $p->id,
             'title' => $p->name,
             'type' => 'Sản phẩm',
@@ -136,10 +137,10 @@ class RelationshipFieldController extends Controller
         $posts = Post::query()
             ->whereIn('id', $ids)
             ->where('type', $postType)
-            ->when($tenantId, fn($q) => $q->where('tenant_id', $tenantId))
+            ->when($tenantId, fn ($q) => $q->where('tenant_id', $tenantId))
             ->get();
 
-        return $posts->map(fn($p) => [
+        return $posts->map(fn ($p) => [
             'id' => $p->id,
             'title' => $p->title,
             'type' => $postType === 'post' ? 'Bài viết' : 'Trang',

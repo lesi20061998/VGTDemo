@@ -8,7 +8,7 @@ trait HasAlerts
     {
         return redirect()->back()->with('alert', [
             'type' => 'success',
-            'message' => $message
+            'message' => $message,
         ]);
     }
 
@@ -16,7 +16,7 @@ trait HasAlerts
     {
         return redirect()->back()->with('alert', [
             'type' => 'error',
-            'message' => $message
+            'message' => $message,
         ]);
     }
 
@@ -24,7 +24,7 @@ trait HasAlerts
     {
         return redirect()->back()->with('alert', [
             'type' => 'info',
-            'message' => $message
+            'message' => $message,
         ]);
     }
 
@@ -32,8 +32,7 @@ trait HasAlerts
     {
         return redirect()->back()->with('alert', [
             'type' => 'warning',
-            'message' => $message
+            'message' => $message,
         ]);
     }
 }
-

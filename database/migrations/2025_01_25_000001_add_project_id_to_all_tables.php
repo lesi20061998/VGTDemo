@@ -10,17 +10,17 @@ return new class extends Migration
     {
         $tables = [
             'products_enhanced',
-            'product_categories', 
+            'product_categories',
             'brands',
             'orders',
             'menus',
             'widgets',
             'settings',
-            'posts'
+            'posts',
         ];
 
         foreach ($tables as $table) {
-            if (Schema::hasTable($table) && !Schema::hasColumn($table, 'project_id')) {
+            if (Schema::hasTable($table) && ! Schema::hasColumn($table, 'project_id')) {
                 Schema::table($table, function (Blueprint $table) {
                     $table->unsignedInteger('project_id')->nullable()->after('id');
                     $table->index('project_id');
@@ -33,13 +33,13 @@ return new class extends Migration
     {
         $tables = [
             'products_enhanced',
-            'product_categories', 
+            'product_categories',
             'brands',
             'orders',
             'menus',
             'widgets',
             'settings',
-            'posts'
+            'posts',
         ];
 
         foreach ($tables as $table) {

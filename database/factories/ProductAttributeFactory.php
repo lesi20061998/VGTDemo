@@ -2,13 +2,13 @@
 
 namespace Database\Factories;
 
-use App\Models\ProductAttribute;
 use App\Models\AttributeGroup;
+use App\Models\ProductAttribute;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ProductAttribute>
+ * @extends Factory<ProductAttribute>
  */
 class ProductAttributeFactory extends Factory
 {

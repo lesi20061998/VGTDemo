@@ -27,7 +27,7 @@ return new class extends Migration
             foreach ($foreignKeys as $fk) {
                 try {
                     $table->dropForeign($fk->CONSTRAINT_NAME);
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     // Ignore if already dropped
                 }
             }

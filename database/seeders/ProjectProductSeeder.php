@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Language;
 use App\Models\ProjectBrand;
 use App\Models\ProjectProduct;
 use App\Models\ProjectProductCategory;
@@ -378,7 +379,7 @@ class ProjectProductSeeder extends Seeder
             }
 
             // Get default language
-            $defaultLanguage = \App\Models\Language::getDefault();
+            $defaultLanguage = Language::getDefault();
 
             // Create product
             ProjectProduct::create([

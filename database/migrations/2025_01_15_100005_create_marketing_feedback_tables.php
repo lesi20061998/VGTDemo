@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('subscription_token')->nullable();
             $table->json('metadata')->nullable(); // source, tags, etc.
             $table->timestamps();
-            
+
             $table->index(['status', 'subscribed_at']);
             $table->index(['email']);
         });
@@ -39,7 +39,7 @@ return new class extends Migration
             $table->text('internal_notes')->nullable();
             $table->json('metadata')->nullable(); // IP, user agent, etc.
             $table->timestamps();
-            
+
             $table->index(['status', 'created_at']);
             $table->index(['type', 'status']);
             $table->index(['assigned_to']);
@@ -61,7 +61,7 @@ return new class extends Migration
             $table->text('internal_notes')->nullable();
             $table->json('attachments')->nullable();
             $table->timestamps();
-            
+
             $table->index(['status', 'priority']);
             $table->index(['type', 'status']);
             $table->index(['assigned_to']);
@@ -77,7 +77,7 @@ return new class extends Migration
             $table->boolean('is_internal')->default(false);
             $table->json('attachments')->nullable();
             $table->timestamps();
-            
+
             $table->index(['feedback_id', 'created_at']);
         });
 
@@ -97,7 +97,7 @@ return new class extends Migration
             $table->integer('clicks')->default(0);
             $table->integer('views')->default(0);
             $table->timestamps();
-            
+
             $table->index(['is_active', 'position', 'sort_order']);
             $table->index(['starts_at', 'ends_at']);
         });

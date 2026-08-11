@@ -13,28 +13,28 @@ return new class extends Migration
     {
         // Create for both mysql and project connections
         $connections = ['mysql', 'project'];
-        
+
         foreach ($connections as $connection) {
             try {
                 if (Schema::connection($connection)->hasTable('brand_product')) {
                     continue;
                 }
-                
+
                 Schema::connection($connection)->create('brand_product', function (Blueprint $table) {
                     $table->id();
                     $table->unsignedBigInteger('product_id');
                     $table->unsignedBigInteger('brand_id');
                     $table->timestamps();
-                    
+
                     $table->unique(['product_id', 'brand_id']);
-                    
+
                     // Add indexes
                     $table->index('product_id');
                     $table->index('brand_id');
                 });
-                
-            } catch (\Exception $e) {
-                \Log::warning("Migration brand_product for {$connection}: " . $e->getMessage());
+
+            } catch (Exception $e) {
+                Log::warning("Migration brand_product for {$connection}: ".$e->getMessage());
             }
         }
     }

@@ -17,7 +17,7 @@ class WidgetDataMigrationService
         $results = [
             'migrated' => 0,
             'failed' => 0,
-            'errors' => []
+            'errors' => [],
         ];
 
         $legacyWidgets = Widget::whereNull('metadata')
@@ -31,8 +31,8 @@ class WidgetDataMigrationService
                 $results['migrated']++;
             } catch (\Exception $e) {
                 $results['failed']++;
-                $results['errors'][] = "Widget ID {$widget->id}: " . $e->getMessage();
-                Log::error("Widget migration failed for ID {$widget->id}: " . $e->getMessage());
+                $results['errors'][] = "Widget ID {$widget->id}: ".$e->getMessage();
+                Log::error("Widget migration failed for ID {$widget->id}: ".$e->getMessage());
             }
         }
 
@@ -46,8 +46,8 @@ class WidgetDataMigrationService
     {
         // Get widget metadata from registry
         $metadata = WidgetRegistry::getConfig($widget->type);
-        
-        if (!$metadata) {
+
+        if (! $metadata) {
             throw new \Exception("Widget type '{$widget->type}' not found in registry");
         }
 
@@ -76,7 +76,7 @@ class WidgetDataMigrationService
         foreach ($fields as $field) {
             $fieldName = $field['name'];
             $fieldType = $field['type'];
-            
+
             if (isset($settings[$fieldName])) {
                 $cleanedSettings[$fieldName] = $this->cleanFieldValue($settings[$fieldName], $fieldType);
             } elseif (isset($field['default'])) {
@@ -98,39 +98,40 @@ class WidgetDataMigrationService
             case 'url':
             case 'email':
                 return is_string($value) ? trim($value) : '';
-                
+
             case 'number':
             case 'range':
                 return is_numeric($value) ? (float) $value : 0;
-                
+
             case 'checkbox':
                 return (bool) $value;
-                
+
             case 'select':
                 return is_string($value) ? $value : '';
-                
+
             case 'image':
                 return is_string($value) ? $value : '';
-                
+
             case 'gallery':
                 return is_array($value) ? $value : [];
-                
+
             case 'repeatable':
                 return is_array($value) ? $value : [];
-                
+
             case 'date':
-                if (is_string($value) && !empty($value)) {
+                if (is_string($value) && ! empty($value)) {
                     try {
                         return date('Y-m-d', strtotime($value));
                     } catch (\Exception $e) {
                         return '';
                     }
                 }
+
                 return '';
-                
+
             case 'color':
                 return is_string($value) && preg_match('/^#[0-9A-Fa-f]{6}$/', $value) ? $value : '#000000';
-                
+
             default:
                 return $value;
         }
@@ -139,26 +140,26 @@ class WidgetDataMigrationService
     /**
      * Backup widgets before migration
      */
-    public function createBackup(string $filename = null): string
+    public function createBackup(?string $filename = null): string
     {
-        if (!$filename) {
-            $filename = 'widgets_backup_' . date('Y_m_d_H_i_s') . '.json';
+        if (! $filename) {
+            $filename = 'widgets_backup_'.date('Y_m_d_H_i_s').'.json';
         }
 
         $widgets = Widget::all()->toArray();
-        
+
         $backupData = [
             'created_at' => now()->toISOString(),
             'total_widgets' => count($widgets),
-            'widgets' => $widgets
+            'widgets' => $widgets,
         ];
 
         $backupPath = storage_path('app/widget-backups');
-        if (!file_exists($backupPath)) {
+        if (! file_exists($backupPath)) {
             mkdir($backupPath, 0755, true);
         }
 
-        $fullPath = $backupPath . '/' . $filename;
+        $fullPath = $backupPath.'/'.$filename;
         file_put_contents($fullPath, json_encode($backupData, JSON_PRETTY_PRINT));
 
         return $fullPath;
@@ -169,28 +170,28 @@ class WidgetDataMigrationService
      */
     public function restoreFromBackup(string $backupPath): array
     {
-        if (!file_exists($backupPath)) {
+        if (! file_exists($backupPath)) {
             throw new \Exception("Backup file not found: {$backupPath}");
         }
 
         $backupData = json_decode(file_get_contents($backupPath), true);
-        
-        if (!$backupData || !isset($backupData['widgets'])) {
-            throw new \Exception("Invalid backup file format");
+
+        if (! $backupData || ! isset($backupData['widgets'])) {
+            throw new \Exception('Invalid backup file format');
         }
 
         $results = [
             'restored' => 0,
             'failed' => 0,
-            'errors' => []
+            'errors' => [],
         ];
 
         DB::beginTransaction();
-        
+
         try {
             // Clear existing widgets
             Widget::truncate();
-            
+
             // Restore widgets
             foreach ($backupData['widgets'] as $widgetData) {
                 try {
@@ -198,10 +199,10 @@ class WidgetDataMigrationService
                     $results['restored']++;
                 } catch (\Exception $e) {
                     $results['failed']++;
-                    $results['errors'][] = "Widget restore failed: " . $e->getMessage();
+                    $results['errors'][] = 'Widget restore failed: '.$e->getMessage();
                 }
             }
-            
+
             DB::commit();
         } catch (\Exception $e) {
             DB::rollback();
@@ -219,7 +220,7 @@ class WidgetDataMigrationService
         $results = [
             'valid' => 0,
             'invalid' => 0,
-            'errors' => []
+            'errors' => [],
         ];
 
         $widgets = Widget::all();
@@ -234,7 +235,7 @@ class WidgetDataMigrationService
                 }
             } catch (\Exception $e) {
                 $results['invalid']++;
-                $results['errors'][] = "Widget ID {$widget->id} ({$widget->type}): " . $e->getMessage();
+                $results['errors'][] = "Widget ID {$widget->id} ({$widget->type}): ".$e->getMessage();
             }
         }
 
@@ -248,20 +249,20 @@ class WidgetDataMigrationService
     {
         $results = [
             'cleaned' => 0,
-            'orphaned_types' => []
+            'orphaned_types' => [],
         ];
 
         $widgets = Widget::all();
         $orphanedIds = [];
 
         foreach ($widgets as $widget) {
-            if (!WidgetRegistry::exists($widget->type)) {
+            if (! WidgetRegistry::exists($widget->type)) {
                 $orphanedIds[] = $widget->id;
                 $results['orphaned_types'][] = $widget->type;
             }
         }
 
-        if (!empty($orphanedIds)) {
+        if (! empty($orphanedIds)) {
             $results['cleaned'] = Widget::whereIn('id', $orphanedIds)->delete();
         }
 
@@ -278,7 +279,7 @@ class WidgetDataMigrationService
         $results = [
             'updated' => 0,
             'failed' => 0,
-            'errors' => []
+            'errors' => [],
         ];
 
         $widgets = Widget::all();
@@ -286,7 +287,7 @@ class WidgetDataMigrationService
         foreach ($widgets as $widget) {
             try {
                 $metadata = WidgetRegistry::getConfig($widget->type);
-                
+
                 if ($metadata) {
                     $widget->metadata = $metadata;
                     $widget->save();
@@ -297,7 +298,7 @@ class WidgetDataMigrationService
                 }
             } catch (\Exception $e) {
                 $results['failed']++;
-                $results['errors'][] = "Widget ID {$widget->id}: " . $e->getMessage();
+                $results['errors'][] = "Widget ID {$widget->id}: ".$e->getMessage();
             }
         }
 
@@ -316,7 +317,7 @@ class WidgetDataMigrationService
             'widgets_with_variant' => Widget::where('variant', '!=', '')->whereNotNull('variant')->count(),
             'widgets_without_variant' => Widget::where('variant', '')->orWhereNull('variant')->count(),
             'widget_types' => Widget::distinct('type')->pluck('type')->toArray(),
-            'widget_areas' => Widget::distinct('area')->pluck('area')->toArray()
+            'widget_areas' => Widget::distinct('area')->pluck('area')->toArray(),
         ];
     }
 }

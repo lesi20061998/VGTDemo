@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Builder;
 
 class Page extends Model
 {
@@ -88,11 +88,11 @@ class Page extends Model
     public function getRenderedContent(): string
     {
         $content = $this->content ?? '';
-        
+
         foreach ($this->activeSections as $section) {
             $content .= $section->getRenderedContent();
         }
-        
+
         return $content;
     }
 
@@ -117,7 +117,7 @@ class Page extends Model
             'type' => $type,
             'settings' => $settings,
             'order' => $order,
-            'is_active' => true
+            'is_active' => true,
         ]);
     }
 }

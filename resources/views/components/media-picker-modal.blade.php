@@ -5,7 +5,7 @@
 
 @php
     $currentProject = session('current_project');
-    $projectCode = is_array($currentProject) ? ($currentProject['code'] ?? null) : ($currentProject->code ?? null);
+    $projectCode = request()->route('projectCode') ?? (is_array($currentProject) ? ($currentProject['code'] ?? null) : ($currentProject->code ?? null));
     
     // Build media URLs based on context
     if ($projectCode) {
@@ -296,7 +296,9 @@ function mediaPickerModal(id, multiple, listUrl, uploadUrl, deleteUrl) {
         async loadMedia() {
             this.loading = true;
             try {
-                const response = await fetch(this.listUrl + '?path=' + encodeURIComponent(this.currentPath));
+                const response = await fetch(this.listUrl + '?path=' + encodeURIComponent(this.currentPath), {
+                    headers: { 'Accept': 'application/json' }
+                });
                 const data = await response.json();
                 this.folders = data.folders || [];
                 this.files = data.files || [];
@@ -385,6 +387,7 @@ function mediaPickerModal(id, multiple, listUrl, uploadUrl, deleteUrl) {
                     const response = await fetch(this.uploadUrl, {
                         method: 'POST',
                         body: formData,
+                        headers: { 'Accept': 'application/json' },
                         credentials: 'same-origin'
                     });
                     

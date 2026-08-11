@@ -11,7 +11,7 @@ return new class extends Migration
         if (Schema::hasTable('projects')) {
             return;
         }
-        
+
         Schema::create('projects', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('contract_id')->nullable();

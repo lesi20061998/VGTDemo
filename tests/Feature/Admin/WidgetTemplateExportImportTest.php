@@ -38,7 +38,7 @@ class WidgetTemplateExportImportTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertHeader('Content-Type', 'application/json');
-        
+
         $data = $response->json();
         $this->assertEquals('1.0', $data['version']);
         $this->assertEquals('Test Widget', $data['template']['name']);
@@ -67,7 +67,7 @@ class WidgetTemplateExportImportTest extends TestCase
             ->get(route('cms.widget-templates.export-all'));
 
         $response->assertStatus(200);
-        
+
         $data = $response->json();
         $this->assertEquals(2, $data['count']);
         $this->assertCount(2, $data['templates']);
@@ -168,7 +168,7 @@ class WidgetTemplateExportImportTest extends TestCase
             ]);
 
         $response->assertRedirect();
-        
+
         // Should still have only one template with this type
         $this->assertEquals(1, WidgetTemplate::where('type', 'existing_widget')->count());
     }

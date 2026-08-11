@@ -31,14 +31,15 @@ class ProjectSession
                 $refererPath = parse_url($referer, PHP_URL_PATH);
                 $refererSegments = explode('/', trim($refererPath, '/'));
                 $projectCode = $refererSegments[0] ?? null;
-                
+
                 // Check if referer projectCode is valid (not reserved)
-                if ($projectCode && !in_array($projectCode, $reservedPrefixes)) {
+                if ($projectCode && ! in_array($projectCode, $reservedPrefixes)) {
                     $cookieName = 'project_'.strtolower($projectCode).'_session';
                     Config::set('session.cookie', $cookieName);
-                
+
                 }
             }
+
             return $next($request);
         }
 

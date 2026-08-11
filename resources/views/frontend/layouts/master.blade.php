@@ -15,7 +15,29 @@
         :breadcrumbs="$breadcrumbs ?? []"
     />
     
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind CSS Framework CDN & Config -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio,container-queries"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#fdf2f2',
+                            100: '#fde8e8',
+                            500: '#98191f',
+                            600: '#801318',
+                            700: '#680e12',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Alpine.js Collapse Plugin & Core -->
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     @stack('styles')
 </head>
@@ -44,6 +66,9 @@
     
     <!-- Fake Notifications -->
     @include('frontend.partials.fake-notifications')
+    
+    <!-- Floating Cart Widget -->
+    @include('frontend.partials.floating-cart')
     
     @stack('scripts')
     

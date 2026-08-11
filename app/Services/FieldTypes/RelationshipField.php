@@ -21,17 +21,17 @@ class RelationshipField implements FieldTypeInterface
         $multiple = $config['multiple'] ?? true;
         $min = $config['min'] ?? 0;
         $max = $config['max'] ?? 0;
-        
+
         $selectedIds = \is_array($value) ? $value : ($value ? [$value] : []);
         $selectedJson = json_encode($selectedIds);
-        
+
         $multipleAttr = $multiple ? 'true' : 'false';
-        
+
         // Determine API base URL based on context
         $currentProject = session('current_project');
         $projectCode = \is_array($currentProject) ? ($currentProject['code'] ?? null) : ($currentProject->code ?? null);
         $apiBase = $projectCode ? "/{$projectCode}/api" : '/api';
-        
+
         // Labels based on post type
         $typeLabels = [
             'product' => ['singular' => 'sản phẩm', 'plural' => 'Sản phẩm'],
@@ -39,7 +39,7 @@ class RelationshipField implements FieldTypeInterface
             'page' => ['singular' => 'trang', 'plural' => 'Trang'],
         ];
         $typeLabel = $typeLabels[$postType] ?? ['singular' => $postType, 'plural' => ucfirst($postType)];
-        
+
         $requiredBadge = $this->renderRequiredBadge($required);
         $helpText = $this->renderHelp($help);
         $minMaxInfo = ($min > 0 || $max > 0) ? $this->renderMinMaxInfo($min, $max) : '';
@@ -311,14 +311,16 @@ class RelationshipField implements FieldTypeInterface
         } elseif ($max > 0) {
             $text = "Chọn tối đa {$max} mục";
         }
+
         return $text ? "<p class=\"text-xs text-gray-500 mb-2\">{$text}</p>" : '';
     }
 
     public function validate(mixed $value, array $rules = []): bool
     {
         if (empty($value)) {
-            return !\in_array('required', $rules);
+            return ! \in_array('required', $rules);
         }
+
         return \is_array($value) || is_numeric($value);
     }
 
@@ -327,6 +329,7 @@ class RelationshipField implements FieldTypeInterface
         if (\is_array($value)) {
             return array_map('intval', $value);
         }
-        return $value ? [(int)$value] : [];
+
+        return $value ? [(int) $value] : [];
     }
 }

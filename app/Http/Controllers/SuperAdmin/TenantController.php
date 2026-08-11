@@ -11,7 +11,7 @@ class TenantController extends Controller
     public function index()
     {
         $tenants = Tenant::withCount(['users', 'products', 'posts', 'orders'])->get();
-        
+
         return view('superadmin.tenants.index', compact('tenants'));
     }
 
@@ -28,7 +28,7 @@ class TenantController extends Controller
             'domain' => 'required|string|max:255|unique:tenants',
             'database_name' => 'required|string|max:255',
             'create_website' => 'boolean',
-            'export_path' => 'nullable|string'
+            'export_path' => 'nullable|string',
         ]);
 
         $tenant = Tenant::create($request->except(['create_website', 'export_path']));
@@ -36,21 +36,21 @@ class TenantController extends Controller
         if ($request->create_website) {
             \Artisan::call('website:create', [
                 'tenant_code' => $tenant->code,
-                '--export-path' => $request->export_path ?: "c:\\xampp\\htdocs\\{$tenant->code}"
+                '--export-path' => $request->export_path ?: "c:\\xampp\\htdocs\\{$tenant->code}",
             ]);
-            
+
             return redirect()->route('superadmin.tenants.index')
-                            ->with('success', 'Website đã được tạo và export thành công!');
+                ->with('success', 'Website đã được tạo và export thành công!');
         }
 
         return redirect()->route('superadmin.tenants.index')
-                        ->with('success', 'Tenant đã được tạo thành công!');
+            ->with('success', 'Tenant đã được tạo thành công!');
     }
 
     public function show(Tenant $tenant)
     {
         $tenant->loadCount(['users', 'products', 'posts', 'orders']);
-        
+
         return view('superadmin.tenants.show', compact('tenant'));
     }
 
@@ -63,8 +63,8 @@ class TenantController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'code' => 'required|string|max:50|unique:tenants,code,' . $tenant->id,
-            'domain' => 'required|string|max:255|unique:tenants,domain,' . $tenant->id,
+            'code' => 'required|string|max:50|unique:tenants,code,'.$tenant->id,
+            'domain' => 'required|string|max:255|unique:tenants,domain,'.$tenant->id,
             'database_name' => 'required|string|max:255',
             'status' => 'required|in:active,inactive,suspended',
         ]);
@@ -72,7 +72,7 @@ class TenantController extends Controller
         $tenant->update($request->all());
 
         return redirect()->route('superadmin.tenants.index')
-                        ->with('success', 'Tenant đã được cập nhật!');
+            ->with('success', 'Tenant đã được cập nhật!');
     }
 
     public function destroy(Tenant $tenant)
@@ -84,6 +84,6 @@ class TenantController extends Controller
         $tenant->delete();
 
         return redirect()->route('superadmin.tenants.index')
-                        ->with('success', 'Tenant đã được xóa!');
+            ->with('success', 'Tenant đã được xóa!');
     }
 }

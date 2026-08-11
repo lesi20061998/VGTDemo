@@ -16,6 +16,7 @@ class ProjectSetting extends Model
     public static function get($projectId, $key, $default = null)
     {
         $setting = self::where('project_id', $projectId)->where('key', $key)->first();
+
         return $setting ? $setting->value : $default;
     }
 
@@ -27,4 +28,3 @@ class ProjectSetting extends Model
         );
     }
 }
-

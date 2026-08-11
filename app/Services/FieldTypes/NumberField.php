@@ -22,23 +22,23 @@ class NumberField extends BaseFieldType
             $attributes['step'] = $config['step'];
         }
 
-        $fieldHtml = "<input" . $this->renderAttributes($attributes) . ">";
-        
+        $fieldHtml = '<input'.$this->renderAttributes($attributes).'>';
+
         return $this->renderFieldWrapper($config, $fieldHtml);
     }
 
     public function validate(mixed $value, array $rules): bool
     {
         $defaultRules = ['numeric'];
-        
+
         if (isset($this->config['min'])) {
-            $defaultRules[] = 'min:' . $this->config['min'];
+            $defaultRules[] = 'min:'.$this->config['min'];
         }
-        
+
         if (isset($this->config['max'])) {
-            $defaultRules[] = 'max:' . $this->config['max'];
+            $defaultRules[] = 'max:'.$this->config['max'];
         }
-        
+
         return parent::validate($value, [...$defaultRules, ...$rules]);
     }
 

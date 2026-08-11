@@ -4,13 +4,14 @@ namespace App\Services;
 
 use App\Models\Widget;
 use App\Widgets\WidgetRegistry;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class WidgetErrorHandlingService
 {
     protected array $errorLog = [];
+
     protected bool $debugMode;
 
     public function __construct()
@@ -25,7 +26,7 @@ class WidgetErrorHandlingService
     {
         $this->logError('rendering', $widgetType, $error, [
             'settings' => $settings,
-            'variant' => $variant
+            'variant' => $variant,
         ]);
 
         // Try fallback rendering
@@ -44,7 +45,7 @@ class WidgetErrorHandlingService
     public function handleValidationError(string $widgetType, array $settings, Throwable $error): array
     {
         $this->logError('validation', $widgetType, $error, [
-            'settings' => $settings
+            'settings' => $settings,
         ]);
 
         return [
@@ -52,7 +53,7 @@ class WidgetErrorHandlingService
             'error' => $this->debugMode ? $error->getMessage() : 'Widget validation failed',
             'error_code' => 'VALIDATION_ERROR',
             'widget_type' => $widgetType,
-            'recoverable' => $this->isRecoverableError($error)
+            'recoverable' => $this->isRecoverableError($error),
         ];
     }
 
@@ -62,7 +63,7 @@ class WidgetErrorHandlingService
     public function handleDiscoveryError(string $widgetPath, Throwable $error): void
     {
         $this->logError('discovery', $widgetPath, $error);
-        
+
         // Mark widget as problematic
         $this->markWidgetAsProblematic($widgetPath, $error);
     }
@@ -93,9 +94,10 @@ class WidgetErrorHandlingService
         }
 
         // Strategy 2: Try with minimal settings
-        if (!empty($settings)) {
+        if (! empty($settings)) {
             try {
                 $minimalSettings = $this->getMinimalSettings($widgetType);
+
                 return WidgetRegistry::render($widgetType, $minimalSettings, $variant);
             } catch (Throwable $e) {
                 $this->logError('fallback_minimal', $widgetType, $e);
@@ -156,8 +158,8 @@ class WidgetErrorHandlingService
      */
     protected function renderErrorPlaceholder(string $widgetType, Throwable $error): string
     {
-        if (!$this->debugMode) {
-            return '<!-- Widget Error: ' . htmlspecialchars($widgetType) . ' -->';
+        if (! $this->debugMode) {
+            return '<!-- Widget Error: '.htmlspecialchars($widgetType).' -->';
         }
 
         $errorId = uniqid('widget_error_');
@@ -205,8 +207,10 @@ class WidgetErrorHandlingService
     {
         try {
             // Create a minimal widget that just displays an error message
-            return new class($widgetClass, $error) {
+            return new class($widgetClass, $error)
+            {
                 private string $originalClass;
+
                 private Throwable $error;
 
                 public function __construct(string $originalClass, Throwable $error)
@@ -297,9 +301,9 @@ class WidgetErrorHandlingService
      */
     protected function storeCriticalError(string $type, string $context, Throwable $error): void
     {
-        $cacheKey = "widget_critical_errors";
+        $cacheKey = 'widget_critical_errors';
         $errors = Cache::get($cacheKey, []);
-        
+
         $errors[] = [
             'type' => $type,
             'context' => $context,
@@ -320,13 +324,13 @@ class WidgetErrorHandlingService
      */
     protected function markWidgetAsProblematic(string $widgetPath, Throwable $error): void
     {
-        $cacheKey = "problematic_widgets";
+        $cacheKey = 'problematic_widgets';
         $problematic = Cache::get($cacheKey, []);
-        
+
         $problematic[$widgetPath] = [
             'error' => $error->getMessage(),
             'timestamp' => now()->toISOString(),
-            'count' => ($problematic[$widgetPath]['count'] ?? 0) + 1
+            'count' => ($problematic[$widgetPath]['count'] ?? 0) + 1,
         ];
 
         Cache::put($cacheKey, $problematic, 3600); // 1 hour
@@ -337,7 +341,8 @@ class WidgetErrorHandlingService
      */
     protected function getCachedFallback(string $widgetType, array $settings, string $variant): ?string
     {
-        $cacheKey = "widget_fallback_{$widgetType}_{$variant}_" . md5(serialize($settings));
+        $cacheKey = "widget_fallback_{$widgetType}_{$variant}_".md5(serialize($settings));
+
         return Cache::get($cacheKey);
     }
 
@@ -346,7 +351,7 @@ class WidgetErrorHandlingService
      */
     public function storeFallbackContent(string $widgetType, array $settings, string $variant, string $content): void
     {
-        $cacheKey = "widget_fallback_{$widgetType}_{$variant}_" . md5(serialize($settings));
+        $cacheKey = "widget_fallback_{$widgetType}_{$variant}_".md5(serialize($settings));
         Cache::put($cacheKey, $content, 3600); // 1 hour
     }
 
@@ -385,7 +390,7 @@ class WidgetErrorHandlingService
     protected function getErrorTypeDistribution(array $errors): array
     {
         $distribution = [];
-        
+
         foreach ($errors as $error) {
             $type = $error['type'] ?? 'unknown';
             $distribution[$type] = ($distribution[$type] ?? 0) + 1;
@@ -412,7 +417,7 @@ class WidgetErrorHandlingService
         $results = [
             'healthy' => 0,
             'unhealthy' => 0,
-            'issues' => []
+            'issues' => [],
         ];
 
         $widgets = WidgetRegistry::all();
@@ -421,18 +426,18 @@ class WidgetErrorHandlingService
             try {
                 // Test widget instantiation
                 $widgetClass = $widget['class'];
-                $testWidget = new $widgetClass();
-                
+                $testWidget = new $widgetClass;
+
                 // Test basic rendering
                 $testWidget->getPreview();
-                
+
                 $results['healthy']++;
             } catch (Throwable $e) {
                 $results['unhealthy']++;
                 $results['issues'][] = [
                     'widget_type' => $widget['type'],
                     'error' => $e->getMessage(),
-                    'severity' => $this->isCriticalError($e) ? 'critical' : 'warning'
+                    'severity' => $this->isCriticalError($e) ? 'critical' : 'warning',
                 ];
             }
         }

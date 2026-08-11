@@ -1,15 +1,41 @@
 <?php
 
 use App\Http\Controllers\Admin\AiController;
+use App\Http\Controllers\Admin\AttributeController;
 use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\CodeWidgetController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\FontController;
+use App\Http\Controllers\Admin\MediaController;
+use App\Http\Controllers\Admin\MenuController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\PropertyCategoryController;
 use App\Http\Controllers\Admin\SettingsController;
+use App\Http\Controllers\Admin\ThemeOptionController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\WebsiteConfigController;
+use App\Http\Controllers\Admin\WidgetController;
+use App\Http\Controllers\Admin\WidgetTemplateController;
+use App\Http\Controllers\Api\RelationshipFieldController;
+use App\Http\Controllers\Api\TaxonomyFieldController;
 use App\Http\Controllers\Auth\ProjectLoginController;
+use App\Http\Controllers\Frontend\CartController;
 use App\Http\Controllers\Frontend\HomeController;
+use App\Http\Controllers\Frontend\PageController;
+use App\Http\Controllers\Frontend\PostController;
+use App\Http\Controllers\ThemeController;
+use App\Http\Middleware\CheckCmsRole;
+use App\Http\Middleware\ProjectSubdomainMiddleware;
+use App\Http\Middleware\SetLocale;
+use App\Http\Middleware\SetProjectDatabase;
+use App\Livewire\Admin\CodeWidgetList;
+use App\Livewire\Admin\WidgetEditor;
+use App\Livewire\Admin\WidgetTemplateBuilder;
+use App\Models\Project;
 use Illuminate\Support\Facades\Route;
+use Livewire\Livewire;
 
 // ============================================
 // FRONTEND ROUTES (Website khách hàng)
@@ -18,64 +44,65 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('{projectCode}')
     ->name('project.')
     ->middleware([
-        \App\Http\Middleware\ProjectSubdomainMiddleware::class,
-        \App\Http\Middleware\SetProjectDatabase::class,
+        ProjectSubdomainMiddleware::class,
+        SetProjectDatabase::class,
     ])
     ->group(function () {
         // Demo Layout Routes
-        Route::get('/demo-layout/{type}', function($projectCode, $type) {
-            if (!in_array($type, ['page', 'post', 'product'])) {
+        Route::get('/demo-layout/{type}', function ($projectCode, $type) {
+            if (! in_array($type, ['page', 'post', 'product'])) {
                 abort(404);
             }
+
             return view("frontend.demo.{$type}");
         })->name('project.demo-layout');
 
         // Default routes (no locale prefix - uses default language)
         Route::get('/', [HomeController::class, 'index'])->name('project.home');
-        Route::get('/san-pham', [\App\Http\Controllers\Frontend\ProductController::class, 'index'])->name('project.products.index');
-        Route::get('/san-pham/{slug}', [\App\Http\Controllers\Frontend\ProductController::class, 'show'])->name('project.products.show');
-        Route::get('/danh-muc/{slug}', [\App\Http\Controllers\Frontend\ProductController::class, 'category'])->name('project.products.category');
-        Route::get('/products', [\App\Http\Controllers\Frontend\ProductController::class, 'index'])->name('project.products.index.en');
-        Route::get('/product/{slug}', [\App\Http\Controllers\Frontend\ProductController::class, 'show'])->name('project.products.show.en');
-        Route::get('/category/{slug}', [\App\Http\Controllers\Frontend\ProductController::class, 'category'])->name('project.products.category.en');
-        Route::get('/blog', [\App\Http\Controllers\Frontend\PostController::class, 'index'])->name('project.posts.index');
-        Route::get('/blog/{slug}', [\App\Http\Controllers\Frontend\PostController::class, 'show'])->name('project.posts.show');
-        Route::get('/contact', [\App\Http\Controllers\Frontend\PageController::class, 'contact'])->name('project.contact');
-        Route::post('/contact', [\App\Http\Controllers\Frontend\PageController::class, 'contactSubmit'])->name('project.contact.submit');
-        
+        Route::get('/san-pham', [App\Http\Controllers\Frontend\ProductController::class, 'index'])->name('project.products.index');
+        Route::get('/san-pham/{slug}', [App\Http\Controllers\Frontend\ProductController::class, 'show'])->name('project.products.show');
+        Route::get('/danh-muc/{slug}', [App\Http\Controllers\Frontend\ProductController::class, 'category'])->name('project.products.category');
+        Route::get('/products', [App\Http\Controllers\Frontend\ProductController::class, 'index'])->name('project.products.index.en');
+        Route::get('/product/{slug}', [App\Http\Controllers\Frontend\ProductController::class, 'show'])->name('project.products.show.en');
+        Route::get('/category/{slug}', [App\Http\Controllers\Frontend\ProductController::class, 'category'])->name('project.products.category.en');
+        Route::get('/blog', [PostController::class, 'index'])->name('project.posts.index');
+        Route::get('/blog/{slug}', [PostController::class, 'show'])->name('project.posts.show');
+        Route::get('/contact', [PageController::class, 'contact'])->name('project.contact');
+        Route::post('/contact', [PageController::class, 'contactSubmit'])->name('project.contact.submit');
+
         // Dynamic page route - exclude admin, login, etc.
-        Route::get('/{slug}', [\App\Http\Controllers\Frontend\PageController::class, 'show'])
+        Route::get('/{slug}', [PageController::class, 'show'])
             ->where('slug', '^(?!admin|login|logout|cart|checkout|api).*$')
             ->name('project.pages.show');
 
-        Route::get('/cart', [\App\Http\Controllers\Frontend\CartController::class, 'index'])->name('project.cart');
-        Route::post('/cart/add', [\App\Http\Controllers\Frontend\CartController::class, 'add'])->name('project.cart.add');
-        Route::post('/cart/update/{slug}', [\App\Http\Controllers\Frontend\CartController::class, 'update'])->name('project.cart.update');
-        Route::delete('/cart/remove/{slug}', [\App\Http\Controllers\Frontend\CartController::class, 'remove'])->name('project.cart.remove');
-        Route::get('/checkout', [\App\Http\Controllers\Frontend\CartController::class, 'checkout'])->name('project.checkout');
-        Route::post('/checkout/process', [\App\Http\Controllers\Frontend\CartController::class, 'processCheckout'])->name('project.checkout.process');
+        Route::get('/cart', [CartController::class, 'index'])->name('project.cart');
+        Route::post('/cart/add', [CartController::class, 'add'])->name('project.cart.add');
+        Route::post('/cart/update/{slug}', [CartController::class, 'update'])->name('project.cart.update');
+        Route::delete('/cart/remove/{slug}', [CartController::class, 'remove'])->name('project.cart.remove');
+        Route::get('/checkout', [CartController::class, 'checkout'])->name('project.checkout');
+        Route::post('/checkout/process', [CartController::class, 'processCheckout'])->name('project.checkout.process');
         Route::get('/order/success', fn () => view('frontend.cart.success'))->name('project.order.success');
 
         // Localized routes with language prefix
         Route::prefix('{locale}')
             ->where(['locale' => '[a-z]{2}'])
-            ->middleware([\App\Http\Middleware\SetLocale::class])
+            ->middleware([SetLocale::class])
             ->group(function () {
                 Route::get('/', [HomeController::class, 'index'])->name('project.home.localized');
-                Route::get('/products', [\App\Http\Controllers\Frontend\ProductController::class, 'index'])->name('project.products.index.localized');
-                Route::get('/product/{slug}', [\App\Http\Controllers\Frontend\ProductController::class, 'show'])->name('project.products.show.localized');
-                Route::get('/blog', [\App\Http\Controllers\Frontend\PostController::class, 'index'])->name('project.posts.index.localized');
-                Route::get('/blog/{slug}', [\App\Http\Controllers\Frontend\PostController::class, 'show'])->name('project.posts.show.localized');
-                Route::get('/contact', [\App\Http\Controllers\Frontend\PageController::class, 'contact'])->name('project.contact.localized');
-                Route::post('/contact', [\App\Http\Controllers\Frontend\PageController::class, 'contactSubmit'])->name('project.contact.submit.localized');
-                Route::get('/{slug}', [\App\Http\Controllers\Frontend\PageController::class, 'show'])->name('project.pages.show.localized');
+                Route::get('/products', [App\Http\Controllers\Frontend\ProductController::class, 'index'])->name('project.products.index.localized');
+                Route::get('/product/{slug}', [App\Http\Controllers\Frontend\ProductController::class, 'show'])->name('project.products.show.localized');
+                Route::get('/blog', [PostController::class, 'index'])->name('project.posts.index.localized');
+                Route::get('/blog/{slug}', [PostController::class, 'show'])->name('project.posts.show.localized');
+                Route::get('/contact', [PageController::class, 'contact'])->name('project.contact.localized');
+                Route::post('/contact', [PageController::class, 'contactSubmit'])->name('project.contact.submit.localized');
+                Route::get('/{slug}', [PageController::class, 'show'])->name('project.pages.show.localized');
             });
     });
 
 // Dynamic Pages (must be last to avoid conflicts)
-Route::get('/{projectCode}/{slug}', [\App\Http\Controllers\Frontend\PageController::class, 'show'])
+Route::get('/{projectCode}/{slug}', [PageController::class, 'show'])
     ->where('slug', '^(?!admin|login|logout|cart|checkout|products|product|blog|contact).*$')
-    ->middleware([\App\Http\Middleware\ProjectSubdomainMiddleware::class])
+    ->middleware([ProjectSubdomainMiddleware::class])
     ->name('project.pages.show');
 
 // ============================================
@@ -84,8 +111,8 @@ Route::get('/{projectCode}/{slug}', [\App\Http\Controllers\Frontend\PageControll
 // ============================================
 Route::prefix('{projectCode}')
     ->middleware([
-        \App\Http\Middleware\ProjectSubdomainMiddleware::class,
-        \App\Http\Middleware\SetProjectDatabase::class,
+        ProjectSubdomainMiddleware::class,
+        SetProjectDatabase::class,
     ])
     ->group(function () {
         Route::get('login', [ProjectLoginController::class, 'showLoginForm'])->name('project.login');
@@ -94,8 +121,8 @@ Route::prefix('{projectCode}')
     });
 
 // Dynamic CSS & JS per project
-Route::get('/{projectCode}/css/custom.css', [\App\Http\Controllers\ThemeController::class, 'projectCustomCss'])->name('project.css.custom');
-Route::get('/{projectCode}/js/custom.js', [\App\Http\Controllers\ThemeController::class, 'projectCustomJs'])->name('project.js.custom');
+Route::get('/{projectCode}/css/custom.css', [ThemeController::class, 'projectCustomCss'])->name('project.css.custom');
+Route::get('/{projectCode}/js/custom.js', [ThemeController::class, 'projectCustomJs'])->name('project.js.custom');
 
 // ============================================
 // CMS ADMIN ROUTES (Quản lý nội dung)
@@ -105,9 +132,9 @@ Route::get('/{projectCode}/js/custom.js', [\App\Http\Controllers\ThemeController
 Route::prefix('{projectCode}/admin')
     ->name('project.admin.')
     ->middleware([
-        \App\Http\Middleware\ProjectSubdomainMiddleware::class,
-        \App\Http\Middleware\SetProjectDatabase::class,
-        \App\Http\Middleware\CheckCmsRole::class,
+        ProjectSubdomainMiddleware::class,
+        SetProjectDatabase::class,
+        CheckCmsRole::class,
     ])
     ->group(function () {
 
@@ -126,19 +153,19 @@ Route::prefix('{projectCode}/admin')
         Route::get('categories/{category}/subcategories', [CategoryController::class, 'getSubcategories'])->name('categories.subcategories');
 
         // Posts Management (Bài viết)
-        Route::resource('posts', \App\Http\Controllers\Admin\PostController::class);
-        Route::get('posts/create', [\App\Http\Controllers\Admin\PostController::class, 'create'])->name('posts.create');
+        Route::resource('posts', App\Http\Controllers\Admin\PostController::class);
+        Route::get('posts/create', [App\Http\Controllers\Admin\PostController::class, 'create'])->name('posts.create');
 
         // Property Categories Management
-        Route::resource('property-categories', \App\Http\Controllers\Admin\PropertyCategoryController::class);
+        Route::resource('property-categories', PropertyCategoryController::class);
 
         // Pages Management (Trang tĩnh)
-        Route::get('pages', [\App\Http\Controllers\Admin\PostController::class, 'index'])->name('pages.index')->defaults('post_type', 'page');
-        Route::get('pages/create', [\App\Http\Controllers\Admin\PostController::class, 'create'])->name('pages.create')->defaults('type', 'page');
-        Route::get('pages/{post}', [\App\Http\Controllers\Admin\PostController::class, 'show'])->name('pages.show');
-        Route::get('pages/{post}/edit', [\App\Http\Controllers\Admin\PostController::class, 'edit'])->name('pages.edit');
-        Route::put('pages/{post}', [\App\Http\Controllers\Admin\PostController::class, 'update'])->name('pages.update');
-        Route::delete('pages/{post}', [\App\Http\Controllers\Admin\PostController::class, 'destroy'])->name('pages.destroy');
+        Route::get('pages', [App\Http\Controllers\Admin\PostController::class, 'index'])->name('pages.index')->defaults('post_type', 'page');
+        Route::get('pages/create', [App\Http\Controllers\Admin\PostController::class, 'create'])->name('pages.create')->defaults('type', 'page');
+        Route::get('pages/{post}', [App\Http\Controllers\Admin\PostController::class, 'show'])->name('pages.show');
+        Route::get('pages/{post}/edit', [App\Http\Controllers\Admin\PostController::class, 'edit'])->name('pages.edit');
+        Route::put('pages/{post}', [App\Http\Controllers\Admin\PostController::class, 'update'])->name('pages.update');
+        Route::delete('pages/{post}', [App\Http\Controllers\Admin\PostController::class, 'destroy'])->name('pages.destroy');
 
         // Feature Pack Dynamic Post Types
         $featurePostTypes = [
@@ -153,32 +180,32 @@ Route::prefix('{projectCode}/admin')
         ];
 
         foreach ($featurePostTypes as $uri => $type) {
-            Route::get($uri, [\App\Http\Controllers\Admin\PostController::class, 'index'])->name("{$uri}.index")->defaults('post_type', $type);
-            Route::get("{$uri}/create", [\App\Http\Controllers\Admin\PostController::class, 'create'])->name("{$uri}.create")->defaults('type', $type);
-            Route::get("{$uri}/{post}", [\App\Http\Controllers\Admin\PostController::class, 'show'])->name("{$uri}.show");
-            Route::get("{$uri}/{post}/edit", [\App\Http\Controllers\Admin\PostController::class, 'edit'])->name("{$uri}.edit");
-            Route::put("{$uri}/{post}", [\App\Http\Controllers\Admin\PostController::class, 'update'])->name("{$uri}.update");
-            Route::delete("{$uri}/{post}", [\App\Http\Controllers\Admin\PostController::class, 'destroy'])->name("{$uri}.destroy");
+            Route::get($uri, [App\Http\Controllers\Admin\PostController::class, 'index'])->name("{$uri}.index")->defaults('post_type', $type);
+            Route::get("{$uri}/create", [App\Http\Controllers\Admin\PostController::class, 'create'])->name("{$uri}.create")->defaults('type', $type);
+            Route::get("{$uri}/{post}", [App\Http\Controllers\Admin\PostController::class, 'show'])->name("{$uri}.show");
+            Route::get("{$uri}/{post}/edit", [App\Http\Controllers\Admin\PostController::class, 'edit'])->name("{$uri}.edit");
+            Route::put("{$uri}/{post}", [App\Http\Controllers\Admin\PostController::class, 'update'])->name("{$uri}.update");
+            Route::delete("{$uri}/{post}", [App\Http\Controllers\Admin\PostController::class, 'destroy'])->name("{$uri}.destroy");
         }
 
         // Attributes Management
-        Route::resource('attributes', \App\Http\Controllers\Admin\AttributeController::class);
+        Route::resource('attributes', AttributeController::class);
 
         // Attribute Groups Management
-        Route::get('attributes/groups', [\App\Http\Controllers\Admin\AttributeController::class, 'indexGroups'])->name('attributes.groups.index');
-        Route::get('attributes/groups/create', [\App\Http\Controllers\Admin\AttributeController::class, 'createGroup'])->name('attributes.groups.create');
-        Route::post('attributes/groups', [\App\Http\Controllers\Admin\AttributeController::class, 'storeGroup'])->name('attributes.groups.store');
-        Route::get('attributes/groups/{group}/edit', [\App\Http\Controllers\Admin\AttributeController::class, 'editGroup'])->name('attributes.groups.edit');
-        Route::put('attributes/groups/{group}', [\App\Http\Controllers\Admin\AttributeController::class, 'updateGroup'])->name('attributes.groups.update');
-        Route::delete('attributes/groups/{group}', [\App\Http\Controllers\Admin\AttributeController::class, 'destroyGroup'])->name('attributes.groups.destroy');
+        Route::get('attributes/groups', [AttributeController::class, 'indexGroups'])->name('attributes.groups.index');
+        Route::get('attributes/groups/create', [AttributeController::class, 'createGroup'])->name('attributes.groups.create');
+        Route::post('attributes/groups', [AttributeController::class, 'storeGroup'])->name('attributes.groups.store');
+        Route::get('attributes/groups/{group}/edit', [AttributeController::class, 'editGroup'])->name('attributes.groups.edit');
+        Route::put('attributes/groups/{group}', [AttributeController::class, 'updateGroup'])->name('attributes.groups.update');
+        Route::delete('attributes/groups/{group}', [AttributeController::class, 'destroyGroup'])->name('attributes.groups.destroy');
 
         // Attribute Values Management
-        Route::get('attributes/{attribute}/values', [\App\Http\Controllers\Admin\AttributeController::class, 'indexValues'])->name('attributes.values.index');
-        Route::get('attributes/{attribute}/values/create', [\App\Http\Controllers\Admin\AttributeController::class, 'createValue'])->name('attributes.values.create');
-        Route::post('attributes/{attribute}/values', [\App\Http\Controllers\Admin\AttributeController::class, 'storeValue'])->name('attributes.values.store');
-        Route::get('attributes/{attribute}/values/{value}/edit', [\App\Http\Controllers\Admin\AttributeController::class, 'editValue'])->name('attributes.values.edit');
-        Route::put('attributes/{attribute}/values/{value}', [\App\Http\Controllers\Admin\AttributeController::class, 'updateValue'])->name('attributes.values.update');
-        Route::delete('attributes/{attribute}/values/{value}', [\App\Http\Controllers\Admin\AttributeController::class, 'destroyValue'])->name('attributes.values.destroy');
+        Route::get('attributes/{attribute}/values', [AttributeController::class, 'indexValues'])->name('attributes.values.index');
+        Route::get('attributes/{attribute}/values/create', [AttributeController::class, 'createValue'])->name('attributes.values.create');
+        Route::post('attributes/{attribute}/values', [AttributeController::class, 'storeValue'])->name('attributes.values.store');
+        Route::get('attributes/{attribute}/values/{value}/edit', [AttributeController::class, 'editValue'])->name('attributes.values.edit');
+        Route::put('attributes/{attribute}/values/{value}', [AttributeController::class, 'updateValue'])->name('attributes.values.update');
+        Route::delete('attributes/{attribute}/values/{value}', [AttributeController::class, 'destroyValue'])->name('attributes.values.destroy');
 
         // Orders Management
         Route::get('orders/reports', [OrderController::class, 'reports'])->name('orders.reports');
@@ -186,15 +213,15 @@ Route::prefix('{projectCode}/admin')
         Route::post('orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.update-status');
 
         // User Management
-        Route::resource('users', \App\Http\Controllers\Admin\UserController::class);
+        Route::resource('users', UserController::class);
 
         // Media Management
-        Route::get('media/list', [\App\Http\Controllers\Admin\MediaController::class, 'list'])->name('media.list');
-        Route::post('media/upload', [\App\Http\Controllers\Admin\MediaController::class, 'upload'])->name('media.upload');
-        Route::post('media/folder', [\App\Http\Controllers\Admin\MediaController::class, 'createFolder'])->name('media.folder.create');
-        Route::delete('media/folder', [\App\Http\Controllers\Admin\MediaController::class, 'deleteFolder'])->name('media.folder.delete');
-        Route::post('media/move', [\App\Http\Controllers\Admin\MediaController::class, 'move'])->name('media.move');
-        Route::delete('media/{id}', [\App\Http\Controllers\Admin\MediaController::class, 'destroy'])->name('media.destroy')->where('id', '.*');
+        Route::get('media/list', [MediaController::class, 'list'])->name('media.list');
+        Route::post('media/upload', [MediaController::class, 'upload'])->name('media.upload');
+        Route::post('media/folder', [MediaController::class, 'createFolder'])->name('media.folder.create');
+        Route::delete('media/folder', [MediaController::class, 'deleteFolder'])->name('media.folder.delete');
+        Route::post('media/move', [MediaController::class, 'move'])->name('media.move');
+        Route::delete('media/{id}', [MediaController::class, 'destroy'])->name('media.destroy')->where('id', '.*');
 
         // Settings
         Route::get('settings', [SettingsController::class, 'projectSettings'])->name('settings.index');
@@ -227,67 +254,68 @@ Route::prefix('{projectCode}/admin')
         Route::get('widget-templates/debug', function () {
             return response()->json([
                 'message' => 'Widget Template Builder Debug',
-                'livewire_installed' => class_exists(\Livewire\Livewire::class),
-                'component_exists' => class_exists(\App\Livewire\Admin\WidgetTemplateBuilder::class),
+                'livewire_installed' => class_exists(Livewire::class),
+                'component_exists' => class_exists(WidgetTemplateBuilder::class),
                 'view_exists' => view()->exists('livewire.admin.widget-template-builder'),
                 'layout_exists' => view()->exists('cms.layouts.app'),
                 'current_project' => session('current_project'),
             ]);
         })->name('widget-templates.debug');
-        
+
         // Simple test without cms layout
         Route::get('widget-templates/test', function () {
             return view('livewire.admin.widget-template-test');
         })->name('widget-templates.test');
-        
-        Route::get('widget-templates', [\App\Http\Controllers\Admin\WidgetTemplateController::class, 'index'])->name('widget-templates.index');
-        Route::get('widget-templates/export-all', [\App\Http\Controllers\Admin\WidgetTemplateController::class, 'exportAll'])->name('widget-templates.export-all');
-        Route::get('widget-templates/{id}/ export', [\App\Http\Controllers\Admin\WidgetTemplateController::class, 'export'])->name('widget-templates.export');
-        Route::post('widget-templates/import', [\App\Http\Controllers\Admin\WidgetTemplateController::class, 'import'])->name('widget-templates.import');
+
+        Route::get('widget-templates', [WidgetTemplateController::class, 'index'])->name('widget-templates.index');
+        Route::get('widget-templates/export-all', [WidgetTemplateController::class, 'exportAll'])->name('widget-templates.export-all');
+        Route::get('widget-templates/{id}/ export', [WidgetTemplateController::class, 'export'])->name('widget-templates.export');
+        Route::post('widget-templates/import', [WidgetTemplateController::class, 'import'])->name('widget-templates.import');
         Route::get('widget-templates/create', function ($projectCode) {
-            $currentProject = \App\Models\Project::where('code', $projectCode)->first();
+            $currentProject = Project::where('code', $projectCode)->first();
+
             return view('cms.widget-templates.create', compact('currentProject'));
         })->name('widget-templates.create');
-        
+
         Route::get('widget-templates/{id}/edit', function ($projectCode, $id) {
             return view('cms.widget-templates.edit', ['id' => $id]);
         })->name('widget-templates.edit');
-        Route::delete('widget-templates/{id}', [\App\Http\Controllers\Admin\WidgetTemplateController::class, 'destroy'])->name('widget-templates.destroy');
-        Route::post('widget-templates/{type}/preview', [\App\Http\Controllers\Admin\WidgetTemplateController::class, 'preview'])->name('widget-templates.preview');
+        Route::delete('widget-templates/{id}', [WidgetTemplateController::class, 'destroy'])->name('widget-templates.destroy');
+        Route::post('widget-templates/{type}/preview', [WidgetTemplateController::class, 'preview'])->name('widget-templates.preview');
 
         // Code-based Widget Editor - use WidgetTemplateBuilder with codeType parameter
-        Route::get('code-widgets', \App\Livewire\Admin\CodeWidgetList::class)->name('code-widgets.index');
-        Route::get('code-widgets/export-all', [\App\Http\Controllers\Admin\CodeWidgetController::class, 'exportAll'])->name('code-widgets.export-all');
-        Route::get('code-widgets/{codeType}/edit', \App\Livewire\Admin\WidgetTemplateBuilder::class)->name('code-widgets.edit');
-        Route::get('code-widgets/{type}/export', [\App\Http\Controllers\Admin\CodeWidgetController::class, 'export'])->name('code-widgets.export');
+        Route::get('code-widgets', CodeWidgetList::class)->name('code-widgets.index');
+        Route::get('code-widgets/export-all', [CodeWidgetController::class, 'exportAll'])->name('code-widgets.export-all');
+        Route::get('code-widgets/{codeType}/edit', WidgetTemplateBuilder::class)->name('code-widgets.edit');
+        Route::get('code-widgets/{type}/export', [CodeWidgetController::class, 'export'])->name('code-widgets.export');
 
         // Widget Management
-        Route::get('widgets', [\App\Http\Controllers\Admin\WidgetController::class, 'index'])->name('widgets.index');
-        Route::get('widgets/create', \App\Livewire\Admin\WidgetEditor::class)->name('widgets.create');
-        Route::post('widgets', [\App\Http\Controllers\Admin\WidgetController::class, 'store'])->name('widgets.store');
-        Route::get('widgets/{id}/edit', \App\Livewire\Admin\WidgetEditor::class)->name('widgets.edit');
-        Route::put('widgets/{widget}', [\App\Http\Controllers\Admin\WidgetController::class, 'update'])->name('widgets.update');
-        Route::delete('widgets/{widget}', [\App\Http\Controllers\Admin\WidgetController::class, 'destroy'])->name('widgets.destroy');
-        Route::post('widgets/save-all', [\App\Http\Controllers\Admin\WidgetController::class, 'saveWidgets'])->name('widgets.save-all');
-        Route::post('widgets/preview', [\App\Http\Controllers\Admin\WidgetController::class, 'preview'])->name('widgets.preview');
-        Route::post('widgets/toggle', [\App\Http\Controllers\Admin\WidgetController::class, 'toggleWidget'])->name('widgets.toggle');
-        Route::post('widgets/clear-cache', [\App\Http\Controllers\Admin\WidgetController::class, 'clearCache'])->name('widgets.clear-cache');
-        Route::match(['get', 'post'], 'widgets/fields', [\App\Http\Controllers\Admin\WidgetController::class, 'getFields'])->name('widgets.fields');
+        Route::get('widgets', [WidgetController::class, 'index'])->name('widgets.index');
+        Route::get('widgets/create', WidgetEditor::class)->name('widgets.create');
+        Route::post('widgets', [WidgetController::class, 'store'])->name('widgets.store');
+        Route::get('widgets/{id}/edit', WidgetEditor::class)->name('widgets.edit');
+        Route::put('widgets/{widget}', [WidgetController::class, 'update'])->name('widgets.update');
+        Route::delete('widgets/{widget}', [WidgetController::class, 'destroy'])->name('widgets.destroy');
+        Route::post('widgets/save-all', [WidgetController::class, 'saveWidgets'])->name('widgets.save-all');
+        Route::post('widgets/preview', [WidgetController::class, 'preview'])->name('widgets.preview');
+        Route::post('widgets/toggle', [WidgetController::class, 'toggleWidget'])->name('widgets.toggle');
+        Route::post('widgets/clear-cache', [WidgetController::class, 'clearCache'])->name('widgets.clear-cache');
+        Route::match(['get', 'post'], 'widgets/fields', [WidgetController::class, 'getFields'])->name('widgets.fields');
 
-        Route::resource('menus', \App\Http\Controllers\Admin\MenuController::class);
-        Route::post('menus/{menu}/items', [\App\Http\Controllers\Admin\MenuController::class, 'storeItem'])->name('menus.items.store');
-        Route::put('menus/items/{item}', [\App\Http\Controllers\Admin\MenuController::class, 'updateItem'])->name('menus.items.update');
-        Route::delete('menus/items/{item}', [\App\Http\Controllers\Admin\MenuController::class, 'destroyItem'])->name('menus.items.destroy');
-        Route::post('menus/{menu}/update-tree', [\App\Http\Controllers\Admin\MenuController::class, 'updateTree'])->name('menus.update-tree');
+        Route::resource('menus', MenuController::class);
+        Route::post('menus/{menu}/items', [MenuController::class, 'storeItem'])->name('menus.items.store');
+        Route::put('menus/items/{item}', [MenuController::class, 'updateItem'])->name('menus.items.update');
+        Route::delete('menus/items/{item}', [MenuController::class, 'destroyItem'])->name('menus.items.destroy');
+        Route::post('menus/{menu}/update-tree', [MenuController::class, 'updateTree'])->name('menus.update-tree');
         // Website Configuration
-        Route::get('website-config', [\App\Http\Controllers\Admin\WebsiteConfigController::class, 'index'])->name('website-config.index');
-        Route::post('website-config/save', [\App\Http\Controllers\Admin\WebsiteConfigController::class, 'save'])->name('website-config.save');
-        Route::get('website-config/preview', [\App\Http\Controllers\Admin\WebsiteConfigController::class, 'preview'])->name('website-config.preview');
-        
+        Route::get('website-config', [WebsiteConfigController::class, 'index'])->name('website-config.index');
+        Route::post('website-config/save', [WebsiteConfigController::class, 'save'])->name('website-config.save');
+        Route::get('website-config/preview', [WebsiteConfigController::class, 'preview'])->name('website-config.preview');
+
         // Theme Options
-        Route::get('theme-options', [\App\Http\Controllers\Admin\ThemeOptionController::class, 'index'])->name('theme-options.index');
-        Route::put('theme-options', [\App\Http\Controllers\Admin\ThemeOptionController::class, 'update'])->name('theme-options.update');
-        Route::get('theme/dynamic-css', [\App\Http\Controllers\ThemeController::class, 'dynamicCss'])->name('theme.css');
+        Route::get('theme-options', [ThemeOptionController::class, 'index'])->name('theme-options.index');
+        Route::put('theme-options', [ThemeOptionController::class, 'update'])->name('theme-options.update');
+        Route::get('theme/dynamic-css', [ThemeController::class, 'dynamicCss'])->name('theme.css');
         Route::post('widgets/clear-cache', function () {
             clear_widget_cache();
 
@@ -319,10 +347,10 @@ Route::prefix('{projectCode}/admin')
         });
 
         // Fonts Management
-        Route::post('fonts/store', [\App\Http\Controllers\Admin\FontController::class, 'store'])->name('fonts.store');
-        Route::post('fonts/toggle', [\App\Http\Controllers\Admin\FontController::class, 'toggle'])->name('fonts.toggle');
-        Route::post('fonts/default', [\App\Http\Controllers\Admin\FontController::class, 'setDefault'])->name('fonts.default');
-        Route::delete('fonts/destroy', [\App\Http\Controllers\Admin\FontController::class, 'destroy'])->name('fonts.destroy');
+        Route::post('fonts/store', [FontController::class, 'store'])->name('fonts.store');
+        Route::post('fonts/toggle', [FontController::class, 'toggle'])->name('fonts.toggle');
+        Route::post('fonts/default', [FontController::class, 'setDefault'])->name('fonts.default');
+        Route::delete('fonts/destroy', [FontController::class, 'destroy'])->name('fonts.destroy');
 
         // Reviews Fake Data
         Route::get('reviews/fake', fn () => view('cms.reviews.fake'))->name('reviews.fake');
@@ -336,14 +364,14 @@ Route::prefix('{projectCode}/admin')
 Route::prefix('{projectCode}/api')
     ->name('project.api.')
     ->middleware([
-        \App\Http\Middleware\ProjectSubdomainMiddleware::class,
-        \App\Http\Middleware\SetProjectDatabase::class,
+        ProjectSubdomainMiddleware::class,
+        SetProjectDatabase::class,
     ])
     ->group(function () {
         // Relationship Field API
-        Route::get('relationship-field/search', [\App\Http\Controllers\Api\RelationshipFieldController::class, 'search'])->name('relationship.search');
-        Route::get('relationship-field/items', [\App\Http\Controllers\Api\RelationshipFieldController::class, 'getItems'])->name('relationship.items');
-        
+        Route::get('relationship-field/search', [RelationshipFieldController::class, 'search'])->name('relationship.search');
+        Route::get('relationship-field/items', [RelationshipFieldController::class, 'getItems'])->name('relationship.items');
+
         // Taxonomy Field API
-        Route::get('taxonomy-field/list', [\App\Http\Controllers\Api\TaxonomyFieldController::class, 'list'])->name('taxonomy.list');
+        Route::get('taxonomy-field/list', [TaxonomyFieldController::class, 'list'])->name('taxonomy.list');
     });

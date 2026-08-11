@@ -2,12 +2,12 @@
 
 namespace Database\Factories;
 
-use App\Models\ProductReview;
 use App\Models\Product;
+use App\Models\ProductReview;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ProductReview>
+ * @extends Factory<ProductReview>
  */
 class ProductReviewFactory extends Factory
 {

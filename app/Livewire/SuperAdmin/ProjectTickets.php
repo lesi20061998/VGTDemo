@@ -97,7 +97,7 @@ class ProjectTickets extends Component
     public function render()
     {
         return view('livewire.superadmin.project-tickets', [
-            'tickets' => $this->tickets
+            'tickets' => $this->tickets,
         ]);
     }
 }

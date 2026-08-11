@@ -22,4 +22,3 @@ class OrderStatusHistoryResource extends JsonResource
         ];
     }
 }
-

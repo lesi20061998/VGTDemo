@@ -2,23 +2,91 @@
 
 namespace App\Widgets;
 
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\File;
+use App\Services\FieldTypeService;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Validator;
 
 abstract class BaseWidget
 {
     protected array $settings;
+
     protected array $metadata;
+
     protected string $variant = 'default';
+
     protected ?string $metadataPath = null;
 
     public function __construct(array $settings = [], string $variant = 'default')
     {
         $this->settings = $settings;
-        $this->variant = $variant;
         $this->metadata = $this->loadMetadata();
+        $this->setVariant($variant);
         $this->validateSettings();
+    }
+
+    /**
+     * Parse image URL safely from string or array (e.g. from media picker)
+     */
+    protected function parseImageUrl(mixed $value): string
+    {
+        if (empty($value)) {
+            return '';
+        }
+
+        if (\is_string($value)) {
+            return trim($value);
+        }
+
+        if (\is_array($value)) {
+            return $value['url'] ?? $value[0] ?? '';
+        }
+
+        return '';
+    }
+
+    /**
+     * Build background CSS style & extra classes dynamically.
+     * Returns an array with ['style' => '...', 'classes' => [...]]
+     */
+    protected function getWrapperBackgroundInfo(): array
+    {
+        $bgType = $this->get('bg_type', 'color');
+        $rawImage = $this->get('background_image', '');
+        $bgColor = trim((string) $this->get('bg_color', ''));
+
+        $imageUrl = $this->parseImageUrl($rawImage);
+
+        $styleParts = [];
+        $extraClasses = [];
+
+        // Priority 1: Background Image if provided
+        if (! empty($imageUrl)) {
+            $styleParts[] = "background-image: url('{$imageUrl}')";
+            $styleParts[] = 'background-size: cover';
+            $styleParts[] = 'background-position: center';
+            $styleParts[] = 'background-repeat: no-repeat';
+
+            if (! empty($bgColor) && (str_starts_with($bgColor, '#') || str_starts_with($bgColor, 'rgb'))) {
+                $styleParts[] = "background-color: {$bgColor}";
+            }
+        } elseif (! empty($bgColor)) {
+            // Priority 2: Color if provided
+            if (str_starts_with($bgColor, '#') || str_starts_with($bgColor, 'rgb')) {
+                $styleParts[] = "background-color: {$bgColor}";
+            } elseif (str_contains($bgColor, 'gradient(')) {
+                $styleParts[] = "background: {$bgColor}";
+            } elseif (str_starts_with($bgColor, 'bg-')) {
+                $extraClasses[] = $bgColor;
+            } else {
+                $styleParts[] = "background-color: {$bgColor}";
+            }
+        }
+
+        return [
+            'style' => ! empty($styleParts) ? implode('; ', $styleParts).';' : '',
+            'classes' => $extraClasses,
+        ];
     }
 
     abstract public function render(): string;
@@ -30,7 +98,8 @@ abstract class BaseWidget
     {
         $reflection = new \ReflectionClass(static::class);
         $directory = dirname($reflection->getFileName());
-        return $directory . '/widget.json';
+
+        return $directory.'/widget.json';
     }
 
     /**
@@ -39,28 +108,28 @@ abstract class BaseWidget
     protected function loadMetadata(): array
     {
         $metadataPath = static::getMetadataPath();
-        
+
         if (File::exists($metadataPath)) {
-            $cacheKey = 'widget_metadata_' . md5($metadataPath . File::lastModified($metadataPath));
-            
+            $cacheKey = 'widget_metadata_'.md5($metadataPath.File::lastModified($metadataPath));
+
             return Cache::remember($cacheKey, 3600, function () use ($metadataPath) {
                 $content = File::get($metadataPath);
                 $metadata = json_decode($content, true);
-                
+
                 if (json_last_error() !== JSON_ERROR_NONE) {
-                    throw new \InvalidArgumentException('Invalid JSON in widget metadata: ' . json_last_error_msg());
+                    throw new \InvalidArgumentException('Invalid JSON in widget metadata: '.json_last_error_msg());
                 }
-                
+
                 return $this->validateMetadataSchema($metadata);
             });
         }
-        
+
         // Fallback to legacy getConfig method
         if (method_exists(static::class, 'getConfig')) {
             return static::getConfig();
         }
-        
-        throw new \RuntimeException('Widget metadata not found: ' . $metadataPath);
+
+        throw new \RuntimeException('Widget metadata not found: '.$metadataPath);
     }
 
     /**
@@ -81,14 +150,16 @@ abstract class BaseWidget
             'fields' => 'required|array',
             'fields.*.name' => 'required|string',
             'fields.*.label' => 'required|string',
-            'fields.*.type' => 'required|string|in:text,textarea,image,gallery,select,checkbox,repeatable,nested,url,number,email,date',
+            'fields.*.type' => 'required|string|in:text,textarea,wysiwyg,image,gallery,video,select,checkbox,repeatable,nested,url,number,email,date,color,range,relationship,post_object,taxonomy',
             'fields.*.required' => 'boolean',
             'fields.*.default' => 'nullable',
             'fields.*.validation' => 'string',
             'fields.*.help' => 'string',
+            'fields.*.placeholder' => 'string',
+            'fields.*.show_if' => 'array',
             'fields.*.options' => 'array',
             'fields.*.max_items' => 'integer|min:1',
-            'fields.*.fields' => 'array', // For repeatable/nested fields
+            'fields.*.fields' => 'array',
             'settings' => 'array',
             'settings.cacheable' => 'boolean',
             'settings.cache_duration' => 'integer|min:0',
@@ -97,7 +168,7 @@ abstract class BaseWidget
         ]);
 
         if ($validator->fails()) {
-            throw new \InvalidArgumentException('Invalid widget metadata: ' . $validator->errors()->first());
+            throw new \InvalidArgumentException('Invalid widget metadata: '.$validator->errors()->first());
         }
 
         return $metadata;
@@ -132,11 +203,12 @@ abstract class BaseWidget
      */
     public function setVariant(string $variant): self
     {
-        if (!array_key_exists($variant, $this->getVariants())) {
+        if (! array_key_exists($variant, $this->getVariants())) {
             throw new \InvalidArgumentException("Variant '{$variant}' not available for this widget");
         }
-        
+
         $this->variant = $variant;
+
         return $this;
     }
 
@@ -146,15 +218,15 @@ abstract class BaseWidget
     public function validateSettings(): bool
     {
         $fields = $this->metadata['fields'] ?? [];
-        
-        $fieldTypeService = new \App\Services\FieldTypeService();
+
+        $fieldTypeService = new FieldTypeService;
         $errors = $fieldTypeService->validateForm($fields, $this->settings);
-        
-        if (!empty($errors)) {
+
+        if (! empty($errors)) {
             $errorMessages = implode(', ', $errors);
-            throw new \InvalidArgumentException('Widget settings validation failed: ' . $errorMessages);
+            throw new \InvalidArgumentException('Widget settings validation failed: '.$errorMessages);
         }
-        
+
         return true;
     }
 
@@ -166,7 +238,7 @@ abstract class BaseWidget
         try {
             return $this->render();
         } catch (\Exception $e) {
-            return '<div class="widget-preview-error">Preview Error: ' . htmlspecialchars($e->getMessage()) . '</div>';
+            return '<div class="widget-preview-error">Preview Error: '.htmlspecialchars($e->getMessage()).'</div>';
         }
     }
 
@@ -178,7 +250,7 @@ abstract class BaseWidget
         if (isset($this->settings[$key])) {
             return $this->settings[$key];
         }
-        
+
         // Check for default in metadata
         $fields = $this->metadata['fields'] ?? [];
         foreach ($fields as $field) {
@@ -186,7 +258,7 @@ abstract class BaseWidget
                 return $field['default'];
             }
         }
-        
+
         return $default;
     }
 
@@ -205,6 +277,7 @@ abstract class BaseWidget
     {
         $this->settings = $settings;
         $this->validateSettings();
+
         return $this;
     }
 
@@ -233,4 +306,3 @@ abstract class BaseWidget
         throw new \RuntimeException('Widget must implement getConfig() method or provide widget.json metadata file');
     }
 }
-

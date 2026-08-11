@@ -11,10 +11,10 @@ class VictoriousWidgetsSeeder extends Seeder
     {
         $tenantId = session('current_project')['id'] ?? 1;
         $area = 'homepage-main';
-        
+
         // Clear existing widgets for this area
         Widget::where('area', $area)->where('tenant_id', $tenantId)->delete();
-        
+
         $widgets = [
             // 1. Hero Video
             [
@@ -30,7 +30,7 @@ class VictoriousWidgetsSeeder extends Seeder
                     'height' => '100vh',
                 ],
             ],
-            
+
             // 2. About Us
             [
                 'name' => 'About Us',
@@ -47,7 +47,7 @@ class VictoriousWidgetsSeeder extends Seeder
                     'background_image' => asset('themes/victorious/img/common/about-services-bg.png'),
                 ],
             ],
-            
+
             // 3. Services Icons
             [
                 'name' => 'Activities and Services',
@@ -68,7 +68,7 @@ class VictoriousWidgetsSeeder extends Seeder
                     ],
                 ],
             ],
-            
+
             // 4. Service Detail (Spa)
             [
                 'name' => 'Ocean Luxe Spa',
@@ -86,7 +86,7 @@ class VictoriousWidgetsSeeder extends Seeder
                     'layout' => 'image-left',
                 ],
             ],
-            
+
             // 5. Itineraries
             [
                 'name' => 'Our Itineraries',
@@ -103,7 +103,7 @@ class VictoriousWidgetsSeeder extends Seeder
                     'button_text' => 'VIEW MORE',
                 ],
             ],
-            
+
             // 6. Room Categories
             [
                 'name' => 'Room Categories',
@@ -119,7 +119,7 @@ class VictoriousWidgetsSeeder extends Seeder
                     'book_text' => 'BOOK ROOM',
                 ],
             ],
-            
+
             // 7. Special Offers
             [
                 'name' => 'Special Offers',
@@ -141,7 +141,7 @@ class VictoriousWidgetsSeeder extends Seeder
                     ],
                 ],
             ],
-            
+
             // 8. Events
             [
                 'name' => 'Events',
@@ -157,12 +157,12 @@ class VictoriousWidgetsSeeder extends Seeder
                 ],
             ],
         ];
-        
+
         foreach ($widgets as $widgetData) {
             $widgetData['tenant_id'] = $tenantId;
             Widget::create($widgetData);
         }
-        
+
         $this->command->info('Victorious widgets seeded successfully!');
     }
 }

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('logo')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
-            
+
             $table->index(['is_active', 'name']);
         });
 
@@ -36,7 +36,7 @@ return new class extends Migration
             $table->string('meta_title')->nullable();
             $table->text('meta_description')->nullable();
             $table->timestamps();
-            
+
             $table->foreign('parent_id')->references('id')->on('product_categories')->onDelete('cascade');
             $table->index(['parent_id', 'sort_order']);
             $table->index(['is_active', 'level']);
@@ -51,7 +51,7 @@ return new class extends Migration
             $table->integer('sort_order')->default(0);
             $table->boolean('is_active')->default(true);
             $table->timestamps();
-            
+
             $table->index(['is_active', 'sort_order']);
         });
 
@@ -66,7 +66,7 @@ return new class extends Migration
             $table->boolean('is_required')->default(false);
             $table->integer('sort_order')->default(0);
             $table->timestamps();
-            
+
             $table->index(['is_filterable', 'sort_order']);
         });
 
@@ -80,7 +80,7 @@ return new class extends Migration
             $table->string('color_code')->nullable();
             $table->integer('sort_order')->default(0);
             $table->timestamps();
-            
+
             $table->index(['product_attribute_id', 'sort_order']);
         });
 
@@ -115,7 +115,7 @@ return new class extends Migration
             $table->integer('rating_count')->default(0);
             $table->enum('product_type', ['simple', 'variable'])->default('simple');
             $table->timestamps();
-            
+
             $table->index(['status', 'is_featured']);
             $table->index(['product_category_id', 'status']);
             $table->index(['brand_id', 'status']);
@@ -134,7 +134,7 @@ return new class extends Migration
             $table->json('attributes');
             $table->boolean('is_active')->default(true);
             $table->timestamps();
-            
+
             $table->index(['product_id', 'is_active']);
         });
 
@@ -145,7 +145,7 @@ return new class extends Migration
             $table->foreignId('product_attribute_id')->constrained()->onDelete('cascade');
             $table->foreignId('product_attribute_value_id')->constrained()->onDelete('cascade');
             $table->timestamps();
-            
+
             $table->unique(['product_id', 'product_attribute_id', 'product_attribute_value_id'], 'product_attr_unique');
         });
 
@@ -160,7 +160,7 @@ return new class extends Migration
             $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
             $table->boolean('is_verified')->default(false);
             $table->timestamps();
-            
+
             $table->index(['product_id', 'status']);
             $table->index(['status', 'created_at']);
         });

@@ -2,17 +2,17 @@
 
 namespace Tests\Unit\Widgets;
 
-use Tests\TestCase;
-use App\Widgets\WidgetRegistry;
 use App\Widgets\Hero\HeroWidget;
+use App\Widgets\WidgetRegistry;
 use Illuminate\Support\Facades\Cache;
+use Tests\TestCase;
 
 class WidgetRegistryTest extends TestCase
 {
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Clear widget discovery cache
         WidgetRegistry::clearCache();
     }
@@ -20,17 +20,17 @@ class WidgetRegistryTest extends TestCase
     public function test_registry_can_discover_widgets(): void
     {
         $discovered = WidgetRegistry::discover();
-        
+
         $this->assertIsArray($discovered);
     }
 
     public function test_registry_can_get_all_widgets(): void
     {
         $widgets = WidgetRegistry::all();
-        
+
         $this->assertIsArray($widgets);
         $this->assertNotEmpty($widgets);
-        
+
         // Check that each widget has required properties
         foreach ($widgets as $widget) {
             $this->assertArrayHasKey('type', $widget);
@@ -42,9 +42,9 @@ class WidgetRegistryTest extends TestCase
     public function test_registry_can_organize_widgets_by_category(): void
     {
         $byCategory = WidgetRegistry::getByCategory();
-        
+
         $this->assertIsArray($byCategory);
-        
+
         // Should have at least the hero category
         $this->assertArrayHasKey('hero', $byCategory);
     }
@@ -52,14 +52,14 @@ class WidgetRegistryTest extends TestCase
     public function test_registry_can_get_widget_by_type(): void
     {
         $heroClass = WidgetRegistry::get('hero');
-        
+
         $this->assertEquals(HeroWidget::class, $heroClass);
     }
 
     public function test_registry_returns_null_for_nonexistent_widget(): void
     {
         $nonexistent = WidgetRegistry::get('nonexistent_widget');
-        
+
         $this->assertNull($nonexistent);
     }
 
@@ -67,9 +67,9 @@ class WidgetRegistryTest extends TestCase
     {
         $output = WidgetRegistry::render('hero', [
             'title' => 'Test Title',
-            'subtitle' => 'Test Subtitle'
+            'subtitle' => 'Test Subtitle',
         ]);
-        
+
         $this->assertIsString($output);
         $this->assertStringContainsString('Test Title', $output);
     }
@@ -77,16 +77,16 @@ class WidgetRegistryTest extends TestCase
     public function test_registry_can_register_new_widget(): void
     {
         $testClass = HeroWidget::class;
-        
+
         WidgetRegistry::register('test_widget', $testClass);
-        
+
         $this->assertEquals($testClass, WidgetRegistry::get('test_widget'));
     }
 
     public function test_registry_validates_widget_class_on_registration(): void
     {
         $this->expectException(\InvalidArgumentException::class);
-        
+
         WidgetRegistry::register('invalid_widget', \stdClass::class);
     }
 
@@ -99,7 +99,7 @@ class WidgetRegistryTest extends TestCase
     public function test_registry_can_get_widget_types(): void
     {
         $types = WidgetRegistry::getTypes();
-        
+
         $this->assertIsArray($types);
         $this->assertContains('hero', $types);
     }
@@ -107,9 +107,9 @@ class WidgetRegistryTest extends TestCase
     public function test_registry_can_get_widget_preview(): void
     {
         $preview = WidgetRegistry::getPreview('hero', [
-            'title' => 'Preview Title'
+            'title' => 'Preview Title',
         ]);
-        
+
         $this->assertIsString($preview);
         $this->assertStringContainsString('Preview Title', $preview);
     }

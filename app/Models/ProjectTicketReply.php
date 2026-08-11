@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use Database\Factories\ProjectTicketReplyFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class ProjectTicketReply extends Model
 {
-    /** @use HasFactory<\Database\Factories\ProjectTicketReplyFactory> */
+    /** @use HasFactory<ProjectTicketReplyFactory> */
     protected $connection = 'mysql';
 
     protected $fillable = [
@@ -25,3 +26,4 @@ class ProjectTicketReply extends Model
     {
         return $this->belongsTo(User::class);
     }
+}

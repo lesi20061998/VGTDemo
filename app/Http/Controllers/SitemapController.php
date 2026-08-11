@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Brand;
 use App\Models\Product;
 use App\Models\ProductCategory;
-use App\Models\Brand;
-use Illuminate\Http\Response;
 
 class SitemapController extends Controller
 {
@@ -44,7 +43,7 @@ class SitemapController extends Controller
                 'loc' => route('frontend.products.show', $product->slug),
                 'lastmod' => $product->updated_at->toAtomString(),
                 'changefreq' => 'weekly',
-                'priority' => '0.9'
+                'priority' => '0.9',
             ];
         });
 
@@ -61,7 +60,7 @@ class SitemapController extends Controller
                 'loc' => route('frontend.categories.show', $category->slug),
                 'lastmod' => $category->updated_at->toAtomString(),
                 'changefreq' => 'weekly',
-                'priority' => '0.8'
+                'priority' => '0.8',
             ];
         });
 
@@ -75,10 +74,10 @@ class SitemapController extends Controller
 
         $urls = $brands->map(function ($brand) {
             return [
-                'loc' => url('/brand/' . $brand->slug),
+                'loc' => url('/brand/'.$brand->slug),
                 'lastmod' => $brand->updated_at->toAtomString(),
                 'changefreq' => 'weekly',
-                'priority' => '0.7'
+                'priority' => '0.7',
             ];
         });
 
@@ -86,4 +85,3 @@ class SitemapController extends Controller
             ->header('Content-Type', 'application/xml');
     }
 }
-

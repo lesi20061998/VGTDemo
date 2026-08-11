@@ -14,12 +14,12 @@ class TestimonialWidget extends BaseWidget
             ['name' => 'Trần Thị B', 'role' => 'Trưởng phòng Marketing', 'content' => 'Giải pháp hiệu quả, tiết kiệm thời gian và chi phí đáng kể.', 'avatar' => 'https://ui-avatars.com/api/?name=Tran+Thi+B&background=EC4899&color=fff'],
             ['name' => 'Lê Minh C', 'role' => 'CTO Startup XYZ', 'content' => 'Công nghệ tiên tiến, hỗ trợ tận tình. Đáng đầu tư!', 'avatar' => 'https://ui-avatars.com/api/?name=Le+Minh+C&background=10B981&color=fff'],
         ]);
-        
+
         $html = "<section class=\"testimonial-widget py-16 bg-white\">
             <div class=\"container mx-auto px-4\">
                 <h2 class=\"text-4xl font-bold text-center mb-12\">{$title}</h2>
                 <div class=\"grid md:grid-cols-2 gap-8\">";
-        
+
         foreach ($testimonials as $testimonial) {
             $html .= "
                 <div class=\"testimonial-card bg-gray-50 rounded-lg p-8 shadow-sm hover:shadow-lg transition\">
@@ -40,8 +40,9 @@ class TestimonialWidget extends BaseWidget
                     </div>
                 </div>";
         }
-        
-        $html .= "</div></div></section>";
+
+        $html .= '</div></div></section>';
+
         return $html;
     }
 
@@ -79,8 +80,7 @@ class TestimonialWidget extends BaseWidget
             'fields' => [
                 ['name' => 'title', 'label' => 'Title', 'type' => 'text', 'default' => 'Khách hàng nói gì về chúng tôi'],
                 ['name' => 'testimonials', 'label' => 'Testimonials', 'type' => 'repeater', 'default' => []],
-            ]
+            ],
         ];
     }
 }
-

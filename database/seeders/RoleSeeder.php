@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Role;
 use App\Models\User;
+use Illuminate\Database\Seeder;
 
 class RoleSeeder extends Seeder
 {
@@ -24,7 +24,7 @@ class RoleSeeder extends Seeder
         $user = User::first();
         if ($user) {
             $adminRole = Role::where('name', 'admin')->first();
-            if ($adminRole && !$user->roles->contains($adminRole)) {
+            if ($adminRole && ! $user->roles->contains($adminRole)) {
                 $user->roles()->attach($adminRole);
             }
         }

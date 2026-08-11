@@ -8,7 +8,7 @@ class HTMLWidget extends BaseWidget
     {
         $content = $this->getConfig('content', '');
         $styles = $this->buildStyles();
-        
+
         return "<div class=\"html-widget\" {$styles}>{$content}</div>";
     }
 
@@ -19,4 +19,3 @@ class HTMLWidget extends BaseWidget
         ];
     }
 }
-

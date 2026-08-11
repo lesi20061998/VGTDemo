@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('projects', function (Blueprint $table) {
             $table->dropColumn('status');
         });
-        
+
         Schema::table('projects', function (Blueprint $table) {
             $table->enum('status', ['pending', 'assigned', 'active', 'error', 'completed', 'cancelled'])->default('pending')->after('deadline');
             $table->foreignId('created_by')->nullable()->after('admin_id')->constrained('employees')->onDelete('set null');

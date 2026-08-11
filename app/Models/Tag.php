@@ -2,15 +2,15 @@
 
 namespace App\Models;
 
+use App\Traits\BelongsToTenant;
+use App\Traits\ProjectScoped;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Traits\ProjectScoped;
-use App\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Tag extends Model
 {
-    use HasFactory, ProjectScoped, BelongsToTenant;
+    use BelongsToTenant, HasFactory, ProjectScoped;
 
     protected $fillable = [
         'name',

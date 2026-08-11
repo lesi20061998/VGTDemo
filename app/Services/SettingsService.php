@@ -39,7 +39,7 @@ class SettingsService
         if ($project) {
             return true;
         }
-        
+
         return config('database.default') === 'project';
     }
 

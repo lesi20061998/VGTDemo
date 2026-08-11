@@ -2,8 +2,8 @@
 
 namespace App\Widgets\Product;
 
-use App\Widgets\BaseWidget;
 use App\Models\Taxonomy;
+use App\Widgets\BaseWidget;
 
 class ProductCateWidget extends BaseWidget
 {
@@ -13,55 +13,56 @@ class ProductCateWidget extends BaseWidget
         $limit = $this->get('limit', 8);
         $showCount = $this->get('show_count', true);
         $onlyParent = $this->get('only_parent', true);
-        
+
         // Lấy danh mục từ database thông qua Taxonomy (chuyển sang dạng post type)
         $query = Taxonomy::where('taxonomy', 'product_cat')->orderBy('order', 'asc');
-        
+
         // Chỉ lấy danh mục cha nếu được chọn
         if ($onlyParent) {
             $query->whereNull('parent_id');
         }
-        
+
         $categories = $query->limit($limit)->get();
-        
+
         // Fallback nếu không có danh mục
         if ($categories->isEmpty()) {
             return $this->renderEmptyState($title);
         }
-        
+
         $projectCode = request()->route('projectCode');
-        
-        $html = "<section class=\"product-cate-widget py-16 bg-white\">";
-        $html .= "<div class=\"container mx-auto px-4\">";
+
+        $html = '<section class="product-cate-widget py-16 bg-white">';
+        $html .= '<div class="container mx-auto px-4">';
         $html .= "<h2 class=\"text-4xl font-bold text-center mb-12\">{$title}</h2>";
-        $html .= "<div class=\"grid md:grid-cols-2 lg:grid-cols-4 gap-6\">";
-        
+        $html .= '<div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">';
+
         foreach ($categories as $category) {
             $categoryUrl = $projectCode ? "/{$projectCode}/danh-muc/{$category->slug}" : "/danh-muc/{$category->slug}";
-            
+
             // Xử lý hình ảnh (trong Taxonomy có thể lưu trong meta_data)
-            $image = isset($category->meta_data['image']) && $category->meta_data['image'] 
-                ? $category->meta_data['image'] 
-                : 'https://via.placeholder.com/300x200?text=' . urlencode($category->name);
-            
+            $image = isset($category->meta_data['image']) && $category->meta_data['image']
+                ? $category->meta_data['image']
+                : 'https://via.placeholder.com/300x200?text='.urlencode($category->name);
+
             // Đếm số sản phẩm trong danh mục
             $productCount = $showCount ? $category->posts()->where('status', 'published')->count() : 0;
-            
-            $html .= "<div class=\"category-item bg-gray-50 rounded-lg overflow-hidden hover:shadow-lg transition\">";
+
+            $html .= '<div class="category-item bg-gray-50 rounded-lg overflow-hidden hover:shadow-lg transition">';
             $html .= "<img src=\"{$image}\" alt=\"{$category->name}\" class=\"w-full h-40 object-cover\">";
-            $html .= "<div class=\"p-4 text-center\">";
+            $html .= '<div class="p-4 text-center">';
             $html .= "<h3 class=\"font-bold mb-2\">{$category->name}</h3>";
             if ($showCount) {
                 $html .= "<p class=\"text-gray-500 text-sm mb-3\">{$productCount} sản phẩm</p>";
             }
             $html .= "<a href=\"{$categoryUrl}\" class=\"inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm\">Xem tất cả</a>";
-            $html .= "</div></div>";
+            $html .= '</div></div>';
         }
-        
-        $html .= "</div></div></section>";
+
+        $html .= '</div></div></section>';
+
         return $html;
     }
-    
+
     protected function renderEmptyState(string $title): string
     {
         return "<section class=\"product-cate-widget py-16 bg-white\">
@@ -114,7 +115,7 @@ class ProductCateWidget extends BaseWidget
                 ['name' => 'limit', 'label' => 'Số lượng', 'type' => 'number', 'default' => 8],
                 ['name' => 'show_count', 'label' => 'Hiện số lượng sản phẩm', 'type' => 'checkbox', 'default' => true],
                 ['name' => 'only_parent', 'label' => 'Chỉ hiện danh mục cha', 'type' => 'checkbox', 'default' => true],
-            ]
+            ],
         ];
     }
 }

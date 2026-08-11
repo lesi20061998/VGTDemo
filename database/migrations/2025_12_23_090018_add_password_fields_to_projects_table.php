@@ -15,7 +15,7 @@ return new class extends Migration
             $table->text('project_admin_password_plain')->nullable()->after('project_admin_password');
             $table->timestamp('password_updated_at')->nullable()->after('project_admin_password_plain');
             $table->unsignedBigInteger('password_updated_by')->nullable()->after('password_updated_at');
-            
+
             $table->foreign('password_updated_by')->references('id')->on('users')->onDelete('set null');
         });
     }

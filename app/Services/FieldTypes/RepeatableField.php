@@ -33,15 +33,15 @@ class RepeatableField extends BaseFieldType
             }
         }
 
-        $fieldHtml .= "</div>";
+        $fieldHtml .= '</div>';
 
         // Add button - uses global function defined in layout
         $fieldHtml .= "<button type=\"button\" onclick=\"addRepeatableItem('{$fieldId}', '{$config['name']}')\" class=\"inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors\">";
-        $fieldHtml .= "<svg class=\"w-4 h-4\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M12 4v16m8-8H4\"></path></svg>";
-        $fieldHtml .= "Thêm mục";
-        $fieldHtml .= "</button>";
+        $fieldHtml .= '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>';
+        $fieldHtml .= 'Thêm mục';
+        $fieldHtml .= '</button>';
 
-        $fieldHtml .= "</div>";
+        $fieldHtml .= '</div>';
 
         return $this->renderFieldWrapper($config, $fieldHtml);
     }
@@ -50,28 +50,28 @@ class RepeatableField extends BaseFieldType
     {
         $displayIndex = \is_int($index) ? $index + 1 : $index;
 
-        $html = "<div class=\"repeatable-item border border-gray-200 rounded-lg p-4 bg-white shadow-sm\">";
-        $html .= "<div class=\"flex justify-between items-center mb-4 pb-3 border-b border-gray-100\">";
+        $html = '<div class="repeatable-item border border-gray-200 rounded-lg p-4 bg-white shadow-sm">';
+        $html .= '<div class="flex justify-between items-center mb-4 pb-3 border-b border-gray-100">';
         $html .= "<h4 class=\"font-semibold text-gray-700\">Muc {$displayIndex}</h4>";
-        $html .= "<button type=\"button\" onclick=\"removeRepeatableItem(this)\" class=\"inline-flex items-center gap-1 text-red-600 hover:text-red-800 text-sm font-medium transition-colors\">";
-        $html .= "<svg class=\"w-4 h-4\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16\"></path></svg>";
-        $html .= "Xoa";
-        $html .= "</button>";
-        $html .= "</div>";
+        $html .= '<button type="button" onclick="removeRepeatableItem(this)" class="inline-flex items-center gap-1 text-red-600 hover:text-red-800 text-sm font-medium transition-colors">';
+        $html .= '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>';
+        $html .= 'Xoa';
+        $html .= '</button>';
+        $html .= '</div>';
 
-        $html .= "<div class=\"grid grid-cols-1 md:grid-cols-2 gap-4\">";
+        $html .= '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">';
 
         foreach ($subFields as $subField) {
             $subFieldName = "{$fieldName}[{$index}][{$subField['name']}]";
             $subFieldValue = $item[$subField['name']] ?? ($subField['default'] ?? '');
 
-            $html .= "<div class=\"col-span-1\">";
+            $html .= '<div class="col-span-1">';
             $html .= $this->renderSubField($subField, $subFieldName, $subFieldValue);
-            $html .= "</div>";
+            $html .= '</div>';
         }
 
-        $html .= "</div>";
-        $html .= "</div>";
+        $html .= '</div>';
+        $html .= '</div>';
 
         return $html;
     }
@@ -82,17 +82,17 @@ class RepeatableField extends BaseFieldType
         $fieldConfig['name'] = $fieldName;
 
         return match ($fieldType) {
-            'text' => (new TextField())->render($fieldConfig, $value),
-            'textarea' => (new TextareaField())->render($fieldConfig, $value),
-            'select' => (new SelectField())->render($fieldConfig, $value),
-            'checkbox' => (new CheckboxField())->render($fieldConfig, $value),
-            default => (new TextField())->render($fieldConfig, $value),
+            'text' => (new TextField)->render($fieldConfig, $value),
+            'textarea' => (new TextareaField)->render($fieldConfig, $value),
+            'select' => (new SelectField)->render($fieldConfig, $value),
+            'checkbox' => (new CheckboxField)->render($fieldConfig, $value),
+            default => (new TextField)->render($fieldConfig, $value),
         };
     }
 
     public function validate(mixed $value, array $rules): bool
     {
-        if (!\is_array($value)) {
+        if (! \is_array($value)) {
             return false;
         }
 
@@ -105,7 +105,7 @@ class RepeatableField extends BaseFieldType
 
         $subFields = $this->config['fields'] ?? [];
         foreach ($value as $item) {
-            if (!\is_array($item)) {
+            if (! \is_array($item)) {
                 return false;
             }
 
@@ -113,7 +113,7 @@ class RepeatableField extends BaseFieldType
                 $subFieldValue = $item[$subField['name']] ?? null;
                 $subFieldRules = explode('|', $subField['validation'] ?? '');
 
-                if (!$this->validateSubField($subFieldValue, $subFieldRules, $subField)) {
+                if (! $this->validateSubField($subFieldValue, $subFieldRules, $subField)) {
                     return false;
                 }
             }
@@ -127,10 +127,10 @@ class RepeatableField extends BaseFieldType
         $fieldType = $fieldConfig['type'] ?? 'text';
 
         return match ($fieldType) {
-            'text' => (new TextField())->validate($value, $rules),
-            'textarea' => (new TextareaField())->validate($value, $rules),
+            'text' => (new TextField)->validate($value, $rules),
+            'textarea' => (new TextareaField)->validate($value, $rules),
             'select' => (new SelectField($fieldConfig))->validate($value, $rules),
-            'checkbox' => (new CheckboxField())->validate($value, $rules),
+            'checkbox' => (new CheckboxField)->validate($value, $rules),
             default => true,
         };
     }

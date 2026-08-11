@@ -32,11 +32,11 @@ return new class extends Migration
 
         // Migrate data from 'value' to 'payload' if value column exists
         if (Schema::hasColumn('settings', 'value') && Schema::hasColumn('settings', 'payload')) {
-            \DB::table('settings')
+            DB::table('settings')
                 ->whereNull('payload')
                 ->whereNotNull('value')
                 ->update([
-                    'payload' => \DB::raw("JSON_OBJECT('value', value)"),
+                    'payload' => DB::raw("JSON_OBJECT('value', value)"),
                 ]);
         }
     }

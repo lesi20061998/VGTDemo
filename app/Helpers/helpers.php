@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Menu;
+
 if (! function_exists('setting')) {
     function setting($key = null, $default = null)
     {
@@ -94,13 +96,13 @@ if (! function_exists('render_menu')) {
     {
         $menu = null;
         try {
-            $menu = \App\Models\Menu::where('location', $location)
+            $menu = Menu::where('location', $location)
                 ->where('is_active', true)
                 ->with(['items' => function ($query) {
                     $query->whereNull('parent_id')->with('children')->orderBy('order');
                 }])
                 ->first();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // Bỏ qua lỗi nếu bảng menus không tồn tại
         }
 

@@ -12,7 +12,7 @@ class CtaWidget extends BaseWidget
         $subtitle = $this->get('subtitle', 'Hơn 1000+ khách hàng đã tin tưởng sử dụng dịch vụ');
         $btnText = $this->get('button_text', 'Liên hệ ngay');
         $btnLink = $this->get('button_link', '/contact');
-        
+
         return "
         <section class=\"cta-section py-16 text-white\">
             <div class=\"container mx-auto px-4 text-center\">
@@ -56,8 +56,7 @@ class CtaWidget extends BaseWidget
                 ['name' => 'subtitle', 'label' => 'Subtitle', 'type' => 'text', 'default' => 'Join thousands of satisfied customers'],
                 ['name' => 'button_text', 'label' => 'Button Text', 'type' => 'text', 'default' => 'Sign Up Now'],
                 ['name' => 'button_link', 'label' => 'Button Link', 'type' => 'url', 'default' => '#'],
-            ]
+            ],
         ];
     }
 }
-

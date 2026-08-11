@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use App\Traits\BelongsToTenant;
+use Illuminate\Database\Eloquent\Model;
 
 class Font extends Model
 {
@@ -33,9 +33,10 @@ class Font extends Model
                 return $this->load_string;
             }
             $weights = implode(';', $this->weights ?? [400]);
-            return "https://fonts.googleapis.com/css2?family=" . str_replace(' ', '+', $this->name) . ":wght@{$weights}&display=swap";
+
+            return 'https://fonts.googleapis.com/css2?family='.str_replace(' ', '+', $this->name).":wght@{$weights}&display=swap";
         }
+
         return asset($this->file_path);
     }
 }
-

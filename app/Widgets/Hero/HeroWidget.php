@@ -11,23 +11,29 @@ class HeroWidget extends BaseWidget
         $title = $this->get('title', 'Chào mừng đến với Doanh nghiệp của chúng tôi');
         $subtitle = $this->get('subtitle', 'Giải pháp công nghệ hàng đầu cho doanh nghiệp hiện đại');
         $btnText = $this->get('button_text', 'Khám phá ngay');
-        $btnLink = $this->get('button_link', '/products');
-        $bgColor = $this->get('bg_color', 'bg-gradient-to-r from-blue-600 to-purple-600');
-        $backgroundImage = $this->get('background_image', '');
-        
-        $backgroundStyle = '';
-        if ($backgroundImage) {
-            $backgroundStyle = "background-image: url('{$backgroundImage}'); background-size: cover; background-position: center;";
+        $btnLink = $this->get('button_link', '#');
+
+        $bgInfo = $this->getWrapperBackgroundInfo();
+
+        $extraClasses = $bgInfo['classes'];
+        $classString = trim('hero-section text-white py-20 '.implode(' ', $extraClasses));
+        $styleAttr = ! empty($bgInfo['style']) ? ' style="'.$bgInfo['style'].'"' : '';
+
+        $html = '<section class="'.$classString.'"'.$styleAttr.'>';
+        $html .= '<div class="container mx-auto px-4 text-center">';
+        if (! empty($title)) {
+            $html .= '<h1 class="text-5xl font-bold mb-4">'.htmlspecialchars($title).'</h1>';
         }
-        
-        return "
-        <section class=\"hero-section {$bgColor} text-white py-20\" style=\"{$backgroundStyle}\">
-            <div class=\"container mx-auto px-4 text-center\">
-                <h1 class=\"text-5xl font-bold mb-4\">{$title}</h1>
-                <p class=\"text-xl mb-8 opacity-90\">{$subtitle}</p>
-                <a href=\"{$btnLink}\" class=\"hero-btn inline-block bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition\">{$btnText}</a>
-            </div>
-        </section>";
+        if (! empty($subtitle)) {
+            $html .= '<p class="text-xl mb-8 opacity-90">'.htmlspecialchars($subtitle).'</p>';
+        }
+        if (! empty($btnText)) {
+            $html .= '<a href="'.htmlspecialchars($btnLink ?: '#').'" class="hero-btn inline-block bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition">'.htmlspecialchars($btnText).'</a>';
+        }
+        $html .= '</div>';
+        $html .= '</section>';
+
+        return $html;
     }
 
     public function css(): string
@@ -65,8 +71,35 @@ class HeroWidget extends BaseWidget
                 ['name' => 'subtitle', 'label' => 'Subtitle', 'type' => 'text', 'default' => 'Build amazing things with our platform'],
                 ['name' => 'button_text', 'label' => 'Button Text', 'type' => 'text', 'default' => 'Get Started'],
                 ['name' => 'button_link', 'label' => 'Button Link', 'type' => 'url', 'default' => '#'],
-            ]
+                [
+                    'name' => 'bg_color',
+                    'label' => 'Background Color',
+                    'type' => 'select',
+                    'default' => 'bg-gradient-to-r from-blue-600 to-purple-600',
+                    'options' => [
+                        'bg-white' => 'White',
+                        'bg-gray-100' => 'Light Gray',
+                        'bg-gray-800' => 'Dark Gray',
+                        'bg-blue-600' => 'Blue',
+                        'bg-purple-600' => 'Purple',
+                        'bg-green-600' => 'Green',
+                        'bg-red-600' => 'Red',
+                        'bg-black' => 'Black',
+                        'bg-gradient-to-r from-blue-600 to-purple-600' => 'Blue to Purple',
+                        'bg-gradient-to-r from-green-500 to-blue-600' => 'Green to Blue',
+                        'bg-gradient-to-r from-purple-600 to-pink-600' => 'Purple to Pink',
+                        'bg-gradient-to-r from-orange-500 to-red-600' => 'Orange to Red',
+                    ],
+                    'help' => 'Choose background color or gradient',
+                ],
+                [
+                    'name' => 'background_image',
+                    'label' => 'Background Image',
+                    'type' => 'image',
+                    'default' => '',
+                    'help' => 'Optional background image (will overlay with background color)',
+                ],
+            ],
         ];
     }
 }
-

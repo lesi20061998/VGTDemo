@@ -2,16 +2,16 @@
 
 namespace Database\Seeders;
 
+use App\Models\Project;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use App\Models\Project;
 
 class TailwindContentSeeder extends Seeder
 {
     public function run()
     {
         $project = Project::where('code', 'HD001')->first();
-        if (!$project) {
+        if (! $project) {
             $project = Project::first();
         }
 
@@ -19,13 +19,13 @@ class TailwindContentSeeder extends Seeder
         $tenantId = session('current_tenant_id') ?? $projectId;
 
         // Đảm bảo tenant tồn tại để không lỗi foreign key
-        if (!DB::table('tenants')->where('id', $tenantId)->exists()) {
+        if (! DB::table('tenants')->where('id', $tenantId)->exists()) {
             DB::table('tenants')->insertOrIgnore([
                 'id' => $tenantId,
-                'name' => 'Project Tenant ' . $tenantId,
-                'domain' => 'tenant' . $tenantId . '.test',
+                'name' => 'Project Tenant '.$tenantId,
+                'domain' => 'tenant'.$tenantId.'.test',
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ]);
         }
 
@@ -190,7 +190,7 @@ class TailwindContentSeeder extends Seeder
                 'post_type' => 'post',
                 'status' => 'published',
             ],
-            
+
             // ==========================================
             // DEMO PRODUCT (Sản phẩm Demo)
             // ==========================================
@@ -254,7 +254,7 @@ class TailwindContentSeeder extends Seeder
 ',
                 'post_type' => 'product',
                 'status' => 'published',
-            ]
+            ],
         ];
 
         foreach ($posts as $post) {
@@ -269,7 +269,7 @@ class TailwindContentSeeder extends Seeder
                 ])
             );
         }
-        
+
         $this->command->info('Đã tạo thành công seeder dữ liệu Tailwind mẫu!');
     }
 }

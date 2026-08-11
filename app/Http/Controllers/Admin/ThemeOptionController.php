@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
+use App\Services\SettingsService;
 use Illuminate\Http\Request;
 
 class ThemeOptionController extends Controller
@@ -11,8 +12,30 @@ class ThemeOptionController extends Controller
     public function index(Request $request)
     {
         $tab = $request->get('tab', 'layout');
+
+        $targetMap = [
+            'header' => 'header',
+            'navigation' => 'navigation',
+            'topbar' => 'topbar',
+            'heading' => 'general',
+        ];
+
+        if (isset($targetMap[$tab])) {
+            $projectCode = $request->segment(1);
+            $isProject = $projectCode && $projectCode !== 'cms';
+            $targetUrl = $isProject
+                ? route('project.admin.website-config.index', ['projectCode' => $projectCode]).'?tab='.$targetMap[$tab]
+                : route('cms.website-config.index').'?tab='.$targetMap[$tab];
+
+            return redirect($targetUrl);
+        }
+
+        if (! in_array($tab, ['layout', 'post-category', 'banner'])) {
+            $tab = 'layout';
+        }
+
         $project = $request->attributes->get('project');
-        
+
         if ($project) {
             // Project context - load from main database with project_id
             $settings = \DB::table('settings')
@@ -48,7 +71,7 @@ class ThemeOptionController extends Controller
                 ->where('key', "theme_option_{$tab}")
                 ->where('project_id', $project->id)
                 ->delete();
-                
+
             \DB::table('settings')->insert([
                 'key' => "theme_option_{$tab}",
                 'payload' => json_encode($data),
@@ -69,7 +92,7 @@ class ThemeOptionController extends Controller
 
         // Clear cache
         \Cache::forget('all_settings_main');
-        \App\Services\SettingsService::getInstance()->clearCache();
+        SettingsService::getInstance()->clearCache();
 
         return redirect()->back()->with('success', 'Đã lưu cấu hình!');
     }

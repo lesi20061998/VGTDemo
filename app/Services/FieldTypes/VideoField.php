@@ -13,18 +13,18 @@ class VideoField extends BaseFieldType
         $fieldName = htmlspecialchars($config['name'] ?? '');
 
         $previewHtml = '';
-        if (!empty($value)) {
+        if (! empty($value)) {
             $previewHtml = "<div class=\"mb-3\"><video src=\"{$currentValue}\" class=\"w-full max-w-md h-auto rounded-lg border-2 border-gray-200 shadow-sm\" controls></video></div>";
         }
 
-        $fieldHtml = "<div class=\"space-y-3\" x-data>";
+        $fieldHtml = '<div class="space-y-3" x-data>';
         $fieldHtml .= $previewHtml;
-        $fieldHtml .= "<div class=\"flex gap-2\">";
+        $fieldHtml .= '<div class="flex gap-2">';
         $fieldHtml .= "<input type=\"text\" {$this->renderAttributes($attributes)} value=\"{$currentValue}\" placeholder=\"URL video hoặc chọn từ thư viện\" class=\"flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500\">";
         $fieldHtml .= "<button type=\"button\" @click=\"\$dispatch('open-media-picker', { field: '{$fieldName}', multiple: false, mediaType: 'video' })\" class=\"px-4 py-2.5 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition flex items-center gap-2 shadow-sm\">";
-        $fieldHtml .= "<svg class=\"w-5 h-5\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z\"/></svg>";
-        $fieldHtml .= "Chọn video</button>";
-        $fieldHtml .= "</div></div>";
+        $fieldHtml .= '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>';
+        $fieldHtml .= 'Chọn video</button>';
+        $fieldHtml .= '</div></div>';
 
         return $this->renderFieldWrapper($config, $fieldHtml);
     }
@@ -37,7 +37,7 @@ class VideoField extends BaseFieldType
         }
 
         // Basic URL validation for video
-        if (!\is_string($value)) {
+        if (! \is_string($value)) {
             return false;
         }
 

@@ -15,7 +15,7 @@ class CategoryCrudTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Create admin user
         $this->user = User::factory()->create([
             'email' => 'admin@test.com',

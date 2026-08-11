@@ -6,7 +6,6 @@ use App\Models\Widget;
 use App\Widgets\WidgetRegistry;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
 
 class WidgetImportExportService
 {
@@ -18,27 +17,27 @@ class WidgetImportExportService
         $includeAreas = $options['areas'] ?? null;
         $includeTypes = $options['types'] ?? null;
         $includeMetadata = $options['include_metadata'] ?? true;
-        
+
         $query = Widget::query()->orderBy('area')->orderBy('sort_order');
-        
+
         if ($includeAreas) {
             $query->whereIn('area', $includeAreas);
         }
-        
+
         if ($includeTypes) {
             $query->whereIn('type', $includeTypes);
         }
-        
+
         $widgets = $query->get();
-        
+
         $exportData = [
             'version' => '1.0',
             'exported_at' => now()->toISOString(),
             'exported_by' => auth()->user()->username ?? 'system',
             'widget_count' => $widgets->count(),
-            'widgets' => []
+            'widgets' => [],
         ];
-        
+
         foreach ($widgets as $widget) {
             $widgetData = [
                 'name' => $widget->name,
@@ -49,33 +48,33 @@ class WidgetImportExportService
                 'sort_order' => $widget->sort_order,
                 'is_active' => $widget->is_active,
             ];
-            
+
             if ($includeMetadata) {
                 $widgetData['metadata'] = $widget->getWidgetMetadata();
             }
-            
+
             $exportData['widgets'][] = $widgetData;
         }
-        
+
         return $exportData;
     }
 
     /**
      * Export widgets to JSON file
      */
-    public function exportToFile(string $filename = null, array $options = []): string
+    public function exportToFile(?string $filename = null, array $options = []): string
     {
-        $filename = $filename ?? 'widgets_export_' . date('Y-m-d_H-i-s') . '.json';
+        $filename = $filename ?? 'widgets_export_'.date('Y-m-d_H-i-s').'.json';
         $exportData = $this->exportWidgets($options);
-        
+
         $exportPath = storage_path('app/exports');
-        if (!File::isDirectory($exportPath)) {
+        if (! File::isDirectory($exportPath)) {
             File::makeDirectory($exportPath, 0755, true);
         }
-        
-        $filePath = $exportPath . '/' . $filename;
+
+        $filePath = $exportPath.'/'.$filename;
         File::put($filePath, json_encode($exportData, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
-        
+
         return $filePath;
     }
 
@@ -87,57 +86,58 @@ class WidgetImportExportService
         $overwriteExisting = $options['overwrite_existing'] ?? false;
         $validateOnly = $options['validate_only'] ?? false;
         $targetAreas = $options['target_areas'] ?? null;
-        
+
         $results = [
             'success' => true,
             'imported' => 0,
             'skipped' => 0,
             'errors' => [],
-            'warnings' => []
+            'warnings' => [],
         ];
-        
+
         // Validate import data structure
         $validation = $this->validateImportData($importData);
-        if (!$validation['valid']) {
+        if (! $validation['valid']) {
             $results['success'] = false;
             $results['errors'] = $validation['errors'];
+
             return $results;
         }
-        
+
         $widgets = $importData['widgets'] ?? [];
-        
+
         foreach ($widgets as $index => $widgetData) {
             try {
                 $importResult = $this->importSingleWidget($widgetData, [
                     'overwrite_existing' => $overwriteExisting,
                     'validate_only' => $validateOnly,
                     'target_areas' => $targetAreas,
-                    'index' => $index
+                    'index' => $index,
                 ]);
-                
+
                 if ($importResult['success']) {
                     $results['imported']++;
                 } else {
                     $results['skipped']++;
-                    if (!empty($importResult['error'])) {
-                        $results['errors'][] = "Widget {$index}: " . $importResult['error'];
+                    if (! empty($importResult['error'])) {
+                        $results['errors'][] = "Widget {$index}: ".$importResult['error'];
                     }
                 }
-                
-                if (!empty($importResult['warnings'])) {
+
+                if (! empty($importResult['warnings'])) {
                     $results['warnings'] = array_merge($results['warnings'], $importResult['warnings']);
                 }
-                
+
             } catch (\Exception $e) {
-                $results['errors'][] = "Widget {$index}: " . $e->getMessage();
+                $results['errors'][] = "Widget {$index}: ".$e->getMessage();
                 $results['skipped']++;
             }
         }
-        
-        if (!empty($results['errors'])) {
+
+        if (! empty($results['errors'])) {
             $results['success'] = false;
         }
-        
+
         return $results;
     }
 
@@ -146,30 +146,30 @@ class WidgetImportExportService
      */
     public function importFromFile(string $filePath, array $options = []): array
     {
-        if (!File::exists($filePath)) {
+        if (! File::exists($filePath)) {
             return [
                 'success' => false,
-                'errors' => ['Import file not found: ' . $filePath]
+                'errors' => ['Import file not found: '.$filePath],
             ];
         }
-        
+
         try {
             $content = File::get($filePath);
             $importData = json_decode($content, true);
-            
+
             if (json_last_error() !== JSON_ERROR_NONE) {
                 return [
                     'success' => false,
-                    'errors' => ['Invalid JSON file: ' . json_last_error_msg()]
+                    'errors' => ['Invalid JSON file: '.json_last_error_msg()],
                 ];
             }
-            
+
             return $this->importWidgets($importData, $options);
-            
+
         } catch (\Exception $e) {
             return [
                 'success' => false,
-                'errors' => ['Error reading import file: ' . $e->getMessage()]
+                'errors' => ['Error reading import file: '.$e->getMessage()],
             ];
         }
     }
@@ -190,28 +190,28 @@ class WidgetImportExportService
             'widgets.*.sort_order' => 'nullable|integer',
             'widgets.*.is_active' => 'nullable|boolean',
         ]);
-        
+
         if ($validator->fails()) {
             return [
                 'valid' => false,
-                'errors' => $validator->errors()->all()
+                'errors' => $validator->errors()->all(),
             ];
         }
-        
+
         // Additional validation
         $errors = [];
         $widgets = $data['widgets'] ?? [];
-        
+
         foreach ($widgets as $index => $widget) {
             // Check if widget type exists
-            if (!WidgetRegistry::exists($widget['type'])) {
+            if (! WidgetRegistry::exists($widget['type'])) {
                 $errors[] = "Widget {$index}: Unknown widget type '{$widget['type']}'";
             }
         }
-        
+
         return [
             'valid' => empty($errors),
-            'errors' => $errors
+            'errors' => $errors,
         ];
     }
 
@@ -224,55 +224,59 @@ class WidgetImportExportService
         $validateOnly = $options['validate_only'] ?? false;
         $targetAreas = $options['target_areas'] ?? null;
         $index = $options['index'] ?? 0;
-        
+
         $result = [
             'success' => false,
             'error' => null,
-            'warnings' => []
+            'warnings' => [],
         ];
-        
+
         // Map target area if specified
         if ($targetAreas && isset($targetAreas[$widgetData['area']])) {
             $widgetData['area'] = $targetAreas[$widgetData['area']];
         }
-        
+
         // Check if widget type exists
-        if (!WidgetRegistry::exists($widgetData['type'])) {
+        if (! WidgetRegistry::exists($widgetData['type'])) {
             $result['error'] = "Widget type '{$widgetData['type']}' not found";
+
             return $result;
         }
-        
+
         // Validate widget settings
         try {
             $widgetClass = WidgetRegistry::get($widgetData['type']);
             if ($widgetClass) {
                 $tempWidget = new $widgetClass(
-                    $widgetData['settings'] ?? [], 
+                    $widgetData['settings'] ?? [],
                     $widgetData['variant'] ?? 'default'
                 );
                 $tempWidget->validateSettings();
             }
         } catch (\Exception $e) {
-            $result['error'] = "Settings validation failed: " . $e->getMessage();
+            $result['error'] = 'Settings validation failed: '.$e->getMessage();
+
             return $result;
         }
-        
+
         if ($validateOnly) {
             $result['success'] = true;
+
             return $result;
         }
-        
+
         // Check for existing widget
         $existingWidget = Widget::where('area', $widgetData['area'])
             ->where('type', $widgetData['type'])
             ->where('name', $widgetData['name'])
             ->first();
-        
-        if ($existingWidget && !$overwriteExisting) {
-            $result['error'] = "Widget already exists and overwrite is disabled";
+
+        if ($existingWidget && ! $overwriteExisting) {
+            $result['error'] = 'Widget already exists and overwrite is disabled';
+
             return $result;
         }
-        
+
         // Prepare widget data for creation/update
         $createData = [
             'name' => $widgetData['name'],
@@ -283,12 +287,12 @@ class WidgetImportExportService
             'sort_order' => $widgetData['sort_order'] ?? 0,
             'is_active' => $widgetData['is_active'] ?? true,
         ];
-        
+
         // Add tenant_id if in project context
         if (session('current_tenant_id')) {
             $createData['tenant_id'] = session('current_tenant_id');
         }
-        
+
         try {
             if ($existingWidget) {
                 $existingWidget->update($createData);
@@ -296,16 +300,16 @@ class WidgetImportExportService
             } else {
                 Widget::create($createData);
             }
-            
+
             // Clear cache for the area
             clear_widget_cache($widgetData['area']);
-            
+
             $result['success'] = true;
-            
+
         } catch (\Exception $e) {
-            $result['error'] = "Database error: " . $e->getMessage();
+            $result['error'] = 'Database error: '.$e->getMessage();
         }
-        
+
         return $result;
     }
 
@@ -315,39 +319,39 @@ class WidgetImportExportService
     public function exportTemplates(array $widgetTypes = []): array
     {
         $allWidgets = WidgetRegistry::all();
-        
-        if (!empty($widgetTypes)) {
+
+        if (! empty($widgetTypes)) {
             $allWidgets = array_filter($allWidgets, function ($widget) use ($widgetTypes) {
                 return in_array($widget['type'], $widgetTypes);
             });
         }
-        
+
         $templates = [
             'version' => '1.0',
             'type' => 'templates',
             'exported_at' => now()->toISOString(),
             'template_count' => count($allWidgets),
-            'templates' => []
+            'templates' => [],
         ];
-        
+
         foreach ($allWidgets as $widget) {
             $templates['templates'][] = [
                 'type' => $widget['type'],
                 'metadata' => $widget['metadata'],
-                'class' => $widget['class']
+                'class' => $widget['class'],
             ];
         }
-        
+
         return $templates;
     }
 
     /**
      * Create widget configuration backup
      */
-    public function createBackup(string $backupName = null): string
+    public function createBackup(?string $backupName = null): string
     {
-        $backupName = $backupName ?? 'widget_backup_' . date('Y-m-d_H-i-s');
-        
+        $backupName = $backupName ?? 'widget_backup_'.date('Y-m-d_H-i-s');
+
         $backup = [
             'backup_name' => $backupName,
             'created_at' => now()->toISOString(),
@@ -355,18 +359,18 @@ class WidgetImportExportService
             'widgets' => $this->exportWidgets(['include_metadata' => true]),
             'registry_info' => [
                 'total_types' => count(WidgetRegistry::getTypes()),
-                'categories' => array_keys(WidgetRegistry::getByCategory())
-            ]
+                'categories' => array_keys(WidgetRegistry::getByCategory()),
+            ],
         ];
-        
+
         $backupPath = storage_path('app/backups');
-        if (!File::isDirectory($backupPath)) {
+        if (! File::isDirectory($backupPath)) {
             File::makeDirectory($backupPath, 0755, true);
         }
-        
-        $filePath = $backupPath . '/' . $backupName . '.json';
+
+        $filePath = $backupPath.'/'.$backupName.'.json';
         File::put($filePath, json_encode($backup, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
-        
+
         return $filePath;
     }
 
@@ -376,30 +380,30 @@ class WidgetImportExportService
     public function restoreBackup(string $backupPath, array $options = []): array
     {
         $clearExisting = $options['clear_existing'] ?? false;
-        
-        if (!File::exists($backupPath)) {
+
+        if (! File::exists($backupPath)) {
             return [
                 'success' => false,
-                'errors' => ['Backup file not found']
+                'errors' => ['Backup file not found'],
             ];
         }
-        
+
         try {
             $backup = json_decode(File::get($backupPath), true);
-            
+
             if ($clearExisting) {
                 Widget::truncate();
                 clear_widget_cache();
             }
-            
+
             return $this->importWidgets($backup['widgets'], [
-                'overwrite_existing' => true
+                'overwrite_existing' => true,
             ]);
-            
+
         } catch (\Exception $e) {
             return [
                 'success' => false,
-                'errors' => ['Restore failed: ' . $e->getMessage()]
+                'errors' => ['Restore failed: '.$e->getMessage()],
             ];
         }
     }
@@ -410,14 +414,14 @@ class WidgetImportExportService
     public function getAvailableBackups(): array
     {
         $backupPath = storage_path('app/backups');
-        
-        if (!File::isDirectory($backupPath)) {
+
+        if (! File::isDirectory($backupPath)) {
             return [];
         }
-        
+
         $backups = [];
         $files = File::files($backupPath);
-        
+
         foreach ($files as $file) {
             if ($file->getExtension() === 'json') {
                 $backups[] = [
@@ -428,12 +432,12 @@ class WidgetImportExportService
                 ];
             }
         }
-        
+
         // Sort by modification time (newest first)
         usort($backups, function ($a, $b) {
             return $b['modified'] - $a['modified'];
         });
-        
+
         return $backups;
     }
 }

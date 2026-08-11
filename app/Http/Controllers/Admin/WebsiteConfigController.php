@@ -3,6 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Menu;
+use App\Models\ProjectSettingModel;
+use App\Models\Setting;
+use App\Services\SettingsService;
 use Illuminate\Http\Request;
 
 class WebsiteConfigController extends Controller
@@ -19,7 +23,7 @@ class WebsiteConfigController extends Controller
             }
         }
 
-        $menus = \App\Models\Menu::all();
+        $menus = Menu::all();
 
         return view('cms.website-config.index', compact('sections', 'activeTab', 'settings', 'menus'));
     }
@@ -45,16 +49,16 @@ class WebsiteConfigController extends Controller
                     // Sử dụng model phù hợp dựa trên context
                     $project = $request->attributes->get('project');
                     if ($project) {
-                        \App\Models\ProjectSettingModel::set($fieldKey, $value);
+                        ProjectSettingModel::set($fieldKey, $value);
                     } else {
-                        \App\Models\Setting::set($fieldKey, $value);
+                        Setting::set($fieldKey, $value);
                     }
                 }
             }
 
             $tenantId = session('current_tenant_id');
             \Cache::forget('all_settings_'.$tenantId);
-            \App\Services\SettingsService::getInstance()->clearCache();
+            SettingsService::getInstance()->clearCache();
 
             return back()->with('alert', [
                 'type' => 'success',

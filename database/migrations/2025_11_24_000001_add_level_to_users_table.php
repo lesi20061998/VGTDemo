@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         // Skip - level đã được thêm trong migration users chính
-        if (!Schema::hasColumn('users', 'level')) {
+        if (! Schema::hasColumn('users', 'level')) {
             Schema::table('users', function (Blueprint $table) {
                 $table->tinyInteger('level')->default(2)->after('role')->comment('0=SuperAdmin, 1=Administrator, 2=User');
             });

@@ -2,8 +2,8 @@
 
 namespace App\Widgets\Post;
 
-use App\Widgets\BaseWidget;
 use App\Models\Post;
+use App\Widgets\BaseWidget;
 
 class PostListWidget extends BaseWidget
 {
@@ -13,37 +13,37 @@ class PostListWidget extends BaseWidget
         $limit = $this->get('limit', 6);
         $layout = $this->get('layout', 'grid');
         $categoryId = $this->get('category_id', null);
-        
+
         // Lấy bài viết từ database
         $query = Post::where('status', 'published')
             ->orderBy('created_at', 'desc');
-        
+
         // Lọc theo danh mục nếu có
         if ($categoryId) {
             $query->where('category_id', $categoryId);
         }
-        
+
         $posts = $query->limit($limit)->get();
-        
+
         // Fallback nếu không có bài viết
         if ($posts->isEmpty()) {
             return $this->renderEmptyState($title);
         }
-        
+
         $gridClass = $layout === 'grid' ? 'grid md:grid-cols-3 gap-6' : 'space-y-6';
-        
+
         $html = "<section class=\"post-list-widget py-16 bg-gray-50\">
             <div class=\"container mx-auto px-4\">
                 <h2 class=\"text-4xl font-bold text-center mb-12\">{$title}</h2>
                 <div class=\"{$gridClass}\">";
-        
+
         $projectCode = request()->route('projectCode');
         foreach ($posts as $post) {
             $blogUrl = $projectCode ? "/{$projectCode}/tin-tuc/{$post->slug}" : "/tin-tuc/{$post->slug}";
             $image = $post->featured_image ?: 'https://via.placeholder.com/400x300?text=No+Image';
             $excerpt = $post->excerpt ?: \Str::limit(strip_tags($post->content), 100);
             $date = $post->created_at ? $post->created_at->format('d/m/Y') : '';
-            
+
             if ($layout === 'grid') {
                 $html .= "
                 <article class=\"post-card bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition\">
@@ -68,11 +68,12 @@ class PostListWidget extends BaseWidget
                 </article>";
             }
         }
-        
-        $html .= "</div></div></section>";
+
+        $html .= '</div></div></section>';
+
         return $html;
     }
-    
+
     protected function renderEmptyState(string $title): string
     {
         return "<section class=\"post-list-widget py-16 bg-gray-50\">
@@ -127,7 +128,7 @@ class PostListWidget extends BaseWidget
                 ['name' => 'limit', 'label' => 'Số lượng bài viết', 'type' => 'number', 'default' => 6],
                 ['name' => 'layout', 'label' => 'Kiểu hiển thị', 'type' => 'select', 'default' => 'grid', 'options' => ['grid' => 'Lưới', 'list' => 'Danh sách']],
                 ['name' => 'category_id', 'label' => 'Danh mục (ID)', 'type' => 'number', 'default' => ''],
-            ]
+            ],
         ];
     }
 }

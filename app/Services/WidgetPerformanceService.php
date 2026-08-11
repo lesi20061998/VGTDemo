@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Log;
 class WidgetPerformanceService
 {
     protected array $performanceMetrics = [];
+
     protected bool $monitoringEnabled;
 
     public function __construct()
@@ -39,12 +40,12 @@ class WidgetPerformanceService
 
         // Optimize cache keys and durations
         $this->optimizeCacheKeys();
-        
+
         // Clean up stale cache entries
         $this->cleanupStaleCache();
 
         $results['cache_size_after'] = $this->getCacheSize();
-        
+
         return $results;
     }
 
@@ -70,23 +71,23 @@ class WidgetPerformanceService
         try {
             $type = $widgetData['type'];
             $widgetClass = WidgetRegistry::get($type);
-            
+
             if ($widgetClass) {
                 // Preload class
                 class_exists($widgetClass);
-                
+
                 // Preload metadata
                 $config = WidgetRegistry::getConfig($type);
                 if ($config) {
                     $cacheKey = "widget_config_{$type}";
                     Cache::put($cacheKey, $config, 7200); // 2 hours
                 }
-                
+
                 // Preload common variants
                 $this->preloadCommonVariants($type, $widgetClass);
             }
         } catch (\Exception $e) {
-            Log::warning("Failed to preload widget {$widgetData['type']}: " . $e->getMessage());
+            Log::warning("Failed to preload widget {$widgetData['type']}: ".$e->getMessage());
         }
     }
 
@@ -96,9 +97,9 @@ class WidgetPerformanceService
     protected function preloadCommonVariants(string $type, string $widgetClass): void
     {
         try {
-            $widget = new $widgetClass();
+            $widget = new $widgetClass;
             $variants = $widget->getVariants();
-            
+
             foreach (array_keys($variants) as $variant) {
                 if (in_array($variant, ['default', 'compact', 'minimal'])) {
                     $cacheKey = "widget_variant_{$type}_{$variant}";
@@ -129,7 +130,7 @@ class WidgetPerformanceService
     {
         // Use shorter, more efficient cache keys
         $longKeys = Cache::get('widget_long_keys', []);
-        
+
         foreach ($longKeys as $longKey => $shortKey) {
             $value = Cache::get($longKey);
             if ($value !== null) {
@@ -146,7 +147,7 @@ class WidgetPerformanceService
     {
         // Group widget-related cache entries together
         $widgetTypes = WidgetRegistry::getTypes();
-        
+
         foreach ($widgetTypes as $type) {
             $groupKey = "widget_group_{$type}";
             $relatedData = [
@@ -154,7 +155,7 @@ class WidgetPerformanceService
                 'metadata' => Cache::get("widget_metadata_{$type}"),
                 'variants' => Cache::get("widget_variants_{$type}"),
             ];
-            
+
             Cache::put($groupKey, $relatedData, 7200);
         }
     }
@@ -167,11 +168,11 @@ class WidgetPerformanceService
         // Remove cache entries for non-existent widgets
         $existingTypes = WidgetRegistry::getTypes();
         $cacheKeys = $this->getWidgetCacheKeys();
-        
+
         foreach ($cacheKeys as $key) {
             if (preg_match('/widget_(\w+)_(.+)/', $key, $matches)) {
                 $type = $matches[1];
-                if (!in_array($type, $existingTypes)) {
+                if (! in_array($type, $existingTypes)) {
                     Cache::forget($key);
                 }
             }
@@ -193,7 +194,7 @@ class WidgetPerformanceService
      */
     public function startPerformanceMonitoring(string $widgetType): void
     {
-        if (!$this->monitoringEnabled) {
+        if (! $this->monitoringEnabled) {
             return;
         }
 
@@ -208,7 +209,7 @@ class WidgetPerformanceService
      */
     public function endPerformanceMonitoring(string $widgetType): array
     {
-        if (!$this->monitoringEnabled || !isset($this->performanceMetrics[$widgetType])) {
+        if (! $this->monitoringEnabled || ! isset($this->performanceMetrics[$widgetType])) {
             return [];
         }
 
@@ -240,14 +241,14 @@ class WidgetPerformanceService
     {
         $cacheKey = 'widget_performance_data';
         $performanceData = Cache::get($cacheKey, []);
-        
+
         $performanceData[] = $data;
-        
+
         // Keep only last 1000 entries
         if (count($performanceData) > 1000) {
             $performanceData = array_slice($performanceData, -1000);
         }
-        
+
         Cache::put($cacheKey, $performanceData, 86400); // 24 hours
     }
 
@@ -257,7 +258,7 @@ class WidgetPerformanceService
     public function getPerformanceStatistics(): array
     {
         $performanceData = Cache::get('widget_performance_data', []);
-        
+
         if (empty($performanceData)) {
             return [
                 'total_measurements' => 0,
@@ -280,7 +281,7 @@ class WidgetPerformanceService
             $totalTime += $time;
             $totalMemory += $memory;
 
-            if (!isset($widgetStats[$type])) {
+            if (! isset($widgetStats[$type])) {
                 $widgetStats[$type] = [
                     'count' => 0,
                     'total_time' => 0,
@@ -304,10 +305,10 @@ class WidgetPerformanceService
         }
 
         $slowestWidgets = $widgetStats;
-        uasort($slowestWidgets, fn($a, $b) => $b['avg_time'] <=> $a['avg_time']);
+        uasort($slowestWidgets, fn ($a, $b) => $b['avg_time'] <=> $a['avg_time']);
 
         $memoryIntensiveWidgets = $widgetStats;
-        uasort($memoryIntensiveWidgets, fn($a, $b) => $b['avg_memory'] <=> $a['avg_memory']);
+        uasort($memoryIntensiveWidgets, fn ($a, $b) => $b['avg_memory'] <=> $a['avg_memory']);
 
         return [
             'total_measurements' => count($performanceData),
@@ -330,25 +331,25 @@ class WidgetPerformanceService
         ];
 
         $widgets = WidgetRegistry::all();
-        
+
         foreach ($widgets as $widget) {
             try {
                 $type = $widget['type'];
                 $metadata = $widget['metadata'];
-                
+
                 // Cache metadata with optimized structure
                 $optimizedMetadata = $this->optimizeMetadataStructure($metadata);
                 $cacheKey = "optimized_metadata_{$type}";
                 Cache::put($cacheKey, $optimizedMetadata, 7200);
-                
+
                 $results['cached_metadata']++;
-                
+
                 // Precompile field validation rules
                 $this->precompileValidationRules($type, $metadata);
                 $results['optimized_files']++;
-                
+
             } catch (\Exception $e) {
-                Log::warning("Failed to optimize metadata for {$widget['type']}: " . $e->getMessage());
+                Log::warning("Failed to optimize metadata for {$widget['type']}: ".$e->getMessage());
             }
         }
 
@@ -362,7 +363,7 @@ class WidgetPerformanceService
     {
         // Create indexed structures for faster lookups
         $optimized = $metadata;
-        
+
         // Index fields by name
         if (isset($metadata['fields'])) {
             $optimized['fields_by_name'] = [];
@@ -370,12 +371,12 @@ class WidgetPerformanceService
                 $optimized['fields_by_name'][$field['name']] = $field;
             }
         }
-        
+
         // Index variants
         if (isset($metadata['variants'])) {
             $optimized['variant_keys'] = array_keys($metadata['variants']);
         }
-        
+
         return $optimized;
     }
 
@@ -386,22 +387,22 @@ class WidgetPerformanceService
     {
         $fields = $metadata['fields'] ?? [];
         $compiledRules = [];
-        
+
         foreach ($fields as $field) {
             $fieldName = $field['name'];
             $rules = [];
-            
+
             if ($field['required'] ?? false) {
                 $rules[] = 'required';
             }
-            
+
             if (isset($field['validation'])) {
                 $rules[] = $field['validation'];
             }
-            
+
             $compiledRules[$fieldName] = implode('|', $rules);
         }
-        
+
         Cache::put("validation_rules_{$type}", $compiledRules, 7200);
     }
 
@@ -412,7 +413,7 @@ class WidgetPerformanceService
     {
         // Set up cache tags for better invalidation
         $this->setupCacheTags();
-        
+
         // Set up automatic cache warming
         $this->setupCacheWarming();
     }
@@ -423,10 +424,10 @@ class WidgetPerformanceService
     protected function setupCacheTags(): void
     {
         $widgetTypes = WidgetRegistry::getTypes();
-        
+
         foreach ($widgetTypes as $type) {
-            $tags = ["widget:{$type}", "widgets:all"];
-            
+            $tags = ["widget:{$type}", 'widgets:all'];
+
             // Tag all related cache entries
             $relatedKeys = [
                 "widget_config_{$type}",
@@ -434,7 +435,7 @@ class WidgetPerformanceService
                 "optimized_metadata_{$type}",
                 "validation_rules_{$type}",
             ];
-            
+
             foreach ($relatedKeys as $key) {
                 Cache::tags($tags)->put($key, Cache::get($key), 7200);
             }
@@ -448,7 +449,7 @@ class WidgetPerformanceService
     {
         // Warm cache for most used widgets
         $frequentWidgets = $this->getFrequentlyUsedWidgets(10);
-        
+
         foreach ($frequentWidgets as $widget) {
             $this->warmWidgetCache($widget['type']);
         }
@@ -462,15 +463,15 @@ class WidgetPerformanceService
         try {
             // Warm metadata cache
             WidgetRegistry::getConfig($type);
-            
+
             // Warm class cache
             $widgetClass = WidgetRegistry::get($type);
             if ($widgetClass) {
                 class_exists($widgetClass);
             }
-            
+
         } catch (\Exception $e) {
-            Log::warning("Failed to warm cache for widget {$type}: " . $e->getMessage());
+            Log::warning("Failed to warm cache for widget {$type}: ".$e->getMessage());
         }
     }
 

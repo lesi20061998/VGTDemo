@@ -4,9 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Post;
-use App\Models\Taxonomy;
 use App\Models\ProductAttribute;
+use App\Models\Project;
 use App\Models\ProjectBrand;
+use App\Models\Taxonomy;
 use App\Traits\HasCrudAlerts;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -25,7 +26,7 @@ class ProductController extends Controller
             ->paginate(20);
 
         $parentCategories = Taxonomy::where('taxonomy', 'product_cat')->whereNull('parent_id')->with('children')->get();
-        $currentProject = \App\Models\Project::where('code', request()->route('projectCode'))->first();
+        $currentProject = Project::where('code', request()->route('projectCode'))->first();
         $languageId = 1;
 
         return view('admin.products.index', compact('products', 'parentCategories', 'currentProject', 'languageId'));
@@ -34,12 +35,18 @@ class ProductController extends Controller
     public function create(Request $request)
     {
         $categories = Taxonomy::where('taxonomy', 'product_cat')->orderBy('order')->get();
-        $categoriesTree = $this->buildCategoryOptions($categories); 
+        $categoriesTree = $this->buildCategoryOptions($categories);
         $attributes = collect();
-        try { $attributes = ProductAttribute::with('values')->orderBy('sort_order')->get(); } catch (\Exception $e) {}
-        
+        try {
+            $attributes = ProductAttribute::with('values')->orderBy('sort_order')->get();
+        } catch (\Exception $e) {
+        }
+
         $brands = collect();
-        try { $brands = ProjectBrand::orderBy('name')->get(); } catch (\Exception $e) {}
+        try {
+            $brands = ProjectBrand::orderBy('name')->get();
+        } catch (\Exception $e) {
+        }
         $currentLang = 'vi';
 
         return view('cms.products.create', compact('categories', 'categoriesTree', 'attributes', 'brands', 'currentLang'));
@@ -56,6 +63,7 @@ class ProductController extends Controller
             $childOptions = $this->buildCategoryOptions($categories, $category->id, $prefix.'  └─ ');
             $options = array_merge($options, $childOptions);
         }
+
         return $options;
     }
 
@@ -67,7 +75,7 @@ class ProductController extends Controller
         ]);
 
         $slug = $request->input('slug') ?: Str::slug($request->name);
-        
+
         $metaData = [
             'sku' => $request->input('sku'),
             'price' => $request->input('price', 0),
@@ -104,26 +112,26 @@ class ProductController extends Controller
         }
 
         $this->alertCreated('sản phẩm', "Sản phẩm '{$post->title}' đã được thêm.");
-        
-        $route = request()->route('projectCode') 
-            ? route('project.admin.products.index', request()->route('projectCode')) 
+
+        $route = request()->route('projectCode')
+            ? route('project.admin.products.index', request()->route('projectCode'))
             : route('cms.products.index');
-            
+
         return redirect($route);
     }
 
     public function edit(Request $request, $projectCode, $id)
     {
         $product = Post::where('post_type', 'product')
-            ->where(function($q) use ($id) {
+            ->where(function ($q) use ($id) {
                 $q->where('id', $id)->orWhere('slug', $id);
             })->firstOrFail();
-        
+
         // Map Post to view variables to minimize blade changes
         $product->name = $product->title;
         $product->description = $product->content;
         $product->short_description = $product->excerpt;
-        
+
         $metaData = is_string($product->meta_data) ? json_decode($product->meta_data, true) : ($product->meta_data ?? []);
         $product->sku = $metaData['sku'] ?? '';
         $product->price = $metaData['price'] ?? 0;
@@ -135,18 +143,24 @@ class ProductController extends Controller
         $product->gallery = $metaData['gallery'] ?? [];
         $product->attributes_data = $metaData['attributes'] ?? [];
         $product->variations_data = $metaData['variations'] ?? [];
-        
+
         $seoData = is_string($product->seo_data) ? json_decode($product->seo_data, true) : ($product->seo_data ?? []);
         $product->focus_keyword = $seoData['focus_keyword'] ?? '';
         $product->noindex = $seoData['noindex'] ?? false;
 
         $categories = Taxonomy::where('taxonomy', 'product_cat')->orderBy('order')->get();
-        $categoriesTree = $this->buildCategoryOptions($categories); 
+        $categoriesTree = $this->buildCategoryOptions($categories);
         $attributes = collect();
-        try { $attributes = ProductAttribute::with('values')->orderBy('sort_order')->get(); } catch (\Exception $e) {}
-        
+        try {
+            $attributes = ProductAttribute::with('values')->orderBy('sort_order')->get();
+        } catch (\Exception $e) {
+        }
+
         $brands = collect();
-        try { $brands = ProjectBrand::orderBy('name')->get(); } catch (\Exception $e) {}
+        try {
+            $brands = ProjectBrand::orderBy('name')->get();
+        } catch (\Exception $e) {
+        }
         $currentLang = 'vi';
 
         // Mock relations for view
@@ -157,9 +171,9 @@ class ProductController extends Controller
         $attributeMappings = collect();
         foreach ($product->attributes_data as $attrId => $values) {
             foreach ($values as $valId) {
-                $attributeMappings->push((object)[
+                $attributeMappings->push((object) [
                     'product_attribute_id' => $attrId,
-                    'product_attribute_value_id' => $valId
+                    'product_attribute_value_id' => $valId,
                 ]);
             }
         }
@@ -177,12 +191,12 @@ class ProductController extends Controller
         ]);
 
         $post = Post::where('post_type', 'product')
-            ->where(function($q) use ($id) {
+            ->where(function ($q) use ($id) {
                 $q->where('id', $id)->orWhere('slug', $id);
             })->firstOrFail();
-        
+
         $slug = $request->input('slug') ?: Str::slug($request->name);
-        
+
         $metaData = [
             'sku' => $request->input('sku'),
             'price' => $request->input('price', 0),
@@ -220,29 +234,29 @@ class ProductController extends Controller
         }
 
         $this->alertUpdated('sản phẩm', "Sản phẩm '{$post->title}' đã được cập nhật.");
-        
-        $route = request()->route('projectCode') 
-            ? route('project.admin.products.index', request()->route('projectCode')) 
+
+        $route = request()->route('projectCode')
+            ? route('project.admin.products.index', request()->route('projectCode'))
             : route('cms.products.index');
-            
+
         return redirect($route);
     }
 
     public function destroy($projectCode, $id)
     {
         $post = Post::where('post_type', 'product')
-            ->where(function($q) use ($id) {
+            ->where(function ($q) use ($id) {
                 $q->where('id', $id)->orWhere('slug', $id);
             })->firstOrFail();
         $title = $post->title;
         $post->delete();
 
         $this->alertDeleted('sản phẩm', "Sản phẩm '{$title}' đã được xóa.");
-        
-        $route = request()->route('projectCode') 
-            ? route('project.admin.products.index', request()->route('projectCode')) 
+
+        $route = request()->route('projectCode')
+            ? route('project.admin.products.index', request()->route('projectCode'))
             : route('cms.products.index');
-            
+
         return redirect($route);
     }
 
@@ -254,36 +268,38 @@ class ProductController extends Controller
         }
 
         $products = Post::where('post_type', 'product')
-            ->where(function($q) use ($ids) {
+            ->where(function ($q) use ($ids) {
                 $q->whereIn('id', $ids)->orWhereIn('slug', $ids);
-            })->get()->map(function($p) {
-            $metaData = is_string($p->meta_data) ? json_decode($p->meta_data, true) : ($p->meta_data ?? []);
-            return [
-                'id' => $p->id,
-                'name' => $p->title,
-                'sku' => $metaData['sku'] ?? '',
-                'price' => $metaData['price'] ?? 0,
-                'sale_price' => $metaData['sale_price'] ?? 0,
-                'stock_quantity' => $metaData['stock_quantity'] ?? 0,
-            ];
-        });
+            })->get()->map(function ($p) {
+                $metaData = is_string($p->meta_data) ? json_decode($p->meta_data, true) : ($p->meta_data ?? []);
 
-        $categories = Taxonomy::where('taxonomy', 'product_cat')->get()->map(function($c) {
+                return [
+                    'id' => $p->id,
+                    'name' => $p->title,
+                    'sku' => $metaData['sku'] ?? '',
+                    'price' => $metaData['price'] ?? 0,
+                    'sale_price' => $metaData['sale_price'] ?? 0,
+                    'stock_quantity' => $metaData['stock_quantity'] ?? 0,
+                ];
+            });
+
+        $categories = Taxonomy::where('taxonomy', 'product_cat')->get()->map(function ($c) {
             return ['id' => $c->id, 'name' => $c->name];
         });
 
         $brands = [];
         try {
-            $brands = ProjectBrand::get()->map(function($b) {
+            $brands = ProjectBrand::get()->map(function ($b) {
                 return ['id' => $b->id, 'name' => $b->name];
             });
-        } catch (\Exception $e) {}
+        } catch (\Exception $e) {
+        }
 
         return response()->json([
             'success' => true,
             'products' => $products,
             'categories' => $categories,
-            'brands' => $brands
+            'brands' => $brands,
         ]);
     }
 
@@ -296,16 +312,24 @@ class ProductController extends Controller
 
         foreach ($products as $data) {
             $post = Post::where('post_type', 'product')
-                ->where(function($q) use ($data) {
+                ->where(function ($q) use ($data) {
                     $q->where('id', $data['id'])->orWhere('slug', $data['id']);
                 })->first();
             if ($post) {
                 $metaData = is_string($post->meta_data) ? json_decode($post->meta_data, true) : ($post->meta_data ?? []);
-                
-                if (isset($data['sku'])) $metaData['sku'] = $data['sku'];
-                if (isset($data['price'])) $metaData['price'] = $data['price'];
-                if (isset($data['sale_price'])) $metaData['sale_price'] = $data['sale_price'];
-                if (isset($data['stock_quantity'])) $metaData['stock_quantity'] = $data['stock_quantity'];
+
+                if (isset($data['sku'])) {
+                    $metaData['sku'] = $data['sku'];
+                }
+                if (isset($data['price'])) {
+                    $metaData['price'] = $data['price'];
+                }
+                if (isset($data['sale_price'])) {
+                    $metaData['sale_price'] = $data['sale_price'];
+                }
+                if (isset($data['stock_quantity'])) {
+                    $metaData['stock_quantity'] = $data['stock_quantity'];
+                }
 
                 $post->title = $data['name'] ?? $post->title;
                 $post->meta_data = $metaData;
@@ -327,21 +351,21 @@ class ProductController extends Controller
         $status = $request->input('status');
 
         $post = Post::where('post_type', 'product')
-            ->where(function($q) use ($productId) {
+            ->where(function ($q) use ($productId) {
                 $q->where('id', $productId)->orWhere('slug', $productId);
             })->first();
-        if (!$post) {
+        if (! $post) {
             return response()->json(['success' => false, 'message' => 'Không tìm thấy sản phẩm']);
         }
 
         $metaData = is_string($post->meta_data) ? json_decode($post->meta_data, true) : ($post->meta_data ?? []);
-        
+
         $newState = false;
         if ($badgeType === 'featured') {
-            $newState = !($metaData['is_featured'] ?? false);
+            $newState = ! ($metaData['is_featured'] ?? false);
             $metaData['is_featured'] = $newState;
         } elseif ($badgeType === 'favorite') {
-            $newState = !($metaData['is_favorite'] ?? false);
+            $newState = ! ($metaData['is_favorite'] ?? false);
             $metaData['is_favorite'] = $newState;
         }
 

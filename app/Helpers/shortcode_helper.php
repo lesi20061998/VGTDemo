@@ -1,9 +1,10 @@
 <?php
 
-use App\Services\ShortcodeService;
 use App\Models\ArchiveTemplate;
+use App\Services\ShortcodeService;
+use Illuminate\Support\Collection;
 
-if (!function_exists('parse_shortcodes')) {
+if (! function_exists('parse_shortcodes')) {
     /**
      * Parse shortcodes in content
      */
@@ -13,7 +14,7 @@ if (!function_exists('parse_shortcodes')) {
     }
 }
 
-if (!function_exists('shortcode')) {
+if (! function_exists('shortcode')) {
     /**
      * Render a single shortcode
      * Usage: shortcode('products', ['limit' => 6, 'columns' => 3])
@@ -21,16 +22,16 @@ if (!function_exists('shortcode')) {
     function shortcode(string $tag, array $attrs = []): string
     {
         $attrString = collect($attrs)
-            ->map(fn($v, $k) => "{$k}=\"{$v}\"")
+            ->map(fn ($v, $k) => "{$k}=\"{$v}\"")
             ->implode(' ');
-        
+
         $shortcodeString = "[{$tag} {$attrString}]";
-        
+
         return app(ShortcodeService::class)->parse($shortcodeString);
     }
 }
 
-if (!function_exists('register_shortcode')) {
+if (! function_exists('register_shortcode')) {
     /**
      * Register a custom shortcode
      */
@@ -40,22 +41,23 @@ if (!function_exists('register_shortcode')) {
     }
 }
 
-if (!function_exists('render_archive')) {
+if (! function_exists('render_archive')) {
     /**
      * Render archive template for a content type
      */
     function render_archive(string $type, array $data = [], ?string $templateSlug = null): string
     {
-        $template = $templateSlug 
+        $template = $templateSlug
             ? ArchiveTemplate::where('slug', $templateSlug)->first()
             : ArchiveTemplate::getDefault($type);
 
-        if (!$template) {
+        if (! $template) {
             // Fallback to default view
             $viewPath = "frontend.archives.{$type}";
-            if (\View::exists($viewPath)) {
+            if (View::exists($viewPath)) {
                 return view($viewPath, $data)->render();
             }
+
             return '';
         }
 
@@ -63,11 +65,11 @@ if (!function_exists('render_archive')) {
     }
 }
 
-if (!function_exists('get_archive_templates')) {
+if (! function_exists('get_archive_templates')) {
     /**
      * Get all archive templates for a type
      */
-    function get_archive_templates(string $type): \Illuminate\Support\Collection
+    function get_archive_templates(string $type): Collection
     {
         return ArchiveTemplate::where('type', $type)
             ->where('is_active', true)

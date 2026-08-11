@@ -5,8 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Page;
 use App\Models\PageSection;
-use App\Widgets\WidgetRegistry;
 use App\Services\WidgetPermissionService;
+use App\Services\WidgetRenderingService;
+use App\Widgets\WidgetRegistry;
 use Illuminate\Http\Request;
 
 class PageBuilderController extends Controller
@@ -16,9 +17,9 @@ class PageBuilderController extends Controller
      */
     public function index(Request $request)
     {
-        $permissionService = new WidgetPermissionService();
-        
-        if (!$permissionService->canManageWidgets()) {
+        $permissionService = new WidgetPermissionService;
+
+        if (! $permissionService->canManageWidgets()) {
             abort(403, 'You do not have permission to use page builder');
         }
 
@@ -33,9 +34,9 @@ class PageBuilderController extends Controller
      */
     public function edit(Page $page)
     {
-        $permissionService = new WidgetPermissionService();
-        
-        if (!$permissionService->canManageWidgets()) {
+        $permissionService = new WidgetPermissionService;
+
+        if (! $permissionService->canManageWidgets()) {
             abort(403, 'You do not have permission to edit pages');
         }
 
@@ -53,23 +54,23 @@ class PageBuilderController extends Controller
         $validated = $request->validate([
             'type' => 'required|string',
             'settings' => 'nullable|array',
-            'order' => 'nullable|integer'
+            'order' => 'nullable|integer',
         ]);
 
         // Validate widget type exists
-        if (!WidgetRegistry::exists($validated['type'])) {
+        if (! WidgetRegistry::exists($validated['type'])) {
             return response()->json([
                 'success' => false,
-                'message' => "Widget type '{$validated['type']}' not found"
+                'message' => "Widget type '{$validated['type']}' not found",
             ], 422);
         }
 
         // Check permissions
-        $permissionService = new WidgetPermissionService();
-        if (!$permissionService->canAccessWidget($validated['type'])) {
+        $permissionService = new WidgetPermissionService;
+        if (! $permissionService->canAccessWidget($validated['type'])) {
             return response()->json([
                 'success' => false,
-                'message' => "You do not have permission to use '{$validated['type']}' widget"
+                'message' => "You do not have permission to use '{$validated['type']}' widget",
             ], 403);
         }
 
@@ -83,12 +84,12 @@ class PageBuilderController extends Controller
             return response()->json([
                 'success' => true,
                 'section' => $section,
-                'message' => 'Section added successfully'
+                'message' => 'Section added successfully',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to add section: ' . $e->getMessage()
+                'message' => 'Failed to add section: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -101,14 +102,14 @@ class PageBuilderController extends Controller
         $validated = $request->validate([
             'type' => 'required|string',
             'settings' => 'nullable|array',
-            'is_active' => 'boolean'
+            'is_active' => 'boolean',
         ]);
 
         // Validate widget type exists
-        if (!WidgetRegistry::exists($validated['type'])) {
+        if (! WidgetRegistry::exists($validated['type'])) {
             return response()->json([
                 'success' => false,
-                'message' => "Widget type '{$validated['type']}' not found"
+                'message' => "Widget type '{$validated['type']}' not found",
             ], 422);
         }
 
@@ -118,12 +119,12 @@ class PageBuilderController extends Controller
             return response()->json([
                 'success' => true,
                 'section' => $section,
-                'message' => 'Section updated successfully'
+                'message' => 'Section updated successfully',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to update section: ' . $e->getMessage()
+                'message' => 'Failed to update section: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -138,12 +139,12 @@ class PageBuilderController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Section deleted successfully'
+                'message' => 'Section deleted successfully',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to delete section: ' . $e->getMessage()
+                'message' => 'Failed to delete section: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -155,7 +156,7 @@ class PageBuilderController extends Controller
     {
         $validated = $request->validate([
             'section_ids' => 'required|array',
-            'section_ids.*' => 'integer|exists:page_sections,id'
+            'section_ids.*' => 'integer|exists:page_sections,id',
         ]);
 
         try {
@@ -163,12 +164,12 @@ class PageBuilderController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Sections reordered successfully'
+                'message' => 'Sections reordered successfully',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to reorder sections: ' . $e->getMessage()
+                'message' => 'Failed to reorder sections: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -183,12 +184,12 @@ class PageBuilderController extends Controller
 
             return response()->json([
                 'success' => $moved,
-                'message' => $moved ? 'Section moved up' : 'Section is already at the top'
+                'message' => $moved ? 'Section moved up' : 'Section is already at the top',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to move section: ' . $e->getMessage()
+                'message' => 'Failed to move section: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -203,12 +204,12 @@ class PageBuilderController extends Controller
 
             return response()->json([
                 'success' => $moved,
-                'message' => $moved ? 'Section moved down' : 'Section is already at the bottom'
+                'message' => $moved ? 'Section moved down' : 'Section is already at the bottom',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to move section: ' . $e->getMessage()
+                'message' => 'Failed to move section: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -223,12 +224,12 @@ class PageBuilderController extends Controller
 
             return response()->json([
                 'success' => true,
-                'content' => $content
+                'content' => $content,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to generate preview: ' . $e->getMessage()
+                'message' => 'Failed to generate preview: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -240,11 +241,11 @@ class PageBuilderController extends Controller
     {
         $validated = $request->validate([
             'type' => 'required|string',
-            'settings' => 'nullable|array'
+            'settings' => 'nullable|array',
         ]);
 
         try {
-            $renderingService = new \App\Services\WidgetRenderingService();
+            $renderingService = new WidgetRenderingService;
             $preview = $renderingService->render(
                 $validated['type'],
                 $validated['settings'] ?? []
@@ -252,12 +253,12 @@ class PageBuilderController extends Controller
 
             return response()->json([
                 'success' => true,
-                'preview' => $preview
+                'preview' => $preview,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Preview generation failed: ' . $e->getMessage()
+                'message' => 'Preview generation failed: '.$e->getMessage(),
             ], 422);
         }
     }
@@ -275,12 +276,12 @@ class PageBuilderController extends Controller
             return response()->json([
                 'success' => true,
                 'section' => $newSection,
-                'message' => 'Section duplicated successfully'
+                'message' => 'Section duplicated successfully',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to duplicate section: ' . $e->getMessage()
+                'message' => 'Failed to duplicate section: '.$e->getMessage(),
             ], 500);
         }
     }

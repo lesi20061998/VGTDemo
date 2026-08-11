@@ -11,8 +11,8 @@ class UrlField extends BaseFieldType
         $attributes['value'] = $value ?? $config['default'] ?? '';
         $attributes['placeholder'] = $config['placeholder'] ?? 'https://example.com';
 
-        $fieldHtml = "<input" . $this->renderAttributes($attributes) . ">";
-        
+        $fieldHtml = '<input'.$this->renderAttributes($attributes).'>';
+
         return $this->renderFieldWrapper($config, $fieldHtml);
     }
 
@@ -20,20 +20,21 @@ class UrlField extends BaseFieldType
     {
         // Allow empty values if not required
         if (empty($value)) {
-            return !\in_array('required', $rules);
+            return ! \in_array('required', $rules);
         }
-        
+
         // Check if it's a valid URL or a relative path
         if (filter_var($value, FILTER_VALIDATE_URL) !== false) {
             return true;
         }
-        
+
         // Check if it's a valid relative path (starts with / or #)
         if (preg_match('/^(\/|#)/', $value)) {
             return true;
         }
-        
-        $filteredRules = array_filter($rules, fn($rule) => $rule !== 'url');
+
+        $filteredRules = array_filter($rules, fn ($rule) => $rule !== 'url');
+
         return parent::validate($value, $filteredRules);
     }
 

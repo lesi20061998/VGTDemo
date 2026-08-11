@@ -1,20 +1,21 @@
 <?php
+
 // MODIFIED: 2025-01-21
 
 namespace App\Models;
 
+use App\Traits\BelongsToTenant;
+use App\Traits\ProjectScoped;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Traits\ProjectScoped;
-use App\Traits\BelongsToTenant;
-use Illuminate\Database\Eloquent\Builder;
 
 class Brand extends Model
 {
-    use HasFactory, ProjectScoped, BelongsToTenant;
+    use BelongsToTenant, HasFactory, ProjectScoped;
 
     protected $fillable = [
-        'name', 'slug', 'description', 'logo', 'is_active', 'tenant_id'
+        'name', 'slug', 'description', 'logo', 'is_active', 'tenant_id',
     ];
 
     protected $casts = [
@@ -36,7 +37,7 @@ class Brand extends Model
     public function scopeSearch(Builder $query, $search)
     {
         return $query->where('name', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%");
+            ->orWhere('description', 'like', "%{$search}%");
     }
 
     // Accessors

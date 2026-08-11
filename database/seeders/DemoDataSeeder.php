@@ -2,18 +2,18 @@
 
 namespace Database\Seeders;
 
+use App\Models\Project;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class DemoDataSeeder extends Seeder
 {
     public function run()
     {
-        $project = \App\Models\Project::first();
+        $project = Project::first();
         $tenantId = session('current_tenant_id') ?? ($project ? $project->id : null);
         $projectId = session('current_project_id') ?? ($project ? $project->id : null);
-        
+
         // Posts
         $posts = [
             ['title' => 'Getting Started with Modern Web Development', 'slug' => 'getting-started-web-dev', 'content' => '<p>Learn the fundamentals of modern web development with our comprehensive guide covering HTML, CSS, JavaScript, and popular frameworks.</p>'],

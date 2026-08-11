@@ -3,11 +3,12 @@
 namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
-use App\Models\Product;
-use App\Models\Post;
-use App\Models\Category;
-use App\Models\Brand;
 use App\Models\ArchiveTemplate;
+use App\Models\Brand;
+use App\Models\Category;
+use App\Models\Post;
+use App\Models\PostCategory;
+use App\Models\Product;
 use Illuminate\Http\Request;
 
 class ArchiveController extends Controller
@@ -47,7 +48,7 @@ class ArchiveController extends Controller
 
         // Search
         if ($request->filled('q')) {
-            $query->where('name', 'like', '%' . $request->q . '%');
+            $query->where('name', 'like', '%'.$request->q.'%');
         }
 
         // Sort
@@ -68,7 +69,7 @@ class ArchiveController extends Controller
 
         // Check for custom archive template
         $template = ArchiveTemplate::getDefault('product');
-        
+
         if ($template) {
             return response($template->render([
                 'products' => $products,
@@ -141,8 +142,8 @@ class ArchiveController extends Controller
         // Search
         if ($request->filled('q')) {
             $query->where(function ($q) use ($request) {
-                $q->where('title', 'like', '%' . $request->q . '%')
-                  ->orWhere('content', 'like', '%' . $request->q . '%');
+                $q->where('title', 'like', '%'.$request->q.'%')
+                    ->orWhere('content', 'like', '%'.$request->q.'%');
             });
         }
 
@@ -158,13 +159,13 @@ class ArchiveController extends Controller
             ->first();
 
         // Get categories
-        $categories = \App\Models\PostCategory::withCount('posts')
+        $categories = PostCategory::withCount('posts')
             ->orderBy('name')
             ->get();
 
         // Check for custom archive template
         $template = ArchiveTemplate::getDefault('post');
-        
+
         if ($template) {
             return response($template->render([
                 'posts' => $posts,
@@ -209,6 +210,7 @@ class ArchiveController extends Controller
         }
 
         $parts = explode('-', $range);
+
         return [
             (int) ($parts[0] ?? 0),
             isset($parts[1]) ? (int) $parts[1] : null,

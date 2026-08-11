@@ -14,21 +14,25 @@ class AuthServiceProvider extends ServiceProvider
         // SuperAdmin full access
         Gate::define('manage-employees', function ($user) {
             $employee = $user->employee;
+
             return $user->level <= 1 || ($employee && (in_array($employee->superadmin_role, ['superadmin', 'director', 'account', 'dev']) || $employee->is_department_manager));
         });
 
         Gate::define('manage-contracts', function ($user) {
             $employee = $user->employee;
+
             return $user->level <= 1 || ($employee && in_array($employee->superadmin_role, ['director', 'account']));
         });
 
         Gate::define('manage-projects', function ($user) {
             $employee = $user->employee;
+
             return $user->level <= 1 || ($employee && in_array($employee->superadmin_role, ['director', 'dev', 'account']));
         });
 
         Gate::define('manage-tasks', function ($user) {
             $employee = $user->employee;
+
             return $user->level <= 1 || ($employee && in_array($employee->superadmin_role, ['director', 'dev', 'account']));
         });
     }

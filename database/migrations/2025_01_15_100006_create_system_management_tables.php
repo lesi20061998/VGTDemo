@@ -24,7 +24,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('role_id')->constrained()->onDelete('cascade');
             $table->timestamps();
-            
+
             $table->unique(['user_id', 'role_id']);
         });
 
@@ -40,7 +40,7 @@ return new class extends Migration
             $table->string('ip_address')->nullable();
             $table->string('user_agent')->nullable();
             $table->timestamps();
-            
+
             $table->index(['user_id', 'created_at']);
             $table->index(['model_type', 'model_id']);
             $table->index(['action', 'created_at']);
@@ -55,7 +55,7 @@ return new class extends Migration
             $table->string('group')->default('general');
             $table->text('description')->nullable();
             $table->timestamps();
-            
+
             $table->index(['group', 'key']);
         });
 
@@ -67,7 +67,7 @@ return new class extends Migration
             $table->json('items'); // nested menu structure
             $table->boolean('is_active')->default(true);
             $table->timestamps();
-            
+
             $table->index(['location', 'is_active']);
         });
 
@@ -81,7 +81,7 @@ return new class extends Migration
             $table->integer('sort_order')->default(0);
             $table->boolean('is_active')->default(true);
             $table->timestamps();
-            
+
             $table->index(['area', 'is_active', 'sort_order']);
         });
 
@@ -96,7 +96,7 @@ return new class extends Migration
             $table->enum('status', ['pending', 'completed', 'failed'])->default('pending');
             $table->text('error_message')->nullable();
             $table->timestamps();
-            
+
             $table->index(['status', 'created_at']);
             $table->index(['type', 'created_at']);
         });
@@ -109,7 +109,7 @@ return new class extends Migration
             $table->text('message');
             $table->json('context')->nullable();
             $table->timestamps();
-            
+
             $table->index(['level', 'created_at']);
             $table->index(['channel', 'created_at']);
         });

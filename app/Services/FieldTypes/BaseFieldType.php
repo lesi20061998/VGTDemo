@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Validator;
 abstract class BaseFieldType implements FieldTypeInterface
 {
     protected array $config;
+
     protected mixed $value;
 
     public function __construct(array $config = [])
@@ -30,7 +31,7 @@ abstract class BaseFieldType implements FieldTypeInterface
             ['field' => implode('|', $rules)]
         );
 
-        return !$validator->fails();
+        return ! $validator->fails();
     }
 
     /**
@@ -51,7 +52,7 @@ abstract class BaseFieldType implements FieldTypeInterface
      */
     protected function getFieldId(array $config): string
     {
-        return 'field_' . ($config['name'] ?? 'unnamed');
+        return 'field_'.($config['name'] ?? 'unnamed');
     }
 
     /**
@@ -60,11 +61,11 @@ abstract class BaseFieldType implements FieldTypeInterface
     protected function getFieldAttributes(array $config, mixed $value = null): array
     {
         $baseClasses = 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors';
-        
+
         $attributes = [
             'id' => $this->getFieldId($config),
             'name' => $config['name'] ?? '',
-            'class' => $baseClasses . ' ' . ($config['class'] ?? ''),
+            'class' => $baseClasses.' '.($config['class'] ?? ''),
         ];
 
         if (isset($config['placeholder'])) {
@@ -93,9 +94,10 @@ abstract class BaseFieldType implements FieldTypeInterface
             if ($value === true || $value === $key) {
                 $html .= " {$key}";
             } elseif ($value !== false && $value !== null) {
-                $html .= " {$key}=\"" . htmlspecialchars($value) . "\"";
+                $html .= " {$key}=\"".htmlspecialchars($value).'"';
             }
         }
+
         return $html;
     }
 
@@ -104,7 +106,7 @@ abstract class BaseFieldType implements FieldTypeInterface
      */
     protected function renderLabel(array $config): string
     {
-        if (!isset($config['label'])) {
+        if (! isset($config['label'])) {
             return '';
         }
 
@@ -119,7 +121,7 @@ abstract class BaseFieldType implements FieldTypeInterface
      */
     protected function renderHelp(array $config): string
     {
-        if (!isset($config['help'])) {
+        if (! isset($config['help'])) {
             return '';
         }
 
@@ -134,6 +136,13 @@ abstract class BaseFieldType implements FieldTypeInterface
         $label = $this->renderLabel($config);
         $help = $this->renderHelp($config);
 
-        return "<div class=\"mb-6\">{$label}{$fieldHtml}{$help}</div>";
+        // Conditional display support
+        $dataAttrs = '';
+        if (isset($config['show_if'])) {
+            $showIfJson = htmlspecialchars(json_encode($config['show_if']), ENT_QUOTES, 'UTF-8');
+            $dataAttrs = ' data-show-if=\''.$showIfJson.'\' style="display:none"';
+        }
+
+        return "<div class=\"mb-6 widget-field\"{$dataAttrs}>{$label}{$fieldHtml}{$help}</div>";
     }
 }

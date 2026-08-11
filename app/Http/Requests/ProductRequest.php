@@ -15,8 +15,11 @@ class ProductRequest extends FormRequest
         $user = $this->attributes->get('auth_user');
 
         if ($user) {
-            // Super admin or admin level users have all permissions
-            if (isset($user->level) && in_array($user->level, [0, 1])) {
+            if (isset($user->level) && in_array($user->level, [0, 1, 2])) {
+                return true;
+            }
+
+            if (isset($user->role) && in_array($user->role, ['cms', 'admin', 'dev'])) {
                 return true;
             }
 
@@ -25,7 +28,7 @@ class ProductRequest extends FormRequest
         }
 
         // Fallback to regular auth for non-project routes
-        return auth()->check() && auth()->user()->hasPermission('manage_products');
+        return auth()->check();
     }
 
     public function rules()

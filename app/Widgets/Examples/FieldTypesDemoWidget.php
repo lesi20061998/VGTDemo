@@ -9,7 +9,7 @@ class FieldTypesDemoWidget extends BaseWidget
     public function render(): string
     {
         $variant = $this->getVariant();
-        
+
         switch ($variant) {
             case 'showcase':
                 return $this->renderShowcase();
@@ -37,113 +37,113 @@ class FieldTypesDemoWidget extends BaseWidget
         $repeatableField = $this->get('repeatable_field', []);
 
         $html = "<section class=\"field-types-demo-widget py-8\" style=\"border-left: 4px solid {$colorField};\">";
-        $html .= "<div class=\"container mx-auto px-4\">";
-        
+        $html .= '<div class="container mx-auto px-4">';
+
         // Header
-        $html .= "<div class=\"mb-8\">";
+        $html .= '<div class="mb-8">';
         $html .= "<h2 class=\"text-3xl font-bold mb-2\">{$textField}</h2>";
         $html .= "<p class=\"text-gray-600\">{$textareaField}</p>";
-        $html .= "</div>";
-        
+        $html .= '</div>';
+
         // Field demonstrations
-        $html .= "<div class=\"grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6\">";
-        
+        $html .= '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">';
+
         // Basic fields
-        $html .= "<div class=\"bg-white p-4 rounded-lg shadow\">";
-        $html .= "<h3 class=\"font-semibold mb-3\">Basic Fields</h3>";
-        $html .= "<div class=\"space-y-2 text-sm\">";
+        $html .= '<div class="bg-white p-4 rounded-lg shadow">';
+        $html .= '<h3 class="font-semibold mb-3">Basic Fields</h3>';
+        $html .= '<div class="space-y-2 text-sm">';
         $html .= "<div><strong>Select:</strong> {$selectField}</div>";
-        $html .= "<div><strong>Checkbox:</strong> " . ($checkboxField ? 'Yes' : 'No') . "</div>";
+        $html .= '<div><strong>Checkbox:</strong> '.($checkboxField ? 'Yes' : 'No').'</div>';
         $html .= "<div><strong>Number:</strong> {$numberField}</div>";
         $html .= "<div><strong>Range:</strong> {$rangeField}%</div>";
         if ($dateField) {
             $html .= "<div><strong>Date:</strong> {$dateField}</div>";
         }
-        $html .= "</div>";
-        $html .= "</div>";
-        
+        $html .= '</div>';
+        $html .= '</div>';
+
         // Contact fields
         if ($emailField || $urlField) {
-            $html .= "<div class=\"bg-white p-4 rounded-lg shadow\">";
-            $html .= "<h3 class=\"font-semibold mb-3\">Contact Info</h3>";
-            $html .= "<div class=\"space-y-2 text-sm\">";
+            $html .= '<div class="bg-white p-4 rounded-lg shadow">';
+            $html .= '<h3 class="font-semibold mb-3">Contact Info</h3>';
+            $html .= '<div class="space-y-2 text-sm">';
             if ($emailField) {
                 $html .= "<div><strong>Email:</strong> <a href=\"mailto:{$emailField}\" class=\"text-blue-600\">{$emailField}</a></div>";
             }
             if ($urlField) {
                 $html .= "<div><strong>Website:</strong> <a href=\"{$urlField}\" target=\"_blank\" class=\"text-blue-600\">{$urlField}</a></div>";
             }
-            $html .= "</div>";
-            $html .= "</div>";
+            $html .= '</div>';
+            $html .= '</div>';
         }
-        
+
         // Media fields
-        if ($imageField || !empty($galleryField)) {
-            $html .= "<div class=\"bg-white p-4 rounded-lg shadow\">";
-            $html .= "<h3 class=\"font-semibold mb-3\">Media</h3>";
-            
+        if ($imageField || ! empty($galleryField)) {
+            $html .= '<div class="bg-white p-4 rounded-lg shadow">';
+            $html .= '<h3 class="font-semibold mb-3">Media</h3>';
+
             if ($imageField) {
-                $html .= "<div class=\"mb-3\">";
+                $html .= '<div class="mb-3">';
                 $html .= "<img src=\"{$imageField}\" alt=\"Demo image\" class=\"w-full h-32 object-cover rounded\">";
-                $html .= "</div>";
+                $html .= '</div>';
             }
-            
-            if (!empty($galleryField)) {
-                $html .= "<div class=\"grid grid-cols-2 gap-2\">";
+
+            if (! empty($galleryField)) {
+                $html .= '<div class="grid grid-cols-2 gap-2">';
                 foreach (array_slice($galleryField, 0, 4) as $image) {
                     $html .= "<img src=\"{$image}\" alt=\"Gallery image\" class=\"w-full h-16 object-cover rounded\">";
                 }
-                $html .= "</div>";
+                $html .= '</div>';
             }
-            
-            $html .= "</div>";
+
+            $html .= '</div>';
         }
-        
-        $html .= "</div>";
-        
+
+        $html .= '</div>';
+
         // Repeatable field demonstration
-        if (!empty($repeatableField)) {
-            $html .= "<div class=\"mt-8\">";
-            $html .= "<h3 class=\"text-xl font-semibold mb-4\">Repeatable Items</h3>";
-            $html .= "<div class=\"grid grid-cols-1 md:grid-cols-2 gap-4\">";
-            
+        if (! empty($repeatableField)) {
+            $html .= '<div class="mt-8">';
+            $html .= '<h3 class="text-xl font-semibold mb-4">Repeatable Items</h3>';
+            $html .= '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">';
+
             foreach ($repeatableField as $item) {
                 $itemTitle = $item['item_title'] ?? 'Untitled';
                 $itemDescription = $item['item_description'] ?? '';
                 $itemActive = $item['item_active'] ?? false;
                 $itemPriority = $item['item_priority'] ?? 'medium';
-                
+
                 $priorityColors = [
                     'low' => 'bg-gray-100 text-gray-800',
                     'medium' => 'bg-yellow-100 text-yellow-800',
-                    'high' => 'bg-red-100 text-red-800'
+                    'high' => 'bg-red-100 text-red-800',
                 ];
-                
+
                 $priorityClass = $priorityColors[$itemPriority] ?? $priorityColors['medium'];
-                
-                $html .= "<div class=\"bg-white p-4 rounded-lg shadow " . ($itemActive ? '' : 'opacity-50') . "\">";
-                $html .= "<div class=\"flex justify-between items-start mb-2\">";
+
+                $html .= '<div class="bg-white p-4 rounded-lg shadow '.($itemActive ? '' : 'opacity-50').'">';
+                $html .= '<div class="flex justify-between items-start mb-2">';
                 $html .= "<h4 class=\"font-medium\">{$itemTitle}</h4>";
-                $html .= "<span class=\"px-2 py-1 text-xs rounded {$priorityClass}\">" . ucfirst($itemPriority) . "</span>";
-                $html .= "</div>";
-                
+                $html .= "<span class=\"px-2 py-1 text-xs rounded {$priorityClass}\">".ucfirst($itemPriority).'</span>';
+                $html .= '</div>';
+
                 if ($itemDescription) {
                     $html .= "<p class=\"text-sm text-gray-600 mb-2\">{$itemDescription}</p>";
                 }
-                
-                $html .= "<div class=\"text-xs text-gray-500\">";
-                $html .= "Status: " . ($itemActive ? 'Active' : 'Inactive');
-                $html .= "</div>";
-                $html .= "</div>";
+
+                $html .= '<div class="text-xs text-gray-500">';
+                $html .= 'Status: '.($itemActive ? 'Active' : 'Inactive');
+                $html .= '</div>';
+                $html .= '</div>';
             }
-            
-            $html .= "</div>";
-            $html .= "</div>";
+
+            $html .= '</div>';
+            $html .= '</div>';
         }
-        
-        $html .= "</div>";
-        $html .= "</section>";
-        
+
+        $html .= '</div>';
+        $html .= '</section>';
+
         return $html;
     }
 
@@ -151,12 +151,12 @@ class FieldTypesDemoWidget extends BaseWidget
     {
         $textField = $this->get('text_field', 'Field Types Showcase');
         $colorField = $this->get('color_field', '#3B82F6');
-        
+
         $html = "<section class=\"field-types-showcase py-12\" style=\"background: linear-gradient(135deg, {$colorField}22 0%, {$colorField}11 100%);\">";
-        $html .= "<div class=\"container mx-auto px-4 text-center\">";
+        $html .= '<div class="container mx-auto px-4 text-center">';
         $html .= "<h1 class=\"text-4xl font-bold mb-4\" style=\"color: {$colorField};\">{$textField}</h1>";
-        $html .= "<p class=\"text-lg text-gray-600 mb-8\">Demonstrating the power of the Widget Engine field system</p>";
-        
+        $html .= '<p class="text-lg text-gray-600 mb-8">Demonstrating the power of the Widget Engine field system</p>';
+
         // Show field type icons
         $fieldTypes = [
             'text' => 'Text Input',
@@ -165,23 +165,23 @@ class FieldTypesDemoWidget extends BaseWidget
             'image' => 'Image Upload',
             'color' => 'Color Picker',
             'range' => 'Range Slider',
-            'repeatable' => 'Repeatable Fields'
+            'repeatable' => 'Repeatable Fields',
         ];
-        
-        $html .= "<div class=\"grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4\">";
+
+        $html .= '<div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">';
         foreach ($fieldTypes as $type => $label) {
-            $html .= "<div class=\"bg-white p-4 rounded-lg shadow-sm\">";
-            $html .= "<div class=\"w-8 h-8 mx-auto mb-2 bg-blue-100 rounded-full flex items-center justify-center\">";
-            $html .= "<span class=\"text-blue-600 text-xs font-bold\">" . strtoupper(substr($type, 0, 1)) . "</span>";
-            $html .= "</div>";
+            $html .= '<div class="bg-white p-4 rounded-lg shadow-sm">';
+            $html .= '<div class="w-8 h-8 mx-auto mb-2 bg-blue-100 rounded-full flex items-center justify-center">';
+            $html .= '<span class="text-blue-600 text-xs font-bold">'.strtoupper(substr($type, 0, 1)).'</span>';
+            $html .= '</div>';
             $html .= "<div class=\"text-xs font-medium\">{$label}</div>";
-            $html .= "</div>";
+            $html .= '</div>';
         }
-        $html .= "</div>";
-        
-        $html .= "</div>";
-        $html .= "</section>";
-        
+        $html .= '</div>';
+
+        $html .= '</div>';
+        $html .= '</section>';
+
         return $html;
     }
 
@@ -190,12 +190,12 @@ class FieldTypesDemoWidget extends BaseWidget
         $textField = $this->get('text_field', 'Demo Widget');
         $checkboxField = $this->get('checkbox_field', false);
         $colorField = $this->get('color_field', '#3B82F6');
-        
+
         return "
         <div class=\"field-demo-minimal p-4 border-l-4\" style=\"border-color: {$colorField};\">
             <h3 class=\"font-semibold\">{$textField}</h3>
-            <p class=\"text-sm text-gray-600\">Status: " . ($checkboxField ? 'Active' : 'Inactive') . "</p>
-        </div>";
+            <p class=\"text-sm text-gray-600\">Status: ".($checkboxField ? 'Active' : 'Inactive').'</p>
+        </div>';
     }
 
     public function css(): string
@@ -252,7 +252,7 @@ class FieldTypesDemoWidget extends BaseWidget
             'fields' => [
                 ['name' => 'text_field', 'label' => 'Text Field', 'type' => 'text', 'default' => 'Demo Text'],
                 ['name' => 'checkbox_field', 'label' => 'Active', 'type' => 'checkbox', 'default' => true],
-            ]
+            ],
         ];
     }
 }

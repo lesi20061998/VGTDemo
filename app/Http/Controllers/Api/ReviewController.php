@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class ReviewController extends Controller
 {
@@ -15,7 +15,7 @@ class ReviewController extends Controller
     {
         $reviewsSetting = setting('reviews', []);
         $reviews = is_array($reviewsSetting) ? $reviewsSetting : json_decode($reviewsSetting, true) ?? [];
-        
+
         // Return only client-needed configuration
         $clientConfig = [
             'enabled' => $reviews['enabled'] ?? true,
@@ -38,10 +38,10 @@ class ReviewController extends Controller
             'per_page' => $reviews['per_page'] ?? 10,
             'allow_helpful' => $reviews['allow_helpful'] ?? true,
         ];
-        
+
         return response()->json([
             'success' => true,
-            'data' => $clientConfig
+            'data' => $clientConfig,
         ]);
     }
 
@@ -52,11 +52,10 @@ class ReviewController extends Controller
     {
         // Implementation for storing reviews
         // This would be implemented based on your review model structure
-        
+
         return response()->json([
             'success' => true,
-            'message' => 'Review stored successfully'
+            'message' => 'Review stored successfully',
         ]);
     }
 }
-

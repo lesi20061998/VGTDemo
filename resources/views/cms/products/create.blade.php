@@ -486,14 +486,26 @@
 
             <!-- Danh mục -->
             <div class="bg-white rounded-lg shadow-sm p-6">
-                <h2 class="font-semibold text-gray-900 mb-4">Danh mục sản phẩm</h2>
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="font-semibold text-gray-900">Danh mục sản phẩm</h2>
+                    <a href="{{ isset($currentProject) && $currentProject ? route('project.admin.categories.create', $currentProject->code) : route('cms.categories.create') }}" 
+                       target="_blank"
+                       class="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                        + Thêm danh mục mới
+                    </a>
+                </div>
                 <div class="max-h-64 overflow-y-auto border rounded-lg p-3 space-y-2">
-                    @foreach($categories ?? [] as $cat)
+                    @forelse($categories ?? [] as $cat)
                     <label class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer">
                         <input type="checkbox" name="categories[]" value="{{ $cat->id }}" class="rounded border-gray-300 text-blue-600 mr-2">
                         <span class="text-sm">{{ $cat->name }}</span>
                     </label>
-                    @endforeach
+                    @empty
+                    <div class="text-center py-4 text-gray-500 text-xs">
+                        Chưa có danh mục nào. <a href="{{ isset($currentProject) && $currentProject ? route('project.admin.categories.create', $currentProject->code) : route('cms.categories.create') }}" target="_blank" class="text-blue-600 hover:underline">Thêm mới</a>
+                    </div>
+                    @endforelse
                 </div>
                 <input type="hidden" name="product_category_id" id="mainCategory">
                 @error('product_category_id')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror

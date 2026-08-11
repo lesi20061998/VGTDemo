@@ -7,6 +7,7 @@ use Illuminate\View\Component;
 class LocationSelect extends Component
 {
     public $name;
+
     public $value;
 
     public function __construct($name = 'location', $value = null)

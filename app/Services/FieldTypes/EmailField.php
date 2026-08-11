@@ -11,14 +11,15 @@ class EmailField extends BaseFieldType
         $attributes['value'] = $value ?? $config['default'] ?? '';
         $attributes['placeholder'] = $config['placeholder'] ?? 'email@example.com';
 
-        $fieldHtml = "<input" . $this->renderAttributes($attributes) . ">";
-        
+        $fieldHtml = '<input'.$this->renderAttributes($attributes).'>';
+
         return $this->renderFieldWrapper($config, $fieldHtml);
     }
 
     public function validate(mixed $value, array $rules): bool
     {
         $defaultRules = ['email'];
+
         return parent::validate($value, [...$defaultRules, ...$rules]);
     }
 

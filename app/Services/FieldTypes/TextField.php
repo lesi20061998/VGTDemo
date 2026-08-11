@@ -14,14 +14,15 @@ class TextField extends BaseFieldType
             $attributes['maxlength'] = $config['max_length'];
         }
 
-        $fieldHtml = "<input" . $this->renderAttributes($attributes) . ">";
-        
+        $fieldHtml = '<input'.$this->renderAttributes($attributes).'>';
+
         return $this->renderFieldWrapper($config, $fieldHtml);
     }
 
     public function validate(mixed $value, array $rules): bool
     {
         $defaultRules = ['string'];
+
         return parent::validate($value, [...$defaultRules, ...$rules]);
     }
 

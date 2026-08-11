@@ -13,7 +13,7 @@ class BypassWidgetPermission
         if (config('app.env') === 'local') {
             session(['widget_dev_access' => true]);
         }
-        
+
         return $next($request);
     }
 }

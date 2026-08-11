@@ -18,14 +18,15 @@ class DateField extends BaseFieldType
             $attributes['max'] = $config['max_date'];
         }
 
-        $fieldHtml = "<input" . $this->renderAttributes($attributes) . ">";
-        
+        $fieldHtml = '<input'.$this->renderAttributes($attributes).'>';
+
         return $this->renderFieldWrapper($config, $fieldHtml);
     }
 
     public function validate(mixed $value, array $rules): bool
     {
         $defaultRules = ['date'];
+
         return parent::validate($value, [...$defaultRules, ...$rules]);
     }
 

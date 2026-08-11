@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\File;
 
 class ProjectController extends Controller implements HasMiddleware
 {
@@ -40,9 +41,9 @@ class ProjectController extends Controller implements HasMiddleware
 
         $infectedProjects = [];
         foreach ($projects as $project) {
-            $logPath = storage_path('logs/file-changes-' . $project->code . '.log');
-            if (\Illuminate\Support\Facades\File::exists($logPath)) {
-                $content = \Illuminate\Support\Facades\File::get($logPath);
+            $logPath = storage_path('logs/file-changes-'.$project->code.'.log');
+            if (File::exists($logPath)) {
+                $content = File::get($logPath);
                 if (str_contains($content, 'Độc Hại') || str_contains($content, '\u0110\u1ed9c H\u1ea1i')) {
                     $infectedProjects[] = $project->id;
                 }

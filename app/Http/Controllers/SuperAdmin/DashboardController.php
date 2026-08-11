@@ -9,6 +9,7 @@ use App\Models\Post;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
+use Illuminate\Support\Facades\File;
 
 class DashboardController extends Controller
 {
@@ -84,9 +85,9 @@ class DashboardController extends Controller
         $allProjects = Project::all();
         $infectedProjects = [];
         foreach ($allProjects as $p) {
-            $logPath = storage_path('logs/file-changes-' . $p->code . '.log');
-            if (\Illuminate\Support\Facades\File::exists($logPath)) {
-                $content = \Illuminate\Support\Facades\File::get($logPath);
+            $logPath = storage_path('logs/file-changes-'.$p->code.'.log');
+            if (File::exists($logPath)) {
+                $content = File::get($logPath);
                 if (str_contains($content, 'Độc Hại') || str_contains($content, '\u0110\u1ed9c H\u1ea1i')) {
                     $infectedProjects[] = $p;
                 }

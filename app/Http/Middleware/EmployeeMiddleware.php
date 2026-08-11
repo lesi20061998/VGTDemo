@@ -11,15 +11,14 @@ class EmployeeMiddleware
     /**
      * Handle an incoming request.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  Closure(Request): (Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!auth()->check() || auth()->user()->level > 2) {
+        if (! auth()->check() || auth()->user()->level > 2) {
             abort(403, 'Không có quyền truy cập.');
         }
-        
+
         return $next($request);
     }
 }
-

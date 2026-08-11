@@ -2,8 +2,8 @@
 
 namespace App\Widgets\Product;
 
-use App\Widgets\BaseWidget;
 use App\Models\Post;
+use App\Widgets\BaseWidget;
 
 class ProductListWidget extends BaseWidget
 {
@@ -19,7 +19,7 @@ class ProductListWidget extends BaseWidget
             ->orderBy('created_at', 'desc');
 
         if ($categoryId) {
-            $query->whereHas('taxonomies', function($q) use ($categoryId) {
+            $query->whereHas('taxonomies', function ($q) use ($categoryId) {
                 $q->where('taxonomies.id', $categoryId);
             });
         }
@@ -35,7 +35,7 @@ class ProductListWidget extends BaseWidget
         }
 
         $projectCode = request()->route('projectCode');
-        
+
         // Kiểm tra watermark có được bật không
         $watermark = setting('watermark', []);
         $watermarkEnabled = $watermark['enabled'] ?? false;
@@ -48,58 +48,58 @@ class ProductListWidget extends BaseWidget
         foreach ($products as $product) {
             $productUrl = $projectCode ? "/{$projectCode}/san-pham/{$product->slug}" : "/san-pham/{$product->slug}";
             $image = $this->getProductImage($product->featured_image, $watermarkEnabled);
-            
+
             $priceValue = $product->meta_data['price'] ?? 0;
             $salePriceValue = $product->meta_data['sale_price'] ?? null;
-            
-            $price = $priceValue ? number_format($priceValue) . 'đ' : 'Liên hệ';
-            $salePrice = $salePriceValue ? number_format($salePriceValue) . 'đ' : null;
-            
-            $isFeatured = !empty($product->meta_data['is_featured']);
-            $isBestseller = !empty($product->meta_data['is_bestseller']);
-            $isFavorite = !empty($product->meta_data['is_favorite']);
-            
+
+            $price = $priceValue ? number_format($priceValue).'đ' : 'Liên hệ';
+            $salePrice = $salePriceValue ? number_format($salePriceValue).'đ' : null;
+
+            $isFeatured = ! empty($product->meta_data['is_featured']);
+            $isBestseller = ! empty($product->meta_data['is_bestseller']);
+            $isFavorite = ! empty($product->meta_data['is_favorite']);
+
             $name = $product->title;
 
-            $html .= "<div class=\"product-card bg-white rounded-lg shadow hover:shadow-xl transition overflow-hidden\">";
-            $html .= "<div class=\"relative\">";
+            $html .= '<div class="product-card bg-white rounded-lg shadow hover:shadow-xl transition overflow-hidden">';
+            $html .= '<div class="relative">';
             $html .= "<img src=\"{$image}\" alt=\"{$name}\" class=\"w-full h-48 object-cover\">";
 
             // Badges
-            $html .= "<div class=\"absolute top-2 left-2 flex flex-col gap-1\">";
+            $html .= '<div class="absolute top-2 left-2 flex flex-col gap-1">';
             if ($isFeatured) {
-                $html .= "<span class=\"bg-yellow-400 text-yellow-900 text-xs px-2 py-1 rounded\">Nổi bật</span>";
+                $html .= '<span class="bg-yellow-400 text-yellow-900 text-xs px-2 py-1 rounded">Nổi bật</span>';
             }
             if ($isBestseller) {
-                $html .= "<span class=\"bg-green-500 text-white text-xs px-2 py-1 rounded\">Bán chạy</span>";
+                $html .= '<span class="bg-green-500 text-white text-xs px-2 py-1 rounded">Bán chạy</span>';
             }
             if ($isFavorite) {
-                $html .= "<span class=\"bg-red-500 text-white text-xs px-2 py-1 rounded\">Yêu thích</span>";
+                $html .= '<span class="bg-red-500 text-white text-xs px-2 py-1 rounded">Yêu thích</span>';
             }
-            $html .= "</div>";
+            $html .= '</div>';
 
             if ($salePriceValue) {
-                $html .= "<span class=\"absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded\">Sale</span>";
+                $html .= '<span class="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded">Sale</span>';
             }
-            $html .= "</div>";
+            $html .= '</div>';
 
-            $html .= "<div class=\"p-6\">";
+            $html .= '<div class="p-6">';
             $html .= "<h3 class=\"text-xl font-bold mb-2 line-clamp-2\">{$name}</h3>";
             $desc = \Str::limit(strip_tags($product->excerpt ?: $product->content), 80);
             $html .= "<p class=\"text-gray-600 text-sm mb-4 line-clamp-2\">{$desc}</p>";
-            $html .= "<div class=\"flex justify-between items-center\">";
-            $html .= "<div>";
+            $html .= '<div class="flex justify-between items-center">';
+            $html .= '<div>';
             if ($salePriceValue) {
                 $html .= "<span class=\"text-gray-400 line-through text-sm\">{$price}</span><br>";
             }
             $displayPrice = $salePriceValue ? $salePrice : $price;
             $html .= "<span class=\"text-2xl font-bold text-blue-600\">{$displayPrice}</span>";
-            $html .= "</div>";
+            $html .= '</div>';
             $html .= "<a href=\"{$productUrl}\" class=\"bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700\">Xem</a>";
-            $html .= "</div></div></div>";
+            $html .= '</div></div></div>';
         }
 
-        $html .= "</div></div></section>";
+        $html .= '</div></div></section>';
 
         return $html;
     }

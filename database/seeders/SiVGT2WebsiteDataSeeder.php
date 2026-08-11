@@ -21,7 +21,7 @@ class SiVGT2WebsiteDataSeeder extends Seeder
         foreach ($categories as $category) {
             DB::table('product_categories')->insert(array_merge($category, [
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ]));
         }
 
@@ -36,7 +36,7 @@ class SiVGT2WebsiteDataSeeder extends Seeder
         foreach ($brands as $brand) {
             DB::table('brands')->insert(array_merge($brand, [
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ]));
         }
 
@@ -111,13 +111,13 @@ class SiVGT2WebsiteDataSeeder extends Seeder
                 'brand_id' => 1,
                 'is_active' => 1,
                 'is_featured' => 1,
-            ]
+            ],
         ];
 
         foreach ($products as $product) {
             DB::table('products_enhanced')->insert(array_merge($product, [
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ]));
         }
 
@@ -152,14 +152,14 @@ class SiVGT2WebsiteDataSeeder extends Seeder
                 'role' => 'admin',
                 'level' => 1,
                 'is_active' => 1,
-            ]
+            ],
         ];
 
         foreach ($users as $user) {
             DB::table('users')->insert(array_merge($user, [
                 'email_verified_at' => now(),
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ]));
         }
 
@@ -188,13 +188,13 @@ class SiVGT2WebsiteDataSeeder extends Seeder
                 'payment_method' => 'bank_transfer',
                 'payment_status' => 'pending',
                 'notes' => 'Chuyển khoản trước khi giao',
-            ]
+            ],
         ];
 
         foreach ($orders as $order) {
             DB::table('orders')->insert(array_merge($order, [
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ]));
         }
 
@@ -213,13 +213,13 @@ class SiVGT2WebsiteDataSeeder extends Seeder
                 'quantity' => 1,
                 'price' => 24990000,
                 'total' => 24990000,
-            ]
+            ],
         ];
 
         foreach ($orderItems as $item) {
             DB::table('order_items')->insert(array_merge($item, [
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ]));
         }
 
@@ -237,7 +237,7 @@ class SiVGT2WebsiteDataSeeder extends Seeder
         foreach ($settings as $setting) {
             DB::table('settings')->insert(array_merge($setting, [
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ]));
         }
 

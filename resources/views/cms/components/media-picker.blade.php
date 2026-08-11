@@ -2,7 +2,8 @@
 
 @php
     $inputId = 'media_picker_' . Str::random(8);
-    $mediaListUrl = isset($currentProject) && $currentProject ? route('project.admin.media.list', $currentProject->code) : (Route::has('media.list') ? route('media.list') : url('media/list'));
+    $projectCode = request()->route('projectCode') ?? (isset($currentProject) && $currentProject ? (is_array($currentProject) ? ($currentProject['code'] ?? null) : ($currentProject->code ?? null)) : null);
+    $mediaListUrl = $projectCode ? route('project.admin.media.list', $projectCode) : (Route::has('media.list') ? route('media.list') : url('media/list'));
 @endphp
 
 <div x-data="mediaPicker('{{ $inputId }}', '{{ $mediaListUrl }}', '{{ $value }}')" x-cloak @keydown.window.delete="handleGlobalDelete($event)" class="media-picker-wrapper">

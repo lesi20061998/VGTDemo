@@ -12,10 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::connection('project')->table('products_enhanced', function (Blueprint $table) {
-            if (!Schema::connection('project')->hasColumn('products_enhanced', 'is_favorite')) {
+            if (! Schema::connection('project')->hasColumn('products_enhanced', 'is_favorite')) {
                 $table->boolean('is_favorite')->default(false)->after('is_featured');
             }
-            if (!Schema::connection('project')->hasColumn('products_enhanced', 'is_bestseller')) {
+            if (! Schema::connection('project')->hasColumn('products_enhanced', 'is_bestseller')) {
                 $table->boolean('is_bestseller')->default(false)->after('is_favorite');
             }
         });

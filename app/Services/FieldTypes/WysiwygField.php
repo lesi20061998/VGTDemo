@@ -18,10 +18,10 @@ class WysiwygField implements FieldTypeInterface
         $required = $config['required'] ?? false;
         $help = $config['help'] ?? '';
         $rows = $config['rows'] ?? 10;
-        
+
         $value = htmlspecialchars($value ?? '', ENT_QUOTES, 'UTF-8');
         $requiredAttr = $required ? 'required' : '';
-        $uniqueId = 'wysiwyg_' . $name . '_' . uniqid();
+        $uniqueId = 'wysiwyg_'.$name.'_'.uniqid();
 
         return <<<HTML
         <div class="mb-4">
@@ -53,8 +53,9 @@ class WysiwygField implements FieldTypeInterface
     public function validate(mixed $value, array $rules = []): bool
     {
         if (empty($value)) {
-            return !in_array('required', $rules);
+            return ! in_array('required', $rules);
         }
+
         return is_string($value);
     }
 

@@ -2,6 +2,7 @@
 
 namespace App\Widgets\Victorious;
 
+use App\Models\Post;
 use App\Widgets\BaseWidget;
 
 class EventsWidget extends BaseWidget
@@ -32,21 +33,21 @@ class EventsWidget extends BaseWidget
     {
         $postsInput = $this->settings['posts'] ?? '';
         $postIds = [];
-        if (!empty($postsInput)) {
+        if (! empty($postsInput)) {
             if (is_array($postsInput)) {
                 $postIds = $postsInput;
             } else {
                 $postIds = array_filter(array_map('trim', explode(',', $postsInput)));
             }
         }
-        
+
         $limit = $this->settings['limit'] ?? 3;
         $posts = [];
-        
-        if (!empty($postIds)) {
-            $posts = \App\Models\Post::whereIn('id', $postIds)->limit($limit)->get();
+
+        if (! empty($postIds)) {
+            $posts = Post::whereIn('id', $postIds)->limit($limit)->get();
         } else {
-            $posts = \App\Models\Post::where('post_type', 'post')
+            $posts = Post::where('post_type', 'post')
                 ->where('status', 'published')
                 ->orderBy('created_at', 'desc')
                 ->limit($limit)

@@ -20,7 +20,7 @@ class WidgetTemplateController extends Controller
 
         // Get both code-based widgets and database templates
         $codeWidgets = WidgetRegistry::getByCategory();
-        
+
         // Database templates are filtered by tenant_id via global scope
         $dbTemplates = WidgetTemplate::where('is_active', true)
             ->orderBy('category')
@@ -28,20 +28,21 @@ class WidgetTemplateController extends Controller
             ->get()
             ->groupBy('category')
             ->toArray();
-        
+
         return view('cms.widget-templates.index', compact('codeWidgets', 'dbTemplates', 'currentProject'));
     }
 
     public function show($type)
     {
         $widget = WidgetRegistry::getConfig($type);
-        if (!$widget) {
+        if (! $widget) {
             // Try database template
             $widget = WidgetTemplate::where('type', $type)->first();
-            if (!$widget) {
+            if (! $widget) {
                 abort(404);
             }
         }
+
         return view('cms.widget-templates.show', compact('widget'));
     }
 
@@ -49,6 +50,7 @@ class WidgetTemplateController extends Controller
     {
         $settings = $request->all();
         $html = WidgetRegistry::render($type, $settings);
+
         return response()->json(['html' => $html]);
     }
 
@@ -59,22 +61,22 @@ class WidgetTemplateController extends Controller
             $id = $projectCode;
             $projectCode = null;
         }
-        
+
         $template = WidgetTemplate::findOrFail($id);
-        
+
         // Delete all associated files
         $this->deleteWidgetFiles($template->type);
-        
+
         $template->delete();
-        
+
         // Clear widget cache
         WidgetRegistry::clearCache();
-        
+
         if ($projectCode) {
             return redirect()->route('project.admin.widget-templates.index', $projectCode)
                 ->with('success', 'Widget template và tất cả file liên quan đã được xóa!');
         }
-        
+
         return redirect()->route('cms.widget-templates.index')
             ->with('success', 'Widget template và tất cả file liên quan đã được xóa!');
     }
@@ -89,26 +91,26 @@ class WidgetTemplateController extends Controller
         if (\File::isDirectory($widgetDir)) {
             \File::deleteDirectory($widgetDir);
         }
-        
+
         // Cleanup legacy files if exist
         // Old blade file
         $oldBladePath = resource_path("views/widgets/custom/{$type}.blade.php");
         if (\File::exists($oldBladePath)) {
             \File::delete($oldBladePath);
         }
-        
+
         // Old CSS file
         $oldCssPath = public_path("css/widgets/{$type}.css");
         if (\File::exists($oldCssPath)) {
             \File::delete($oldCssPath);
         }
-        
+
         // Old JS file
         $oldJsPath = public_path("js/widgets/{$type}.js");
         if (\File::exists($oldJsPath)) {
             \File::delete($oldJsPath);
         }
-        
+
         // Old PHP class directory
         $className = str_replace(' ', '', ucwords(str_replace('_', ' ', $type)));
         $oldClassDir = app_path("Widgets/Custom/{$className}");
@@ -127,7 +129,7 @@ class WidgetTemplateController extends Controller
         }
 
         $template = WidgetTemplate::findOrFail($id);
-        
+
         $exportData = [
             'version' => '1.0',
             'exported_at' => now()->toIso8601String(),
@@ -145,10 +147,10 @@ class WidgetTemplateController extends Controller
             ],
         ];
 
-        $filename = 'widget-template-' . $template->type . '-' . date('Y-m-d') . '.json';
-        
+        $filename = 'widget-template-'.$template->type.'-'.date('Y-m-d').'.json';
+
         return response()->json($exportData)
-            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"')
+            ->header('Content-Disposition', 'attachment; filename="'.$filename.'"')
             ->header('Content-Type', 'application/json');
     }
 
@@ -181,10 +183,10 @@ class WidgetTemplateController extends Controller
             })->toArray(),
         ];
 
-        $filename = 'widget-templates-all-' . date('Y-m-d') . '.json';
-        
+        $filename = 'widget-templates-all-'.date('Y-m-d').'.json';
+
         return response()->json($exportData)
-            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"')
+            ->header('Content-Disposition', 'attachment; filename="'.$filename.'"')
             ->header('Content-Type', 'application/json');
     }
 
@@ -210,7 +212,7 @@ class WidgetTemplateController extends Controller
             $data = json_decode($content, true);
 
             if (json_last_error() !== JSON_ERROR_NONE) {
-                return back()->with('error', 'File JSON không hợp lệ: ' . json_last_error_msg());
+                return back()->with('error', 'File JSON không hợp lệ: '.json_last_error_msg());
             }
 
             $imported = 0;
@@ -246,18 +248,18 @@ class WidgetTemplateController extends Controller
             if ($skipped > 0) {
                 $message .= ", bỏ qua {$skipped} (đã tồn tại)";
             }
-            if (!empty($errors)) {
-                $message .= ". Lỗi: " . implode(', ', array_slice($errors, 0, 3));
+            if (! empty($errors)) {
+                $message .= '. Lỗi: '.implode(', ', array_slice($errors, 0, 3));
             }
 
-            $redirectRoute = $projectCode 
+            $redirectRoute = $projectCode
                 ? route('project.admin.widget-templates.index', $projectCode)
                 : route('cms.widget-templates.index');
 
             return redirect($redirectRoute)->with('success', $message);
 
         } catch (\Exception $e) {
-            return back()->with('error', 'Lỗi import: ' . $e->getMessage());
+            return back()->with('error', 'Lỗi import: '.$e->getMessage());
         }
     }
 

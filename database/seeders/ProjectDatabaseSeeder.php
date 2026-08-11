@@ -2,6 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\ProjectBrand;
+use App\Models\ProjectProduct;
+use App\Models\ProjectProductCategory;
 use Illuminate\Database\Seeder;
 
 class ProjectDatabaseSeeder extends Seeder
@@ -33,9 +36,9 @@ class ProjectDatabaseSeeder extends Seeder
         $this->command->info('✅ Project Database Seeding completed successfully!');
         $this->command->info('');
         $this->command->info('📊 Summary:');
-        $this->command->info('   - Categories: '.\App\Models\ProjectProductCategory::count());
-        $this->command->info('   - Brands: '.\App\Models\ProjectBrand::count());
-        $this->command->info('   - Products: '.\App\Models\ProjectProduct::count());
+        $this->command->info('   - Categories: '.ProjectProductCategory::count());
+        $this->command->info('   - Brands: '.ProjectBrand::count());
+        $this->command->info('   - Products: '.ProjectProduct::count());
         $this->command->info('');
         $this->command->info('🎯 You can now test the ProductController index method at:');
         $this->command->info("   - /{$projectCode}/admin/products (Project context)");

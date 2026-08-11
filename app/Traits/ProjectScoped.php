@@ -2,6 +2,8 @@
 
 namespace App\Traits;
 
+use App\Models\Project;
+
 trait ProjectScoped
 {
     /**
@@ -39,6 +41,6 @@ trait ProjectScoped
      */
     public function project()
     {
-        return $this->belongsTo(\App\Models\Project::class);
+        return $this->belongsTo(Project::class);
     }
 }

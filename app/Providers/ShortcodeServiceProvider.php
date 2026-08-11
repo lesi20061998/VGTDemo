@@ -11,7 +11,7 @@ class ShortcodeServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(ShortcodeService::class, function ($app) {
-            return new ShortcodeService();
+            return new ShortcodeService;
         });
     }
 

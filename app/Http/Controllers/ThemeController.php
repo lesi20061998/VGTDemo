@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Project;
+use App\Models\ProjectSetting;
 use App\Services\SettingsService;
 
 class ThemeController extends Controller
@@ -9,10 +11,10 @@ class ThemeController extends Controller
     public function dynamicCss()
     {
         $settings = SettingsService::getInstance();
-        
+
         $primaryColor = $settings->get('primary_color', ['color' => '#3490dc']);
         $secondaryColor = $settings->get('secondary_color', ['color' => '#ffed4e']);
-        
+
         $css = ":root {
             --primary-color: {$primaryColor['color']};
             --secondary-color: {$secondaryColor['color']};
@@ -25,7 +27,7 @@ class ThemeController extends Controller
         .btn-secondary {
             background-color: var(--secondary-color);
         }";
-        
+
         return response($css)
             ->header('Content-Type', 'text/css')
             ->header('Cache-Control', 'public, max-age=3600');
@@ -33,24 +35,24 @@ class ThemeController extends Controller
 
     public function projectCustomCss($projectCode)
     {
-        $project = \App\Models\Project::where('code', $projectCode)->first();
-        
-        if (!$project) {
+        $project = Project::where('code', $projectCode)->first();
+
+        if (! $project) {
             return response('/* Project not found */', 404)
                 ->header('Content-Type', 'text/css');
         }
 
         // Lấy custom CSS từ settings của project
-        $customCss = \App\Models\ProjectSetting::where('project_id', $project->id)
+        $customCss = ProjectSetting::where('project_id', $project->id)
             ->where('key', 'custom_css')
             ->value('value') ?? '';
 
         // Lấy theme colors từ settings
-        $primaryColor = \App\Models\ProjectSetting::where('project_id', $project->id)
+        $primaryColor = ProjectSetting::where('project_id', $project->id)
             ->where('key', 'primary_color')
             ->value('value') ?? '#98191F';
-        
-        $secondaryColor = \App\Models\ProjectSetting::where('project_id', $project->id)
+
+        $secondaryColor = ProjectSetting::where('project_id', $project->id)
             ->where('key', 'secondary_color')
             ->value('value') ?? '#1a1a1a';
 
@@ -60,7 +62,7 @@ class ThemeController extends Controller
         $css .= "    --project-secondary: {$secondaryColor};\n";
         $css .= "}\n\n";
         $css .= $customCss;
-        
+
         return response($css)
             ->header('Content-Type', 'text/css')
             ->header('Cache-Control', 'public, max-age=3600');
@@ -68,23 +70,22 @@ class ThemeController extends Controller
 
     public function projectCustomJs($projectCode)
     {
-        $project = \App\Models\Project::where('code', $projectCode)->first();
-        
-        if (!$project) {
+        $project = Project::where('code', $projectCode)->first();
+
+        if (! $project) {
             return response('// Project not found', 200)
                 ->header('Content-Type', 'application/javascript');
         }
 
-        $customJs = \App\Models\ProjectSetting::where('project_id', $project->id)
+        $customJs = ProjectSetting::where('project_id', $project->id)
             ->where('key', 'custom_js')
             ->value('value') ?? '';
 
         $js = "// Custom JavaScript for Project: {$projectCode}\n\n";
         $js .= $customJs;
-        
+
         return response($js)
             ->header('Content-Type', 'application/javascript')
             ->header('Cache-Control', 'public, max-age=3600');
     }
 }
-

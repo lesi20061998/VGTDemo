@@ -19,8 +19,8 @@ class TenantSeeder extends Seeder
                 'settings' => [
                     'theme' => 'default',
                     'language' => 'vi',
-                    'timezone' => 'Asia/Ho_Chi_Minh'
-                ]
+                    'timezone' => 'Asia/Ho_Chi_Minh',
+                ],
             ]
         );
 

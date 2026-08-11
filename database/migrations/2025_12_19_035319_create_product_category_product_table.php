@@ -11,13 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('product_category_product')) {
+        if (! Schema::hasTable('product_category_product')) {
             Schema::create('product_category_product', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('product_id');
                 $table->unsignedBigInteger('product_category_id');
                 $table->timestamps();
-                
+
                 $table->foreign('product_id')->references('id')->on('products_enhanced')->onDelete('cascade');
                 $table->foreign('product_category_id')->references('id')->on('product_categories')->onDelete('cascade');
                 $table->unique(['product_id', 'product_category_id']);

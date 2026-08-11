@@ -2,18 +2,18 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Traits\BelongsToTenant;
 use App\Traits\ProjectScoped;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
-use App\Traits\BelongsToTenant;
 
 class MenuItem extends Model
 {
     use BelongsToTenant, ProjectScoped;
-    
-    protected $fillable = ['menu_id', 'parent_id', 'title', 'url', 'target', 'linkable_type', 'linkable_id', 'order', 'tenant_id'];
+
+    protected $fillable = ['menu_id', 'parent_id', 'title', 'url', 'target', 'linkable_type', 'linkable_id', 'order', 'tenant_id', 'project_id'];
 
     public function menu(): BelongsTo
     {
@@ -24,23 +24,23 @@ class MenuItem extends Model
     {
         return $this->morphTo();
     }
-    
+
     public function children(): HasMany
     {
         return $this->hasMany(MenuItem::class, 'parent_id')->orderBy('order');
     }
-    
+
     public function parent(): BelongsTo
     {
         return $this->belongsTo(MenuItem::class, 'parent_id');
     }
-    
+
     public function getUrlAttribute($value)
     {
         if ($value) {
             return $value;
         }
-        
+
         if ($this->linkable) {
             // Generate URL based on linkable type
             switch ($this->linkable_type) {
@@ -52,8 +52,7 @@ class MenuItem extends Model
                     return '#';
             }
         }
-        
+
         return '#';
     }
 }
-

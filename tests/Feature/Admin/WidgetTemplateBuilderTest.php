@@ -164,7 +164,7 @@ class WidgetTemplateBuilderTest extends TestCase
         ]);
 
         $html = $template->render(['title' => 'Hello World']);
-        
+
         $this->assertStringContainsString('Hello World', $html);
         $this->assertStringContainsString('<div class="test">', $html);
     }

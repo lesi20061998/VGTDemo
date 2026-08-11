@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\ImageManager;
 use Intervention\Image\Typography\FontFactory;
 
 class WatermarkImageController extends Controller
@@ -19,24 +19,24 @@ class WatermarkImageController extends Controller
         if (preg_match('/^project-([^\/]+)\//', $path, $matches)) {
             $projectCode = $matches[1];
         }
-        
+
         // Get watermark settings for the specific project
         $watermark = $this->getProjectWatermarkSettings($projectCode);
-        
+
         // Debug: Log watermark settings
         \Log::info('Watermark settings:', [
             'project_code' => $projectCode,
             'raw_settings' => $watermark,
             'type' => gettype($watermark),
-            'path' => $path
+            'path' => $path,
         ]);
-        
+
         // Handle different setting formats
         $enabled = false;
         if (is_array($watermark)) {
             $enabled = filter_var($watermark['enabled'] ?? false, FILTER_VALIDATE_BOOLEAN);
         }
-        
+
         \Log::info('Watermark enabled check:', ['enabled' => $enabled, 'enabled_raw' => $watermark['enabled'] ?? 'not set']);
 
         // Build full path - route /media/{path} receives path without 'media/' prefix
@@ -44,7 +44,7 @@ class WatermarkImageController extends Controller
         $fullPath = storage_path("app/public/media/{$path}");
 
         // Check if file exists
-        if (!file_exists($fullPath)) {
+        if (! file_exists($fullPath)) {
             \Log::warning("Watermark: File not found - {$fullPath}");
             abort(404, 'Image not found');
         }
@@ -55,21 +55,22 @@ class WatermarkImageController extends Controller
 
         // Only process image files
         $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-        if (!\in_array($mimeType, $allowedTypes)) {
+        if (! \in_array($mimeType, $allowedTypes)) {
             return response()->file($fullPath);
         }
 
         // If watermark is disabled, return original image
-        if (!$enabled) {
+        if (! $enabled) {
             \Log::info('Watermark disabled, returning original image');
+
             return response()->file($fullPath);
         }
-        
+
         \Log::info('Watermark ENABLED, applying watermark...');
 
         try {
             // Create image manager with GD driver
-            $manager = new ImageManager(new Driver());
+            $manager = new ImageManager(new Driver);
             $image = $manager->read($fullPath);
 
             // Get watermark type: 'text' or 'image'
@@ -95,7 +96,8 @@ class WatermarkImageController extends Controller
                 ->header('X-Watermarked', 'true');
 
         } catch (\Exception $e) {
-            \Log::error('Watermark error: ' . $e->getMessage());
+            \Log::error('Watermark error: '.$e->getMessage());
+
             return response()->file($fullPath);
         }
     }
@@ -161,8 +163,9 @@ class WatermarkImageController extends Controller
         // Build watermark full path
         $watermarkPath = $this->resolveWatermarkPath($watermarkImage);
 
-        if (!file_exists($watermarkPath)) {
+        if (! file_exists($watermarkPath)) {
             \Log::warning("Watermark image not found: {$watermarkPath}");
+
             return;
         }
 
@@ -172,7 +175,7 @@ class WatermarkImageController extends Controller
         $offsetX = (int) ($watermark['offset_x'] ?? 10);
         $offsetY = (int) ($watermark['offset_y'] ?? 10);
 
-        $manager = new ImageManager(new Driver());
+        $manager = new ImageManager(new Driver);
         $watermarkImg = $manager->read($watermarkPath);
 
         // Scale watermark
@@ -250,49 +253,51 @@ class WatermarkImageController extends Controller
      */
     protected function resolveWatermarkPath(string $watermarkImage): string
     {
-        if (!str_starts_with($watermarkImage, '/')) {
+        if (! str_starts_with($watermarkImage, '/')) {
             $watermarkImage = "/{$watermarkImage}";
         }
 
         if (str_starts_with($watermarkImage, '/storage/')) {
-            return storage_path('app/public/' . substr($watermarkImage, 9));
+            return storage_path('app/public/'.substr($watermarkImage, 9));
         }
 
         return public_path(ltrim($watermarkImage, '/'));
     }
-    
+
     /**
      * Get watermark settings for a specific project
      */
     protected function getProjectWatermarkSettings(?string $projectCode): array
     {
-        if (!$projectCode) {
+        if (! $projectCode) {
             return setting('watermark', []);
         }
-        
+
         // Find project by code
         $project = \DB::table('projects')->where('code', $projectCode)->first();
-        
-        if (!$project) {
+
+        if (! $project) {
             \Log::warning("Watermark: Project not found - {$projectCode}");
+
             return [];
         }
-        
+
         // Get watermark settings from project-specific settings
         $watermarkSetting = \DB::table('settings')
             ->where('key', 'watermark')
             ->where('project_id', $project->id)
             ->first();
-            
-        if (!$watermarkSetting) {
+
+        if (! $watermarkSetting) {
             \Log::info("Watermark: No settings found for project {$projectCode}");
+
             return [];
         }
-        
+
         $payload = json_decode($watermarkSetting->payload, true);
-        
+
         \Log::info("Watermark: Loaded settings for project {$projectCode}", ['payload' => $payload]);
-        
+
         return $payload ?? [];
     }
 }

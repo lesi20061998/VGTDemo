@@ -1,12 +1,18 @@
 <?php
-require 'vendor/autoload.php'; 
-$app = require_once 'bootstrap/app.php'; 
-$kernel = $app->make(Illuminate\Contracts\Http\Kernel::class);
+
+use App\Models\ThemeSetting;
+use Illuminate\Contracts\Http\Kernel;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+
+require 'vendor/autoload.php';
+$app = require_once 'bootstrap/app.php';
+$kernel = $app->make(Kernel::class);
 $response = $kernel->handle(
-    $request = Illuminate\Http\Request::capture()
+    $request = Request::capture()
 );
 
-$watermark = \App\Models\ThemeSetting::where('key', 'watermark')->first();
+$watermark = ThemeSetting::where('key', 'watermark')->first();
 $watermarkData = $watermark ? $watermark->value : null;
 
 var_dump($watermarkData);
@@ -19,8 +25,8 @@ if (str_starts_with($wmImage, 'http')) {
 $wmImage = urldecode($wmImage);
 
 var_dump($wmImage);
-var_dump(\Illuminate\Support\Facades\Storage::disk('public')->exists($wmImage));
-$wmPath = \Illuminate\Support\Facades\Storage::disk('public')->path($wmImage);
+var_dump(Storage::disk('public')->exists($wmImage));
+$wmPath = Storage::disk('public')->path($wmImage);
 var_dump($wmPath);
 var_dump(file_exists($wmPath));
 

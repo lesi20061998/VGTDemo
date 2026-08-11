@@ -12,6 +12,7 @@ use App\Models\ProductAttribute;
 use App\Models\ProductAttributeValue;
 use App\Traits\HasCrudAlerts;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Str;
 
 class AttributeController extends Controller
@@ -89,13 +90,14 @@ class AttributeController extends Controller
                 ->orderBy('sort_order')
                 ->paginate(config('app.admin_per_page', 20));
         } catch (\Exception $e) {
-            $attributes = new \Illuminate\Pagination\LengthAwarePaginator([], 0, config('app.admin_per_page', 20), 1, ['path' => $request->url()]);
+            $attributes = new LengthAwarePaginator([], 0, config('app.admin_per_page', 20), 1, ['path' => $request->url()]);
         }
 
         $groups = collect();
         try {
             $groups = AttributeGroup::active()->get();
-        } catch (\Exception $e) {}
+        } catch (\Exception $e) {
+        }
 
         return view('cms.attributes.index', compact('attributes', 'groups'));
     }

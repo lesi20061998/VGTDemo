@@ -8,6 +8,7 @@ use Illuminate\View\Component;
 class MenuComponent extends Component
 {
     public $menu;
+
     public $location;
 
     public function __construct($location = 'header')
@@ -17,7 +18,7 @@ class MenuComponent extends Component
         try {
             $this->menu = Menu::where('location', $location)
                 ->where('is_active', true)
-                ->with(['items' => function($query) {
+                ->with(['items' => function ($query) {
                     $query->whereNull('parent_id')->with('children')->orderBy('order');
                 }])
                 ->first();
@@ -33,18 +34,18 @@ class MenuComponent extends Component
 
     public function renderItems($items, $level = 0)
     {
-        if (!$items || $items->isEmpty()) {
+        if (! $items || $items->isEmpty()) {
             return '';
         }
-        
-        $html = '<ul class="menu-level-' . $level . ($level === 0 ? ' main-menu' : ' sub-menu') . '">';
+
+        $html = '<ul class="menu-level-'.$level.($level === 0 ? ' main-menu' : ' sub-menu').'">';
         foreach ($items as $item) {
             $hasChildren = $item->children && $item->children->count() > 0;
-            $html .= '<li class="menu-item' . ($hasChildren ? ' has-children' : '') . '">';
-            
+            $html .= '<li class="menu-item'.($hasChildren ? ' has-children' : '').'">';
+
             // Get the actual URL
             $url = $item->url;
-            if (!$url && $item->linkable) {
+            if (! $url && $item->linkable) {
                 switch ($item->linkable_type) {
                     case 'App\\Models\\Post':
                         $url = route('frontend.page', $item->linkable->slug ?? $item->linkable->id);
@@ -56,16 +57,16 @@ class MenuComponent extends Component
                         $url = '#';
                 }
             }
-            
-            $html .= '<a href="' . ($url ?: '#') . '" target="' . ($item->target ?: '_self') . '" class="menu-link">' . $item->title . '</a>';
-            
+
+            $html .= '<a href="'.($url ?: '#').'" target="'.($item->target ?: '_self').'" class="menu-link">'.$item->title.'</a>';
+
             if ($hasChildren) {
                 $html .= $this->renderItems($item->children, $level + 1);
             }
             $html .= '</li>';
         }
         $html .= '</ul>';
+
         return $html;
     }
 }
-

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class ProjectBrand extends Model
 {
@@ -34,13 +35,13 @@ class ProjectBrand extends Model
 
         static::creating(function ($brand) {
             if (empty($brand->slug)) {
-                $brand->slug = \Illuminate\Support\Str::slug($brand->name);
+                $brand->slug = Str::slug($brand->name);
             }
         });
 
         static::updating(function ($brand) {
             if (empty($brand->slug)) {
-                $brand->slug = \Illuminate\Support\Str::slug($brand->name);
+                $brand->slug = Str::slug($brand->name);
             }
         });
     }

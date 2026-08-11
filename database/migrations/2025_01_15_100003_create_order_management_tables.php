@@ -19,29 +19,29 @@ return new class extends Migration
             $table->decimal('discount_amount', 15, 2)->default(0);
             $table->decimal('total_amount', 15, 2);
             $table->string('currency', 3)->default('VND');
-            
+
             // Customer info
             $table->string('customer_name');
             $table->string('customer_email');
             $table->string('customer_phone')->nullable();
-            
+
             // Billing address
             $table->json('billing_address');
-            
+
             // Shipping address
             $table->json('shipping_address');
-            
+
             // Payment info
             $table->string('payment_method')->nullable();
             $table->enum('payment_status', ['pending', 'paid', 'failed', 'refunded'])->default('pending');
             $table->timestamp('paid_at')->nullable();
-            
+
             // Notes
             $table->text('customer_notes')->nullable();
             $table->text('internal_notes')->nullable();
-            
+
             $table->timestamps();
-            
+
             $table->index(['status', 'created_at']);
             $table->index(['order_number']);
             $table->index(['customer_email']);
@@ -54,7 +54,7 @@ return new class extends Migration
             $table->foreignId('order_id')->constrained()->onDelete('cascade');
             $table->foreignId('product_id')->constrained('products_enhanced')->onDelete('cascade');
             $table->foreignId('product_variation_id')->nullable()->constrained()->onDelete('set null');
-            
+
             // Product snapshot at time of order
             $table->string('product_name');
             $table->string('product_sku');
@@ -62,9 +62,9 @@ return new class extends Migration
             $table->decimal('unit_price', 15, 2);
             $table->integer('quantity');
             $table->decimal('total_price', 15, 2);
-            
+
             $table->timestamps();
-            
+
             $table->index(['order_id']);
             $table->index(['product_id']);
         });
@@ -78,7 +78,7 @@ return new class extends Migration
             $table->text('notes')->nullable();
             $table->foreignId('user_id')->nullable()->constrained()->onDelete('set null');
             $table->timestamps();
-            
+
             $table->index(['order_id', 'created_at']);
         });
     }

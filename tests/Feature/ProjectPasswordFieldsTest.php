@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Project;
 use App\Models\ProjectPasswordAudit;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -21,19 +22,19 @@ class ProjectPasswordFieldsTest extends TestCase
 
         $this->assertNotNull($project->project_admin_password_plain);
         $this->assertNotNull($project->password_updated_at);
-        $this->assertInstanceOf(\Carbon\Carbon::class, $project->password_updated_at);
+        $this->assertInstanceOf(Carbon::class, $project->password_updated_at);
     }
 
     public function test_project_can_decrypt_password(): void
     {
         $plainPassword = 'test-password-123';
         $project = Project::factory()->create();
-        
+
         $project->setEncryptedPassword($plainPassword);
         $project->save();
 
         $decryptedPassword = $project->getDecryptedPassword();
-        
+
         $this->assertEquals($plainPassword, $decryptedPassword);
     }
 
