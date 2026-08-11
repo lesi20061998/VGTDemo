@@ -17,8 +17,10 @@ use App\Widgets\News\NewsArticleWidget;
 use App\Widgets\News\NewsFeaturedWidget;
 use App\Widgets\News\RelatedPostsWidget;
 use App\Widgets\Post\PostListWidget;
+use App\Widgets\Product\ProductCateSliderWidget;
 use App\Widgets\Product\ProductCateWidget;
 use App\Widgets\Product\ProductListWidget;
+use App\Widgets\Product\ProductSliderWidget;
 use App\Widgets\Product\ProductsWidget;
 use App\Widgets\Slider\PostSliderWidget;
 use App\Widgets\Victorious\AboutWidget;
@@ -48,6 +50,8 @@ class WidgetRegistry implements WidgetRegistryInterface
         'product_list' => ProductListWidget::class,
         'products' => ProductsWidget::class,
         'product_cate' => ProductCateWidget::class,
+        'product_slider' => ProductSliderWidget::class,
+        'product_cate_slider' => ProductCateSliderWidget::class,
         'home_cate' => HomeCateWidget::class,
         'news_article' => NewsArticleWidget::class,
         'news_featured' => NewsFeaturedWidget::class,

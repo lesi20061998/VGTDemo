@@ -493,10 +493,10 @@ class WidgetController extends Controller
      */
     public function getFields(Request $request)
     {
+        $id = $request->input('id') ?? $request->input('widget_id');
         $type = $request->input('type') ?? $request->get('type');
         $settings = $request->input('settings') ?? $request->get('settings', []);
 
-        // Parse settings if it's a JSON string
         while (\is_string($settings) && ! empty($settings)) {
             $decoded = json_decode($settings, true);
             if (json_last_error() === JSON_ERROR_NONE && (\is_array($decoded) || \is_string($decoded))) {
@@ -507,6 +507,16 @@ class WidgetController extends Controller
         }
         if (! \is_array($settings)) {
             $settings = [];
+        }
+
+        if (! empty($id)) {
+            $dbWidget = Widget::find($id);
+            if ($dbWidget) {
+                $dbSettings = $dbWidget->settings;
+                if (\is_array($dbSettings) && ! empty($dbSettings)) {
+                    $settings = array_merge($dbSettings, $settings);
+                }
+            }
         }
 
         if (! $type || ! WidgetRegistry::exists($type)) {

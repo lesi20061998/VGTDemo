@@ -103,4 +103,58 @@ class Post extends Model
     {
         return 'slug';
     }
+
+    public function getNameAttribute(): string
+    {
+        return $this->title ?? '';
+    }
+
+    public function getSkuAttribute(): ?string
+    {
+        return $this->meta_data['sku'] ?? null;
+    }
+
+    public function getShortDescriptionAttribute(): ?string
+    {
+        return $this->excerpt;
+    }
+
+    public function getPriceAttribute()
+    {
+        return $this->meta_data['price'] ?? 0;
+    }
+
+    public function getSalePriceAttribute()
+    {
+        return $this->meta_data['sale_price'] ?? null;
+    }
+
+    public function getDisplayPriceAttribute(): string
+    {
+        $price = $this->meta_data['sale_price'] ?? $this->meta_data['price'] ?? 0;
+        if (! $price) {
+            return 'Liên hệ';
+        }
+
+        return number_format((float) $price, 0, ',', '.').' đ';
+    }
+
+    public function getStockQuantityAttribute(): int
+    {
+        return (int) ($this->meta_data['stock_quantity'] ?? 0);
+    }
+
+    public function getStockStatusAttribute(): string
+    {
+        if (isset($this->meta_data['stock_status'])) {
+            return $this->meta_data['stock_status'];
+        }
+
+        return $this->stock_quantity > 0 ? 'in_stock' : 'out_of_stock';
+    }
+
+    public function getCategoryAttribute()
+    {
+        return $this->taxonomies->where('taxonomy', 'product_cat')->first();
+    }
 }

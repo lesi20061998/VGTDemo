@@ -8,52 +8,70 @@ class HeroWidget extends BaseWidget
 {
     public function render(): string
     {
+        // Basic fields
         $title = $this->get('title', 'Chào mừng đến với Doanh nghiệp của chúng tôi');
         $subtitle = $this->get('subtitle', 'Giải pháp công nghệ hàng đầu cho doanh nghiệp hiện đại');
         $btnText = $this->get('button_text', 'Khám phá ngay');
         $btnLink = $this->get('button_link', '#');
 
-        $bgInfo = $this->getWrapperBackgroundInfo();
+        // Custom CSS/JS and code injections
+        $customCss = $this->get('custom_css', '');
+        $customJs = $this->get('custom_js', '');
+        $bodyCode = $this->get('body_code', '');
+        $footerCode = $this->get('footer_code', '');
 
+        // Background handling (color/gradient/image)
+        $bgInfo = $this->getWrapperBackgroundInfo();
         $extraClasses = $bgInfo['classes'];
         $classString = trim('hero-section text-white py-20 '.implode(' ', $extraClasses));
-        $styleAttr = ! empty($bgInfo['style']) ? ' style="'.$bgInfo['style'].'"' : '';
 
-        $html = '<section class="'.$classString.'"'.$styleAttr.'>';
+        // Merge all inline styles into one: background + margin/padding
+        $allStyleParts = [];
+        if (! empty($bgInfo['style'])) {
+            $allStyleParts[] = $bgInfo['style'];
+        }
+        foreach (['margin_top', 'margin_bottom', 'margin_left', 'margin_right', 'padding_top', 'padding_bottom', 'padding_left', 'padding_right'] as $prop) {
+            $val = $this->get($prop);
+            if ($val) {
+                $cssProp = str_replace('_', '-', $prop);
+                $allStyleParts[] = "{$cssProp}: {$val}";
+            }
+        }
+        $styleAttr = ! empty($allStyleParts) ? ' style="'.implode('; ', $allStyleParts).';"' : '';
+
+        // Typography for title
+        $titleClass = trim('text-5xl mb-4 '.$this->get('title_font_weight', 'font-bold'));
+        $titleStyle = $this->get('title_color') ? ' style="color: '.$this->get('title_color').';"' : '';
+        // Typography for subtitle
+        $subtitleClass = trim('text-xl mb-8 opacity-90 '.$this->get('description_font_weight', ''));
+        $subtitleStyle = $this->get('description_color') ? ' style="color: '.$this->get('description_color').';"' : '';
+
+        // Assemble HTML
+        $html = $customCss ? '<style>'.$customCss.'</style>' : '';
+        if ($bodyCode) {
+            $html .= $bodyCode."\n";
+        }
+        $html .= '<section class="'.$classString.'"'.$styleAttr.'>';
         $html .= '<div class="container mx-auto px-4 text-center">';
         if (! empty($title)) {
-            $html .= '<h1 class="text-5xl font-bold mb-4">'.htmlspecialchars($title).'</h1>';
+            $html .= '<h1 class="'.$titleClass.'"'.$titleStyle.'>'.htmlspecialchars($title).'</h1>';
         }
         if (! empty($subtitle)) {
-            $html .= '<p class="text-xl mb-8 opacity-90">'.htmlspecialchars($subtitle).'</p>';
+            $html .= '<p class="'.$subtitleClass.'"'.$subtitleStyle.'>'.htmlspecialchars($subtitle).'</p>';
         }
         if (! empty($btnText)) {
             $html .= '<a href="'.htmlspecialchars($btnLink ?: '#').'" class="hero-btn inline-block bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition">'.htmlspecialchars($btnText).'</a>';
         }
         $html .= '</div>';
         $html .= '</section>';
+        if ($customJs) {
+            $html .= '<script>'.$customJs.'</script>';
+        }
+        if ($footerCode) {
+            $html .= "\n".$footerCode;
+        }
 
         return $html;
-    }
-
-    public function css(): string
-    {
-        return '<style>
-        .hero-section { animation: fadeIn 1s ease-in; }
-        .hero-section h1 { animation: slideDown 0.8s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideDown { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        </style>';
-    }
-
-    public function js(): string
-    {
-        return '<script>
-        document.querySelectorAll(".hero-btn").forEach(btn => {
-            btn.addEventListener("mouseenter", () => btn.style.transform = "scale(1.05)");
-            btn.addEventListener("mouseleave", () => btn.style.transform = "scale(1)");
-        });
-        </script>';
     }
 
     /**

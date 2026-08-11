@@ -29,7 +29,7 @@ class ProductController extends Controller
         $currentProject = Project::where('code', request()->route('projectCode'))->first();
         $languageId = 1;
 
-        return view('admin.products.index', compact('products', 'parentCategories', 'currentProject', 'languageId'));
+        return view('cms.products.index', compact('products', 'parentCategories', 'currentProject', 'languageId'));
     }
 
     public function create(Request $request)
@@ -305,43 +305,119 @@ class ProductController extends Controller
 
     public function bulkUpdate(Request $request)
     {
-        $products = $request->input('products', []);
-        if (empty($products)) {
-            return response()->json(['success' => false, 'message' => 'Dữ liệu không hợp lệ']);
+        $ids = $request->input('ids', []);
+        $productsData = $request->input('products', []);
+
+        if (empty($ids) && empty($productsData)) {
+            return response()->json(['success' => false, 'message' => 'Vui lòng chọn ít nhất một sản phẩm để cập nhật.']);
         }
 
-        foreach ($products as $data) {
-            $post = Post::where('post_type', 'product')
-                ->where(function ($q) use ($data) {
-                    $q->where('id', $data['id'])->orWhere('slug', $data['id']);
-                })->first();
-            if ($post) {
-                $metaData = is_string($post->meta_data) ? json_decode($post->meta_data, true) : ($post->meta_data ?? []);
+        if (! empty($productsData)) {
+            foreach ($productsData as $data) {
+                $post = Post::where('post_type', 'product')
+                    ->where(function ($q) use ($data) {
+                        $q->where('id', $data['id'])->orWhere('slug', $data['id']);
+                    })->first();
 
-                if (isset($data['sku'])) {
-                    $metaData['sku'] = $data['sku'];
-                }
-                if (isset($data['price'])) {
-                    $metaData['price'] = $data['price'];
-                }
-                if (isset($data['sale_price'])) {
-                    $metaData['sale_price'] = $data['sale_price'];
-                }
-                if (isset($data['stock_quantity'])) {
-                    $metaData['stock_quantity'] = $data['stock_quantity'];
-                }
+                if ($post) {
+                    $metaData = is_string($post->meta_data) ? json_decode($post->meta_data, true) : ($post->meta_data ?? []);
 
-                $post->title = $data['name'] ?? $post->title;
-                $post->meta_data = $metaData;
-                $post->save();
+                    if (array_key_exists('sku', $data)) {
+                        $metaData['sku'] = $data['sku'];
+                    }
+                    if (array_key_exists('price', $data)) {
+                        $metaData['price'] = $data['price'] !== null && $data['price'] !== '' ? (float) $data['price'] : ($metaData['price'] ?? 0);
+                    }
+                    if (array_key_exists('sale_price', $data)) {
+                        $metaData['sale_price'] = $data['sale_price'] !== null && $data['sale_price'] !== '' ? (float) $data['sale_price'] : null;
+                    }
+                    if (array_key_exists('stock_quantity', $data)) {
+                        $metaData['stock_quantity'] = (int) $data['stock_quantity'];
+                    }
 
-                if (isset($data['categories']) && is_array($data['categories'])) {
-                    $post->taxonomies()->sync($data['categories']);
+                    if (! empty($data['name'])) {
+                        $post->title = $data['name'];
+                    }
+                    if (! empty($data['status'])) {
+                        $post->status = $data['status'];
+                    }
+
+                    $post->meta_data = $metaData;
+                    $post->save();
+
+                    if (isset($data['categories']) && is_array($data['categories'])) {
+                        $post->taxonomies()->sync($data['categories']);
+                    }
                 }
+            }
+
+            return response()->json(['success' => true, 'message' => 'Đã cập nhật thành công']);
+        }
+
+        $priceMode = $request->input('price_mode', 'no_change');
+        $priceValue = (float) $request->input('price_value', 0);
+        $salePriceMode = $request->input('sale_price_mode', 'no_change');
+        $salePriceValue = (float) $request->input('sale_price_value', 0);
+        $status = $request->input('status');
+        $categories = $request->input('categories', []);
+
+        $posts = Post::where('post_type', 'product')
+            ->where(function ($q) use ($ids) {
+                $q->whereIn('id', $ids)->orWhereIn('slug', $ids);
+            })->get();
+
+        foreach ($posts as $post) {
+            $metaData = is_string($post->meta_data) ? json_decode($post->meta_data, true) : ($post->meta_data ?? []);
+            $currentPrice = (float) ($metaData['price'] ?? 0);
+            $currentSalePrice = isset($metaData['sale_price']) && $metaData['sale_price'] !== null ? (float) $metaData['sale_price'] : null;
+
+            if ($priceMode === 'fixed') {
+                $metaData['price'] = max(0, $priceValue);
+            } elseif ($priceMode === 'percent_increase') {
+                $metaData['price'] = max(0, round($currentPrice * (1 + $priceValue / 100)));
+            } elseif ($priceMode === 'percent_decrease') {
+                $metaData['price'] = max(0, round($currentPrice * (1 - $priceValue / 100)));
+            } elseif ($priceMode === 'amount_increase') {
+                $metaData['price'] = max(0, round($currentPrice + $priceValue));
+            } elseif ($priceMode === 'amount_decrease') {
+                $metaData['price'] = max(0, round($currentPrice - $priceValue));
+            }
+
+            $newPrice = (float) ($metaData['price'] ?? 0);
+
+            if ($salePriceMode === 'fixed') {
+                $metaData['sale_price'] = max(0, $salePriceValue);
+            } elseif ($salePriceMode === 'percent_decrease_regular') {
+                $metaData['sale_price'] = max(0, round($newPrice * (1 - $salePriceValue / 100)));
+            } elseif ($salePriceMode === 'percent_increase') {
+                $base = $currentSalePrice !== null ? $currentSalePrice : $currentPrice;
+                $metaData['sale_price'] = max(0, round($base * (1 + $salePriceValue / 100)));
+            } elseif ($salePriceMode === 'percent_decrease') {
+                $base = $currentSalePrice !== null ? $currentSalePrice : $currentPrice;
+                $metaData['sale_price'] = max(0, round($base * (1 - $salePriceValue / 100)));
+            } elseif ($salePriceMode === 'amount_increase') {
+                $base = $currentSalePrice !== null ? $currentSalePrice : $currentPrice;
+                $metaData['sale_price'] = max(0, round($base + $salePriceValue));
+            } elseif ($salePriceMode === 'amount_decrease') {
+                $base = $currentSalePrice !== null ? $currentSalePrice : $currentPrice;
+                $metaData['sale_price'] = max(0, round($base - $salePriceValue));
+            } elseif ($salePriceMode === 'clear') {
+                unset($metaData['sale_price']);
+            }
+
+            if (! empty($status)) {
+                $post->status = $status;
+            }
+
+            $post->meta_data = $metaData;
+            $post->save();
+
+            if (! empty($categories) && is_array($categories)) {
+                $post->taxonomies()->sync($categories);
             }
         }
 
-        return response()->json(['success' => true, 'message' => 'Đã cập nhật thành công']);
+        return response()->json(['success' => true, 'message' => 'Cập nhật sản phẩm thành công']);
     }
 
     public function toggleBadge(Request $request)

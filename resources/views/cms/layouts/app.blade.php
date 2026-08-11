@@ -648,6 +648,32 @@ function reindexRepeatableItems(container, fieldName) {
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.2/tinymce.min.js" referrerpolicy="origin"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof tinymce !== 'undefined' && document.querySelector('.tinymce-editor')) {
+        tinymce.init({
+            selector: '.tinymce-editor',
+            height: 380,
+            menubar: 'file edit view insert format tools table',
+            plugins: [
+                'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+                'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                'insertdatetime', 'media', 'table', 'wordcount'
+            ],
+            toolbar: 'undo redo | blocks | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | link image media code | fullscreen',
+            content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 14px; line-height: 1.6; padding: 10px; }',
+            branding: false,
+            promotion: false,
+            setup: function (editor) {
+                editor.on('change keyup blur', function () {
+                    editor.save();
+                });
+            }
+        });
+    }
+});
+</script>
 @livewireScripts
 @stack('scripts')
 </body>

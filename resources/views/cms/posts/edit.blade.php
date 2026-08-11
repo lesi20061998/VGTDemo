@@ -43,15 +43,6 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Cột trái: Form chính -->
         <div class="lg:col-span-2 space-y-6">
-            <!-- Thông tin cơ bản -->
-            <div class="bg-white rounded-lg shadow-sm p-6 space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Slug</label>
-                    <input type="text" name="slug" value="{{ old('slug', $post->slug) }}"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                </div>
-            </div>
-
             <div class="bg-white rounded-lg shadow-sm p-6 space-y-6">
                 <h2 class="font-semibold text-gray-900 mb-4">Nội dung chính</h2>
                 
@@ -66,6 +57,15 @@
                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
                 </div>
                 @endif
+
+                <!-- Slug (Đường dẫn tĩnh) -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Slug (Đường dẫn tĩnh)</label>
+                    <input type="text" name="slug" value="{{ old('slug', $post->slug) }}"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                           placeholder="Nhập slug đường dẫn...">
+                    <p class="text-xs text-gray-500 mt-1">Đường dẫn slug cho bài viết (chỉnh sửa độc lập, không tự động thay đổi theo tiêu đề).</p>
+                </div>
 
                 @if(in_array('excerpt', $config['supports'] ?? []))
                 <!-- Tóm tắt -->

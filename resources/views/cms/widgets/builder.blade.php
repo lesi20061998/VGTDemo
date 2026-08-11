@@ -75,7 +75,7 @@
         <div class="flex flex-1 overflow-hidden">
 
             {{-- Left: Config Form --}}
-            <div class="w-80 flex-shrink-0 flex flex-col border-r border-gray-200 bg-gray-50">
+            <div class="w-[420px] flex-shrink-0 flex flex-col border-r border-gray-200 bg-gray-50">
                 <div class="flex-1 overflow-y-auto px-5 py-4" id="drawer-body">
                     <div class="flex flex-col items-center justify-center h-40 text-gray-400">
                         <svg class="w-5 h-5 animate-spin mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -767,7 +767,7 @@
         drawer.classList.remove('hidden');
         drawer.classList.add('flex'); // Make it flex-col
 
-        var params = new URLSearchParams({ type: drawerWidgetType, settings: JSON.stringify(settings) });
+        var params = new URLSearchParams({ id: drawerWidgetId || '', type: drawerWidgetType, settings: JSON.stringify(settings) });
         fetch(BASE_URL + '/widgets/fields?' + params.toString(), { headers: { 'Accept': 'application/json' } })
         .then(safeJson)
         .then(function (data) {
@@ -993,10 +993,21 @@
                     if (rowName) rowName.textContent = configBtn.dataset.name;
                 }
             }
-            closeDrawer();
+            // Flash save button green briefly for visual feedback (keep drawer open)
+            btn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+            btn.classList.add('bg-emerald-500');
+            btn.innerHTML =
+                '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">' +
+                '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>' +
+                '</svg> Đã lưu!';
+            setTimeout(function () {
+                btn.classList.remove('bg-emerald-500');
+                btn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                btn.innerHTML = origHtml;
+            }, 1500);
         })
         .catch(function () { showToast('Lỗi khi lưu', 'error'); })
-        .finally(function () { btn.disabled = false; btn.innerHTML = origHtml; });
+        .finally(function () { btn.disabled = false; });
     }
 
     // ── CLEAR CACHE ────────────────────────────────────────────────

@@ -127,7 +127,7 @@ class PostListWidget extends BaseWidget
                 ['name' => 'title', 'label' => 'Tiêu đề', 'type' => 'text', 'default' => 'Tin tức mới nhất'],
                 ['name' => 'limit', 'label' => 'Số lượng bài viết', 'type' => 'number', 'default' => 6],
                 ['name' => 'layout', 'label' => 'Kiểu hiển thị', 'type' => 'select', 'default' => 'grid', 'options' => ['grid' => 'Lưới', 'list' => 'Danh sách']],
-                ['name' => 'category_id', 'label' => 'Danh mục (ID)', 'type' => 'number', 'default' => ''],
+                ['name' => 'category_id', 'label' => 'Danh mục', 'type' => 'taxonomy', 'taxonomy' => 'category', 'default' => ''],
             ],
         ];
     }

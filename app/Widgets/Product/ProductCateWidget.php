@@ -31,10 +31,18 @@ class ProductCateWidget extends BaseWidget
 
         $projectCode = request()->route('projectCode');
 
+        $displayType = $this->get('display_type', 'grid');
+        $widgetId = 'swiper-' . uniqid();
         $html = '<section class="product-cate-widget py-16 bg-white">';
         $html .= '<div class="container mx-auto px-4">';
         $html .= "<h2 class=\"text-4xl font-bold text-center mb-12\">{$title}</h2>";
-        $html .= '<div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">';
+        
+        if ($displayType === 'swiper') {
+            $html .= '<div class="swiper product-cate-swiper" id="' . $widgetId . '">';
+            $html .= '<div class="swiper-wrapper">';
+        } else {
+            $html .= '<div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">';
+        }
 
         foreach ($categories as $category) {
             $categoryUrl = $projectCode ? "/{$projectCode}/danh-muc/{$category->slug}" : "/danh-muc/{$category->slug}";
@@ -47,6 +55,9 @@ class ProductCateWidget extends BaseWidget
             // Đếm số sản phẩm trong danh mục
             $productCount = $showCount ? $category->posts()->where('status', 'published')->count() : 0;
 
+            if ($displayType === 'swiper') {
+                $html .= '<div class="swiper-slide">';
+            }
             $html .= '<div class="category-item bg-gray-50 rounded-lg overflow-hidden hover:shadow-lg transition">';
             $html .= "<img src=\"{$image}\" alt=\"{$category->name}\" class=\"w-full h-40 object-cover\">";
             $html .= '<div class="p-4 text-center">';
@@ -56,9 +67,21 @@ class ProductCateWidget extends BaseWidget
             }
             $html .= "<a href=\"{$categoryUrl}\" class=\"inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm\">Xem tất cả</a>";
             $html .= '</div></div>';
+            if ($displayType === 'swiper') {
+                $html .= '</div>';
+            }
         }
 
-        $html .= '</div></div></section>';
+        if ($displayType === 'swiper') {
+            $html .= '</div>'; // End swiper-wrapper
+            $html .= '<div class="swiper-pagination"></div>';
+            $html .= '<div class="swiper-button-next"></div>';
+            $html .= '<div class="swiper-button-prev"></div>';
+            $html .= '</div>'; // End swiper
+        } else {
+            $html .= '</div>'; // End grid
+        }
+        $html .= '</div></section>';
 
         return $html;
     }
@@ -80,27 +103,72 @@ class ProductCateWidget extends BaseWidget
 
     public function css(): string
     {
-        return '<style>
+        $displayType = $this->get('display_type', 'grid');
+        $css = '<style>
         .category-item { transition: all 0.3s ease; }
         .category-item:hover { transform: translateY(-5px); }
         .category-item img { transition: transform 0.3s; }
         .category-item:hover img { transform: scale(1.05); }
         </style>';
+        
+        if ($displayType === 'swiper') {
+            $css .= '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />';
+        }
+        
+        return $css;
     }
 
     public function js(): string
     {
-        return '<script>
-        document.querySelectorAll(".category-item").forEach((item, i) => {
-            item.style.opacity = "0";
-            item.style.transform = "translateY(20px)";
-            setTimeout(() => {
-                item.style.transition = "all 0.5s ease";
-                item.style.opacity = "1";
-                item.style.transform = "translateY(0)";
-            }, i * 150);
-        });
-        </script>';
+        $displayType = $this->get('display_type', 'grid');
+        $js = '';
+        
+        if ($displayType === 'swiper') {
+            $js .= '<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+            <script>
+            (function() {
+                var initSwiper = function() {
+                    if (typeof Swiper === "undefined") {
+                        setTimeout(initSwiper, 50);
+                        return;
+                    }
+                    document.querySelectorAll(".product-cate-swiper").forEach(function(el) {
+                        if (el.swiper) return; // Already initialized
+                        new Swiper(el, {
+                            slidesPerView: 1,
+                            spaceBetween: 24,
+                            pagination: { el: el.querySelector(".swiper-pagination"), clickable: true },
+                            navigation: { nextEl: el.querySelector(".swiper-button-next"), prevEl: el.querySelector(".swiper-button-prev") },
+                            breakpoints: {
+                                640: { slidesPerView: 2 },
+                                1024: { slidesPerView: 4 }
+                            }
+                        });
+                    });
+                };
+                
+                if (document.readyState === "loading") {
+                    document.addEventListener("DOMContentLoaded", initSwiper);
+                } else {
+                    setTimeout(initSwiper, 100);
+                }
+            })();
+            </script>';
+        } else {
+            $js .= '<script>
+            document.querySelectorAll(".category-item").forEach((item, i) => {
+                item.style.opacity = "0";
+                item.style.transform = "translateY(20px)";
+                setTimeout(() => {
+                    item.style.transition = "all 0.5s ease";
+                    item.style.opacity = "1";
+                    item.style.transform = "translateY(0)";
+                }, i * 150);
+            });
+            </script>';
+        }
+        
+        return $js;
     }
 
     public static function getConfig(): array
@@ -112,6 +180,7 @@ class ProductCateWidget extends BaseWidget
             'icon' => '<path d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>',
             'fields' => [
                 ['name' => 'title', 'label' => 'Tiêu đề', 'type' => 'text', 'default' => 'Danh mục sản phẩm'],
+                ['name' => 'display_type', 'label' => 'Kiểu hiển thị', 'type' => 'select', 'default' => 'grid', 'options' => ['grid' => 'Grid (Dạng lưới)', 'swiper' => 'Swiper (Thanh trượt)']],
                 ['name' => 'limit', 'label' => 'Số lượng', 'type' => 'number', 'default' => 8],
                 ['name' => 'show_count', 'label' => 'Hiện số lượng sản phẩm', 'type' => 'checkbox', 'default' => true],
                 ['name' => 'only_parent', 'label' => 'Chỉ hiện danh mục cha', 'type' => 'checkbox', 'default' => true],

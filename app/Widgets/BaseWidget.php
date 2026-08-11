@@ -89,6 +89,89 @@ abstract class BaseWidget
         ];
     }
 
+    /**
+     * Build a combined inline style string from background info + margin/padding settings.
+     * Returns the full style="..." attribute string, or empty string if nothing to apply.
+     */
+    protected function buildWrapperStyleAttribute(): string
+    {
+        $bgInfo = $this->getWrapperBackgroundInfo();
+        $parts = [];
+
+        if (! empty($bgInfo['style'])) {
+            $parts[] = $bgInfo['style'];
+        }
+
+        foreach (['margin_top', 'margin_bottom', 'margin_left', 'margin_right', 'padding_top', 'padding_bottom', 'padding_left', 'padding_right'] as $prop) {
+            $val = $this->get($prop);
+            if ($val) {
+                $cssProp = str_replace('_', '-', $prop);
+                $parts[] = "{$cssProp}: {$val}";
+            }
+        }
+
+        return ! empty($parts) ? ' style="'.implode('; ', $parts).';"' : '';
+    }
+
+    /**
+     * Get wrapper background CSS classes (from getWrapperBackgroundInfo).
+     */
+    protected function getWrapperBgClasses(): array
+    {
+        return $this->getWrapperBackgroundInfo()['classes'];
+    }
+
+    /**
+     * Build typography class + inline style for title or description.
+     *
+     * @param  string  $weightKey  e.g. 'title_font_weight' or 'description_font_weight'
+     * @param  string  $colorKey  e.g. 'title_color' or 'description_color'
+     * @param  string  $defaultWeight  e.g. 'font-bold'
+     * @return array{class: string, style: string}
+     */
+    protected function buildTypography(string $weightKey, string $colorKey, string $defaultWeight = ''): array
+    {
+        $weight = $this->get($weightKey, $defaultWeight);
+        $color = $this->get($colorKey);
+
+        return [
+            'class' => $weight ?: '',
+            'style' => $color ? ' style="color: '.$color.';"' : '',
+        ];
+    }
+
+    /**
+     * Wrap rendered widget HTML with custom CSS, JS, body code, and footer code injections.
+     */
+    protected function wrapWithCodeInjections(string $innerHtml): string
+    {
+        $html = '';
+
+        $customCss = $this->get('custom_css', '');
+        if ($customCss) {
+            $html .= '<style>'.$customCss.'</style>';
+        }
+
+        $bodyCode = $this->get('body_code', '');
+        if ($bodyCode) {
+            $html .= $bodyCode."\n";
+        }
+
+        $html .= $innerHtml;
+
+        $customJs = $this->get('custom_js', '');
+        if ($customJs) {
+            $html .= '<script>'.$customJs.'</script>';
+        }
+
+        $footerCode = $this->get('footer_code', '');
+        if ($footerCode) {
+            $html .= "\n".$footerCode;
+        }
+
+        return $html;
+    }
+
     abstract public function render(): string;
 
     /**

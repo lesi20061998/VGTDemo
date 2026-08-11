@@ -31,7 +31,33 @@ class TaxonomyField implements FieldTypeInterface
         $apiBase = $projectCode ? "/{$projectCode}/api" : '/api';
 
         return <<<HTML
-        <div class="mb-4" x-data="taxonomyField_{$name}()" x-init="init()">
+        <div class="mb-4" x-data="{
+            items: [],
+            loading: true,
+            taxonomy: '{$taxonomy}',
+            selectedIds: {$selectedJson},
+            apiBase: '{$apiBase}',
+            
+            init() {
+                this.loadTaxonomies();
+            },
+            
+            async loadTaxonomies() {
+                try {
+                    const response = await fetch(this.apiBase + '/taxonomy-field/list?type=' + this.taxonomy);
+                    const data = await response.json();
+                    this.items = data.items || [];
+                } catch (e) {
+                    console.error('Error loading taxonomies:', e);
+                    this.items = [];
+                }
+                this.loading = false;
+            },
+            
+            isSelected(id) {
+                return this.selectedIds.includes(id) || this.selectedIds.includes(String(id));
+            }
+        }">
             <label class="block text-sm font-medium text-gray-700 mb-1">
                 {$label} {$this->renderRequiredBadge($required)}
             </label>
@@ -56,38 +82,6 @@ class TaxonomyField implements FieldTypeInterface
             </template>
             
             {$this->renderHelp($help)}
-            
-            <script>
-                function taxonomyField_{$name}() {
-                    return {
-                        items: [],
-                        loading: true,
-                        taxonomy: '{$taxonomy}',
-                        selectedIds: {$selectedJson},
-                        apiBase: '{$apiBase}',
-                        
-                        init() {
-                            this.loadTaxonomies();
-                        },
-                        
-                        async loadTaxonomies() {
-                            try {
-                                const response = await fetch(this.apiBase + '/taxonomy-field/list?type=' + this.taxonomy);
-                                const data = await response.json();
-                                this.items = data.items || [];
-                            } catch (e) {
-                                console.error('Error loading taxonomies:', e);
-                                this.items = [];
-                            }
-                            this.loading = false;
-                        },
-                        
-                        isSelected(id) {
-                            return this.selectedIds.includes(id) || this.selectedIds.includes(String(id));
-                        }
-                    }
-                }
-            </script>
         </div>
         HTML;
     }

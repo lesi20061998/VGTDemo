@@ -15,6 +15,29 @@ class Widget extends Model
         'is_active' => 'boolean',
     ];
 
+    public function getSettingsAttribute($value): array
+    {
+        if (is_array($value)) {
+            return $value;
+        }
+
+        if (is_string($value) && ! empty($value)) {
+            while (is_string($value)) {
+                $decoded = json_decode($value, true);
+                if (json_last_error() === JSON_ERROR_NONE && (is_array($decoded) || is_string($decoded))) {
+                    $value = $decoded;
+                } else {
+                    break;
+                }
+            }
+            if (is_array($value)) {
+                return $value;
+            }
+        }
+
+        return [];
+    }
+
     /**
      * Get rendered content for this widget
      */

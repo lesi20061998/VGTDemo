@@ -192,7 +192,7 @@
                                 </div>
                                 <small class="text-gray-500">Không chọn = không thay đổi</small>
                             </div>
-                            <div>
+                            <div class="col-span-2">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Trạng thái</label>
                                 <select id="bulkStatus" name="status" class="w-full px-3 py-2 border rounded-md">
                                     <option value="">Không thay đổi</option>
@@ -202,12 +202,34 @@
                                 </select>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Giá</label>
-                                <input type="number" id="bulkPrice" name="price" placeholder="Không thay đổi" class="w-full px-3 py-2 border rounded-md">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Điều chỉnh Giá gốc</label>
+                                <div class="grid grid-cols-12 gap-2">
+                                    <select id="bulkPriceMode" name="price_mode" class="col-span-7 px-3 py-2 border rounded-md text-sm">
+                                        <option value="no_change">-- Không thay đổi --</option>
+                                        <option value="fixed">Đặt giá mới (VNĐ)</option>
+                                        <option value="percent_increase">Tăng theo phần trăm (+%)</option>
+                                        <option value="percent_decrease">Giảm theo phần trăm (-%)</option>
+                                        <option value="amount_increase">Tăng số tiền cố định (+ VNĐ)</option>
+                                        <option value="amount_decrease">Giảm số tiền cố định (- VNĐ)</option>
+                                    </select>
+                                    <input type="number" id="bulkPriceValue" name="price_value" placeholder="Giá trị" class="col-span-5 px-3 py-2 border rounded-md text-sm">
+                                </div>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Giá khuyến mãi</label>
-                                <input type="number" id="bulkSalePrice" name="sale_price" placeholder="Không thay đổi" class="w-full px-3 py-2 border rounded-md">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Điều chỉnh Giá khuyến mãi</label>
+                                <div class="grid grid-cols-12 gap-2">
+                                    <select id="bulkSalePriceMode" name="sale_price_mode" class="col-span-7 px-3 py-2 border rounded-md text-sm">
+                                        <option value="no_change">-- Không thay đổi --</option>
+                                        <option value="fixed">Đặt giá KM mới (VNĐ)</option>
+                                        <option value="percent_decrease_regular">Giảm theo % so với Giá gốc (-%)</option>
+                                        <option value="percent_increase">Tăng giá KM hiện tại (+%)</option>
+                                        <option value="percent_decrease">Giảm giá KM hiện tại (-%)</option>
+                                        <option value="amount_increase">Tăng giá KM (+ VNĐ)</option>
+                                        <option value="amount_decrease">Giảm giá KM (- VNĐ)</option>
+                                        <option value="clear">Xóa giá khuyến mãi</option>
+                                    </select>
+                                    <input type="number" id="bulkSalePriceValue" name="sale_price_value" placeholder="Giá trị" class="col-span-5 px-3 py-2 border rounded-md text-sm">
+                                </div>
                             </div>
                         </div>
                     </form>
@@ -397,8 +419,10 @@ function saveBulkEdit() {
         categories: Array.from(categoryCheckboxes).map(cb => cb.value),
         brands: Array.from(brandCheckboxes).map(cb => cb.value),
         status: document.getElementById('bulkStatus').value,
-        price: document.getElementById('bulkPrice').value,
-        sale_price: document.getElementById('bulkSalePrice').value
+        price_mode: document.getElementById('bulkPriceMode').value,
+        price_value: document.getElementById('bulkPriceValue').value,
+        sale_price_mode: document.getElementById('bulkSalePriceMode').value,
+        sale_price_value: document.getElementById('bulkSalePriceValue').value
     };
     
     // Determine the correct URL based on context
