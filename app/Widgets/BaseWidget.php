@@ -319,9 +319,9 @@ abstract class BaseWidget
     public function getPreview(): string
     {
         try {
-            return $this->render();
+            return $this->css() . $this->render() . $this->js();
         } catch (\Exception $e) {
-            return '<div class="widget-preview-error">Preview Error: '.htmlspecialchars($e->getMessage()).'</div>';
+            return '<div class="widget-preview-error" style="padding:1rem;color:#ef4444;font-family:sans-serif;">Preview Error: ' . htmlspecialchars($e->getMessage()) . '</div>';
         }
     }
 

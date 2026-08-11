@@ -6,8 +6,17 @@
 
 @section('content')
 <div class="flex justify-between items-center mb-6">
-    <div class="flex space-x-4">
+    <div class="flex flex-col space-y-4">
+        <!-- Quick Status Tabs -->
+        <div class="flex space-x-4">
+            <a href="{{ request()->url() }}" class="{{ !request('status') ? 'text-blue-600 font-medium border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700' }} pb-2 transition">Tất cả</a>
+            <a href="{{ request()->url() }}?status=published" class="{{ request('status') === 'published' ? 'text-blue-600 font-medium border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700' }} pb-2 transition">Đã xuất bản</a>
+            <a href="{{ request()->url() }}?status=draft" class="{{ request('status') === 'draft' ? 'text-blue-600 font-medium border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700' }} pb-2 transition">Nháp</a>
+            <a href="{{ request()->url() }}?status=trashed" class="{{ request('status') === 'trashed' ? 'text-red-600 font-medium border-b-2 border-red-600' : 'text-gray-500 hover:text-gray-700' }} pb-2 transition">Thùng rác</a>
+        </div>
+        
         <form method="GET" class="flex space-x-2">
+
             <input type="text" name="search" value="{{ request('search') }}" 
                    placeholder="Tìm kiếm sản phẩm..." 
                    class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
@@ -31,6 +40,7 @@
                 <option value="draft" {{ request('status') == 'draft' ? 'selected' : '' }}>Nháp</option>
                 <option value="published" {{ request('status') == 'published' ? 'selected' : '' }}>Đã xuất bản</option>
                 <option value="archived" {{ request('status') == 'archived' ? 'selected' : '' }}>Lưu trữ</option>
+                <option value="trashed" {{ request('status') == 'trashed' ? 'selected' : '' }}>Thùng rác</option>
             </select>
             
             <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
@@ -103,44 +113,69 @@
                     </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                        {{ $product->status === 'published' ? 'bg-green-100 text-green-800' : 
-                           ($product->status === 'draft' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800') }}">
-                        {{ ucfirst($product->status) }}
-                    </span>
+                    @if(request('status') === 'trashed' || (method_exists($product, 'trashed') && $product->trashed()))
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                            Thùng rác
+                        </span>
+                    @else
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                            {{ $product->status === 'published' ? 'bg-green-100 text-green-800' : 
+                               ($product->status === 'draft' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800') }}">
+                            {{ ucfirst($product->status) }}
+                        </span>
+                    @endif
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div class="flex items-center space-x-1">
-                        <!-- Quick Edit -->
-                        <button onclick="openSingleQuickEdit({{ $product->id }})" 
-                                class="inline-flex items-center justify-center w-8 h-8 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition-colors" 
-                                title="Sửa nhanh">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path>
-                            </svg>
-                        </button>
-                        
-                        <!-- Edit -->
-                        <a href="{{ isset($currentProject) && $currentProject ? route('project.admin.products.edit', [$currentProject->code, $product]) : route('cms.products.edit', $product) }}" 
-                           class="inline-flex items-center justify-center w-8 h-8 bg-indigo-100 text-indigo-600 rounded-lg hover:bg-indigo-200 transition-colors" 
-                           title="Chỉnh sửa">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                            </svg>
-                        </a>
-                        
-                        <!-- Delete -->
-                        <form method="POST" action="{{ isset($currentProject) && $currentProject ? route('project.admin.products.destroy', [$currentProject->code, $product]) : route('cms.products.destroy', $product) }}" class="inline">
-                            @csrf @method('DELETE')
-                            <button type="submit" 
-                                    class="inline-flex items-center justify-center w-8 h-8 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors" 
-                                    title="Xóa" 
-                                    onclick="return confirm('Bạn có chắc muốn xóa?')">
+                        @if(request('status') === 'trashed')
+                            <!-- Restore -->
+                            <form method="POST" action="{{ isset($currentProject) && $currentProject ? route('project.admin.products.restore', [$currentProject->code, $product]) : route('cms.products.restore', $product) }}" class="inline">
+                                @csrf @method('PATCH')
+                                <button type="submit" class="inline-flex items-center justify-center w-8 h-8 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition-colors" title="Khôi phục">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path>
+                                    </svg>
+                                </button>
+                            </form>
+                            
+                            <!-- Force Delete -->
+                            <form method="POST" action="{{ isset($currentProject) && $currentProject ? route('project.admin.products.force-delete', [$currentProject->code, $product]) : route('cms.products.force-delete', $product) }}" class="inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa vĩnh viễn sản phẩm này không? Hành động này không thể hoàn tác!');">
+                                @csrf @method('DELETE')
+                                <button type="submit" class="inline-flex items-center justify-center w-8 h-8 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors" title="Xóa vĩnh viễn">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                </button>
+                            </form>
+                        @else
+                            <!-- Quick Edit -->
+                            <button onclick="openSingleQuickEdit({{ $product->id }})" 
+                                    class="inline-flex items-center justify-center w-8 h-8 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition-colors" 
+                                    title="Sửa nhanh">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path>
                                 </svg>
                             </button>
-                        </form>
+                            
+                            <!-- Edit -->
+                            <a href="{{ isset($currentProject) && $currentProject ? route('project.admin.products.edit', [$currentProject->code, $product]) : route('cms.products.edit', $product) }}" 
+                               class="inline-flex items-center justify-center w-8 h-8 bg-indigo-100 text-indigo-600 rounded-lg hover:bg-indigo-200 transition-colors" 
+                               title="Chỉnh sửa">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                </svg>
+                            </a>
+                            
+                            <!-- Delete -->
+                            <form method="POST" action="{{ isset($currentProject) && $currentProject ? route('project.admin.products.destroy', [$currentProject->code, $product]) : route('cms.products.destroy', $product) }}" class="inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này không?');">
+                                @csrf @method('DELETE')
+                                <button type="submit" class="inline-flex items-center justify-center w-8 h-8 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors" title="Xóa">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                </button>
+                            </form>
+                        @endif
                     </div>
                 </td>
             </tr>

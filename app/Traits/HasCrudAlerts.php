@@ -9,9 +9,17 @@ trait HasCrudAlerts
      */
     protected function alertCreated(string $resourceName, ?string $details = null): void
     {
+        $this->alertSuccess("Thêm {$resourceName} thành công!", $details);
+    }
+
+    /**
+     * Flash a generic success alert
+     */
+    protected function alertSuccess(string $message, ?string $details = null): void
+    {
         session()->flash('alert', [
             'type' => 'success',
-            'message' => "Thêm {$resourceName} thành công!",
+            'message' => $message,
             'details' => $details,
         ]);
     }

@@ -50,7 +50,7 @@ class ProductCateWidget extends BaseWidget
             // Xử lý hình ảnh (trong Taxonomy có thể lưu trong meta_data)
             $image = isset($category->meta_data['image']) && $category->meta_data['image']
                 ? $category->meta_data['image']
-                : 'https://via.placeholder.com/300x200?text='.urlencode($category->name);
+                : "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200' viewBox='0 0 300 200'%3E%3Crect width='300' height='200' fill='%23e5e7eb'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='14' fill='%239ca3af'%3E" . urlencode($category->name) . "%3C/text%3E%3C/svg%3E";
 
             // Đếm số sản phẩm trong danh mục
             $productCount = $showCount ? $category->posts()->where('status', 'published')->count() : 0;

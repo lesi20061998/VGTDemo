@@ -33,7 +33,10 @@ class ProductSliderWidget extends BaseWidget
         $watermark = setting('watermark', []);
         $watermarkEnabled = $watermark['enabled'] ?? false;
 
-        $html  = '<section class="product-slider-widget py-16 bg-white">';
+        $styleAttr = $this->buildWrapperStyleAttribute();
+        $bgClasses = implode(' ', $this->getWrapperBgClasses());
+
+        $html  = '<section class="product-slider-widget py-16 bg-white ' . $bgClasses . '"' . $styleAttr . '>';
         $html .= '<div class="container mx-auto px-4">';
         if ($title) {
             $html .= "<h2 class=\"text-4xl font-bold text-center mb-12\">{$title}</h2>";
@@ -93,14 +96,14 @@ class ProductSliderWidget extends BaseWidget
             $html .= '<div class="swiper-pagination mt-4"></div>';
         }
         if ($showNavigation) {
-            $html .= '<div class="swiper-button-next !text-blue-600 !w-8 !h-8 after:!text-sm"></div>';
-            $html .= '<div class="swiper-button-prev !text-blue-600 !w-8 !h-8 after:!text-sm"></div>';
+            $html .= '<div class="swiper-button-prev product-slider-nav-prev"></div>';
+            $html .= '<div class="swiper-button-next product-slider-nav-next"></div>';
         }
 
         $html .= '</div>'; // End swiper
         $html .= '</div></section>';
 
-        return $html;
+        return $this->wrapWithCodeInjections($html);
     }
 
     protected function getProductImage(?string $imagePath, bool $watermarkEnabled): string
@@ -135,11 +138,53 @@ class ProductSliderWidget extends BaseWidget
     {
         return '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
         <style>
-        .product-slider-widget .swiper { padding-bottom: 48px; }
+        .product-slider-widget { position: relative; }
+        .product-slider-widget .swiper-slide { height: auto; }
+        .product-slider-widget .swiper { padding-bottom: 48px; padding-left: 44px; padding-right: 44px; }
         .product-slider-widget .swiper-pagination { bottom: 0; }
+        .product-slider-widget .swiper-pagination-bullet-active { background: #2563eb; }
         .product-slide-card { height: 100%; display: flex; flex-direction: column; }
         .product-slide-card .p-4 { flex: 1; display: flex; flex-direction: column; }
         .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+        /* Custom nav buttons */
+        .product-slider-nav-prev,
+        .product-slider-nav-next {
+            position: absolute;
+            top: 40%;
+            transform: translateY(-50%);
+            z-index: 10;
+            width: 40px !important;
+            height: 40px !important;
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid #e5e7eb;
+        }
+        .product-slider-nav-prev:hover,
+        .product-slider-nav-next:hover {
+            background: #2563eb;
+            box-shadow: 0 4px 16px rgba(37,99,235,0.3);
+            border-color: #2563eb;
+        }
+        .product-slider-nav-prev { left: 0; }
+        .product-slider-nav-next { right: 0; }
+        .product-slider-nav-prev::after,
+        .product-slider-nav-next::after {
+            font-size: 14px !important;
+            font-weight: 900 !important;
+            color: #374151;
+            transition: color 0.2s;
+        }
+        .product-slider-nav-prev:hover::after,
+        .product-slider-nav-next:hover::after { color: #fff; }
+        .product-slider-nav-prev.swiper-button-disabled,
+        .product-slider-nav-next.swiper-button-disabled { opacity: 0.3; pointer-events: none; }
         </style>';
     }
 

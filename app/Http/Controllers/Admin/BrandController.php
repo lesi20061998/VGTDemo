@@ -22,7 +22,13 @@ class BrandController extends Controller
         }
 
         try {
-            $brands = ProjectBrand::when($request->search, fn ($q) => $q->search($request->search))
+            $query = ProjectBrand::query();
+            
+            if ($request->status === 'trashed') {
+                $query->onlyTrashed();
+            }
+            
+            $brands = $query->when($request->search, fn ($q) => $q->search($request->search))
                 ->orderBy('name')
                 ->paginate(config('app.admin_per_page', 20));
 
@@ -173,5 +179,29 @@ class BrandController extends Controller
         $this->alertDeleted('thương hiệu', "Thương hiệu '{$brandName}' đã được xóa khỏi hệ thống.");
 
         return redirect()->route('project.admin.brands.index', $projectCode);
+    }
+
+    public function restore($projectCode, $id)
+    {
+        if (! $projectCode) {
+            abort(404, 'Project context required');
+        }
+
+        $brand = ProjectBrand::withTrashed()->findOrFail($id);
+        $brand->restore();
+        $this->alertSuccess('Đã khôi phục thương hiệu thành công.');
+        return redirect()->back();
+    }
+
+    public function forceDelete($projectCode, $id)
+    {
+        if (! $projectCode) {
+            abort(404, 'Project context required');
+        }
+
+        $brand = ProjectBrand::withTrashed()->findOrFail($id);
+        $brand->forceDelete();
+        $this->alertSuccess('Đã xóa vĩnh viễn thương hiệu thành công.');
+        return redirect()->back();
     }
 }

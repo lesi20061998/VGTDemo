@@ -131,9 +131,37 @@ class WidgetRenderingService
 
     public function renderArea(string $area, array $context = []): string
     {
-        // Bảng widgets đã bị xóa trong phase 4 cleanup.
-        // Trả về chuỗi rỗng vì các widget từ database không còn được hỗ trợ.
-        return '';
+        $this->renderingContext = $context;
+        $html = '';
+
+        try {
+            $projectId = is_array(session('current_project')) ? (session('current_project')['id'] ?? null) : (session('current_project')->id ?? null);
+
+            $query = \App\Models\Widget::where('area', $area)
+                                      ->where('is_active', true)
+                                      ->orderBy('sort_order');
+                                      
+            if ($projectId) {
+                $query->where(function($q) use ($projectId) {
+                    $q->where('tenant_id', $projectId)->orWhereNull('tenant_id');
+                });
+            }
+
+            $widgets = $query->get();
+
+            foreach ($widgets as $widget) {
+                $html .= $this->render(
+                    $widget->type,
+                    $widget->settings ?? [],
+                    $widget->variant ?? 'default',
+                    $context
+                );
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Error rendering widget area: ' . $area, ['error' => $e->getMessage()]);
+        }
+
+        return $html;
     }
 
     /**

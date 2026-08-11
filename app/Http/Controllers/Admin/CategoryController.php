@@ -48,8 +48,13 @@ class CategoryController extends Controller
 
     public function index(Request $request)
     {
-        $categories = $this->getCategoryQuery()
-            ->with(['parent', 'children'])
+        $query = $this->getCategoryQuery();
+
+        if ($request->status === 'trashed') {
+            $query->onlyTrashed();
+        }
+
+        $categories = $query->with(['parent', 'children'])
             ->withCount('posts as products_count')
             ->when($request->search, fn ($q) => $q->where('name', 'like', "%{$request->search}%"))
             ->when($request->parent_id, fn ($q) => $q->where('parent_id', $request->parent_id))
@@ -233,5 +238,25 @@ class CategoryController extends Controller
             ->get();
 
         return response()->json($subcategories);
+    }
+
+    public function restore($projectCodeOrId, $categoryId = null)
+    {
+        $id = $categoryId ?? $projectCodeOrId;
+        $category = $this->getCategoryQuery()->withTrashed()->findOrFail($id);
+        $category->restore();
+        
+        $this->alertSuccess('Đã khôi phục danh mục thành công.');
+        return redirect()->back();
+    }
+
+    public function forceDelete($projectCodeOrId, $categoryId = null)
+    {
+        $id = $categoryId ?? $projectCodeOrId;
+        $category = $this->getCategoryQuery()->withTrashed()->findOrFail($id);
+        $category->forceDelete();
+        
+        $this->alertSuccess('Đã xóa vĩnh viễn danh mục thành công.');
+        return redirect()->back();
     }
 }

@@ -54,7 +54,10 @@ class ProductsWidget extends BaseWidget
         $displayType = $this->get('display_type', 'grid');
         $widgetId = 'swiper-products-' . uniqid();
 
-        $html = '<section class="products-widget py-16 bg-white">';
+        $styleAttr = $this->buildWrapperStyleAttribute();
+        $bgClasses = implode(' ', $this->getWrapperBgClasses());
+
+        $html = '<section class="products-widget py-16 bg-white ' . $bgClasses . '"' . $styleAttr . '>';
         $html .= '<div class="container mx-auto px-4">';
         $html .= "<h2 class=\"text-4xl font-bold text-center mb-12\">{$title}</h2>";
         
@@ -86,7 +89,7 @@ class ProductsWidget extends BaseWidget
             if ($displayType === 'swiper') {
                 $html .= '<div class="swiper-slide">';
             }
-            $html .= '<div class="product-card bg-white rounded-lg shadow hover:shadow-xl transition overflow-hidden">';
+            $html .= '<div class="product-card bg-white rounded-lg shadow hover:shadow-xl transition overflow-hidden h-full flex flex-col">';
             $html .= '<div class="relative">';
             $html .= "<img src=\"{$image}\" alt=\"{$name}\" class=\"w-full h-48 object-cover\">";
 
@@ -108,9 +111,9 @@ class ProductsWidget extends BaseWidget
                 $html .= '<span class="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded">Sale</span>';
             }
             $html .= '</div>';
-            $html .= '<div class="p-4">';
+            $html .= '<div class="p-4 flex-1 flex flex-col">';
             $html .= "<h3 class=\"font-bold mb-2 line-clamp-2\">{$name}</h3>";
-            $html .= '<div class="flex justify-between items-center">';
+            $html .= '<div class="flex justify-between items-center mt-auto">';
             if ($salePriceValue) {
                 $html .= "<div><span class=\"text-gray-400 line-through text-sm\">{$price}</span><br><span class=\"text-lg font-bold text-blue-600\">{$salePrice}</span></div>";
             } else {
@@ -134,7 +137,7 @@ class ProductsWidget extends BaseWidget
         }
         $html .= '</div></section>';
 
-        return $html;
+        return $this->wrapWithCodeInjections($html);
     }
 
     /**
@@ -174,6 +177,7 @@ class ProductsWidget extends BaseWidget
     {
         $displayType = $this->get('display_type', 'grid');
         $css = '<style>
+        .products-widget .swiper-slide { height: auto; }
         .product-card { transition: all 0.3s ease; }
         .product-card:hover { transform: translateY(-5px); }
         .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }

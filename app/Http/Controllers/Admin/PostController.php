@@ -25,10 +25,10 @@ class PostController extends Controller
         $param = $postId ?? $projectCodeOrPost;
 
         if (is_numeric($param)) {
-            return Post::where('id', $param)->firstOrFail();
+            return Post::withTrashed()->where('id', $param)->firstOrFail();
         }
 
-        return Post::where('slug', $param)->orWhere('id', $param)->firstOrFail();
+        return Post::withTrashed()->where('slug', $param)->orWhere('id', $param)->firstOrFail();
     }
 
     public function index(Request $request, $projectCode = null)
@@ -43,10 +43,16 @@ class PostController extends Controller
             ];
         }
 
-        $posts = Post::with('author')
-            ->when($request->search, fn ($q) => $q->where('title', 'like', "%{$request->search}%"))
-            ->where('post_type', $postType)
-            ->when($request->status, fn ($q) => $q->where('status', $request->status))
+        $query = Post::with('author')
+            ->where('post_type', $postType);
+
+        if ($request->status === 'trashed') {
+            $query->onlyTrashed();
+        } else {
+            $query->when($request->status, fn ($q) => $q->where('status', $request->status));
+        }
+
+        $posts = $query->when($request->search, fn ($q) => $q->where('title', 'like', "%{$request->search}%"))
             ->latest()
             ->paginate(20);
 
@@ -251,5 +257,21 @@ class PostController extends Controller
             'type' => 'success',
             'message' => 'Xóa '.($config['name'] ?? 'dữ liệu').' thành công!',
         ]);
+    }
+
+    public function restore(Request $request, $projectCodeOrPost = null, $postId = null)
+    {
+        $post = $this->resolvePost($projectCodeOrPost, $postId);
+        $post->restore();
+        $this->alertSuccess('Đã khôi phục dữ liệu thành công.');
+        return redirect()->back();
+    }
+
+    public function forceDelete(Request $request, $projectCodeOrPost = null, $postId = null)
+    {
+        $post = $this->resolvePost($projectCodeOrPost, $postId);
+        $post->forceDelete();
+        $this->alertSuccess('Đã xóa vĩnh viễn dữ liệu thành công.');
+        return redirect()->back();
     }
 }

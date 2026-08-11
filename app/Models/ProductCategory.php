@@ -9,10 +9,11 @@ use App\Traits\ProjectScoped;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ProductCategory extends Model
 {
-    use BelongsToTenant, HasFactory, ProjectScoped;
+    use BelongsToTenant, HasFactory, ProjectScoped, SoftDeletes;
 
     /**
      * Maximum allowed category depth (0-based, so 3 means 4 levels: 0,1,2,3)

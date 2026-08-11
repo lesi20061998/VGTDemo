@@ -37,10 +37,7 @@ use App\Models\Project;
 use Illuminate\Support\Facades\Route;
 use Livewire\Livewire;
 
-// ============================================
-// FRONTEND ROUTES (Website khách hàng)
-// URL: /{projectCode}/*
-// ============================================
+
 Route::prefix('{projectCode}')
     ->name('project.')
     ->middleware([
@@ -144,15 +141,23 @@ Route::prefix('{projectCode}/admin')
         Route::post('products/bulk-edit', [ProductController::class, 'bulkEdit'])->name('products.bulk-edit');
         Route::post('products/bulk-update', [ProductController::class, 'bulkUpdate'])->name('products.bulk-update');
         Route::post('products/toggle-badge', [ProductController::class, 'toggleBadge'])->name('products.toggle-badge');
+        Route::patch('products/{product}/restore', [ProductController::class, 'restore'])->name('products.restore');
+        Route::delete('products/{product}/force-delete', [ProductController::class, 'forceDelete'])->name('products.force-delete');
         Route::resource('products', ProductController::class);
 
+        Route::patch('brands/{brand}/restore', [BrandController::class, 'restore'])->name('brands.restore');
+        Route::delete('brands/{brand}/force-delete', [BrandController::class, 'forceDelete'])->name('brands.force-delete');
         Route::resource('brands', BrandController::class);
 
         // Category Management - Consistent Routes
+        Route::patch('categories/{category}/restore', [CategoryController::class, 'restore'])->name('categories.restore');
+        Route::delete('categories/{category}/force-delete', [CategoryController::class, 'forceDelete'])->name('categories.force-delete');
         Route::resource('categories', CategoryController::class);
         Route::get('categories/{category}/subcategories', [CategoryController::class, 'getSubcategories'])->name('categories.subcategories');
 
         // Posts Management (Bài viết)
+        Route::patch('posts/{post}/restore', [App\Http\Controllers\Admin\PostController::class, 'restore'])->name('posts.restore');
+        Route::delete('posts/{post}/force-delete', [App\Http\Controllers\Admin\PostController::class, 'forceDelete'])->name('posts.force-delete');
         Route::resource('posts', App\Http\Controllers\Admin\PostController::class);
         Route::get('posts/create', [App\Http\Controllers\Admin\PostController::class, 'create'])->name('posts.create');
 
@@ -160,6 +165,8 @@ Route::prefix('{projectCode}/admin')
         Route::resource('property-categories', PropertyCategoryController::class);
 
         // Pages Management (Trang tĩnh)
+        Route::patch('pages/{post}/restore', [App\Http\Controllers\Admin\PostController::class, 'restore'])->name('pages.restore');
+        Route::delete('pages/{post}/force-delete', [App\Http\Controllers\Admin\PostController::class, 'forceDelete'])->name('pages.force-delete');
         Route::get('pages', [App\Http\Controllers\Admin\PostController::class, 'index'])->name('pages.index')->defaults('post_type', 'page');
         Route::get('pages/create', [App\Http\Controllers\Admin\PostController::class, 'create'])->name('pages.create')->defaults('type', 'page');
         Route::get('pages/{post}', [App\Http\Controllers\Admin\PostController::class, 'show'])->name('pages.show');

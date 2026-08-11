@@ -33,7 +33,10 @@ class ProductCateSliderWidget extends BaseWidget
         $projectCode = request()->route('projectCode');
         $widgetId = 'product-cate-slider-' . uniqid();
 
-        $html  = '<section class="product-cate-slider-widget py-16 bg-white">';
+        $styleAttr = $this->buildWrapperStyleAttribute();
+        $bgClasses = implode(' ', $this->getWrapperBgClasses());
+
+        $html  = '<section class="product-cate-slider-widget py-16 bg-white ' . $bgClasses . '"' . $styleAttr . '>';
         $html .= '<div class="container mx-auto px-4">';
         if ($title) {
             $html .= "<h2 class=\"text-4xl font-bold text-center mb-12\">{$title}</h2>";
@@ -46,13 +49,13 @@ class ProductCateSliderWidget extends BaseWidget
 
             $image = isset($category->meta_data['image']) && $category->meta_data['image']
                 ? $category->meta_data['image']
-                : 'https://via.placeholder.com/300x200?text=' . urlencode($category->name);
+                : "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200' viewBox='0 0 300 200'%3E%3Crect width='300' height='200' fill='%23e5e7eb'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='14' fill='%239ca3af'%3E" . urlencode($category->name) . "%3C/text%3E%3C/svg%3E";
 
             $productCount = $showCount ? $category->posts()->where('status', 'published')->count() : 0;
             $name = htmlspecialchars($category->name, ENT_QUOTES, 'UTF-8');
 
-            $html .= '<div class="swiper-slide">';
-            $html .= '<a href="' . $categoryUrl . '" class="category-slide-card block group">';
+            $html .= '<div class="swiper-slide h-auto">';
+            $html .= '<a href="' . $categoryUrl . '" class="category-slide-card block group h-full flex flex-col">';
             $html .= '<div class="relative overflow-hidden rounded-xl shadow hover:shadow-xl transition-all duration-300">';
             $html .= "<img src=\"{$image}\" alt=\"{$name}\" class=\"w-full h-44 object-cover group-hover:scale-105 transition-transform duration-300\">";
             $html .= '<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent rounded-xl flex flex-col justify-end p-4">';
@@ -70,14 +73,14 @@ class ProductCateSliderWidget extends BaseWidget
             $html .= '<div class="swiper-pagination mt-4"></div>';
         }
         if ($showNavigation) {
-            $html .= '<div class="swiper-button-next !text-blue-600 !w-8 !h-8 after:!text-sm"></div>';
-            $html .= '<div class="swiper-button-prev !text-blue-600 !w-8 !h-8 after:!text-sm"></div>';
+            $html .= '<div class="swiper-button-prev product-cate-nav-prev"></div>';
+            $html .= '<div class="swiper-button-next product-cate-nav-next"></div>';
         }
 
         $html .= '</div>'; // End swiper
         $html .= '</div></section>';
 
-        return $html;
+        return $this->wrapWithCodeInjections($html);
     }
 
     protected function renderEmptyState(string $title): string
@@ -99,10 +102,52 @@ class ProductCateSliderWidget extends BaseWidget
     {
         return '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
         <style>
-        .product-cate-slider-widget .swiper { padding-bottom: 48px; }
+        .product-cate-slider-widget { position: relative; }
+        .product-cate-slider-widget .swiper-slide { height: auto; }
+        .product-cate-slider-widget .swiper { padding-bottom: 48px; padding-left: 40px; padding-right: 40px; }
         .product-cate-slider-widget .swiper-pagination { bottom: 0; }
+        .product-cate-slider-widget .swiper-pagination-bullet-active { background: #2563eb; }
         .category-slide-card { display: block; }
         .category-slide-card:hover { text-decoration: none; }
+
+        /* Custom nav buttons */
+        .product-cate-nav-prev,
+        .product-cate-nav-next {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-60%);
+            z-index: 10;
+            width: 40px !important;
+            height: 40px !important;
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid #e5e7eb;
+        }
+        .product-cate-nav-prev:hover,
+        .product-cate-nav-next:hover {
+            background: #2563eb;
+            box-shadow: 0 4px 16px rgba(37,99,235,0.3);
+            border-color: #2563eb;
+        }
+        .product-cate-nav-prev { left: 0; }
+        .product-cate-nav-next { right: 0; }
+        .product-cate-nav-prev::after,
+        .product-cate-nav-next::after {
+            font-size: 14px !important;
+            font-weight: 900 !important;
+            color: #374151;
+            transition: color 0.2s;
+        }
+        .product-cate-nav-prev:hover::after,
+        .product-cate-nav-next:hover::after { color: #fff; }
+        .product-cate-nav-prev.swiper-button-disabled,
+        .product-cate-nav-next.swiper-button-disabled { opacity: 0.3; pointer-events: none; }
         </style>';
     }
 

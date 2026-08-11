@@ -892,40 +892,41 @@
                 doc.close();
                 iframeInitialized = false;
             } else {
-                // Re-init iframe document if needed
-                var wrapper = doc.getElementById('preview-inner-wrapper');
-                if (!iframeInitialized || !wrapper) {
-                    var tailwindScript = '<script src="https://cdn.tailwindcss.com"><\/script>';
-                    var styles = tailwindScript + Array.from(document.querySelectorAll('head link[rel="stylesheet"], head style')).map(function(el) { return el.outerHTML; }).join('');
-                    doc.open();
-                    doc.write('<html><head>' + styles + '<style>body{margin:0;padding:0;background:transparent;} [x-cloak] { display: none !important; }</style></head><body><div id="preview-inner-wrapper" style="overflow: hidden; min-height: 250px;"></div></body></html>');
-                    doc.close();
-                    iframeInitialized = true;
-                    wrapper = doc.getElementById('preview-inner-wrapper');
-                }
-
-                // Update inner content
-                if (wrapper) {
-                    wrapper.innerHTML = data.preview;
-                    
-                    // Re-execute scripts
-                    var scripts = wrapper.querySelectorAll('script');
-                    scripts.forEach(function(oldScript) {
-                        var newScript = doc.createElement('script');
-                        Array.from(oldScript.attributes).forEach(function(attr) { newScript.setAttribute(attr.name, attr.value); });
-                        newScript.appendChild(doc.createTextNode(oldScript.innerHTML));
-                        oldScript.parentNode.replaceChild(newScript, oldScript);
-                    });
-                    
-                    // Adjust iframe height
+                // Always re-write the iframe with full HTML so all scripts/styles load correctly
+                var tailwindScript = '<script src="https://cdn.tailwindcss.com"><\/script>';
+                var swiperCSS = '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">';
+                var swiperJS = '<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"><\/script>';
+                var pageStyles = Array.from(document.querySelectorAll('head link[rel="stylesheet"], head style'))
+                    .map(function(el) { return el.outerHTML; }).join('');
+                
+                var fullHtml = '<html><head>'
+                    + tailwindScript
+                    + swiperCSS
+                    + swiperJS
+                    + pageStyles
+                    + '<style>body{margin:0;padding:0;background:#fff;} [x-cloak]{display:none!important;}'
+                    + '.swiper{width:100%;height:100%;}'
+                    + '</style>'
+                    + '</head><body>'
+                    + data.preview
+                    + '</body></html>';
+                
+                // Write new content via srcdoc to ensure all scripts execute properly
+                iframe.srcdoc = fullHtml;
+                iframeInitialized = true;
+                
+                // Adjust height after iframe loads
+                iframe.onload = function() {
                     adjustIframeHeight(iframe);
-                    
-                    // Auto-resize iframe when content changes
-                    var resizeObserver = new MutationObserver(function() {
-                        adjustIframeHeight(iframe);
-                    });
-                    resizeObserver.observe(wrapper, { childList: true, subtree: true, attributes: true });
-                }
+                    // Also auto-resize when content changes
+                    try {
+                        var body = iframe.contentWindow.document.body;
+                        if (body) {
+                            var ro = new MutationObserver(function() { adjustIframeHeight(iframe); });
+                            ro.observe(body, { childList: true, subtree: true, attributes: true });
+                        }
+                    } catch(e) {}
+                };
             }
         })
         .catch(function (err) {

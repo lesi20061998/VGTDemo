@@ -18,10 +18,16 @@ class ProductController extends Controller
 
     public function index(Request $request)
     {
-        $products = Post::where('post_type', 'product')
-            ->with(['taxonomies'])
-            ->when($request->search, fn ($q) => $q->where('title', 'like', "%{$request->search}%"))
-            ->when($request->status, fn ($q) => $q->where('status', $request->status))
+        $query = Post::where('post_type', 'product')
+            ->with(['taxonomies']);
+
+        if ($request->status === 'trashed') {
+            $query->onlyTrashed();
+        } else {
+            $query->when($request->status, fn ($q) => $q->where('status', $request->status));
+        }
+
+        $products = $query->when($request->search, fn ($q) => $q->where('title', 'like', "%{$request->search}%"))
             ->latest()
             ->paginate(20);
 
@@ -449,5 +455,29 @@ class ProductController extends Controller
         $post->save();
 
         return response()->json(['success' => true, 'state' => $newState]);
+    }
+
+    public function restore($projectCode, $id)
+    {
+        $product = Post::withTrashed()->where('post_type', 'product')
+            ->where(function ($q) use ($id) {
+                $q->where('id', $id)->orWhere('slug', $id);
+            })->firstOrFail();
+            
+        $product->restore();
+        $this->alertSuccess('Đã khôi phục sản phẩm thành công.');
+        return redirect()->back();
+    }
+
+    public function forceDelete($projectCode, $id)
+    {
+        $product = Post::withTrashed()->where('post_type', 'product')
+            ->where(function ($q) use ($id) {
+                $q->where('id', $id)->orWhere('slug', $id);
+            })->firstOrFail();
+            
+        $product->forceDelete();
+        $this->alertSuccess('Đã xóa vĩnh viễn sản phẩm thành công.');
+        return redirect()->back();
     }
 }
