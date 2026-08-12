@@ -5,32 +5,7 @@ namespace App\Widgets;
 use App\Contracts\WidgetRegistryInterface;
 use App\Models\WidgetTemplate;
 use App\Services\DynamicWidgetRenderer;
-use App\Widgets\Analytics\AnalyticsWidget;
-use App\Widgets\Category\HomeCateWidget;
-use App\Widgets\Hero\BentoGridHomeWidget;
-use App\Widgets\Hero\FeaturesWidget;
-use App\Widgets\Hero\HeroWidget;
-use App\Widgets\Marketing\CtaWidget;
-use App\Widgets\Marketing\NewsletterWidget;
-use App\Widgets\Marketing\TestimonialWidget;
-use App\Widgets\News\NewsArticleWidget;
-use App\Widgets\News\NewsFeaturedWidget;
-use App\Widgets\News\RelatedPostsWidget;
-use App\Widgets\Post\PostListWidget;
-use App\Widgets\Product\ProductCateSliderWidget;
-use App\Widgets\Product\ProductCateWidget;
-use App\Widgets\Product\ProductListWidget;
-use App\Widgets\Product\ProductSliderWidget;
-use App\Widgets\Product\ProductsWidget;
-use App\Widgets\Slider\PostSliderWidget;
-use App\Widgets\Victorious\AboutWidget;
-use App\Widgets\Victorious\EventsWidget;
-use App\Widgets\Victorious\HeroVideoWidget;
-use App\Widgets\Victorious\ItinerariesWidget;
-use App\Widgets\Victorious\RoomCategoriesWidget;
-use App\Widgets\Victorious\ServiceDetailWidget;
-use App\Widgets\Victorious\ServicesWidget;
-use App\Widgets\Victorious\SpecialOffersWidget;
+
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
@@ -38,35 +13,12 @@ use Illuminate\Support\Str;
 class WidgetRegistry implements WidgetRegistryInterface
 {
     protected static array $widgets = [
-        // Legacy manually registered widgets
-        'hero' => HeroWidget::class,
-        'features' => FeaturesWidget::class,
-        'bento_grid_home' => BentoGridHomeWidget::class,
-        'cta' => CtaWidget::class,
-        'post_list' => PostListWidget::class,
-        'post_slider' => PostSliderWidget::class,
-        'newsletter' => NewsletterWidget::class,
-        'testimonial' => TestimonialWidget::class,
-        'product_list' => ProductListWidget::class,
-        'products' => ProductsWidget::class,
-        'product_cate' => ProductCateWidget::class,
-        'product_slider' => ProductSliderWidget::class,
-        'product_cate_slider' => ProductCateSliderWidget::class,
-        'home_cate' => HomeCateWidget::class,
-        'news_article' => NewsArticleWidget::class,
-        'news_featured' => NewsFeaturedWidget::class,
-        'related_posts' => RelatedPostsWidget::class,
-        'analytics' => AnalyticsWidget::class,
-
-        // Victorious Theme Widgets
-        'victorious_hero_video' => HeroVideoWidget::class,
-        'victorious_about' => AboutWidget::class,
-        'victorious_services' => ServicesWidget::class,
-        'victorious_service_detail' => ServiceDetailWidget::class,
-        'victorious_itineraries' => ItinerariesWidget::class,
-        'victorious_room_categories' => RoomCategoriesWidget::class,
-        'victorious_special_offers' => SpecialOffersWidget::class,
-        'victorious_events' => EventsWidget::class,
+        'SliderWidget' => \App\Widgets\Groups\SliderWidget::class,
+        'BannerWidget' => \App\Widgets\Groups\BannerWidget::class,
+        'ProductWidget' => \App\Widgets\Groups\ProductWidget::class,
+        'BlogWidget' => \App\Widgets\Groups\BlogWidget::class,
+        'InstagramWidget' => \App\Widgets\Groups\InstagramWidget::class,
+        'FeatureWidget' => \App\Widgets\Groups\FeatureWidget::class,
     ];
 
     protected static array $discoveredWidgets = [];

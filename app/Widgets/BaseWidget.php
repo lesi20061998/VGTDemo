@@ -175,8 +175,37 @@ abstract class BaseWidget
         return $html;
     }
 
-    abstract public function render(): string;
+    public function render(): string
+    {
+        // Guess the group name from class name if not specified in metadata
+        $group = $this->getGroupName();
+        $variant = $this->getVariant();
+        
+        $viewPath = "widgets.{$group}.{$variant}.view";
+        
+        if (view()->exists($viewPath)) {
+            // Render the blade view and pass widget instance + settings
+            return view($viewPath, [
+                'widget' => $this,
+                'settings' => $this->settings,
+                'data' => method_exists($this, 'getViewData') ? $this->getViewData() : []
+            ])->render();
+        }
 
+        return "<!-- Widget View Not Found: {$viewPath} -->";
+    }
+
+    protected function getGroupName(): string
+    {
+        if (isset($this->metadata['group'])) {
+            return $this->metadata['group'];
+        }
+        
+        // Extract group from class name (e.g., SliderWidget -> slider)
+        $className = class_basename(static::class);
+        $group = str_replace('Widget', '', $className);
+        return strtolower(preg_replace('/(?<!^)[A-Z]/', '-$0', $group));
+    }
     /**
      * Get the path to the widget metadata file
      */
@@ -267,13 +296,68 @@ abstract class BaseWidget
     {
         return $this->metadata;
     }
+    
+    /**
+     * Get fields for CMS configuration. 
+     * If a variant is selected and has a config.php, merge/override fields.
+     */
+    public function getFields(): array
+    {
+        $fields = $this->metadata['fields'] ?? [];
+        
+        $group = $this->getGroupName();
+        $variant = $this->getVariant();
+        $configPath = resource_path("views/widgets/{$group}/{$variant}/config.php");
+        
+        if (File::exists($configPath)) {
+            $variantConfig = include($configPath);
+            if (isset($variantConfig['fields']) && is_array($variantConfig['fields'])) {
+                // If variant specifies fields, it completely overrides the group fields
+                return $variantConfig['fields'];
+            }
+        }
+        
+        return $fields;
+    }
 
     /**
-     * Get available variants
+     * Get available variants dynamically from resources/views/widgets/{group}/
      */
     public function getVariants(): array
     {
-        return $this->metadata['variants'] ?? ['default' => 'Default'];
+        // Get hardcoded variants from metadata if specified
+        $definedVariants = $this->metadata['variants'] ?? [];
+        
+        $group = $this->getGroupName();
+        $groupPath = resource_path("views/widgets/{$group}");
+        
+        $variants = [];
+        
+        if (File::isDirectory($groupPath)) {
+            $directories = File::directories($groupPath);
+            foreach ($directories as $dir) {
+                $variantName = basename($dir);
+                // Check if view.blade.php exists
+                if (File::exists($dir . '/view.blade.php')) {
+                    // Try to get a friendly label from config.php if exists
+                    $label = ucfirst(str_replace('-', ' ', $variantName));
+                    if (File::exists($dir . '/config.php')) {
+                        $variantConfig = include($dir . '/config.php');
+                        if (isset($variantConfig['label'])) {
+                            $label = $variantConfig['label'];
+                        }
+                    }
+                    $variants[$variantName] = $label;
+                }
+            }
+        }
+        
+        // Merge with defined variants (file variants take precedence or vice-versa)
+        if (empty($variants) && empty($definedVariants)) {
+            return ['default' => 'Default'];
+        }
+        
+        return array_merge($definedVariants, $variants);
     }
 
     /**
@@ -289,8 +373,15 @@ abstract class BaseWidget
      */
     public function setVariant(string $variant): self
     {
-        if (! array_key_exists($variant, $this->getVariants())) {
-            throw new \InvalidArgumentException("Variant '{$variant}' not available for this widget");
+        $availableVariants = $this->getVariants();
+        
+        if (! array_key_exists($variant, $availableVariants)) {
+            // Automatically fallback to the first available variant if 'default' is not explicitly defined
+            if ($variant === 'default' && !empty($availableVariants)) {
+                $variant = array_key_first($availableVariants);
+            } else {
+                throw new \InvalidArgumentException("Variant '{$variant}' not available for this widget");
+            }
         }
 
         $this->variant = $variant;
@@ -322,7 +413,17 @@ abstract class BaseWidget
     public function getPreview(): string
     {
         try {
-            return $this->css() . $this->render() . $this->js();
+            $widgetHtml = $this->css() . $this->render() . $this->js();
+            
+            // Render full HTML document using storefront preview layout
+            $fullHtml = \Illuminate\Support\Facades\Blade::render(
+                "@extends('frontend.themes.storefront.preview')\n@section('content')\n{!! \$html !!}\n@endsection",
+                ['html' => $widgetHtml]
+            );
+
+            // Wrap in iframe so styles don't conflict and it simulates frontend exactly
+            $encodedHtml = htmlspecialchars($fullHtml, ENT_QUOTES, 'UTF-8');
+            return '<iframe srcdoc="' . $encodedHtml . '" style="width: 100%; min-height: 800px; border: none; background: #fff;"></iframe>';
         } catch (\Exception $e) {
             return '<div class="widget-preview-error" style="padding:1rem;color:#ef4444;font-family:sans-serif;">Preview Error: ' . htmlspecialchars($e->getMessage()) . '</div>';
         }

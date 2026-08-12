@@ -28,9 +28,9 @@ class HomeController extends Controller
             return view("frontend.themes.{$theme}.home");
         }
 
-        // Check for victorious theme as default
-        if (view()->exists('frontend.themes.victorious.home')) {
-            return view('frontend.themes.victorious.home');
+        // Check for storefront theme as default
+        if (view()->exists('frontend.themes.storefront.home')) {
+            return view('frontend.themes.storefront.home');
         }
 
         // Fallback to default home view

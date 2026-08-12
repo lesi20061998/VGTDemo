@@ -99,6 +99,14 @@
     h1, h2, h3, h4, h5, h6 { font-family: var(--heading-font); }
 </style>
     @stack('styles')
+
+    {{-- Theme Assets (loaded only when shop widgets are present) --}}
+    @if(isset($useThemeAssets) && $useThemeAssets)
+    <link rel="stylesheet" href="{{ asset('theme/css/bootstrap.css') }}">
+    <link rel="stylesheet" href="{{ asset('theme/css/font-icon.css') }}">
+    <link rel="stylesheet" href="{{ asset('theme/libs/swiper/swiper-bundle.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('theme/libs/flickity/flickity.min.css') }}">
+    @endif
 </head>
 <body style="{{ $bodyBgStyle }}">
 
@@ -132,6 +140,16 @@
     
     @stack('scripts')
     
+    {{-- Theme JS (loaded only when shop widgets are present) --}}
+    @if(isset($useThemeAssets) && $useThemeAssets)
+        <script src="{{ asset('theme/libs/jquery/jquery.min.js') }}"></script>
+        <script src="{{ asset('theme/libs/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+        <script src="{{ asset('theme/libs/swiper/swiper-bundle.min.js') }}"></script>
+        <script src="{{ asset('theme/libs/flickity/flickity.min.js') }}"></script>
+        <script src="{{ asset('theme/libs/jquery-countdown/jquery.countdown.min.js') }}"></script>
+        <script src="{{ asset('theme/js/product-slider.init.js') }}"></script>
+    @endif
+
     {{-- Custom Footer Code --}}
     @if(setting_string('custom_footer_code'))
         {!! setting_string('custom_footer_code') !!}

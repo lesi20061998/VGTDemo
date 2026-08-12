@@ -549,7 +549,7 @@
                                 </div>
                                 
                                 {{-- Fields --}}
-                                <div class="flex-1 grid {{ $layout === 'table' ? 'grid-cols-' . count($subFields) : 'grid-cols-1' }} gap-3">
+                                <div class="flex-1 grid {{ $layout === 'table' ? 'grid-cols-' . count($subFields) : 'grid-cols-1 lg:grid-cols-2' }} gap-4">
                                     @foreach($subFields as $subField)
                                         <div>
                                             <label class="block text-xs font-medium text-gray-600 mb-1">{{ $subField['label'] }}</label>
@@ -559,16 +559,28 @@
                                                     rows="2"
                                                     class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"></textarea>
                                             @elseif($subField['type'] === 'image')
-                                                <div class="flex gap-2">
-                                                    <input type="text" 
-                                                        wire:model="settings.{{ $fieldName }}.{{ $itemIndex }}.{{ $subField['name'] }}"
-                                                        class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg"
-                                                        placeholder="URL hình ảnh">
-                                                    <button type="button" 
-                                                        @click="$dispatch('open-media-picker', { field: '{{ $fieldName }}.{{ $itemIndex }}.{{ $subField['name'] }}', multiple: false })"
-                                                        class="px-3 py-2 bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded-lg text-sm">
-                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                                    </button>
+                                                <div class="space-y-2">
+                                                    @if(!empty($settings[$fieldName][$itemIndex][$subField['name']]))
+                                                        <div class="relative w-24 h-24 bg-gray-100 rounded-lg border border-gray-200 overflow-hidden">
+                                                            <img src="{{ $settings[$fieldName][$itemIndex][$subField['name']] }}" class="w-full h-full object-cover">
+                                                            <button type="button" 
+                                                                wire:click="$set('settings.{{ $fieldName }}.{{ $itemIndex }}.{{ $subField['name'] }}', '')"
+                                                                class="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition">
+                                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                                            </button>
+                                                        </div>
+                                                    @endif
+                                                    <div class="flex gap-2">
+                                                        <input type="text" 
+                                                            wire:model="settings.{{ $fieldName }}.{{ $itemIndex }}.{{ $subField['name'] }}"
+                                                            class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg"
+                                                            placeholder="URL hình ảnh">
+                                                        <button type="button" 
+                                                            @click="$dispatch('open-media-picker', { field: '{{ $fieldName }}.{{ $itemIndex }}.{{ $subField['name'] }}', multiple: false })"
+                                                            class="px-3 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 rounded-lg text-sm flex items-center gap-1 shadow-sm">
+                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             @elseif($subField['type'] === 'select')
                                                 <select wire:model="settings.{{ $fieldName }}.{{ $itemIndex }}.{{ $subField['name'] }}"
@@ -578,6 +590,23 @@
                                                         <option value="{{ $opt['value'] }}">{{ $opt['label'] }}</option>
                                                     @endforeach
                                                 </select>
+                                            @elseif($subField['type'] === 'wysiwyg')
+                                                <div x-data="{ content: @entangle('settings.' . $fieldName . '.' . $itemIndex . '.' . $subField['name']) }">
+                                                    <div class="border border-gray-300 rounded-lg overflow-hidden">
+                                                        <div class="bg-gray-50 border-b px-2 py-1.5 flex flex-wrap gap-1">
+                                                            <button type="button" onclick="document.execCommand('bold')" class="p-1 hover:bg-gray-200 rounded text-gray-700" title="Bold">
+                                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 4h8a4 4 0 014 4 4 4 0 01-4 4H6z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 12h9a4 4 0 014 4 4 4 0 01-4 4H6z"/></svg>
+                                                            </button>
+                                                            <button type="button" onclick="document.execCommand('italic')" class="p-1 hover:bg-gray-200 rounded text-gray-700" title="Italic">
+                                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 4h4m-2 0v16m-4 0h8"/></svg>
+                                                            </button>
+                                                        </div>
+                                                        <div contenteditable="true" 
+                                                             @input="content = $el.innerHTML"
+                                                             x-html="content"
+                                                             class="min-h-[100px] p-3 focus:outline-none prose prose-sm max-w-none text-sm"></div>
+                                                    </div>
+                                                </div>
                                             @else
                                                 <input type="{{ $subField['type'] === 'number' ? 'number' : ($subField['type'] === 'url' ? 'url' : 'text') }}" 
                                                     wire:model="settings.{{ $fieldName }}.{{ $itemIndex }}.{{ $subField['name'] }}"
