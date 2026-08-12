@@ -125,6 +125,12 @@ class ProductController extends Controller
             ->where('status', 'published')
             ->firstOrFail();
 
+        $tocService = new \App\Services\TocService();
+        $tocData = $tocService->generate($product->content);
+        $product->content = $tocData['content'];
+        $product->toc = $tocData['toc'] ?? [];
+        $product->toc_html = $tocData['html'] ?? '';
+
         // Increment views
         $product->increment('views');
 
@@ -160,9 +166,8 @@ class ProductController extends Controller
                 });
         }
 
-        // Get product reviews (assuming relationship exists on Post or we skip for now)
-        $reviews = collect(); // Adjust if reviews table exists for posts
+        // Get product reviews (now handled by Livewire component)
 
-        return view('frontend.products.show', compact('product', 'relatedProducts', 'reviews'));
+        return view('frontend.products.show', compact('product', 'relatedProducts'));
     }
 }

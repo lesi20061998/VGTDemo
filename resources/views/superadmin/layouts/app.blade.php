@@ -54,18 +54,32 @@
             background-color: #002D80;
             border-left: 1px solid #ffffff33;
         }
+        /* Style cho thanh cuộn (Scrollbar) đẹp hơn */
+        .sidebar-resizable::-webkit-scrollbar {
+            width: 5px;
+        }
+        .sidebar-resizable::-webkit-scrollbar-track {
+            background: transparent; 
+        }
+        .sidebar-resizable::-webkit-scrollbar-thumb {
+            background: #002D80; 
+            border-radius: 10px;
+        }
+        .sidebar-resizable::-webkit-scrollbar-thumb:hover {
+            background: #0040A0; 
+        }
     </style>
 </head>
 <body class="bg-slate-50 font-sans text-gray-800">
     <div class="min-h-screen flex w-full">
-        <div class="sidebar-resizable bg-[#001B4E] shadow-2xl fixed h-screen">
-            <div class="p-6 border-b border-[#002D80]">
+        <div class="sidebar-resizable bg-[#001B4E] shadow-2xl fixed h-screen flex flex-col">
+            <div class="flex-shrink-0 p-6 border-b border-[#002D80]">
                 <div class="flex items-center justify-center py-6 px-4">
                     <img src="{{ asset('Logo.png') }}" alt="AIM AGENCY" class="h-20 w-full object-contain">
                 </div>
             </div>
 
-            <nav class="mt-6 px-3">
+            <nav class="flex-1 py-6 px-3">
                 <a href="{{ route('superadmin.dashboard') }}" class="flex items-center px-4 py-3 mb-2 text-gray-300 hover:bg-[#002D80] rounded-lg {{ request()->routeIs('superadmin.dashboard') ? 'bg-[#002D80]' : '' }}">
                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
@@ -162,7 +176,7 @@
 
             </nav>
 
-            <div class="mt-auto p-4 border-t border-[#002D80] absolute bottom-0 w-full">
+            <div class="mt-auto flex-shrink-0 p-4 border-t border-[#002D80]">
                 <div class="text-gray-400 text-xs text-center space-y-1">
                     <p class="font-semibold">Super Admin Panel</p>
                     <p>© 2025 AIM AGENCY</p>

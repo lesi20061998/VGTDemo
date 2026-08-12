@@ -30,6 +30,12 @@ class PostController extends Controller
             ->where('status', 'published')
             ->firstOrFail();
 
+        $tocService = new \App\Services\TocService();
+        $tocData = $tocService->generate($post->content);
+        $post->content = $tocData['content'];
+        $post->toc = $tocData['toc'] ?? [];
+        $post->toc_html = $tocData['html'] ?? '';
+
         return view('frontend.posts.show', compact('post'));
     }
 }

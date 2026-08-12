@@ -7,11 +7,13 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CodeWidgetController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\FontController;
+use App\Http\Controllers\Admin\FormSubmissionController;
 use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\MenuController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\PropertyCategoryController;
+use App\Http\Controllers\Admin\ReviewController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\ThemeOptionController;
 use App\Http\Controllers\Admin\UserController;
@@ -36,7 +38,6 @@ use App\Livewire\Admin\WidgetTemplateBuilder;
 use App\Models\Project;
 use Illuminate\Support\Facades\Route;
 use Livewire\Livewire;
-
 
 Route::prefix('{projectCode}')
     ->name('project.')
@@ -214,10 +215,19 @@ Route::prefix('{projectCode}/admin')
         Route::put('attributes/{attribute}/values/{value}', [AttributeController::class, 'updateValue'])->name('attributes.values.update');
         Route::delete('attributes/{attribute}/values/{value}', [AttributeController::class, 'destroyValue'])->name('attributes.values.destroy');
 
-        // Orders Management
         Route::get('orders/reports', [OrderController::class, 'reports'])->name('orders.reports');
-        Route::resource('orders', OrderController::class)->only(['index', 'show', 'edit', 'update']);
+        Route::get('orders/{order}/print', [OrderController::class, 'printInvoice'])->name('orders.print');
+        Route::resource('orders', OrderController::class)->except(['destroy']);
         Route::post('orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.update-status');
+
+        // Shipping & Delivery Management
+        Route::prefix('shipping')->name('shipping.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\ShippingController::class, 'index'])->name('index');
+            Route::get('/calculator', [\App\Http\Controllers\Admin\ShippingController::class, 'calculator'])->name('calculator');
+            Route::post('/calculate', [\App\Http\Controllers\Admin\ShippingController::class, 'calculate'])->name('calculate');
+            // Additional livewire components will handle the builder internally, 
+            // but we can add more specific endpoints if needed.
+        });
 
         // User Management
         Route::resource('users', UserController::class);
@@ -340,7 +350,8 @@ Route::prefix('{projectCode}/admin')
             Route::get('toc', fn () => view('cms.settings.toc'))->name('toc');
             Route::get('social', fn () => view('cms.settings.social'))->name('social');
             Route::get('payment', fn () => view('cms.settings.payment'))->name('payment');
-            Route::get('shipping', fn () => view('cms.settings.shipping'))->name('shipping');
+            Route::get('shipping', [\App\Http\Controllers\Admin\ShippingEngineController::class, 'index'])->name('shipping');
+            Route::post('shipping/calculate', [\App\Http\Controllers\Admin\ShippingEngineController::class, 'calculate'])->name('shipping.calculate');
             Route::get('ai', fn () => view('cms.settings.ai'))->name('ai');
             Route::get('reviews', fn () => view('cms.settings.reviews'))->name('reviews');
             Route::get('languages', fn () => view('cms.settings.languages'))->name('languages');
@@ -361,6 +372,22 @@ Route::prefix('{projectCode}/admin')
 
         // Reviews Fake Data
         Route::get('reviews/fake', fn () => view('cms.reviews.fake'))->name('reviews.fake');
+
+        // Reviews Management (Đánh giá khách hàng)
+        Route::get('reviews', [ReviewController::class, 'index'])->name('reviews.index');
+        Route::get('reviews/create', [ReviewController::class, 'create'])->name('reviews.create');
+        Route::post('reviews', [ReviewController::class, 'store'])->name('reviews.store');
+        Route::get('reviews/{review}/edit', [ReviewController::class, 'edit'])->name('reviews.edit');
+        Route::put('reviews/{review}', [ReviewController::class, 'update'])->name('reviews.update');
+        Route::delete('reviews/{review}', [ReviewController::class, 'destroy'])->name('reviews.destroy');
+        Route::patch('reviews/{review}/status', [ReviewController::class, 'updateStatus'])->name('reviews.update-status');
+        Route::post('reviews/reorder', [ReviewController::class, 'reorder'])->name('reviews.reorder');
+
+        // Form Submissions Management (Liên hệ từ khách hàng)
+        Route::get('form-submissions', [FormSubmissionController::class, 'index'])->name('form-submissions.index');
+        Route::get('form-submissions/{submission}', [FormSubmissionController::class, 'show'])->name('form-submissions.show');
+        Route::patch('form-submissions/{submission}/status', [FormSubmissionController::class, 'updateStatus'])->name('form-submissions.update-status');
+        Route::delete('form-submissions/{submission}', [FormSubmissionController::class, 'destroy'])->name('form-submissions.destroy');
 
     });
 

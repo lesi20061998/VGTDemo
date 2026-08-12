@@ -2,6 +2,32 @@
 
 @section('page-title', $post->title ?? 'Chi tiết bài viết')
 
+@push('styles')
+<style>
+/* Style 1: Modern Card */
+.toc-style-1 { background: linear-gradient(135deg, #f0f7ff, #eef2ff); border: 1px solid #c7d2fe; border-radius: 1rem; padding: 1.25rem; }
+.toc-style-1 .toc-item { color: #1e40af; font-weight: 500; }
+.toc-style-1 .toc-item:hover { text-decoration: underline; }
+
+/* Style 2: Minimalist Clean */
+.toc-style-2 { border-left: 4px solid #10b981; background-color: #ecfdf5; padding: 1rem 1.25rem; border-radius: 0 0.75rem 0.75rem 0; }
+.toc-style-2 .toc-item { color: #047857; }
+.toc-style-2 .toc-item:hover { color: #059669; }
+
+/* Style 3: Classic Boxed */
+.toc-style-3 { background-color: #fffbeb; border: 1px solid #fde68a; border-radius: 0.5rem; padding: 1rem; font-family: serif; }
+.toc-style-3 .toc-item { color: #92400e; font-weight: bold; }
+.toc-style-3 .toc-item:hover { text-decoration: underline; }
+
+/* Style 4: Floating Shadow */
+.toc-style-4 { background: #ffffff; border-radius: 1rem; padding: 1.25rem; box-shadow: 0 10px 25px -5px rgba(124, 58, 237, 0.1); }
+.toc-style-4 .toc-item { color: #6b21a8; font-weight: 600; }
+.toc-style-4 .toc-item:hover { background-color: #f3e8ff; border-radius: 0.5rem; }
+
+html { scroll-behavior: smooth; }
+</style>
+@endpush
+
 @section('post-content')
 <article>
     @if($post->featured_image ?? $post->image)
@@ -22,6 +48,35 @@
             @endif
         </div>
     </header>
+
+    <!-- Nhúng Mục Lục Bài Viết -->
+    @php
+        $tocConfig = setting('toc', []);
+        $tocEnabled = !empty($tocConfig['enabled']);
+        $minHeadings = $tocConfig['min_headings'] ?? 3;
+        $tocStyle = $tocConfig['style'] ?? 'style-1';
+    @endphp
+
+    @if($tocEnabled && isset($post->toc) && count($post->toc) >= $minHeadings)
+        <div class="toc-wrapper toc-{{ $tocStyle }} my-6">
+            <div class="toc-header flex items-center justify-between">
+                <h4 class="font-bold text-lg">{{ $tocConfig['title'] ?? 'Mục lục' }}</h4>
+                @if(!empty($tocConfig['collapsible']))
+                    <button type="button" onclick="this.closest('.toc-wrapper').classList.toggle('collapsed')" class="text-xs opacity-75 hover:opacity-100">[Ẩn/Hiện]</button>
+                @endif
+            </div>
+            <nav class="toc-body mt-3 space-y-1">
+                @foreach($post->toc as $index => $item)
+                    <a href="#{{ $item['id'] }}" class="toc-item toc-{{ $item['level'] }} block text-sm transition py-1">
+                        @if(!empty($tocConfig['show_numbers']))
+                            <span class="toc-num">{{ $index + 1 }}.</span>
+                        @endif
+                        {{ $item['text'] }}
+                    </a>
+                @endforeach
+            </nav>
+        </div>
+    @endif
     
     <div class="prose max-w-none">
         {!! $post->content ?? '' !!}

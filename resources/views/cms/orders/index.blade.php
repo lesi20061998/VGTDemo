@@ -39,9 +39,14 @@
         </button>
     </form>
 
-    <a href="{{ isset($currentProject) && $currentProject ? route('project.admin.orders.reports', $currentProject->code) : route('cms.orders.reports') }}" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-        Báo cáo
-    </a>
+    <div class="flex space-x-2">
+        <a href="{{ isset($currentProject) && $currentProject ? route('project.admin.orders.create', $currentProject->code) : route('cms.orders.create') }}" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+            + Tạo đơn hàng
+        </a>
+        <a href="{{ isset($currentProject) && $currentProject ? route('project.admin.orders.reports', $currentProject->code) : route('cms.orders.reports') }}" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+            Báo cáo
+        </a>
+    </div>
 </div>
 
 <div class="bg-white rounded-lg shadow overflow-hidden">
@@ -90,6 +95,7 @@
                     <div class="flex space-x-2">
                         <a href="{{ isset($currentProject) && $currentProject ? route('project.admin.orders.show', [$currentProject->code, $order]) : route('cms.orders.show', $order) }}" class="text-blue-600 hover:text-blue-900">Xem</a>
                         <a href="{{ isset($currentProject) && $currentProject ? route('project.admin.orders.edit', [$currentProject->code, $order]) : route('cms.orders.edit', $order) }}" class="text-indigo-600 hover:text-indigo-900">Sửa</a>
+                        <a href="{{ isset($currentProject) && $currentProject ? route('project.admin.orders.print', [$currentProject->code, $order]) : route('cms.orders.print', $order) }}" target="_blank" class="text-gray-600 hover:text-gray-900">In</a>
                     </div>
                 </td>
             </tr>

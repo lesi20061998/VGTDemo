@@ -48,6 +48,16 @@ class DashboardController extends Controller
         return view('cms.dashboard.index', $data);
     }
 
+    /**
+     * Super admin dashboard route.
+     *
+     * @return \Illuminate\View\View
+     */
+    public function superAdminDashboard(): \Illuminate\View\View
+    {
+        return $this->index();
+    }
+
     private function getRevenueChart()
     {
         return collect();

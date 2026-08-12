@@ -10,7 +10,7 @@ class FormSubmission extends Model
 {
     use BelongsToTenant, ProjectScoped;
 
-    protected $fillable = ['form_name', 'data', 'ip_address', 'user_agent', 'status', 'admin_note', 'tenant_id'];
+    protected $fillable = ['form_name', 'data', 'ip_address', 'user_agent', 'status', 'admin_note', 'tenant_id', 'project_id'];
 
     protected $casts = [
         'data' => 'array',

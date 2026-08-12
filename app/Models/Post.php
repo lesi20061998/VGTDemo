@@ -89,6 +89,11 @@ class Post extends Model
         return $this->hasMany(PageSection::class)->orderBy('order');
     }
 
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(Review::class);
+    }
+
     // Helper methods
     public function isPost(): bool
     {

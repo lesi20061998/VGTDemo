@@ -104,7 +104,10 @@ abstract class BaseWidget
 
         foreach (['margin_top', 'margin_bottom', 'margin_left', 'margin_right', 'padding_top', 'padding_bottom', 'padding_left', 'padding_right'] as $prop) {
             $val = $this->get($prop);
-            if ($val) {
+            if ($val !== null && $val !== '') {
+                if (is_numeric($val)) {
+                    $val .= 'px';
+                }
                 $cssProp = str_replace('_', '-', $prop);
                 $parts[] = "{$cssProp}: {$val}";
             }

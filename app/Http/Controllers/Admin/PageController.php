@@ -20,33 +20,60 @@ class PageController extends Controller
         return view('cms.pages.index', compact('pages'));
     }
 
-    public function create()
+    public function create(Request $request, $projectCode = null)
     {
+        $code = $projectCode ?? request()->route('projectCode');
+        if ($code) {
+            return redirect()->route('project.admin.posts.create', ['projectCode' => $code, 'type' => 'page']);
+        }
+
         return redirect()->route('cms.posts.create', ['type' => 'page']);
     }
 
     public function store(Request $request)
     {
-        return redirect()->route('cms.posts.store');
+        // Handled by PostController via redirect
+        return redirect()->back();
     }
 
-    public function show(Post $page)
+    public function show(Post $page, $projectCode = null)
     {
         return view('cms.pages.show', compact('page'));
     }
 
-    public function edit(Post $page)
+    public function edit($projectCodeOrPost, $postId = null)
     {
-        return redirect()->route('cms.posts.edit', $page);
+        $code = request()->route('projectCode');
+        $post = $postId ?? $projectCodeOrPost;
+        if ($code) {
+            return redirect()->route('project.admin.pages.edit', ['projectCode' => $code, 'post' => $post]);
+        }
+
+        return redirect()->route('cms.posts.edit', $post);
     }
 
     public function update(Request $request, Post $page)
     {
-        return redirect()->route('cms.posts.update', $page);
+        return redirect()->back();
     }
 
-    public function destroy(Post $page)
+    public function destroy($projectCodeOrPost, $postId = null)
     {
-        return redirect()->route('cms.posts.destroy', $page);
+        $code = request()->route('projectCode');
+        $post = $postId ?? $projectCodeOrPost;
+        $pageModel = is_numeric($post) ? Post::findOrFail($post) : Post::where('slug', $post)->firstOrFail();
+        $pageModel->delete();
+
+        if ($code) {
+            return redirect()->route('project.admin.pages.index', $code)->with('alert', [
+                'type' => 'success',
+                'message' => 'Đã xóa trang thành công.',
+            ]);
+        }
+
+        return redirect()->route('cms.pages.index')->with('alert', [
+            'type' => 'success',
+            'message' => 'Đã xóa trang thành công.',
+        ]);
     }
 }

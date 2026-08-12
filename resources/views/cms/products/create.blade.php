@@ -348,58 +348,8 @@
                 </div>
             </div>
 
-            <!-- Phân tích SEO -->
-            <div class="bg-white rounded-lg shadow-sm p-6">
-                <h2 class="font-semibold text-gray-900 mb-4">Phân tích SEO</h2>
-                <div class="mb-4">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-sm font-medium text-gray-700">Điểm SEO</span>
-                        <span class="text-sm font-bold" :class="{
-                            'text-red-600': seoScore < 50,
-                            'text-yellow-600': seoScore >= 50 && seoScore < 80,
-                            'text-green-600': seoScore >= 80
-                        }" x-text="seoScore + '/100'"></span>
-                    </div>
-                    <div class="w-full bg-gray-200 rounded-full h-2">
-                        <div class="h-2 rounded-full transition-all" :class="{
-                            'bg-red-600': seoScore < 50,
-                            'bg-yellow-600': seoScore >= 50 && seoScore < 80,
-                            'bg-green-600': seoScore >= 80
-                        }" :style="'width: ' + seoScore + '%'"></div>
-                    </div>
-                </div>
-                <div class="space-y-2">
-                    <template x-for="check in seoChecks" :key="check.title">
-                        <div class="flex items-start gap-2 p-2 rounded" :class="{
-                            'bg-red-50': check.status === 'error',
-                            'bg-yellow-50': check.status === 'warning',
-                            'bg-green-50': check.status === 'success'
-                        }">
-                            <svg class="w-4 h-4 mt-0.5 flex-shrink-0" :class="{
-                                'text-red-600': check.status === 'error',
-                                'text-yellow-600': check.status === 'warning',
-                                'text-green-600': check.status === 'success'
-                            }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path x-show="check.status === 'success'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                <path x-show="check.status === 'warning'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                                <path x-show="check.status === 'error'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                            <div class="flex-1">
-                                <p class="text-xs font-medium" :class="{
-                                    'text-red-800': check.status === 'error',
-                                    'text-yellow-800': check.status === 'warning',
-                                    'text-green-800': check.status === 'success'
-                                }" x-text="check.title"></p>
-                                <p class="text-xs" :class="{
-                                    'text-red-600': check.status === 'error',
-                                    'text-yellow-600': check.status === 'warning',
-                                    'text-green-600': check.status === 'success'
-                                }" x-text="check.message"></p>
-                            </div>
-                        </div>
-                    </template>
-                </div>
-            </div>
+            <!-- Phân tích SEO & Cài đặt SEO -->
+            @include('cms.components.seo-analyzer', ['model' => null, 'contentType' => 'sản phẩm'])
         </div>
 
         <!-- Cột phải: Sidebar -->
@@ -525,64 +475,6 @@
                 <input type="hidden" name="brand_id" id="mainBrand">
             </div>
 
-            <!-- SEO -->
-            <div class="bg-white rounded-lg shadow-sm p-6">
-                <h2 class="font-semibold text-gray-900 mb-4">SEO</h2>
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Tiêu đề SEO</label>
-                        <input type="text" name="meta_title" x-model="metaTitle" @input="analyzeSeo()" 
-                               placeholder="Để trống để dùng tiêu đề sản phẩm"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#98191F]">
-                        <p class="text-xs text-gray-500 mt-1"><span x-text="metaTitle.length"></span>/60 ký tự</p>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Mô tả SEO</label>
-                        <textarea name="meta_description" x-model="metaDesc" @input="analyzeSeo()" rows="3"
-                                  placeholder="Mô tả ngắn gọn, hấp dẫn cho kết quả tìm kiếm"
-                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#98191F]"></textarea>
-                        <p class="text-xs text-gray-500 mt-1"><span x-text="metaDesc.length"></span>/160 ký tự</p>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Từ khóa chính</label>
-                        <input type="text" name="focus_keyword" x-model="keyword" @input="analyzeSeo()" 
-                               placeholder="VD: áo thun nam"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#98191F]">
-                        <p class="text-xs text-gray-500 mt-1">Từ khóa bạn muốn xếp hạng trên Google</p>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Schema Markup</label>
-                        <select name="schema_type" x-model="schemaType" @change="analyzeSeo()"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#98191F]">
-                            <option value="">Không sử dụng</option>
-                            <option value="Product">Product</option>
-                            <option value="Article">Article</option>
-                            <option value="Review">Review</option>
-                        </select>
-                        <p class="text-xs text-gray-500 mt-1">Giúp Google hiểu rõ hơn về nội dung</p>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Canonical URL</label>
-                        <input type="url" name="canonical_url" x-model="canonicalUrl" @input="analyzeSeo()" 
-                               placeholder="https://example.com/san-pham"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#98191F]">
-                        <p class="text-xs text-gray-500 mt-1">URL chính thức để tránh nội dung trùng lặp</p>
-                    </div>
-
-                    <div>
-                        <label class="flex items-center">
-                            <input type="checkbox" name="noindex" x-model="noindex" @change="analyzeSeo()" 
-                                   class="rounded border-gray-300 text-blue-600">
-                            <span class="ml-2 text-sm text-gray-700">Không cho phép index (noindex)</span>
-                        </label>
-                    </div>
-                </div>
-            </div>
-
         </div>
     </div>
 </form>
@@ -606,14 +498,6 @@ function productForm() {
         salePriceError: '',
         variations: [],
         selectedAttributes: 0,
-        metaTitle: '',
-        metaDesc: '',
-        keyword: '',
-        schemaType: '',
-        canonicalUrl: '',
-        noindex: false,
-        seoScore: 0,
-        seoChecks: [],
         
         handleMediaSelected(event) {
             console.log('Media selected event:', event.detail);
@@ -690,10 +574,6 @@ function productForm() {
             window.addEventListener('media-selected', (e) => {
                 this.handleMediaSelected(e);
             });
-            
-            this.analyzeSeo();
-            
-
         },
         
 
@@ -833,75 +713,6 @@ function productForm() {
             } else {
                 variation.priceError = '';
             }
-        },
-        
-        analyzeSeo() {
-            this.seoChecks = [];
-            let score = 0;
-            
-            if (this.metaTitle.length === 0) {
-                this.seoChecks.push({status: 'error', title: 'Thiếu tiêu đề SEO', message: 'Nên thêm tiêu đề SEO để tối ưu kết quả tìm kiếm'});
-            } else if (this.metaTitle.length < 30) {
-                this.seoChecks.push({status: 'warning', title: 'Tiêu đề SEO quá ngắn', message: `Chỉ có ${this.metaTitle.length} ký tự. Nên từ 50-60 ký tự`});
-                score += 10;
-            } else if (this.metaTitle.length > 60) {
-                this.seoChecks.push({status: 'warning', title: 'Tiêu đề SEO quá dài', message: 'Có thể bị cắt trên kết quả tìm kiếm'});
-                score += 10;
-            } else {
-                this.seoChecks.push({status: 'success', title: 'Tiêu đề SEO tốt', message: `${this.metaTitle.length} ký tự - Độ dài lý tưởng`});
-                score += 20;
-            }
-            
-            if (this.metaDesc.length === 0) {
-                this.seoChecks.push({status: 'error', title: 'Thiếu mô tả SEO', message: 'Mô tả giúp tăng tỷ lệ click từ kết quả tìm kiếm'});
-            } else if (this.metaDesc.length < 70) {
-                this.seoChecks.push({status: 'warning', title: 'Mô tả SEO quá ngắn', message: `Chỉ có ${this.metaDesc.length} ký tự. Nên từ 120-160 ký tự`});
-                score += 10;
-            } else if (this.metaDesc.length > 160) {
-                this.seoChecks.push({status: 'warning', title: 'Mô tả SEO quá dài', message: 'Có thể bị cắt trên kết quả tìm kiếm'});
-                score += 10;
-            } else {
-                this.seoChecks.push({status: 'success', title: 'Mô tả SEO tốt', message: `${this.metaDesc.length} ký tự - Độ dài lý tưởng`});
-                score += 20;
-            }
-            
-            if (this.keyword.length === 0) {
-                this.seoChecks.push({status: 'warning', title: 'Chưa có từ khóa chính', message: 'Nên thêm từ khóa để tối ưu SEO'});
-            } else {
-                score += 15;
-                const keywordInTitle = this.metaTitle.toLowerCase().includes(this.keyword.toLowerCase());
-                const keywordInDesc = this.metaDesc.toLowerCase().includes(this.keyword.toLowerCase());
-                
-                if (keywordInTitle && keywordInDesc) {
-                    this.seoChecks.push({status: 'success', title: 'Từ khóa xuất hiện tốt', message: 'Từ khóa có trong cả tiêu đề và mô tả'});
-                    score += 15;
-                } else if (keywordInTitle || keywordInDesc) {
-                    this.seoChecks.push({status: 'warning', title: 'Từ khóa chưa tối ưu', message: 'Nên thêm từ khóa vào cả tiêu đề và mô tả'});
-                    score += 10;
-                } else {
-                    this.seoChecks.push({status: 'error', title: 'Từ khóa không xuất hiện', message: 'Từ khóa chưa có trong tiêu đề và mô tả'});
-                }
-            }
-            
-            if (this.schemaType) {
-                this.seoChecks.push({status: 'success', title: 'Có Schema Markup', message: `Đang dùng schema: ${this.schemaType}`});
-                score += 15;
-            } else {
-                this.seoChecks.push({status: 'warning', title: 'Chưa có Schema Markup', message: 'Schema giúp Google hiểu rõ hơn về nội dung'});
-            }
-            
-            if (this.canonicalUrl) {
-                this.seoChecks.push({status: 'success', title: 'Có Canonical URL', message: 'Giúp tránh nội dung trùng lặp'});
-                score += 10;
-            }
-            
-            if (this.noindex) {
-                this.seoChecks.push({status: 'warning', title: 'Đang bật Noindex', message: 'Trang này sẽ không xuất hiện trên Google'});
-            } else {
-                score += 5;
-            }
-            
-            this.seoScore = Math.min(score, 100);
         }
     }
 }

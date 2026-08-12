@@ -30,8 +30,10 @@ class OrderRequest extends FormRequest
 
     public function rules()
     {
+        $orderId = $this->route('order') ? $this->route('order')->id : null;
+        
         return [
-            'order_number' => 'required|string|unique:orders|max:50',
+            'order_number' => 'required|string|max:50|unique:orders,order_number,' . $orderId,
             'status' => 'required|in:pending,processing,shipped,delivered,cancelled,refunded',
             'customer_name' => 'required|string|max:255',
             'customer_email' => 'required|email|max:255',

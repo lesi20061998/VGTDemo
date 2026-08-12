@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\OrderRequest;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Product;
 use App\Traits\HasAlerts;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -17,7 +18,7 @@ class OrderController extends Controller
 {
     use HasAlerts;
 
-    public function index(Request $request)
+    public function index($projectCode, Request $request)
     {
         try {
             $orders = Order::with(['items'])
@@ -32,32 +33,68 @@ class OrderController extends Controller
         return view('cms.orders.index', compact('orders'));
     }
 
-    public function show(Order $order)
+    public function create($projectCode)
+    {
+        return view('cms.orders.create');
+    }
+
+    public function store(Request $request, $projectCode)
+    {
+        $validated = $request->validate([
+            'customer_name' => 'required|string|max:255',
+            'customer_email' => 'required|email|max:255',
+            'customer_phone' => 'required|string|max:20',
+            'shipping_address' => 'required|array',
+            'billing_address' => 'nullable|array',
+            'payment_method' => 'required|string',
+            'notes' => 'nullable|string',
+            'total_amount' => 'nullable|numeric'
+        ]);
+        
+        if (empty($validated['billing_address']['address']) && empty($validated['billing_address']['city'])) {
+            $validated['billing_address'] = $validated['shipping_address'];
+        }
+
+        $validated['order_number'] = 'ORD-' . strtoupper(uniqid());
+        $validated['status'] = 'pending';
+        $validated['payment_status'] = 'pending';
+        $validated['total_amount'] = $request->input('total_amount', 0);
+        $validated['project_id'] = session('current_project_id') ?? 1;
+        
+        $order = Order::create($validated);
+
+        return redirect()->route('project.admin.orders.edit', [$projectCode, $order])->with('alert', [
+            'type' => 'success',
+            'message' => 'Tạo đơn hàng thành công! Bạn có thể thêm chi tiết đơn hàng.',
+        ]);
+    }
+
+    public function show($projectCode, Order $order)
     {
         $order->load(['items.product', 'statusHistories.user']);
 
         return view('cms.orders.show', compact('order'));
     }
 
-    public function edit(Order $order)
+    public function edit($projectCode, Order $order)
     {
         $order->load('items.product');
 
         return view('cms.orders.edit', compact('order'));
     }
 
-    public function update(OrderRequest $request, Order $order)
+    public function update(OrderRequest $request, $projectCode, Order $order)
     {
         $validated = $request->validated();
         $order->update($validated);
 
-        return redirect()->route('cms.orders.show', $order)->with('alert', [
+        return redirect()->route('project.admin.orders.show', [$projectCode, $order])->with('alert', [
             'type' => 'success',
             'message' => 'Cập nhật đơn hàng thành công!',
         ]);
     }
 
-    public function updateStatus(Request $request, Order $order)
+    public function updateStatus(Request $request, $projectCode, Order $order)
     {
         $validated = $request->validate([
             'status' => 'required|in:pending,processing,shipped,delivered,cancelled,refunded',
@@ -79,7 +116,7 @@ class OrderController extends Controller
         ]);
     }
 
-    public function updatePaymentStatus(Request $request, Order $order)
+    public function updatePaymentStatus(Request $request, $projectCode, Order $order)
     {
         $validated = $request->validate([
             'payment_status' => 'required|in:pending,paid,failed,refunded',
@@ -98,7 +135,7 @@ class OrderController extends Controller
         ]);
     }
 
-    public function addNote(Request $request, Order $order)
+    public function addNote(Request $request, $projectCode, Order $order)
     {
         $validated = $request->validate([
             'internal_notes' => 'required|string|max:1000',
@@ -116,20 +153,30 @@ class OrderController extends Controller
         ]);
     }
 
-    public function destroy(Order $order)
+    public function printInvoice($projectCode, Order $order)
+    {
+        $order->load('items.product');
+        return view('cms.orders.print', compact('order'));
+    }
+
+    public function destroy($projectCode, Order $order)
     {
         $order->delete();
 
         Cache::forget('order_reports_*');
 
-        return redirect()->route('cms.orders.index')->with('alert', [
+        $route = request()->route('projectCode')
+            ? route('project.admin.orders.index', request()->route('projectCode'))
+            : route('cms.orders.index');
+
+        return redirect($route)->with('alert', [
             'type' => 'success',
             'message' => 'Xóa đơn hàng thành công!',
         ]);
     }
 
     // ===== REPORTS =====
-    public function reports(Request $request)
+    public function reports($projectCode, Request $request)
     {
         $dateFrom = $request->input('date_from', now()->startOfMonth()->toDateString());
         $dateTo = $request->input('date_to', now()->endOfMonth()->toDateString());

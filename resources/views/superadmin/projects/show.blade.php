@@ -5,263 +5,263 @@
 
 @section('content')
 <div class="max-w-6xl mx-auto space-y-6">
-    <div class="flex justify-between items-center">
-        <h2 class="text-2xl font-bold text-gray-900">{{ $project->name }}</h2>
-        <div class="flex gap-2">
-            @if($project->status == 'pending')
-            <span class="px-4 py-2 bg-yellow-100 text-yellow-800 rounded-lg">
-                Chờ duyệt
+  <div class="flex justify-between items-center">
+    <h2 class="text-2xl font-bold text-gray-900">{{ $project->name }}</h2>
+    <div class="flex gap-2">
+      @if($project->status == 'pending')
+      <span class="px-4 py-2 bg-yellow-100 text-yellow-800 rounded-lg">
+        Chờ duyệt
+      </span>
+      @elseif($project->status == 'assigned' || ($project->status == 'active' && empty($project->project_admin_username)))
+      {{-- DEMO MODE: Show create website button for assigned projects or active projects without username --}}
+      <form method="POST" action="{{ route('superadmin.projects.create-website', $project) }}">
+        @csrf
+        <button type="submit" onclick="return confirm('Tạo website cho dự án này?')"
+            class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+          {{ empty($project->project_admin_username) ? 'Tạo Website' : 'Tạo lại Website' }} (Demo Mode)
+        </button>
+      </form>
+      @elseif($project->status == 'active' && !empty($project->project_admin_username))
+      {{-- Show recreate button for active projects with existing username --}}
+      <form method="POST" action="{{ route('superadmin.projects.create-website', $project) }}">
+        @csrf
+        <button type="submit" onclick="return confirm('Tạo lại website cho dự án này? Username và password cũ sẽ bị thay đổi!')"
+            class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700">
+          Tạo lại Website (Demo Mode)
+        </button>
+      </form>
+      @endif
+      <a href="{{ route('superadmin.projects.edit', $project) }}" 
+        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Sửa</a>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-3 gap-6">
+    <div class="col-span-2 space-y-6">
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <h3 class="text-lg font-bold text-gray-900 mb-4 border-b pb-2">Thông tin Dự án</h3>
+        <div class="grid grid-cols-2 gap-4">
+          <div><span class="text-gray-600">Mã dự án:</span> <span class="font-mono font-bold text-purple-600">{{ $project->code }}</span></div>
+          <div><span class="text-gray-600">Trạng thái:</span> 
+            <span class="px-3 py-1 text-sm rounded-full {{ $project->status == 'active' ? 'bg-green-100 text-green-800' : ($project->status == 'assigned' ? 'bg-blue-100 text-blue-800' : ($project->status == 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800')) }}">
+              {{ ucfirst($project->status) }}
             </span>
-            @elseif($project->status == 'assigned' || ($project->status == 'active' && empty($project->project_admin_username)))
-            {{-- DEMO MODE: Show create website button for assigned projects or active projects without username --}}
-            <form method="POST" action="{{ route('superadmin.projects.create-website', $project) }}">
-                @csrf
-                <button type="submit" onclick="return confirm('Tạo website cho dự án này?')"
-                        class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
-                    {{ empty($project->project_admin_username) ? 'Tạo Website' : 'Tạo lại Website' }} (Demo Mode)
-                </button>
-            </form>
-            @elseif($project->status == 'active' && !empty($project->project_admin_username))
-            {{-- Show recreate button for active projects with existing username --}}
-            <form method="POST" action="{{ route('superadmin.projects.create-website', $project) }}">
-                @csrf
-                <button type="submit" onclick="return confirm('Tạo lại website cho dự án này? Username và password cũ sẽ bị thay đổi!')"
-                        class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700">
-                    Tạo lại Website (Demo Mode)
-                </button>
-            </form>
+          </div>
+          <div class="col-span-2"><span class="text-gray-600">Subdomain:</span> <span class="font-mono font-bold text-blue-600">{{ $project->subdomain }}</span></div>
+          <div><span class="text-gray-600">Khách hàng:</span> {{ $project->client_name }}</div>
+          <div><span class="text-gray-600">Giá trị HĐ:</span> {{ number_format($project->contract_value ?? 0) }} VNĐ</div>
+          <div><span class="text-gray-600">Ngày bắt đầu:</span> {{ $project->start_date->format('d/m/Y') }}</div>
+          <div>
+            <span class="text-gray-600">Deadline:</span> 
+            <span class="font-bold text-red-600">{{ $project->deadline->format('d/m/Y') }}</span>
+            @php
+              $daysLeft = (int) now()->diffInDays($project->deadline, false);
+            @endphp
+            @if($daysLeft >= 0)
+              <span class="ml-2 text-xs px-2 py-1 rounded-full {{ $daysLeft <= 7 ? 'bg-red-100 text-red-800' : ($daysLeft <= 30 ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800') }}">
+                {{ $daysLeft }} ngày còn lại
+              </span>
+            @else
+              <span class="ml-2 text-xs px-2 py-1 rounded-full bg-red-100 text-red-800">
+                Quá hạn {{ abs($daysLeft) }} ngày
+              </span>
             @endif
-            <a href="{{ route('superadmin.projects.edit', $project) }}" 
-               class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Sửa</a>
+          </div>
+          <div><span class="text-gray-600">Người tạo:</span> {{ $project->createdBy?->name ?? 'N/A' }}</div>
+          <div><span class="text-gray-600">Admin phụ trách:</span> {{ $project->admin?->name ?? 'Chưa phân' }}</div>
         </div>
+      </div>
+
+      @if($project->status == 'active')
+      <div class="bg-green-50 border border-green-200 rounded-lg p-6">
+        <h3 class="text-lg font-bold text-green-900 mb-4">Thông tin Truy cập</h3>
+        <div class="space-y-3">
+          <div>
+            <span class="text-sm text-gray-600">Login URL:</span>
+            <a href="{{ url('/' . $project->code . '/login') }}" target="_blank"
+              class="font-mono font-bold text-green-700 hover:underline flex items-center gap-2">
+              {{ url('/' . $project->code . '/login') }}
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+              </svg>
+            </a>
+          </div>
+          <div>
+            <span class="text-sm text-gray-600">Admin Panel:</span>
+            <p class="font-mono text-gray-700">{{ url('/' . $project->code . '/admin') }}</p>
+          </div>
+          <div>
+            <span class="text-sm text-gray-600">Username:</span>
+            <p class="font-mono font-bold">{{ $project->project_admin_username }}</p>
+          </div>
+          <div>
+            <span class="text-sm text-gray-600">Password:</span>
+            <p class="font-mono font-bold text-red-600">
+              @php
+                try {
+                  echo decrypt($project->project_admin_password_plain);
+                } catch (\Exception $e) {
+                  echo '(Không thể giải mã)';
+                }
+              @endphp
+            </p>
+            <p class="text-xs text-gray-500 mt-1">️ Lưu mật khẩu này, không thể xem lại sau khi rời trang</p>
+          </div>
+        </div>
+      </div>
+      @endif
+
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <h3 class="text-lg font-bold text-gray-900 mb-4 border-b pb-2">Yêu cầu Kỹ thuật</h3>
+        <div class="space-y-4">
+          <div>
+            <p class="text-sm font-medium text-gray-700">Yêu cầu kỹ thuật:</p>
+            <p class="text-gray-600">{{ $project->technical_requirements ?? 'Không có' }}</p>
+          </div>
+          <div>
+            <p class="text-sm font-medium text-gray-700">Tính năng:</p>
+            <p class="text-gray-600">{{ $project->features ?? 'Không có' }}</p>
+          </div>
+          <div>
+            <p class="text-sm font-medium text-gray-700">Môi trường:</p>
+            <p class="text-gray-600">{{ $project->environment ?? 'Không có' }}</p>
+          </div>
+          <div>
+            <p class="text-sm font-medium text-gray-700">Ghi chú:</p>
+            <p class="text-gray-600">{{ $project->notes ?? 'Không có' }}</p>
+          </div>
+        </div>
+      </div>
+
+      @if($project->contract)
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <h3 class="text-lg font-bold text-gray-900 mb-4 border-b pb-2">Tài nguyên & Hợp đồng</h3>
+        <div class="space-y-4">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <span class="text-gray-500 text-sm block">Domain:</span>
+              <span class="font-medium">{{ $project->contract->domain_name ?: 'Chưa cập nhật' }}</span>
+              @if($project->contract->domain_purchase_date)
+              <div class="text-xs text-gray-400 mt-1">Mua lúc: {{ $project->contract->domain_purchase_date->format('d/m/Y') }}</div>
+              @endif
+            </div>
+            <div>
+              <span class="text-gray-500 text-sm block">Hosting/Máy chủ:</span>
+              <span class="font-medium">{{ $project->contract->hosting_provider ?: 'Chưa cập nhật' }}</span>
+              @if($project->contract->hosting_start_date)
+              <div class="text-xs text-gray-400 mt-1">Bắt đầu: {{ $project->contract->hosting_start_date->format('d/m/Y') }}</div>
+              @endif
+            </div>
+          </div>
+          
+          @if($project->contract->has_client_resources)
+          <div class="pt-4 border-t border-gray-100">
+            <span class="font-bold text-gray-800 text-sm block mb-2">Tài nguyên do khách gửi:</span>
+            <div class="prose max-w-none text-gray-600 bg-amber-50 p-3 rounded-lg border border-amber-100 text-sm">
+              {!! $project->contract->client_resource_details ?: '<span class="italic text-gray-400">Không có dữ liệu</span>' !!}
+            </div>
+          </div>
+          @endif
+        </div>
+      </div>
+      @endif
+      
+      <!-- Hệ thống Ticket -->
+      <livewire:superadmin.project-tickets :project="$project" />
     </div>
 
-    <div class="grid grid-cols-3 gap-6">
-        <div class="col-span-2 space-y-6">
-            <div class="bg-white rounded-lg shadow-sm p-6">
-                <h3 class="text-lg font-bold text-gray-900 mb-4 border-b pb-2">Thông tin Dự án</h3>
-                <div class="grid grid-cols-2 gap-4">
-                    <div><span class="text-gray-600">Mã dự án:</span> <span class="font-mono font-bold text-purple-600">{{ $project->code }}</span></div>
-                    <div><span class="text-gray-600">Trạng thái:</span> 
-                        <span class="px-3 py-1 text-sm rounded-full {{ $project->status == 'active' ? 'bg-green-100 text-green-800' : ($project->status == 'assigned' ? 'bg-blue-100 text-blue-800' : ($project->status == 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800')) }}">
-                            {{ ucfirst($project->status) }}
-                        </span>
-                    </div>
-                    <div class="col-span-2"><span class="text-gray-600">Subdomain:</span> <span class="font-mono font-bold text-blue-600">{{ $project->subdomain }}</span></div>
-                    <div><span class="text-gray-600">Khách hàng:</span> {{ $project->client_name }}</div>
-                    <div><span class="text-gray-600">Giá trị HĐ:</span> {{ number_format($project->contract_value ?? 0) }} VNĐ</div>
-                    <div><span class="text-gray-600">Ngày bắt đầu:</span> {{ $project->start_date->format('d/m/Y') }}</div>
-                    <div>
-                        <span class="text-gray-600">Deadline:</span> 
-                        <span class="font-bold text-red-600">{{ $project->deadline->format('d/m/Y') }}</span>
-                        @php
-                            $daysLeft = (int) now()->diffInDays($project->deadline, false);
-                        @endphp
-                        @if($daysLeft >= 0)
-                            <span class="ml-2 text-xs px-2 py-1 rounded-full {{ $daysLeft <= 7 ? 'bg-red-100 text-red-800' : ($daysLeft <= 30 ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800') }}">
-                                {{ $daysLeft }} ngày còn lại
-                            </span>
-                        @else
-                            <span class="ml-2 text-xs px-2 py-1 rounded-full bg-red-100 text-red-800">
-                                Quá hạn {{ abs($daysLeft) }} ngày
-                            </span>
-                        @endif
-                    </div>
-                    <div><span class="text-gray-600">Người tạo:</span> {{ $project->createdBy?->name ?? 'N/A' }}</div>
-                    <div><span class="text-gray-600">Admin phụ trách:</span> {{ $project->admin?->name ?? 'Chưa phân' }}</div>
-                </div>
+    <div class="space-y-6">
+      <!-- Phân công & Quản lý -->
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <h3 class="text-lg font-bold text-gray-900 mb-4 border-b pb-2">Phân công & Quản lý</h3>
+        <div class="space-y-4">
+          <div>
+            <p class="text-sm font-medium text-gray-500 mb-2">Quản lý dự án (PM)</p>
+            @if($project->admin)
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-sm font-bold text-blue-700 uppercase">
+                {{ substr($project->admin->name, 0, 1) }}
+              </div>
+              <div>
+                <p class="text-sm font-bold text-gray-900">{{ $project->admin->name }}</p>
+                <p class="text-xs text-gray-500">{{ $project->admin->email }}</p>
+              </div>
             </div>
-
-            @if($project->status == 'active')
-            <div class="bg-green-50 border border-green-200 rounded-lg p-6">
-                <h3 class="text-lg font-bold text-green-900 mb-4">Thông tin Truy cập</h3>
-                <div class="space-y-3">
-                    <div>
-                        <span class="text-sm text-gray-600">Login URL:</span>
-                        <a href="{{ url('/' . $project->code . '/login') }}" target="_blank"
-                           class="font-mono font-bold text-green-700 hover:underline flex items-center gap-2">
-                            {{ url('/' . $project->code . '/login') }}
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
-                            </svg>
-                        </a>
-                    </div>
-                    <div>
-                        <span class="text-sm text-gray-600">Admin Panel:</span>
-                        <p class="font-mono text-gray-700">{{ url('/' . $project->code . '/admin') }}</p>
-                    </div>
-                    <div>
-                        <span class="text-sm text-gray-600">Username:</span>
-                        <p class="font-mono font-bold">{{ $project->project_admin_username }}</p>
-                    </div>
-                    <div>
-                        <span class="text-sm text-gray-600">Password:</span>
-                        <p class="font-mono font-bold text-red-600">
-                            @php
-                                try {
-                                    echo decrypt($project->project_admin_password_plain);
-                                } catch (\Exception $e) {
-                                    echo '(Không thể giải mã)';
-                                }
-                            @endphp
-                        </p>
-                        <p class="text-xs text-gray-500 mt-1">⚠️ Lưu mật khẩu này, không thể xem lại sau khi rời trang</p>
-                    </div>
-                </div>
-            </div>
+            @else
+            <p class="text-sm text-gray-500 italic">Chưa phân công PM</p>
             @endif
-
-            <div class="bg-white rounded-lg shadow-sm p-6">
-                <h3 class="text-lg font-bold text-gray-900 mb-4 border-b pb-2">Yêu cầu Kỹ thuật</h3>
-                <div class="space-y-4">
-                    <div>
-                        <p class="text-sm font-medium text-gray-700">Yêu cầu kỹ thuật:</p>
-                        <p class="text-gray-600">{{ $project->technical_requirements ?? 'Không có' }}</p>
-                    </div>
-                    <div>
-                        <p class="text-sm font-medium text-gray-700">Tính năng:</p>
-                        <p class="text-gray-600">{{ $project->features ?? 'Không có' }}</p>
-                    </div>
-                    <div>
-                        <p class="text-sm font-medium text-gray-700">Môi trường:</p>
-                        <p class="text-gray-600">{{ $project->environment ?? 'Không có' }}</p>
-                    </div>
-                    <div>
-                        <p class="text-sm font-medium text-gray-700">Ghi chú:</p>
-                        <p class="text-gray-600">{{ $project->notes ?? 'Không có' }}</p>
-                    </div>
+          </div>
+          
+          <div>
+            <p class="text-sm font-medium text-gray-500 mb-2 mt-4">Lập trình viên (Devs)</p>
+            <div class="space-y-3">
+              @php
+                $devs = $project->employees()->where('id', '!=', $project->admin_id);
+              @endphp
+              @forelse($devs as $dev)
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-sm font-bold text-gray-700 uppercase">
+                  {{ substr($dev->name, 0, 1) }}
                 </div>
-            </div>
-
-            @if($project->contract)
-            <div class="bg-white rounded-lg shadow-sm p-6">
-                <h3 class="text-lg font-bold text-gray-900 mb-4 border-b pb-2">Tài nguyên & Hợp đồng</h3>
-                <div class="space-y-4">
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <span class="text-gray-500 text-sm block">Domain:</span>
-                            <span class="font-medium">{{ $project->contract->domain_name ?: 'Chưa cập nhật' }}</span>
-                            @if($project->contract->domain_purchase_date)
-                            <div class="text-xs text-gray-400 mt-1">Mua lúc: {{ $project->contract->domain_purchase_date->format('d/m/Y') }}</div>
-                            @endif
-                        </div>
-                        <div>
-                            <span class="text-gray-500 text-sm block">Hosting/Máy chủ:</span>
-                            <span class="font-medium">{{ $project->contract->hosting_provider ?: 'Chưa cập nhật' }}</span>
-                            @if($project->contract->hosting_start_date)
-                            <div class="text-xs text-gray-400 mt-1">Bắt đầu: {{ $project->contract->hosting_start_date->format('d/m/Y') }}</div>
-                            @endif
-                        </div>
-                    </div>
-                    
-                    @if($project->contract->has_client_resources)
-                    <div class="pt-4 border-t border-gray-100">
-                        <span class="font-bold text-gray-800 text-sm block mb-2">Tài nguyên do khách gửi:</span>
-                        <div class="prose max-w-none text-gray-600 bg-amber-50 p-3 rounded-lg border border-amber-100 text-sm">
-                            {!! $project->contract->client_resource_details ?: '<span class="italic text-gray-400">Không có dữ liệu</span>' !!}
-                        </div>
-                    </div>
-                    @endif
+                <div>
+                  <p class="text-sm font-bold text-gray-900">{{ $dev->name }}</p>
+                  <p class="text-xs text-gray-500">{{ $dev->email }}</p>
                 </div>
+              </div>
+              @empty
+              <p class="text-sm text-gray-500 italic">Chưa có Lập trình viên.</p>
+              @endforelse
             </div>
-            @endif
-            
-            <!-- Hệ thống Ticket -->
-            <livewire:superadmin.project-tickets :project="$project" />
+          </div>
         </div>
+      </div>
 
-        <div class="space-y-6">
-            <!-- Phân công & Quản lý -->
-            <div class="bg-white rounded-lg shadow-sm p-6">
-                <h3 class="text-lg font-bold text-gray-900 mb-4 border-b pb-2">Phân công & Quản lý</h3>
-                <div class="space-y-4">
-                    <div>
-                        <p class="text-sm font-medium text-gray-500 mb-2">Quản lý dự án (PM)</p>
-                        @if($project->admin)
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-sm font-bold text-blue-700 uppercase">
-                                {{ substr($project->admin->name, 0, 1) }}
-                            </div>
-                            <div>
-                                <p class="text-sm font-bold text-gray-900">{{ $project->admin->name }}</p>
-                                <p class="text-xs text-gray-500">{{ $project->admin->email }}</p>
-                            </div>
-                        </div>
-                        @else
-                        <p class="text-sm text-gray-500 italic">Chưa phân công PM</p>
-                        @endif
-                    </div>
-                    
-                    <div>
-                        <p class="text-sm font-medium text-gray-500 mb-2 mt-4">Lập trình viên (Devs)</p>
-                        <div class="space-y-3">
-                            @php
-                                $devs = $project->employees()->where('id', '!=', $project->admin_id);
-                            @endphp
-                            @forelse($devs as $dev)
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-sm font-bold text-gray-700 uppercase">
-                                    {{ substr($dev->name, 0, 1) }}
-                                </div>
-                                <div>
-                                    <p class="text-sm font-bold text-gray-900">{{ $dev->name }}</p>
-                                    <p class="text-xs text-gray-500">{{ $dev->email }}</p>
-                                </div>
-                            </div>
-                            @empty
-                            <p class="text-sm text-gray-500 italic">Chưa có Lập trình viên.</p>
-                            @endforelse
-                        </div>
-                    </div>
-                </div>
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">Timeline</h3>
+        <div class="space-y-3">
+          <div class="flex items-start">
+            <div class="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+              <svg class="h-4 w-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z"></path>
+              </svg>
             </div>
-
-            <div class="bg-white rounded-lg shadow-sm p-6">
-                <h3 class="text-lg font-bold text-gray-900 mb-4">Timeline</h3>
-                <div class="space-y-3">
-                    <div class="flex items-start">
-                        <div class="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-                            <svg class="h-4 w-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z"></path>
-                            </svg>
-                        </div>
-                        <div>
-                            <p class="text-sm font-medium">Tạo dự án</p>
-                            <p class="text-xs text-gray-500">{{ $project->created_at->format('d/m/Y H:i') }}</p>
-                        </div>
-                    </div>
-
-                    @if($project->approved_at)
-                    <div class="flex items-start">
-                        <div class="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
-                            <svg class="h-4 w-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"></path>
-                            </svg>
-                        </div>
-                        <div>
-                            <p class="text-sm font-medium">Đã duyệt</p>
-                            <p class="text-xs text-gray-500">{{ $project->approved_at->format('d/m/Y H:i') }}</p>
-                        </div>
-                    </div>
-                    @endif
-
-                    @if($project->initialized_at)
-                    <div class="flex items-start">
-                        <div class="h-8 w-8 bg-purple-100 rounded-full flex items-center justify-center mr-3">
-                            <svg class="h-4 w-4 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM15.657 5.757a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM5.05 6.464A1 1 0 106.464 5.05l-.707-.707a1 1 0 00-1.414 1.414l.707.707zM5 10a1 1 0 01-1 1H3a1 1 0 110-2h1a1 1 0 011 1zM8 16v-1h4v1a2 2 0 11-4 0zM12 14c.015-.34.208-.646.477-.859a4 4 0 10-4.954 0c.27.213.462.519.476.859h4.002z"></path>
-                            </svg>
-                        </div>
-                        <div>
-                            <p class="text-sm font-medium">Đã khởi tạo</p>
-                            <p class="text-xs text-gray-500">{{ $project->initialized_at->format('d/m/Y H:i') }}</p>
-                        </div>
-                    </div>
-                    @endif
-                </div>
+            <div>
+              <p class="text-sm font-medium">Tạo dự án</p>
+              <p class="text-xs text-gray-500">{{ $project->created_at->format('d/m/Y H:i') }}</p>
             </div>
+          </div>
+
+          @if($project->approved_at)
+          <div class="flex items-start">
+            <div class="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
+              <svg class="h-4 w-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"></path>
+              </svg>
+            </div>
+            <div>
+              <p class="text-sm font-medium">Đã duyệt</p>
+              <p class="text-xs text-gray-500">{{ $project->approved_at->format('d/m/Y H:i') }}</p>
+            </div>
+          </div>
+          @endif
+
+          @if($project->initialized_at)
+          <div class="flex items-start">
+            <div class="h-8 w-8 bg-purple-100 rounded-full flex items-center justify-center mr-3">
+              <svg class="h-4 w-4 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM15.657 5.757a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM5.05 6.464A1 1 0 106.464 5.05l-.707-.707a1 1 0 00-1.414 1.414l.707.707zM5 10a1 1 0 01-1 1H3a1 1 0 110-2h1a1 1 0 011 1zM8 16v-1h4v1a2 2 0 11-4 0zM12 14c.015-.34.208-.646.477-.859a4 4 0 10-4.954 0c.27.213.462.519.476.859h4.002z"></path>
+              </svg>
+            </div>
+            <div>
+              <p class="text-sm font-medium">Đã khởi tạo</p>
+              <p class="text-xs text-gray-500">{{ $project->initialized_at->format('d/m/Y H:i') }}</p>
+            </div>
+          </div>
+          @endif
         </div>
+      </div>
     </div>
+  </div>
 </div>
 
 
